@@ -6,6 +6,8 @@ import wx
 
 from . import colors
 from . import entities as E
+from . import launch as L
+from .textures import TextureLibrary
 from .model import bast
 from .presenter import (Presenter, TOOLS, LAYERS, VIEW_MODES, LIGHT_FIELDS, DOOR_KEYS,
                         DOOR_MODES, ENT_DIRS, door_key, door_mode, entity_dir)
@@ -16,6 +18,9 @@ TOOL_LABELS = {"paint": "Paint", "rect": "Rectangle", "eyedropper": "Eyedropper"
 FLAG_GLYPHS = {"DOOR": "D", "PUSHWALL": "P", "SWITCH": "S", "EXIT": "X", "SECRET": "$",
                "DAMAGE": "!", "ONEWAY": ">", "START_OPEN": "o", "BLOCK_MONSTER": "m",
                "BLOCK_ALL": "#", "TRIGGER": "T"}
+THUMB = 32        # texture picker icon size
+TEX_MIN_ZOOM = 16  # cells drawn with texture thumbnails from this zoom up
+SKILLS = ((None, "Game default"), (1, "1 Kitten"), (2, "2 Tomcat"), (3, "3 Sabretooth"))
 ENT_FLAG_LABELS = (("SKILL1", "Skill 1 Kitten"), ("SKILL2", "Skill 2 Tomcat"),
                    ("SKILL3", "Skill 3 Sabretooth"), ("AMBUSH", "Ambush / deaf"),
                    ("SECRET_ONLY", "Secret only"), ("PICKUP_TRIGGER", "Pickup fires tag"))
@@ -117,6 +122,13 @@ class GridCanvas(wx.ScrolledWindow):
             dc.DrawRectangle(lx * z, (H - 1 - hy) * z, (hx - lx + 1) * z + 1,
                              (hy - ly + 1) * z + 1)
 
+    def _tex_bitmap(self, index, z):
+        """Thumbnail of map texture `index` at z x z, or None (no file, or
+        zoomed out below TEX_MIN_ZOOM)."""
+        if z < TEX_MIN_ZOOM or index == 0:
+            return None
+        return self.frame.tex_bitmap(self.p.model.texture_name(index), z)
+
     def _paint_textures(self, dc, p, m, z):
         layer = p.layer
         dc.SetPen(wx.Pen(wx.Colour(0, 0, 0)))
@@ -126,15 +138,24 @@ class GridCanvas(wx.ScrolledWindow):
                 c = m.cell(x, y)
                 sx = x * z
                 if c["wall"]:
-                    rgb = colors.texture_rgb(c["wall"])
-                    dc.SetBrush(wx.Brush(wx.Colour(*rgb)))
+                    bmp = self._tex_bitmap(c["wall"], z)
+                    if bmp:
+                        dc.DrawBitmap(bmp, sx, sy)
+                        dc.SetBrush(wx.TRANSPARENT_BRUSH)
+                    else:
+                        dc.SetBrush(wx.Brush(wx.Colour(*colors.texture_rgb(c["wall"]))))
                     dc.DrawRectangle(sx, sy, z + 1, z + 1)
                     if layer == "wall" and z >= 8:  # mark solid blocks
                         dc.DrawLine(sx + 2, sy + 2, sx + z - 1, sy + z - 1)
                     continue
                 val = c["ceil"] if layer == "ceil" else c["floor"]
-                rgb = colors.texture_rgb(val, sky=(layer == "ceil"))
-                dc.SetBrush(wx.Brush(wx.Colour(*rgb)))
+                bmp = self._tex_bitmap(val, z)
+                if bmp:
+                    dc.DrawBitmap(bmp, sx, sy)
+                    dc.SetBrush(wx.TRANSPARENT_BRUSH)
+                else:
+                    rgb = colors.texture_rgb(val, sky=(layer == "ceil"))
+                    dc.SetBrush(wx.Brush(wx.Colour(*rgb)))
                 dc.DrawRectangle(sx, sy, z + 1, z + 1)
                 if layer != "ceil" and c["ceil"] == 0 and z >= 8:  # sky marker
                     dc.SetBrush(wx.Brush(wx.Colour(*colors.SKY_RGB)))
@@ -225,6 +246,8 @@ class EditorFrame(wx.Frame):
         root = wx.Panel(self)
         self.side = wx.Panel(root)
         self._ready = False
+        self.textures = TextureLibrary()
+        self._bitmaps = {}
         self.presenter = Presenter(model, self)
         self.canvas = GridCanvas(root, self)
         self.props = wx.ScrolledWindow(root, style=wx.VSCROLL)
@@ -242,11 +265,26 @@ class EditorFrame(wx.Frame):
         self.textures_changed()
         self.title_changed()
         self.Bind(wx.EVT_CLOSE, self.on_close)
+        self.launch_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.on_launch_timer, self.launch_timer)
+
+    def tex_bitmap(self, name, size):
+        """wx.Bitmap of texture `name` scaled to size x size, nearest
+        neighbour through the palette; None if the texture has no file."""
+        key = (name, size)
+        if key not in self._bitmaps:
+            try:
+                r = self.textures.rgb(name, size, size)
+            except bast.BastError:
+                r = None
+            self._bitmaps[key] = (wx.Image(size, size, bytearray(r[2])).ConvertToBitmap()
+                                  if r else None)
+        return self._bitmaps[key]
 
     # layout ---------------------------------------------------------------
     def _build_menu(self):
         mb = wx.MenuBar()
-        f, e, v = wx.Menu(), wx.Menu(), wx.Menu()
+        f, e, v, g = wx.Menu(), wx.Menu(), wx.Menu(), wx.Menu()
         items = [
             (f, wx.ID_NEW, "&New...\tCtrl+N", self.on_new),
             (f, wx.ID_OPEN, "&Open...\tCtrl+O", self.on_open),
@@ -257,13 +295,24 @@ class EditorFrame(wx.Frame):
             (e, wx.ID_REDO, "&Redo\tCtrl+Y", lambda e: self.presenter.redo()),
             (v, wx.ID_ZOOM_IN, "Zoom &in\tCtrl++", lambda e: self.canvas.set_zoom(self.canvas.zoom + 4)),
             (v, wx.ID_ZOOM_OUT, "Zoom &out\tCtrl+-", lambda e: self.canvas.set_zoom(self.canvas.zoom - 4)),
+            (g, wx.NewIdRef(), "&Validate map\tF7", self.on_validate),
+            (g, wx.NewIdRef(), "&Launch\tF5", self.on_launch),
+            (g, wx.NewIdRef(), "Launch &headless test\tShift+F5", self.on_launch_headless),
+            (g, wx.NewIdRef(), "Game &executable...", self.on_game_path),
         ]
         for menu, wid, label, fn in items:
             menu.Append(wid, label)
             self.Bind(wx.EVT_MENU, fn, id=wid)
         mb.Append(f, "&File")
         mb.Append(e, "&Edit")
+        sk = wx.Menu()
+        for skill, label in SKILLS:
+            item = sk.AppendRadioItem(wx.ID_ANY, "Skill: " + label)
+            self.Bind(wx.EVT_MENU, lambda e, s=skill: setattr(self.presenter, "skill", s),
+                      item)
+        g.AppendSubMenu(sk, "&Skill")
         mb.Append(v, "&View")
+        mb.Append(g, "&Game")
         self.SetMenuBar(mb)
 
     def _build_side(self):
@@ -288,16 +337,19 @@ class EditorFrame(wx.Frame):
         s.Add(self.layer_box, 0, wx.EXPAND | wx.BOTTOM, 4)
         s.Add(self.mode_box, 0, wx.EXPAND | wx.BOTTOM, 4)
         s.Add(wx.StaticText(self.side, label="Textures"), 0, wx.BOTTOM, 2)
-        self.tex_list = wx.ListCtrl(self.side, size=(200, 200),
-                                    style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
-        self.tex_list.InsertColumn(0, "#", width=44)
-        self.tex_list.InsertColumn(1, "name", width=140)
+        self.tex_list = wx.ListCtrl(self.side, size=(220, 220),
+                                    style=wx.LC_ICON | wx.LC_SINGLE_SEL | wx.LC_AUTOARRANGE)
         self.tex_list.Bind(wx.EVT_LIST_ITEM_SELECTED,
                            lambda e: self._on_tex_selected(e.GetIndex()))
         s.Add(self.tex_list, 1, wx.EXPAND | wx.BOTTOM, 4)
         add = wx.Button(self.side, label="Add texture...")
         add.Bind(wx.EVT_BUTTON, self.on_add_texture)
-        s.Add(add, 0, wx.EXPAND)
+        s.Add(add, 0, wx.EXPAND | wx.BOTTOM, 4)
+        s.Add(wx.StaticText(self.side, label="Problems (F7, click to select)"), 0, wx.BOTTOM, 2)
+        self.problem_list = wx.ListBox(self.side, size=(220, 110))
+        self.problem_list.Bind(wx.EVT_LISTBOX,
+                               lambda e: self.presenter.select_problem(e.GetSelection()))
+        s.Add(self.problem_list, 0, wx.EXPAND)
         self.side.SetSizer(s)
 
     def _guard(self, fn):
@@ -475,20 +527,25 @@ class EditorFrame(wx.Frame):
     def textures_changed(self):
         if not self._ready:
             return
-        self._img = wx.ImageList(16, 16)
+        self._img = wx.ImageList(THUMB, THUMB)
         self.tex_list.DeleteAllItems()
-        self.tex_list.SetImageList(self._img, wx.IMAGE_LIST_SMALL)
+        self.tex_list.SetImageList(self._img, wx.IMAGE_LIST_NORMAL)
         for i, name in enumerate(self.presenter.model.textures):
-            bmp = wx.Bitmap(16, 16)
-            dc = wx.MemoryDC(bmp)
-            dc.SetBackground(wx.Brush(wx.Colour(*colors.texture_rgb(i, sky=True))))
-            dc.Clear()
-            dc.SelectObject(wx.NullBitmap)
+            bmp = self.tex_bitmap(name, THUMB) if i else None
+            if bmp is None:  # no TEX file (or index 0): palette swatch
+                bmp = wx.Bitmap(THUMB, THUMB)
+                dc = wx.MemoryDC(bmp)
+                dc.SetBackground(wx.Brush(wx.Colour(*colors.texture_rgb(i, sky=True))))
+                dc.Clear()
+                dc.SelectObject(wx.NullBitmap)
             img = self._img.Add(bmp)
-            self.tex_list.InsertItem(i, str(i), img)
-            self.tex_list.SetItem(i, 1, name or "(none / sky)")
+            self.tex_list.InsertItem(i, "%d %s" % (i, name or "none/sky"), img)
         self._select_tex_row()
         self.canvas.update_virtual()
+
+    def problems_changed(self):
+        if self._ready:
+            self.problem_list.Set([str(p) for p in self.presenter.problems] or ["(no problems)"])
 
     def _select_tex_row(self):
         i = self.presenter.texture
@@ -554,20 +611,33 @@ class EditorFrame(wx.Frame):
         except Exception as e:
             self._error(e)
 
+    def _validate_before_save(self):
+        """Warn about problems; saving an unfinished map stays possible."""
+        probs = self.presenter.validate()
+        if not probs:
+            return True
+        text = "\n".join(str(p) for p in probs[:15])
+        return wx.MessageBox("The map has %d problem(s):\n\n%s\n\nSave anyway?" % (
+            len(probs), text), "Editor", wx.YES_NO | wx.ICON_WARNING, self) == wx.YES
+
     def on_save(self, e):
+        if not self._validate_before_save():
+            return
         if not self.presenter.model.path:
-            return self.on_save_as(e)
+            return self.on_save_as(e, validated=True)
         try:
             self.presenter.save()
         except Exception as ex:
             self._error(ex)
 
-    def on_save_as(self, _e):
+    def on_save_as(self, _e=None, validated=False):
+        """From the menu, validation runs after the file dialog; from on_save
+        it already ran."""
         m = self.presenter.model
         with wx.FileDialog(self, "Save map as", wildcard="Maps (*.vmap)|*.vmap",
                            defaultDir=os.path.dirname(m.path or "") or os.getcwd(),
                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as d:
-            if d.ShowModal() == wx.ID_OK:
+            if d.ShowModal() == wx.ID_OK and (validated or self._validate_before_save()):
                 path = d.GetPath()
                 if not path.endswith(".vmap"):
                     path += ".vmap"
@@ -577,12 +647,74 @@ class EditorFrame(wx.Frame):
                     self._error(ex)
 
     def on_add_texture(self, _e):
-        with wx.TextEntryDialog(self, "Texture name (max 16 bytes)", "Add texture") as d:
+        """Pick one of the built textures (assets/gen), or type any name."""
+        have = set(self.presenter.model.textures)
+        names = [n for n in self.textures.available() if n not in have]
+        other = "Other name..."
+        name = None
+        with wx.SingleChoiceDialog(self, "Texture", "Add texture", names + [other]) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            name = d.GetStringSelection()
+        if name == other:
+            with wx.TextEntryDialog(self, "Texture name (max 16 bytes)", "Add texture") as d:
+                if d.ShowModal() != wx.ID_OK:
+                    return
+                name = d.GetValue()
+        try:
+            self.presenter.add_texture(name)
+        except Exception as ex:
+            self._error(ex)
+
+    # game -----------------------------------------------------------------
+    def on_validate(self, _e):
+        self.presenter.validate()
+
+    def on_launch(self, _e):
+        try:
+            self.presenter.launch()
+        except Exception as ex:  # LaunchError, ModelError
+            self._error(ex)
+            return
+        self.launch_timer.Start(300)
+
+    def on_launch_timer(self, _e):
+        p = self.presenter
+        err = p.poll_launch()
+        if not p.launching:
+            self.launch_timer.Stop()
+        if err:
+            self._error("The game failed:\n" + err)
+
+    def on_launch_headless(self, _e):
+        try:
+            with wx.BusyCursor():
+                frame = self.presenter.launch_headless()
+        except Exception as ex:
+            self._error(ex)
+            return
+        self.show_frame(frame)
+
+    def show_frame(self, path):
+        """Last headless frame at 2x, nearest neighbour."""
+        img = wx.Image(path)
+        img = img.Scale(img.GetWidth() * 2, img.GetHeight() * 2, wx.IMAGE_QUALITY_NEAREST)
+        dlg = wx.Dialog(self, title="Headless test: tic %d" % L.HEADLESS_TICS)
+        s = wx.BoxSizer(wx.VERTICAL)
+        s.Add(wx.StaticBitmap(dlg, bitmap=img.ConvertToBitmap()), 0, wx.ALL, 6)
+        s.Add(wx.StaticText(dlg, label=path), 0, wx.LEFT | wx.RIGHT, 6)
+        s.Add(dlg.CreateStdDialogButtonSizer(wx.OK), 0, wx.EXPAND | wx.ALL, 6)
+        dlg.SetSizerAndFit(s)
+        self.frame_dialog = dlg
+        dlg.Show()
+
+    def on_game_path(self, _e):
+        p = self.presenter
+        with wx.FileDialog(self, "Game executable", defaultFile=p.game_path,
+                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as d:
             if d.ShowModal() == wx.ID_OK:
-                try:
-                    self.presenter.add_texture(d.GetValue())
-                except Exception as ex:
-                    self._error(ex)
+                p.game_path = d.GetPath()
+                self.set_status("game: " + p.game_path)
 
     def on_close(self, e):
         if e.CanVeto() and not self._confirm_discard():

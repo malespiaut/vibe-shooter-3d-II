@@ -1,11 +1,19 @@
 """Editor presenter: tools, selection and commands. No wx here, so it can be
 driven headlessly (tests/editor_roundtrip.py). The view is any object with
-refresh(), set_status(text), textures_changed(), title_changed() and
-selection_changed() (the selected cell / entity or their values changed); the
+refresh(), set_status(text), textures_changed(), title_changed(),
+selection_changed() (the selected cell / entity or their values changed) and
+problems_changed() (the validation list changed); the
 presenter calls them, the view calls the presenter's on_* / action methods
 with cell coordinates (x east, y north, (0, 0) south-west)."""
+import atexit
+import os
+import shutil
+import tempfile
+
 from . import entities as E
+from . import launch as L
 from . import model as M
+from .validate import validate
 
 TOOLS = ("paint", "rect", "eyedropper", "erase", "light", "flags", "entity")
 LAYERS = M.LAYERS
@@ -64,6 +72,9 @@ class NullView:
     def selection_changed(self):
         pass
 
+    def problems_changed(self):
+        pass
+
 
 class Presenter:
     def __init__(self, model=None, view=None):
@@ -82,6 +93,12 @@ class Presenter:
         self.entity_type = E.BY_NAME["MUTT_TROOPER"][0]
         self.entity_sel = None   # index of the selected entity
         self.moving = False      # entity place/move drag held
+        self.problems = []       # validate.Problem list from the last check
+        self.game_path = L.default_game_path()
+        self.skill = None        # None: the game's default (2)
+        self.runner = L.SubprocessRunner()
+        self._launched = None    # (proc, stderr file) of the window launch
+        self._tmpdir = None
         self.model = None
         self.set_model(model or M.MapModel.new(32, 32))
 
@@ -377,6 +394,106 @@ class Presenter:
         self.entity_sel = None
         self.view.selection_changed()
         self.view.refresh()
+
+    # validation / launch ------------------------------------------------
+    def validate(self):
+        """Run the map checks; keeps and returns the problem list."""
+        self.problems = validate(self.model)
+        n = len(self.problems)
+        self.view.set_status("%d problem%s" % (n, "" if n == 1 else "s") if n else
+                             "map valid")
+        self.view.problems_changed()
+        return self.problems
+
+    def select_problem(self, i):
+        """Select the cell of problem i (with the flags tool, so the
+        selection is drawn and its properties shown)."""
+        if not 0 <= i < len(self.problems) or self.problems[i].cell is None:
+            return
+        self.set_tool("flags")
+        self.select_cell(*self.problems[i].cell)
+        self.view.set_status(str(self.problems[i]))
+
+    def _work_dir(self):
+        if self._tmpdir is None or not os.path.isdir(self._tmpdir):
+            self._tmpdir = tempfile.mkdtemp(prefix="vs3d-editor-")
+            atexit.register(shutil.rmtree, self._tmpdir, True)
+        return self._tmpdir
+
+    def _prepare_launch(self):
+        """Validate, then write the current map to a temp file. The model's
+        own path and dirty flag are untouched."""
+        if self.validate():
+            raise L.LaunchError("map has %d problem(s), not launched:\n%s" % (
+                len(self.problems), "\n".join(str(p) for p in self.problems[:20])))
+        base = os.path.splitext(os.path.basename(self.model.path or "untitled.vmap"))[0]
+        path = os.path.join(self._work_dir(), base + ".vmap")
+        self.model.export(path)
+        return path
+
+    def launch(self):
+        """Start the game in its window on the current map (F5)."""
+        path = self._prepare_launch()
+        argv = L.game_argv(self.game_path, path, self.skill)
+        self._close_launch()
+        err = tempfile.TemporaryFile(dir=self._work_dir())
+        try:
+            proc = self.runner.spawn(argv, err)
+        except OSError as e:
+            err.close()
+            raise L.LaunchError("cannot run %s: %s" % (self.game_path, e.strerror or e))
+        self._launched = (proc, err, argv)
+        self.view.set_status("launched: " + " ".join(argv))
+        return proc
+
+    def _close_launch(self):
+        if self._launched:
+            self._launched[1].close()
+            self._launched = None
+
+    @property
+    def launching(self):
+        """True while a window launch is being watched."""
+        return self._launched is not None
+
+    def poll_launch(self):
+        """None while the game runs or after a clean exit; once, after a
+        failed exit, the error text with its stderr."""
+        if not self._launched:
+            return None
+        proc, err, argv = self._launched
+        rc = proc.poll()
+        if rc is None:
+            return None
+        err.seek(0)
+        text = err.read().decode(errors="replace")
+        self._close_launch()
+        if rc == 0:
+            self.view.set_status("game exited")
+            return None
+        return "%s: exit %d\n\n%s" % (" ".join(argv), rc, text.strip() or "(no stderr)")
+
+    def launch_headless(self):
+        """Run the 70-tic headless top-down test; returns the last frame's
+        PNG path."""
+        path = self._prepare_launch()
+        frames = os.path.join(self._work_dir(), "frames")
+        shutil.rmtree(frames, ignore_errors=True)
+        os.makedirs(frames)
+        argv = L.headless_argv(self.game_path, path, frames, self.skill)
+        try:
+            rc, out, err = self.runner.run(argv, L.HEADLESS_TIMEOUT)
+        except OSError as e:
+            raise L.LaunchError("cannot run %s: %s" % (self.game_path, e.strerror or e))
+        except Exception as e:  # subprocess.TimeoutExpired
+            raise L.LaunchError("%s: %s" % (" ".join(argv), e))
+        frame = L.frame_path(frames)
+        if rc != 0 or not os.path.isfile(frame):
+            raise L.LaunchError("%s: exit %d\n\n%s" % (" ".join(argv), rc,
+                                                        (err.strip() or "no frame written")))
+        stats = [ln for ln in out.splitlines() if ln.startswith("STATS")]
+        self.view.set_status(stats[-1] if stats else "headless test done")
+        return frame
 
     # status ---------------------------------------------------------------
     def describe(self, x, y):
