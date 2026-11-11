@@ -610,6 +610,13 @@ add_test(NAME weapon_demo
 set_tests_properties(weapon_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# Impact effects and fx world sprites (issue #147).
+add_executable(test_fx tests/test_fx.c)
+target_link_libraries(test_fx PRIVATE engine)
+target_compile_options(test_fx PRIVATE -UNDEBUG)
+foreach(g lifetime overflow pistol_wall pistol_enemy render_projectile hash)
+  add_test(NAME fx_${g} COMMAND test_fx ${g})
+endforeach()
 # Launcher test map and demo (issue #93): scarab splash and barrel kills.
 add_test(NAME launcher_demo
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_launcher_demo.py
@@ -617,6 +624,13 @@ add_test(NAME launcher_demo
 set_tests_properties(launcher_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 add_demo_determinism(launcher-test)
+add_demo_determinism(fx-test)
+# Every FXS_* frame exists in the built assets under the renderer's path.
+# Needs the fx frames from tools/build_assets.sh (tools/build.d/40-fx.sh).
+add_executable(test_fx_sprites tests/test_fx_sprites.c)
+target_link_libraries(test_fx_sprites PRIVATE engine)
+target_compile_options(test_fx_sprites PRIVATE -UNDEBUG)
+add_test(NAME fx_sprites COMMAND test_fx_sprites ${ASSETS_GEN})
 
 # Weapons 6-7: the Lance / Howler test demo, run twice.
 add_test(NAME lance_demo

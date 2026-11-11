@@ -93,6 +93,10 @@ int ai_damage_from(game_state *gs, thinker_t *t, int32_t damage, int kind, fix_t
  * down for the next AI_SHIELD_DROP_TICS game tics' weapon fire). */
 int ai_shield_up(const thinker_t *t);
 
+/* 1 when the shield of `t` is up and (sx, sy) lies in its frontal arc:
+ * direct damage from there is blocked by ai_damage_from. */
+int ai_shield_blocks(const thinker_t *t, fix_t sx, fix_t sy);
+
 /* ai_damage with a forced flinch: when `pain_tics` > 0 a survivable hit
  * puts the enemy in PAIN for `pain_tics` tics without the pain roll (Sphinx
  * Howler, weapons.md); it resumes CHASE after. 0 = the normal pain roll. */

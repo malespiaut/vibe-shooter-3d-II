@@ -1,6 +1,7 @@
 #include "engine/sprite.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include "bast.h"
 
@@ -90,4 +91,28 @@ int sprite_anim_frame(uint32_t tic, int frames)
     if (frames <= 1)
         return 0;
     return (int)((tic / SPRITE_SHIMMER_TICS) % (uint32_t)frames);
+}
+
+/* The "name", "anim" and "frames" of assets/src/fx/<file>.json, copied
+ * as they are (tools/fx.py builds <name>_<anim>_d0_f<n>.tex from them). */
+static const fx_sprite_def fx_defs[FXS_COUNT] = {
+    [FXS_SCARAB_PROJ] = { "scarab_proj", "fly", 4, 1 },
+    [FXS_EXPLOSION_SMALL] = { "explosion_small", "boom", 8, 0 },
+    [FXS_EXPLOSION_BIG] = { "explosion_big", "boom", 10, 0 },
+    [FXS_PUFF] = { "puff", "hit", 4, 0 },
+    [FXS_BLOOD] = { "blood_hit", "hit", 4, 0 },
+};
+
+const fx_sprite_def *fx_sprite_def_for(int id)
+{
+    return id >= 0 && id < FXS_COUNT ? &fx_defs[id] : NULL;
+}
+
+int fx_sprite_path(int id, int frame, char *buf, size_t size)
+{
+    const fx_sprite_def *d = fx_sprite_def_for(id);
+    if (!d || frame < 0 || frame >= d->frames || size == 0)
+        return 0;
+    const int n = snprintf(buf, size, "fx/%s_%s_d0_f%d.tex", d->name, d->anim, frame);
+    return n > 0 && (size_t)n < size;
 }

@@ -67,8 +67,10 @@ typedef struct {
     fix_t x, y;          /* world position of the anchor (TEX origin) */
     fix_t height;        /* anchor height above the floor in units, 0 = floor */
     const bast_tex *tex; /* frame to draw, origin = anchor */
-    int dark;            /* cell_dark of the sprite's cell, 0..31 */
+    int dark;            /* cell_dark of the sprite's cell, 0..31, or
+                          * RENDER_DARK_FULLBRIGHT: colormap row 0 always */
 } render_sprite;
+#define RENDER_DARK_FULLBRIGHT (-1)
 
 /* A live thing to draw as a world sprite (game state, not the map): its
  * entity type picks the sprite (sprite_def_for_entity()). */
@@ -76,8 +78,10 @@ typedef struct {
     uint16_t type;
     fix_t x, y;    /* floor position: the TEX origin (bottom centre) sits here */
     angle_t angle; /* facing, for 8-direction sprites */
+    fix_t z;       /* anchor height above the floor (effects), 0 = floor */
     uint8_t anim;  /* enemy sprites: SPR_* animation (engine/sprite.h) */
-    uint8_t frame; /* enemy sprites: frame within `anim`; items ignore both */
+    uint8_t frame; /* enemy sprites: frame within `anim`; effects (type
+                    * SPRITE_FX_BASE + FXS_*, sprite.h): frame; items ignore it */
 } render_thing;
 
 /* Loads the TEX of every wall texture `map` uses, from
@@ -91,7 +95,10 @@ int render_init(const bast_map *map, const char *assets_dir);
  * every frame is required; a missing d1..d7 falls back to d0 (things without
  * facing). Enemy sprites load every animation (<name>_<anim>_d<d>_f<f>,
  * sprite_enemy_frames()); an enemy set missing any d0 frame is skipped with
- * one warning per name on stderr and not drawn, which is not an error. */
+ * one warning per name on stderr and not drawn, which is not an error.
+ * It also loads every effect sprite (sprite.h FXS_*) from `assets_dir`/fx;
+ * a missing effect is not an error (test asset dirs have none), it is just
+ * not drawn. */
 void render_shutdown(void);
 const char *render_error(void);
 

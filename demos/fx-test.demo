@@ -1,0 +1,25 @@
+# FX test (#147): maps/launchertest.vmap. The player takes the Scarab
+# Launcher, steps to 2.5 u from the south wall and fires one scarab at it
+# (flight, then explosion_small on the wall), then switches to the pistol
+# and fires two shots at the same wall (two impact puffs). Evidence frames
+# for the projectile, explosion and puff world sprites, and a determinism
+# demo for the effect list.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map launchertest
+
+goto 4 5                # walk over the launcher pickup
+goto 4 3
+weapon 5                # 10-tic switch
+wait 10
+face 4 1                # the south wall
+fire 1                  # one scarab
+wait 20
+expect health=100
+weapon 2
+wait 10
+fire 13                 # pistol: shots on the first and 13th tic
+wait 14
+expect kills=0

@@ -4,6 +4,7 @@
 /* Sprite frame selection (GAME.md 3, docs/design/tech.md World: Sprites,
  * Sprite naming). Integer only: gameplay code may call it. */
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "engine/angle.h"
@@ -68,6 +69,39 @@ const sprite_def *sprite_def_for_entity(int type);
 
 /* Base name of sprite_def_for_entity(type), or NULL. */
 const char *sprite_name_for_entity(int type);
+
+/* Effect sprites (GAME.md 6.3, tools/fx.py): projectiles, explosions and
+ * impacts, frames `<name>_<anim>_d0_f<frame>.tex` under assets/gen/fx/ (one
+ * direction). A render_thing whose type is SPRITE_FX_BASE + FXS_* draws
+ * one, with the frame the game picked (render_thing.frame). `fullbright`
+ * ones are drawn with colormap row 0 whatever the light (pure energy: the
+ * scarab projectile, whose TEX carries BAST_TEX_FULLBRIGHT); the others,
+ * explosions included, are shaded like any sprite: their fb_* core stays
+ * bright through the colormap while smoke and debris darken with the room. */
+enum { SPRITE_FX_BASE = 0x4000 };
+enum {
+    FXS_SCARAB_PROJ,
+    FXS_EXPLOSION_SMALL,
+    FXS_EXPLOSION_BIG,
+    FXS_PUFF,
+    FXS_BLOOD,
+    FXS_COUNT
+};
+#define FX_SPRITE_MAX_FRAMES 16
+
+typedef struct {
+    const char *name; /* "name" of the fx .json: "blood_hit" */
+    const char *anim; /* its "anim": "hit" -> fx/blood_hit_hit_d0_f<n>.tex */
+    int frames;       /* 1..FX_SPRITE_MAX_FRAMES */
+    int fullbright;
+} fx_sprite_def;
+
+/* Effect sprite FXS_*, or NULL. */
+const fx_sprite_def *fx_sprite_def_for(int id);
+
+/* Writes "fx/<name>_<anim>_d0_f<frame>.tex" of effect sprite `id` into buf.
+ * 0 if id or frame is out of range or buf is too small. */
+int fx_sprite_path(int id, int frame, char *buf, size_t size);
 
 /* Idle frame shown at render tic `tic` by a sprite with `frames` frames:
  * SPRITE_SHIMMER_TICS tics per frame, looping. */
