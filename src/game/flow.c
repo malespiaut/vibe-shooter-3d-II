@@ -159,7 +159,7 @@ int flow_tic(flow_t *f, int key, flow_world *w, const ticcmd *cmd)
 #define ITEM_X 104   /* hud.md: items at x=104, y=96 + 20*i */
 #define ITEM_Y 96
 #define ITEM_DY 20
-#define HEAD_Y 66
+#define HEAD_Y 70  /* clears the title apex sparkle (y 60..67), art director PR #136 */
 #define BLINK_Y 204
 
 struct flow_gfx {
