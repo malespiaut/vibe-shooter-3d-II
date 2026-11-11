@@ -359,6 +359,14 @@ add_test(NAME sprite_dach
 set_tests_properties(sprite_dach PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# Mastiff Juggernaut sprite set (enemies.md, art-bible.md): renders the model
+# into a temp dir and checks frames, size, ramps and outline. 77 = skipped
+# without blender.
+add_test(NAME sprite_mastiff
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprite_mastiff.py)
+set_tests_properties(sprite_mastiff PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
 # Music sequencer (docs/design/audio.md, "Music"): parser and render tests,
 # and build/vmus_render <song.vmus> <out.wav> [seconds] for listening/evidence.
 add_executable(vmus_render tools/vmus_render.c)
