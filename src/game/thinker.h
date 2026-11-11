@@ -147,12 +147,18 @@ int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage);
 #define TH_ANIM_DEATH_TICS 5  /* death: 5 frames, frame 4 is the corpse */
 #define TH_ANIM_GIB_TICS 4    /* gib: 8 frames, the last one stays */
 
-/* Sprite animation (SPR_*, engine/sprite.h) and frame an enemy shows at
- * game tic `tic`. Reads the thinker only: drawing never changes the state
- * hash. STAND -> idle, CHASE -> walk (frame 0 while not stepping), WINDUP ->
- * windup (glow frame 1 in the last half of the enemy's wind-up), ATTACK ->
- * attack (frame 0 for the first half of the recovery), PAIN -> pain, DEAD
- * -> death from died_tic then frame 4 forever, or gib with TH_FLAG_GIB. */
-void thinker_anim(const thinker_t *t, uint32_t tic, int *anim, int *frame);
+/* Sprite animation (SPR_*, engine/sprite.h), frame and form
+ * (render_thing.form) an enemy shows at game tic `tic`. Reads the thinker
+ * only: drawing never changes the state hash. STAND -> idle, CHASE -> walk
+ * (frame 0 while not stepping), WINDUP -> windup (glow frame 1 in the last
+ * half of the enemy's wind-up), ATTACK -> attack (frame 0 for the first half
+ * of the recovery), PAIN -> pain, DEAD -> death from died_tic then frame 4
+ * forever, or gib with TH_FLAG_GIB. Form is 0 but for the boss.
+ * Woofu (`boss_phase` = game_state.boss.phase, ignored for other types):
+ * PAIN is only its BOSS_FLINCH_TICS lid-blast flinch, shown as `phase`
+ * frame (BOSS_FLINCH_TICS - tics) * 6 / BOSS_FLINCH_TICS (0..5); in phase 2
+ * every other animation but death has form 1 (the lidless woofu2 set). */
+void thinker_anim(const thinker_t *t, int boss_phase, uint32_t tic, int *anim, int *frame,
+                  int *form);
 
 #endif

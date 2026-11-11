@@ -18,9 +18,11 @@
 
 static bast_tex *textures[RENDER_MAX_TEXTURES];
 static bast_tex *sky;
-/* Sprite frames per entity type, animation (SPR_*; items: SPR_IDLE only),
- * frame and direction; d1..d7 may alias d0 of the same frame. */
-static bast_tex *sprite_frames[BAST_ENT_TYPE_LIMIT][SPR_ANIMS][SPRITE_MAX_FRAMES][SPRITE_DIRS];
+/* Sprite frames per entity type, form (0, or 1 = sprite_def.form2),
+ * animation (SPR_*; items: SPR_IDLE only), frame and direction; d1..d7 may
+ * alias d0 of the same frame. */
+static bast_tex *sprite_frames[BAST_ENT_TYPE_LIMIT][SPRITE_FORMS][SPR_ANIMS][SPRITE_MAX_FRAMES]
+                              [SPRITE_DIRS];
 /* Enemy sprite sets already reported missing (one warning per name). */
 static unsigned char sprite_warned[BAST_ENT_TYPE_LIMIT];
 /* Effect sprite frames (sprite.h FXS_*), NULL when not built. */
@@ -48,13 +50,15 @@ const char *render_error(void)
 
 static void free_sprite_set(int type)
 {
-    for (int a = 0; a < SPR_ANIMS; a++) {
-        for (int f = 0; f < SPRITE_MAX_FRAMES; f++) {
-            bast_tex **fr = sprite_frames[type][a][f];
-            for (int d = SPRITE_DIRS - 1; d >= 0; d--) {
-                if (d == 0 || fr[d] != fr[0])
-                    bast_tex_free(fr[d]);
-                fr[d] = NULL;
+    for (int form = 0; form < SPRITE_FORMS; form++) {
+        for (int a = 0; a < SPR_ANIMS; a++) {
+            for (int f = 0; f < SPRITE_MAX_FRAMES; f++) {
+                bast_tex **fr = sprite_frames[type][form][a][f];
+                for (int d = SPRITE_DIRS - 1; d >= 0; d--) {
+                    if (d == 0 || fr[d] != fr[0])
+                        bast_tex_free(fr[d]);
+                    fr[d] = NULL;
+                }
             }
         }
     }
@@ -102,18 +106,18 @@ static bast_tex *load_sprite_frame(const char *dir, const char *name, int *found
     return NULL;
 }
 
-/* Loads frames 0..frames-1 of animation `anim` of sprite `def` into
- * sprite_frames[type][anim]. Returns 1 when loaded, 0 when broken (err_buf
- * set), -1 when a d0 frame is missing (`missing` names it). */
-static int load_anim(const char *dir, int type, const sprite_def *def, int anim, int frames,
+/* Loads frames 0..frames-1 of animation `anim` of sprite set `name` into
+ * sprite_frames[type][form][anim]. Returns 1 when loaded, 0 when broken
+ * (err_buf set), -1 when a d0 frame is missing (`missing` names it). */
+static int load_anim(const char *dir, int type, int form, const char *set, int anim, int frames,
                      char *missing, size_t missing_size)
 {
     for (int f = 0; f < frames; f++) {
-        bast_tex **fr = sprite_frames[type][anim][f];
+        bast_tex **fr = sprite_frames[type][form][anim][f];
         for (int d = 0; d < SPRITE_DIRS; d++) {
             char name[128];
             int found;
-            snprintf(name, sizeof name, "%s_%s_d%d_f%d", def->name, sprite_anim_name(anim), d, f);
+            snprintf(name, sizeof name, "%s_%s_d%d_f%d", set, sprite_anim_name(anim), d, f);
             bast_tex *t = load_sprite_frame(dir, name, &found);
             if (!t && found)
                 return 0;
@@ -132,11 +136,12 @@ static int load_sprites(const bast_map *map, const char *dir)
     for (int i = 0; i < map->entity_count; i++) {
         const int type = map->entities[i].type;
         const sprite_def *def = sprite_def_for_entity(type);
-        if (!def || sprite_frames[type][SPR_IDLE][0][0])
+        if (!def || sprite_frames[type][0][SPR_IDLE][0][0])
             continue;
         char missing[128];
         if (!def->enemy) {
-            const int r = load_anim(dir, type, def, SPR_IDLE, def->frames, missing, sizeof missing);
+            const int r =
+                load_anim(dir, type, 0, def->name, SPR_IDLE, def->frames, missing, sizeof missing);
             if (r < 0)
                 snprintf(err_buf, sizeof err_buf, "sprite '%s' not found in %s/sprites or %s/test",
                          missing, dir, dir);
@@ -144,13 +149,18 @@ static int load_sprites(const bast_map *map, const char *dir)
                 return 0;
             continue;
         }
-        /* Enemy: every animation (but `gib` for no_gib sets) or nothing. A
-         * set whose art is not built yet is skipped (the enemy is not
-         * drawn), never substituted. */
+        /* Enemy: every animation (but `gib` for no_gib sets, plus `phase`
+         * and the form2 set for the boss) or nothing. A set whose art is
+         * not built yet is skipped (the enemy is not drawn), never
+         * substituted. */
         int r = 1;
         for (int a = 0; a < SPR_ANIMS && r > 0; a++)
-            if (a != SPR_GIB || !def->no_gib)
-                r = load_anim(dir, type, def, a, sprite_enemy_frames(a), missing, sizeof missing);
+            if ((a != SPR_GIB || !def->no_gib) && (a != SPR_PHASE || def->phase))
+                r = load_anim(dir, type, 0, def->name, a, sprite_enemy_frames(a), missing,
+                              sizeof missing);
+        for (int a = 0; def->form2 && a < SPRITE_FORM2_ANIMS && r > 0; a++)
+            r = load_anim(dir, type, 1, def->form2, a, sprite_enemy_frames(a), missing,
+                          sizeof missing);
         if (r == 0)
             return 0;
         if (r < 0) {
@@ -677,24 +687,25 @@ int render_draw_sprites(const render_sprite *s, int n, uint8_t *fb)
 }
 
 /* Frame of `type` seen from (vx, vy) for a thing at (x, y) facing `angle`:
- * enemies show (`anim`, `frame`), other sprites their idle frame at render
- * tic `tic`. NULL if the type has no loaded sprite. */
-static const bast_tex *thing_frame(int type, fix_t x, fix_t y, angle_t angle, int anim,
-                                   int frame, fix_t vx, fix_t vy, uint32_t tic)
+ * enemies show (`form`, `anim`, `frame`), other sprites their idle frame at
+ * render tic `tic`. NULL if the type has no loaded sprite or that frame. */
+static const bast_tex *thing_frame(int type, fix_t x, fix_t y, angle_t angle, int form,
+                                   int anim, int frame, fix_t vx, fix_t vy, uint32_t tic)
 {
     const sprite_def *def = sprite_def_for_entity(type);
-    if (!def || !sprite_frames[type][SPR_IDLE][0][0])
+    if (!def || !sprite_frames[type][0][SPR_IDLE][0][0])
         return NULL;
     if (!def->enemy) {
+        form = 0;
         anim = SPR_IDLE;
         frame = sprite_anim_frame(tic, def->frames);
-    } else if (anim < 0 || anim >= SPR_ANIMS || frame < 0 ||
-               frame >= sprite_enemy_frames(anim)) {
+    } else if (form < 0 || form >= SPRITE_FORMS || anim < 0 || anim >= SPR_ANIMS ||
+               frame < 0 || frame >= sprite_enemy_frames(anim)) {
         return NULL;
     }
     /* Angle of the vector thing -> viewer picks the facing frame. */
     const int dir = sprite_dir(angle_of(vx - x, vy - y), angle);
-    return sprite_frames[type][anim][frame][dir];
+    return sprite_frames[type][form][anim][frame][dir];
 }
 
 /* Static sprites of the map's entities (non-live types, e.g. TEST_SPRITE)
@@ -710,7 +721,7 @@ static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
         const sprite_def *def = sprite_def_for_entity(e->type);
         if (!def || def->live)
             continue;
-        const bast_tex *t = thing_frame(e->type, e->x, e->y, e->angle, 0, 0, vx, vy, tic);
+        const bast_tex *t = thing_frame(e->type, e->x, e->y, e->angle, 0, 0, 0, vx, vy, tic);
         if (!t)
             continue;
         const bast_map_cell *c = cell(map, e->x >> 16, e->y >> 16);
@@ -728,8 +739,8 @@ static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
             t = fx_frames[th->type - SPRITE_FX_BASE][th->frame];
             fullbright = def->fullbright;
         } else {
-            t = thing_frame(th->type, th->x, th->y, th->angle, th->anim, th->frame, vx, vy,
-                            tic);
+            t = thing_frame(th->type, th->x, th->y, th->angle, th->form, th->anim, th->frame,
+                            vx, vy, tic);
         }
         if (!t)
             continue;

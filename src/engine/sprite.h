@@ -12,12 +12,13 @@
 enum {
     SPRITE_DIRS = 8,
     SPRITE_MAX_FRAMES = 8, /* frames per animation and direction (gib: 8) */
-    SPRITE_SHIMMER_TICS = 18 /* items.md: 2-frame 18-tic shimmer */
+    SPRITE_SHIMMER_TICS = 18, /* items.md: 2-frame 18-tic shimmer */
+    SPRITE_FORMS = 2 /* enemy sets: 0 = the sprite, 1 = its form2 (boss phase 2) */
 };
 
 /* Enemy animations (docs/design/enemies.md, Animation list), in the order
  * of sprite_anim_name() and sprite_enemy_frames(). Items only have
- * SPR_IDLE. */
+ * SPR_IDLE. SPR_PHASE is the boss's only (lid blowing off). */
 enum {
     SPR_IDLE,
     SPR_WALK,
@@ -26,6 +27,7 @@ enum {
     SPR_PAIN,
     SPR_DEATH,
     SPR_GIB,
+    SPR_PHASE,
     SPR_ANIMS
 };
 
@@ -33,7 +35,7 @@ enum {
 const char *sprite_anim_name(int anim);
 
 /* Frames per direction of enemy animation `anim` (enemies.md): idle 2,
- * walk 4, windup 2, attack 2, pain 1, death 5, gib 8. */
+ * walk 4, windup 2, attack 2, pain 1, death 5, gib 8, phase 6. */
 int sprite_enemy_frames(int anim);
 
 /* Direction frame 0..7 for a thing facing `thing_angle`, seen by a viewer
@@ -53,14 +55,23 @@ int sprite_dir(angle_t viewer_angle, angle_t thing_angle);
  * have every animation of sprite_enemy_frames(): `<name>_<anim>_d<d>_f<f>`
  * (gib frames under assets/gen/gibs/, d0 only), and the caller picks the
  * animation and frame (game/thinker.h thinker_anim()). `no_gib` enemies
- * (the boss, enemies.md) have every animation but `gib`. */
+ * (the boss, enemies.md) have every animation but `gib`. `phase` enemies
+ * (the boss) also have `phase`. A `form2` set (the boss in phase 2:
+ * "woofu2", lidless) is drawn for render_thing.form 1: `<form2>_<anim>_d<d>
+ * _f<f>` for idle, walk, windup, attack and pain (death and phase come
+ * from the first form only). */
 typedef struct {
     const char *name; /* may hold a subdirectory: "items/fish" */
     int frames;       /* idle frames, 1..SPRITE_MAX_FRAMES */
     int live;
     int enemy;
     int no_gib;
+    int phase;
+    const char *form2; /* NULL: one form */
 } sprite_def;
+
+/* Animations a form2 set has: SPR_IDLE..SPR_PAIN. */
+#define SPRITE_FORM2_ANIMS (SPR_PAIN + 1)
 
 /* Sprite of map entity `type`, or NULL if that type has no sprite yet.
  * Every pickup has one (items.md), except the Ankh Pistol (32): the player

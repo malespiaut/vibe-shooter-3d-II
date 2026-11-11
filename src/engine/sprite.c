@@ -54,14 +54,15 @@ static const sprite_def defs[BAST_ENT_TYPE_LIMIT] = {
     [BAST_ENT_DACHSHUND_HOWITZER] = { "dach", 2, 1, 1 },
     [BAST_ENT_MASTIFF_JUGGERNAUT] = { "mastiff", 2, 1, 1 },
     [BAST_ENT_SHEPHERD_SHIELDBEARER] = { "shep", 2, 1, 1 },
-    /* enemies.md Animation list: the boss has no `gib`. */
-    [BAST_ENT_WOOFU] = { "woofu", 2, 1, 1, 1 },
+    /* enemies.md Animation list: the boss has no `gib`, adds `phase`;
+     * phase 2 is the lidless woofu2 set (assets/src/sprites/woofu2). */
+    [BAST_ENT_WOOFU] = { "woofu", 2, 1, 1, 1, 1, "woofu2" },
 };
 
 static const char *const anim_names[SPR_ANIMS] = {
-    "idle", "walk", "windup", "attack", "pain", "death", "gib",
+    "idle", "walk", "windup", "attack", "pain", "death", "gib", "phase",
 };
-static const int enemy_frames[SPR_ANIMS] = { 2, 4, 2, 2, 1, 5, 8 };
+static const int enemy_frames[SPR_ANIMS] = { 2, 4, 2, 2, 1, 5, 8, 6 };
 
 const char *sprite_anim_name(int anim)
 {
