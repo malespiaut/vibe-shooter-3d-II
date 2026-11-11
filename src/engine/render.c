@@ -166,18 +166,25 @@ static int load_sprites(const bast_map *map, const char *dir)
 }
 
 /* Effect sprites from fx/ (files.c: game.pak, then loose files). A missing
- * frame is skipped; a broken one is an error. */
+ * frame is skipped with a warning (once per sprite); a broken one is an error. */
 static int load_fx_sprites(const char *dir)
 {
+    static int warned[FXS_COUNT];
     for (int i = 0; i < FXS_COUNT; i++) {
         const fx_sprite_def *def = fx_sprite_def_for(i);
         for (int f = 0; f < def->frames && !fx_frames[i][f]; f++) {
             char path[256];
-            snprintf(path, sizeof path, "fx/%s_d0_f%d.tex", def->name, f);
+            if (!fx_sprite_path(i, f, path, sizeof path))
+                continue;
             int64_t n = 0;
             uint8_t *data = files_read(path, &n);
-            if (!data)
+            if (!data) {
+                if (!warned[i]) {
+                    fprintf(stderr, "render: fx sprite %s missing, not drawn\n", path);
+                    warned[i] = 1;
+                }
                 continue;
+            }
             fx_frames[i][f] = bast_tex_from_memory(data, n);
             free(data);
             if (!fx_frames[i][f]) {
