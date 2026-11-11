@@ -144,6 +144,11 @@ static void t_restart(void)
     gs.pickups[0].taken = 1;
     for (int i = 0; i < 30; i++)
         game_tic(&gs, &NONE);
+    /* #142: the taken Fish Snack is not drawn while dead ... */
+    render_thing things[16];
+    int n = items_render_things(&gs, things, 16);
+    for (int i = 0; i < n; i++)
+        assert(things[i].type != BAST_ENT_FISH_SNACK);
     kill(&gs);
     for (int i = 0; i < DEATH_VIEW_TICS; i++)
         game_tic(&gs, &NONE);
@@ -157,6 +162,12 @@ static void t_restart(void)
         assert(p->weapons.ammo[i] == in.ammo[i]);
     assert(p->keys == 0 && p->catnip_tics == 0 && p->catseye_tics == 0 && !p->ninth_life);
     assert(gs.tic == 0 && gs.items_got == 0 && !gs.pickups[0].taken);
+    /* ... and lies in the world again after the restart. */
+    n = items_render_things(&gs, things, 16);
+    int snacks = 0;
+    for (int i = 0; i < n; i++)
+        snacks += things[i].type == BAST_ENT_FISH_SNACK && things[i].x == FX(6) + HALF;
+    assert(snacks == 1);
     assert(gs.things.kills == 0);
     /* The snapshot survives the restart, for the next death. */
     assert(memcmp(&gs.entry, &in, sizeof in) == 0);
