@@ -1,0 +1,18 @@
+# merged 2ac612d + origin/main 35b045c, sh tools/build_assets.sh
+== python3 tools/palette.py
+== python3 tools/colormap.py
+== sh tools/build.d/20-texgen.sh
+== sh tools/build.d/30-sfx.sh
+== sh tools/build.d/40-fx.sh
+== sh tools/build.d/45-sprites.sh
+sprites: 1 sprite(s) in assets/gen/sprites
+== sh tools/build.d/50-gibs.sh
+gibs: 1 animation(s), 8 frames in assets/gen/gibs
+== sh tools/build.d/60-sprites.sh
+sprites: 0 sprite(s), 0 frames in assets/gen/sprites
+== python3 tools/palcheck.py assets/gen
+palcheck: OK, 70 file(s) checked
+$ ls assets/gen/sprites
+$ git show origin/main:tools/build.d/45-sprites.sh | grep rm
+tools/build.d/60-sprites.sh:9:rm -rf assets/gen/sprites
+tools/build.d/45-sprites.sh:7:rm -rf assets/gen/sprites
