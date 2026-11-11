@@ -1,0 +1,12 @@
+{
+  "_doc": "Papyrus story panel (story.md, hud.md Flow; text box 300x168 at x 10-309, y 36-203 per the #102 decision). tools/panels.py reads it. Screen px, palette entry names / ramp indices.",
+  "size": [320, 240],
+  "wall": {"ramp": "sand", "base": 4, "lit": 6, "shade": 2, "joint": 1, "block": [48, 24], "seed": 7},
+  "sheet": {"ramp": "sand", "base": 12, "box": [5, 20, 314, 219], "strip": [6, 11], "fibres": 90,
+            "edge": [8, 10, 11], "seed": 1936},
+  "rods": {"ramp": "brown", "y": [10, 214], "x": [8, 311], "seed": 3,
+           "shades": [14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3], "grain": 18,
+           "bands": [18, 300], "band_shades": [11, 10, 10, 9, 8, 8, 7, 6, 5, 4, 3, 3],
+           "clamps": [56, 256]},
+  "rivets": [[2, 2], [314, 2], [2, 234], [314, 234]]
+}
