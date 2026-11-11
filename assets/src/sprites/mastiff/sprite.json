@@ -7,6 +7,8 @@
     "MastChromeDark": "steel",
     "MastGray": "gray",
     "MastTread": "gray",
+    "MastEar": "gray",
+    "MastPod": "gray",
     "MastMissile": "red",
     "MastEye": "fb_red",
     "MastGlow": "fb_red"

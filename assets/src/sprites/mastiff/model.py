@@ -51,6 +51,8 @@ MATS = {
     "MastChromeDark": (0.52, 0.58, 0.66),  # panel seams, lid frames: mid steel
     "MastGray": (0.80, 0.80, 0.79),        # pod housings, jowls, joints
     "MastTread": (0.56, 0.55, 0.55),       # track belts, nose: low gray
+    "MastEar": (0.68, 0.67, 0.66),         # floppy ears: mid gray, apart from steel chest
+    "MastPod": (0.60, 0.60, 0.60),         # pod housings: darker than steel walls
     "MastMissile": (0.92, 0.30, 0.24),     # missile noses (unlit wind-up f0)
     "MastEye": (1.00, 0.13, 0.13),         # fb_red visor eye and pod lights
     "MastGlow": (1.00, 0.13, 0.13),        # fb_red missile glow (wind-up f1, attack)
@@ -82,7 +84,7 @@ verts, faces, face_mat, vgroup = [], [], [], []
 
 # Everything (vertices and bone pivots) moves SHIFT toward +Y (back) so the
 # head and the opened hatches fit the 80 px canvas (+-0.625 u) in side views.
-SHIFT = 0.04
+SHIFT = 0.06
 
 
 def add(vs, fs, mat, bone):
@@ -109,6 +111,20 @@ def prism_y(prof, y0, y1, mat, bone, back=None):
         [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)], mat, bone)
 
 
+def frustum_y(prof0, y0, prof1, y1, mat, bone):
+    """Convex profile prof0 [(x, z)] at y0 tapering to prof1 (same vertex
+    count, a scaled copy) at y1: a bevelled cap whose slanted rim faces
+    catch the key light differently on each side."""
+    n = len(prof0)
+    vs = [(x, y0, z) for x, z in prof0] + [(x, y1, z) for x, z in prof1]
+    add(vs, [tuple(range(n)), tuple(range(2 * n - 1, n - 1, -1))] +
+        [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)], mat, bone)
+
+
+def scaled(prof, cx, cz, kx, kz):
+    return [(cx + (x - cx) * kx, cz + (z - cz) * kz) for x, z in prof]
+
+
 def prism_x(prof, x0, x1, mat, bone):
     """Convex profile [(y, z)] extruded from x0 to x1."""
     n = len(prof)
@@ -125,9 +141,9 @@ def wheel(x0, x1, y, z, r, mat, bone, seg=8):
 
 # Pivots (bone heads), before SHIFT.
 TORSO = (0.0, 0.0, 0.40)
-NECK = (0.0, -0.24, 0.62)
-HINGE = (0.0, -0.36, 0.555)
-EYE = (0.0, -0.36, 0.66)
+NECK = (0.0, -0.24, 0.56)
+HINGE = (0.0, -0.42, 0.46)
+EYE = (0.0, -0.44, 0.63)
 HIP = {1: (0.215, 0.0, 0.40), -1: (-0.215, 0.0, 0.40)}
 ANKLE = {1: (0.25, 0.0, 0.16), -1: (-0.25, 0.0, 0.16)}
 POD = {1: (0.36, 0.0, 0.62), -1: (-0.36, 0.0, 0.62)}
@@ -157,10 +173,27 @@ for s in (1, -1):
     box(s * 0.215 - 0.035, s * 0.215 + 0.035, -0.04, 0.04, 0.24, 0.42, "MastChrome", side(s, "leg"))
 
 # Hull: gray belly armour, chamfered chrome barrel chest above it.
-prism_y([(-0.21, 0.32), (0.21, 0.32), (0.25, 0.38), (0.25, 0.50), (-0.25, 0.50),
-         (-0.25, 0.38)], -0.24, 0.22, "MastGray", "torso")
-prism_y([(-0.22, 0.46), (0.22, 0.46), (0.30, 0.56), (0.29, 0.74), (0.17, 0.84),
-         (-0.17, 0.84), (-0.29, 0.74), (-0.30, 0.56)], -0.27, 0.24, "MastChrome", "torso")
+BELLY = [(-0.21, 0.32), (0.21, 0.32), (0.25, 0.38), (0.25, 0.50), (-0.25, 0.50),
+         (-0.25, 0.38)]
+HULL = [(-0.22, 0.46), (0.22, 0.46), (0.30, 0.56), (0.29, 0.74), (0.17, 0.84),
+        (-0.17, 0.84), (-0.29, 0.74), (-0.30, 0.56)]
+prism_y(BELLY, -0.24, 0.22, "MastPod", "torso")
+prism_y(HULL, -0.27, 0.24, "MastChrome", "torso")
+# Back plating: the hull's rear octagon is bevelled into a raised armour
+# plate (slanted rim faces: lit top-left, shaded bottom-right), crossed by
+# two horizontal plate seams and a raised spine ridge; the belly gets a
+# bevelled back plate with a dark radiator grille.
+frustum_y(HULL, 0.24, scaled(HULL, 0.0, 0.65, 0.80, 0.74), 0.30, "MastChrome", "torso")
+for z in (0.60, 0.71):
+    box(-0.235, 0.235, 0.24, 0.305, z - 0.012, z + 0.012, "MastChromeDark", "torso")
+prism_y([(-0.04, 0.50), (0.04, 0.50), (0.05, 0.80), (0.0, 0.83), (-0.05, 0.80)],
+        0.25, 0.34, "MastChromeDark", "torso")                              # spine ridge
+prism_y([(-0.02, 0.52), (0.02, 0.52), (0.02, 0.78), (-0.02, 0.78)],
+        0.33, 0.345, "MastChrome", "torso")                                 # ridge crest
+frustum_y(BELLY, 0.22, scaled(BELLY, 0.0, 0.41, 0.82, 0.70), 0.27, "MastPod", "torso")
+box(-0.15, 0.15, 0.26, 0.28, 0.36, 0.46, "MastTread", "torso")             # grille
+for z in (0.38, 0.41, 0.44):
+    box(-0.14, 0.14, 0.27, 0.29, z - 0.006, z + 0.006, "MastChromeDark", "torso")
 # Chest plate seam and a centre keel: dark steel bands just proud of the hull.
 prism_y([(-0.04, 0.48), (0.04, 0.48), (0.05, 0.84), (-0.05, 0.84)],
         -0.285, 0.0, "MastChromeDark", "torso")
@@ -168,39 +201,46 @@ box(-0.31, 0.31, -0.20, -0.16, 0.555, 0.75, "MastChromeDark", "torso")    # shou
 box(-0.31, 0.31, 0.10, 0.14, 0.555, 0.75, "MastChromeDark", "torso")      # rear rib
 # Back: twin exhaust stacks.
 for x in (-0.10, 0.10):
-    box(x - 0.035, x + 0.035, 0.16, 0.23, 0.80, 0.90, "MastChromeDark", "torso")
+    box(x - 0.035, x + 0.035, 0.18, 0.27, 0.80, 0.90, "MastChromeDark", "torso")
 
-# Head: blocky chrome skull, flat brow, short square muzzle with a gray
-# nose pad, heavy gray jowls and floppy ears hanging either side.
-prism_y([(-0.12, 0.54), (0.12, 0.54), (0.145, 0.60), (0.13, 0.73), (0.08, 0.77),
-         (-0.08, 0.77), (-0.13, 0.73), (-0.145, 0.60)], -0.42, -0.20, "MastChrome", "head")
-box(-0.135, 0.135, -0.435, -0.38, 0.64, 0.70, "MastChromeDark", "head")   # visor brow
-prism_y([(-0.09, 0.53), (0.09, 0.53), (0.10, 0.60), (0.08, 0.635), (-0.08, 0.635),
-         (-0.10, 0.60)], -0.53, -0.40, "MastChrome", "head")               # muzzle
-box(-0.06, 0.06, -0.55, -0.50, 0.59, 0.645, "MastTread", "head")         # nose pad
+# Head: the focal mass. A broad, low-slung chrome skull hanging in front of
+# the chest below the pod line, a long square muzzle with a dark nose pad,
+# heavy gray jowls dropping below the jaw line and floppy mid-gray ears that
+# hang outside the skull outline.
+prism_y([(-0.14, 0.46), (0.14, 0.46), (0.17, 0.53), (0.16, 0.66), (0.10, 0.72),
+         (-0.10, 0.72), (-0.16, 0.66), (-0.17, 0.53)], -0.46, -0.22, "MastChrome", "head")
+box(-0.16, 0.16, -0.475, -0.42, 0.60, 0.665, "MastChromeDark", "head")    # visor brow
+prism_y([(-0.10, 0.47), (0.10, 0.47), (0.115, 0.54), (0.09, 0.585), (-0.09, 0.585),
+         (-0.115, 0.54)], -0.60, -0.44, "MastChrome", "head")              # muzzle
+box(-0.07, 0.07, -0.625, -0.585, 0.525, 0.59, "MastTread", "head")        # nose pad
+box(-0.012, 0.012, -0.632, -0.62, 0.53, 0.58, "MastChromeDark", "head")   # nostril split
 for s in (1, -1):
-    box(min(s * 0.075, s * 0.15), max(s * 0.075, s * 0.15), -0.50, -0.34, 0.47, 0.58,
-        "MastGray", "head")                                               # jowl
-    # Floppy ear: a thick triangular flap hanging down the side of the skull.
-    prism_x([(-0.37, 0.77), (-0.22, 0.77), (-0.30, 0.56)],
-            min(s * 0.14, s * 0.185), max(s * 0.14, s * 0.185), "MastGray", "head")
+    # Jowl: side profile drops below the jaw and sags back toward the neck.
+    prism_x([(-0.585, 0.49), (-0.36, 0.49), (-0.36, 0.42), (-0.44, 0.355), (-0.55, 0.37)],
+            min(s * 0.055, s * 0.19), max(s * 0.055, s * 0.19), "MastGray", "head")
+    # Floppy ear: a thick flap hanging from the top of the skull, outside it.
+    prism_x([(-0.40, 0.73), (-0.26, 0.73), (-0.29, 0.50), (-0.35, 0.47)],
+            min(s * 0.17, s * 0.235), max(s * 0.17, s * 0.235), "MastEar", "head")
 # Lower jaw (hinged): gray slab with a chrome lip.
-box(-0.085, 0.085, -0.52, -0.36, 0.47, 0.53, "MastGray", "jaw")
-box(-0.07, 0.07, -0.525, -0.505, 0.53, 0.545, "MastChrome", "jaw")
+box(-0.09, 0.09, -0.58, -0.40, 0.40, 0.47, "MastGray", "jaw")
+box(-0.075, 0.075, -0.588, -0.565, 0.47, 0.485, "MastChrome", "jaw")
 # One fullbright visor eye set into the brow.
-box(-0.09, 0.09, -0.442, -0.43, 0.655, 0.685, "MastEye", "eye")
+box(-0.11, 0.11, -0.482, -0.47, 0.615, 0.65, "MastEye", "eye")
 
 # Shoulder missile pods.
 for s in (1, -1):
     lo, hi = min(s * 0.27, s * 0.45), max(s * 0.27, s * 0.45)
     pod = side(s, "pod")
     # Housing, steel saddle under it, side vents.
-    box(lo, hi, -0.22, 0.20, 0.60, 0.96, "MastGray", pod)
+    box(lo, hi, -0.22, 0.20, 0.60, 0.96, "MastPod", pod)
     box(lo + 0.01, hi - 0.01, -0.18, 0.16, 0.56, 0.60, "MastChromeDark", pod)
     box(lo - 0.006 if s < 0 else hi, hi + 0.006 if s > 0 else lo, -0.10, 0.10, 0.70, 0.73,
         "MastChromeDark", pod)
     box(lo - 0.006 if s < 0 else hi, hi + 0.006 if s > 0 else lo, -0.10, 0.10, 0.78, 0.81,
         "MastChromeDark", pod)
+    # Rear service hatch: a dark steel frame and a chrome panel on the back.
+    box(lo + 0.025, hi - 0.025, 0.20, 0.215, 0.66, 0.90, "MastChromeDark", pod)
+    box(lo + 0.045, hi - 0.045, 0.21, 0.225, 0.68, 0.88, "MastChrome", pod)
     # Four missile noses (2x2) in the front face, hidden by the closed hatch.
     for x in (s * 0.315, s * 0.405):
         for z in (0.68, 0.87):
