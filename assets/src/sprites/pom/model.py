@@ -150,11 +150,11 @@ def prism(tri, y0, y1, mat, bone):
 # Pivots (bone heads).
 BALL = (0.0, 0.02, 0.335)            # fur ball centre (the ruff bone scales about it)
 FACE = (0.0, -0.17, 0.42)
-SHOULDER_R = (-0.20, -0.04, 0.33)   # cannon arm (the dog's right is world -X)
+SHOULDER_R = (-0.22, -0.06, 0.28)   # cannon arm (the dog's right is world -X)
 SHOULDER_L = (0.20, -0.10, 0.30)
 FEET = {"leg_l": (0.08, -0.04, 0.08), "leg_r": (-0.08, -0.04, 0.08)}
 TAIL = (0.0, 0.20, 0.52)
-CAN_X, CAN_Z = -0.26, 0.31         # cannon axis
+CAN_X, CAN_Z = -0.30, 0.25         # cannon axis
 
 # The fur ball: one big tufted ellipsoid, a cream chest ruff in front.
 ellipsoid(BALL, (0.285, 0.25, 0.285), "PomFur", "ruff", seg=14, rings=8, tuft=0.12)
@@ -177,20 +177,21 @@ for s, bone in ((1, "ear_l"), (-1, "ear_r")):
           "PomFurDark", bone)
 # Left paw: a small fur stub on the front.
 ellipsoid((0.17, -0.20, 0.26), (0.05, 0.05, 0.045), "PomFurDark", "arm_l", seg=6, rings=4)
-# Right arm: fur cuff, then the plasma cannon (thin, along -Y).
-ellipsoid((-0.24, -0.10, 0.31), (0.065, 0.075, 0.07), "PomFur", "arm_r", seg=8, rings=5, tuft=0.12)
-cylinder(CAN_X, CAN_Z, -0.28, 0.02, 0.040, "PomCannon", "arm_r", seg=6)       # barrel shell
-cylinder(CAN_X, CAN_Z, -0.30, -0.27, 0.048, "PomSteel", "arm_r", seg=6)       # muzzle ring
-cylinder(CAN_X, CAN_Z, -0.04, 0.0, 0.050, "PomSteel", "arm_r", seg=6)         # rear band
-cylinder(CAN_X, CAN_Z, 0.02, 0.05, 0.055, "PomCannon", "arm_r", seg=6)        # breech cap
-box(CAN_X - 0.012, CAN_X + 0.012, -0.24, -0.07, CAN_Z + 0.036, CAN_Z + 0.050,
+# Right arm: fur cuff, then the plasma cannon (thin, along -Y), slung low
+# on the outside of the ball so the barrel clears the fur in the side views.
+ellipsoid((-0.25, -0.10, 0.25), (0.07, 0.08, 0.07), "PomFur", "arm_r", seg=8, rings=5, tuft=0.12)
+cylinder(CAN_X, CAN_Z, -0.25, 0.10, 0.036, "PomCannon", "arm_r", seg=6)       # barrel shell
+cylinder(CAN_X, CAN_Z, -0.27, -0.24, 0.046, "PomSteel", "arm_r", seg=6)       # muzzle ring
+cylinder(CAN_X, CAN_Z, 0.02, 0.06, 0.046, "PomSteel", "arm_r", seg=6)         # rear band
+cylinder(CAN_X, CAN_Z, 0.10, 0.13, 0.052, "PomCannon", "arm_r", seg=6)        # breech cap
+box(CAN_X - 0.012, CAN_X + 0.012, -0.21, -0.03, CAN_Z + 0.032, CAN_Z + 0.046,
     "PomCoil", "arm_r")                                                      # coil window
-box(CAN_X - 0.015, CAN_X + 0.015, -0.12, -0.08, CAN_Z - 0.10, CAN_Z - 0.03,
+box(CAN_X - 0.015, CAN_X + 0.015, -0.07, -0.03, CAN_Z - 0.10, CAN_Z - 0.03,
     "PomSteel", "arm_r")                                                     # grip
 # Charge glow: muzzle disc and a strip over the coil window. Shrunk into the
 # barrel (glow bone scale 0.01) except on windup f1 and the attack shot.
-cylinder(CAN_X, CAN_Z, -0.31, -0.29, 0.034, "PomGlow", "glow", seg=6)
-box(CAN_X - 0.014, CAN_X + 0.014, -0.25, -0.06, CAN_Z + 0.040, CAN_Z + 0.056, "PomGlow", "glow")
+cylinder(CAN_X, CAN_Z, -0.28, -0.26, 0.032, "PomGlow", "glow", seg=6)
+box(CAN_X - 0.014, CAN_X + 0.014, -0.22, -0.02, CAN_Z + 0.036, CAN_Z + 0.052, "PomGlow", "glow")
 
 mesh = bpy.data.meshes.new("Pom")
 mesh.from_pydata(verts, [], faces)
@@ -214,7 +215,7 @@ BONES = {  # name: (head, parent)
     "ear_l": ((0.10, -0.07, 0.56), "head"),
     "ear_r": ((-0.10, -0.07, 0.56), "head"),
     "arm_r": (SHOULDER_R, "body"),
-    "glow": ((CAN_X, -0.15, CAN_Z), "arm_r"),
+    "glow": ((CAN_X, -0.12, CAN_Z), "arm_r"),
     "arm_l": (SHOULDER_L, "body"),
     "tail": (TAIL, "body"),
 }
