@@ -1,9 +1,30 @@
 #!/usr/bin/env bash
 # Fake podman: ps lists $FIXTURES/ps.txt (exit ps-exit), run echoes run-output.txt and exits run-exit.
+# run also enforces the isolation contract: the only host paths are one rw run dir under $STATE/runs at
+# /work and one prompt file under $STATE/prompts at /prompt.md:ro. Violations go to $FIXTURES/violations.
 printf 'podman %s\n' "$*" >> "$FIXTURES/calls.log"
 case $1 in
   ps) cat "$FIXTURES/ps.txt" 2>/dev/null; exit "$(cat "$FIXTURES/ps-exit" 2>/dev/null || echo 0)" ;;
-  run) [[ -x $FIXTURES/agent.sh ]] && "$FIXTURES/agent.sh" "${@: -2:1}"
-       cat "$FIXTURES/run-output.txt" 2>/dev/null; exit "$(cat "$FIXTURES/run-exit" 2>/dev/null || echo 0)" ;;
+  run)
+    args=("$@") mounts=() work='' prompt=''
+    for ((i = 1; i < ${#args[@]}; i++)); do
+      case ${args[i]} in
+        -v | --volume | --mount) mounts+=("${args[i+1]}") ;;
+        -v=* | --volume=* | --mount=* | --privileged* | --pid* | --network=host | --net=host | --ipc* | --device*) mounts+=("${args[i]}") ;;
+      esac
+    done
+    for m in "${mounts[@]}"; do
+      if [[ $m == "$STATE"/runs/*:/work && -z $work ]]; then work=${m%:/work}
+      elif [[ $m == "$STATE"/prompts/*:/prompt.md:ro && -z $prompt ]]; then prompt=${m%:/prompt.md:ro}
+      else echo "bad mount: $m" >> "$FIXTURES/violations"; fi
+    done
+    [[ -n $work && ${work#"$STATE"/runs/} != */* && -d $work && ! -L $work ]] || echo "bad run dir: '$work'" >> "$FIXTURES/violations"
+    [[ -n $prompt && -f $prompt && ! -L $prompt ]] || echo "bad prompt: '$prompt'" >> "$FIXTURES/violations"
+    [[ ${args[*]: -2} == "/work /prompt.md" ]] || echo "bad command: ${args[*]: -2}" >> "$FIXTURES/violations"
+    [[ -s $FIXTURES/violations ]] && exit 125
+    [[ -n $prompt ]] && cp "$prompt" "$FIXTURES/last-prompt"
+    # the fake agent gets only the host paths its container could reach
+    [[ -x $FIXTURES/agent.sh ]] && MOUNTED="$work $prompt" "$FIXTURES/agent.sh" "$work"
+    cat "$FIXTURES/run-output.txt" 2>/dev/null; exit "$(cat "$FIXTURES/run-exit" 2>/dev/null || echo 0)" ;;
 esac
 exit 0

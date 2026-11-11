@@ -2,18 +2,20 @@
 # Host-side loop that runs the agent team. See docs/superpowers/specs/*-autonomous-agent-team-design.md.
 # ORCH_LIB=1: define functions only. ORCH_ONCE=1: one iteration, then wait for children.
 
-: "${WORK:=$HOME/vibe-agents/work}" "${LOGS:=$HOME/vibe-agents/logs}" "${STATE:=$HOME/vibe-agents/state}"
+: "${LOGS:=$HOME/vibe-agents/logs}" "${STATE:=$HOME/vibe-agents/state}"
 : "${REPO:=malespiaut/vibe-shooter-3d-II}" "${OWNER:=malespiaut}" "${IMAGE:=vibe-agents}"
 : "${MAX_DEVS:=4}" "${AGENT_TIMEOUT:=90m}" "${POLL:=60}" "${PLAYTEST_EVERY:=5}" "${STALE_SECS:=7200}"
 : "${DESIGNER_COOLDOWN:=1800}" "${MAX_FIX_CYCLES:=5}"
 RC_INFRA=69  # setup/infrastructure error: not the issue's fault, never counted as a failure
 : "${MIRROR:=$STATE/mirror}"  # host-private: never mounted, so agents can't plant hooks or config in it
+RUNS=$STATE/runs PROMPTS=$STATE/prompts
 : "${GH_TOKEN_FILE:=$HOME/vibe-agents/gh-token}" "${CLAUDE_TOKEN_FILE:=$HOME/vibe-agents/claude-token}"
 
 # stderr, so functions whose stdout is data stay clean
 log() { mkdir -p "$LOGS"; printf '%s %s\n' "$(date -Is)" "$*" | tee -a "$LOGS/orchestrator.log" >&2; }
-# Security: everything under $WORK is agent-writable. The host runs git there only in mkrun,
-# on a directory it has just created, before any container sees it.
+# Security: $STATE is never mounted. Each container mounts only its own run dir ($RUNS/<name>.XXXXXX,
+# rw) and its own prompt file (ro). The host runs git in a run dir only in mkrun, before any container
+# sees it; after the container exits it only does rm -rf -- on it.
 mirror() { git -C "$MIRROR" "$@"; }
 running_names() { podman ps --filter label=vibe=1 --format '{{.Names}}'; }
 # podman down: answer "running" so nothing is started or cleaned up on top of a live container
@@ -128,13 +130,15 @@ episode_done() {
 # ---- running agents ----
 
 run_agent() {
-  local role=$1 name=$2 wd=$3 ctx=$4 prompt=$WORK/.prompts/$2.md logf rc key=()
+  local role=$1 name=$2 wd=$3 ctx=$4 prompt logf rc key=()
   if running "vibe-$name"; then log "vibe-$name already running"; return "$RC_INFRA"; fi
   [[ -r $GH_TOKEN_FILE && -r $CLAUDE_TOKEN_FILE ]] || { log "token files missing"; return "$RC_INFRA"; }
   [[ -r $STATE/roles/common.md && -r $STATE/roles/$role.md ]] || { log "missing role $role"; return "$RC_INFRA"; }
-  mkdir -p "$WORK/.prompts" "$LOGS"
-  cat "$STATE/roles/common.md" "$STATE/roles/$role.md" > "$prompt" || return "$RC_INFRA"
-  printf '\n%s\n' "$ctx" >> "$prompt"
+  mkdir -p "$LOGS" "$PROMPTS" || return "$RC_INFRA"
+  # fresh, unpredictable name: never a fixed path that something could pre-create
+  prompt=$(mktemp --suffix=.md "$PROMPTS/$name-$(date +%Y%m%dT%H%M%S).XXXXXX") || return "$RC_INFRA"
+  { cat "$STATE/roles/common.md" "$STATE/roles/$role.md" && printf '\n%s\n' "$ctx"; } > "$prompt" ||
+    { rm -f -- "$prompt"; return "$RC_INFRA"; }
   logf=$LOGS/$name-$(date +%Y%m%dT%H%M%S)-$BASHPID.jsonl  # pid: two runs in one second must not share a log
   [[ -n ${ANTHROPIC_API_KEY:-} ]] && key=(-e ANTHROPIC_API_KEY)
   podman rm "vibe-$name" >/dev/null 2>&1  # a stopped leftover would block --name; never -f
@@ -142,9 +146,10 @@ run_agent() {
   GH_TOKEN=$(<"$GH_TOKEN_FILE") CLAUDE_CODE_OAUTH_TOKEN=$(<"$CLAUDE_TOKEN_FILE") \
   GIT_AUTHOR_NAME=$(git config user.name) GIT_AUTHOR_EMAIL=$(git config user.email) \
     timeout -k 60 "$AGENT_TIMEOUT" podman run --rm --name "vibe-$name" --label vibe=1 --userns=keep-id \
-      -v "$WORK:$WORK" -e HOME=/tmp/agent-home -e GH_TOKEN -e CLAUDE_CODE_OAUTH_TOKEN "${key[@]}" \
-      -e GIT_AUTHOR_NAME -e GIT_AUTHOR_EMAIL "$IMAGE" "$wd" "$prompt" </dev/null >>"$logf" 2>&1
+      -v "$wd:/work" -v "$prompt:/prompt.md:ro" -e HOME=/tmp/agent-home -e GH_TOKEN -e CLAUDE_CODE_OAUTH_TOKEN "${key[@]}" \
+      -e GIT_AUTHOR_NAME -e GIT_AUTHOR_EMAIL "$IMAGE" /work /prompt.md </dev/null >>"$logf" 2>&1
   rc=$?
+  rm -f -- "$prompt"
   case $rc in
     125 | 126 | 127) rc=$RC_INFRA ;;  # podman itself failed (no image, name clash): no agent ran
     0) ;;
@@ -207,47 +212,67 @@ finish_dev() {
   esac
 }
 
-# mkrun <dir> <checkout args...>: independent clone of the mirror (no hardlinks: an agent must not
-# be able to corrupt mirror objects), pointed at GitHub, checked out before the agent starts
+# mkrun <name> <checkout args...>: prints a new run dir $RUNS/<name>.XXXXXX holding an independent
+# clone of the mirror (no hardlinks: an agent must not be able to corrupt mirror objects), pointed at
+# GitHub and checked out, all before any container sees it
 mkrun() {
-  local d=$1; shift
-  rm -rf "$d"
+  local name=$1 d; shift
+  mkdir -p "$RUNS" && d=$(mktemp -d "$RUNS/$name.XXXXXX") || return 1
   if ! { git clone -q -n --no-hardlinks "$MIRROR" "$d" >/dev/null 2>&1 &&
           git -C "$d" remote set-url origin "https://github.com/$REPO.git" &&
           git -C "$d" checkout -q "$@" >/dev/null 2>&1; }; then
-    rm -rf "$d"; return 1
+    rm -rf -- "$d"; return 1
   fi
+  echo "$d"
+}
+# rmrun <dir> <container>: whatever the outcome. A container that outlived its timeout keeps its dir
+# until the next orchestrator start (clean_orphans).
+rmrun() {
+  if running "vibe-$2"; then log "vibe-$2 still running: leaving $1"; return; fi
+  rm -rf -- "$1"
+}
+# at startup: drop run dirs and prompts left by a killed orchestrator, unless their container still runs
+clean_orphans() {
+  local p n
+  for p in "$RUNS"/* "$PROMPTS"/*; do
+    [[ -e $p || -L $p ]] || continue
+    n=${p##*/}
+    if [[ $p == "$PROMPTS"/* ]]; then n=${n%-*}; else n=${n%.*}; fi  # dev-1-<ts>.X.md / dev-1.X
+    running "vibe-$n" && continue
+    [[ $n == review-* ]] && running "vibe-art-${n#review-}" && continue  # art and review share a dir
+    rm -rf -- "$p" && log "removed orphan $p"
+  done
 }
 pr_head() { gh pr view "$1" --repo "$REPO" --json headRefOid,headRefName,labels \
   --jq '"\(.headRefOid) \(.headRefName) \([.labels[].name] | join(","))"'; }
 
 dispatch_dev() {
-  local n=$1 wt=$WORK/wt/issue-$1
+  local n=$1 wt
   claim "$n" || return
-  if ! mkrun "$wt" --no-track -B "issue-$n" origin/main; then
+  if ! wt=$(mkrun "dev-$n" --no-track -B "issue-$n" origin/main); then
     log "#$n: run dir setup failed, dropping claim"
     gh issue edit "$n" --repo "$REPO" --remove-label in-progress >/dev/null; return
   fi
   (
     run_agent developer "dev-$n" "$wt" "Your issue is #$n in $REPO. You are on branch issue-$n.
 Open a PR from issue-$n that closes #$n."
-    rc=$?; rm -rf "$wt"; finish_dev "$n" "$rc"
+    rc=$?; rmrun "$wt" "dev-$n"; finish_dev "$n" "$rc"
   ) &
 }
 
 dispatch_fix() {
-  local n=$1 wt=$WORK/wt/pr-$1 sha br labels c
+  local n=$1 wt sha br labels c
   c=$(($(cat "$STATE/cycles/$n" 2>/dev/null || echo 0) + 1))
   if ((c > MAX_FIX_CYCLES)); then pr_stuck "$n" "$MAX_FIX_CYCLES review/fix cycles without approval"; return; fi
   read -r sha br labels < <(pr_head "$n")
-  if [[ -z $br ]] || ! mirror fetch -q --prune origin || ! mkrun "$wt" --track -B "$br" "origin/$br"; then
+  if [[ -z $br ]] || ! mirror fetch -q --prune origin || ! wt=$(mkrun "fix-$n" --track -B "$br" "origin/$br"); then
     log "fix #$n: checkout failed"; return
   fi
   mkdir -p "$STATE/cycles" "$STATE/fixed"
   (
     run_agent developer-fix "fix-$n" "$wt" "Your PR is #$n in $REPO, on branch $br tracking origin/$br.
 Push with: git push origin HEAD:$br"
-    rc=$?; rm -rf "$wt"
+    rc=$?; rmrun "$wt" "fix-$n"
     # a usage limit or setup error means no fix ran: don't spend a cycle
     ((rc != 75 && rc != RC_INFRA)) && echo "$c" > "$STATE/cycles/$n"
     if ((rc == 0)); then
@@ -260,9 +285,9 @@ Push with: git push origin HEAD:$br"
 }
 
 dispatch_review() {
-  local n=$1 wt=$WORK/wt/pr-$1 sha br labels art=
+  local n=$1 wt sha br labels art=
   read -r sha br labels < <(pr_head "$n")
-  if [[ -z $br ]] || ! mirror fetch -q --prune origin || ! mkrun "$wt" --track -B "$br" "origin/$br"; then
+  if [[ -z $br ]] || ! mirror fetch -q --prune origin || ! wt=$(mkrun "review-$n" --track -B "$br" "origin/$br"); then
     log "review #$n: checkout failed"; return
   fi
   [[ ,$labels, == *,art,* || ,$labels, == *,render,* ]] && art=1
@@ -270,11 +295,11 @@ dispatch_review() {
     ctx="Your PR is #$n in $REPO, head $sha, on branch $br tracking origin/$br. Push with: git push origin HEAD:$br"
     if [[ $art ]]; then
       run_agent art-director "art-$n" "$wt" "$ctx"
-      (($? == 75)) && { backoff; rm -rf "$wt"; exit; }
+      (($? == 75)) && { backoff; rmrun "$wt" "art-$n"; exit; }
       ctx+=$'\nThis PR is labelled art or render: merge it only if it has the label art:approved.'
     fi
     run_agent reviewer "review-$n" "$wt" "$ctx"
-    rc=$?; rm -rf "$wt"
+    rc=$?; rmrun "$wt" "review-$n"
     ((rc == 0)) && { mkdir -p "$STATE/reviewed"; echo "$sha" > "$STATE/reviewed/$n"; }
     finish_pr "$n" "review-$n" "$rc"
   ) &
@@ -282,11 +307,11 @@ dispatch_review() {
 
 # designer / playtester: fresh clone, detached at origin/main
 dispatch_main() { # dispatch_main <role> <name> <context> [on-success-cmd...]
-  local role=$1 name=$2 ctx=$3 wt=$WORK/wt/$2
+  local role=$1 name=$2 ctx=$3 wt
   shift 3
   cooling "$name" && return
-  mkrun "$wt" --detach origin/main || { log "$name: run dir setup failed"; return; }
-  ( run_agent "$role" "$name" "$wt" "$ctx"; rc=$?; rm -rf "$wt"; finish_run "$rc" "$name" >/dev/null; ((rc == 0)) && "$@" ) &
+  wt=$(mkrun "$name" --detach origin/main) || { log "$name: run dir setup failed"; return; }
+  ( run_agent "$role" "$name" "$wt" "$ctx"; rc=$?; rmrun "$wt" "$name"; finish_run "$rc" "$name" >/dev/null; ((rc == 0)) && "$@" ) &
 }
 
 mark_playtested() { echo "$1" > "$STATE/last-playtest-sha"; }
@@ -296,6 +321,10 @@ sync_roles() {
   tmp=$(mktemp -d) || return
   if mirror archive main agents/roles 2>/dev/null | tar -x -C "$tmp" 2>/dev/null &&
      [[ -f $tmp/agents/roles/common.md ]]; then
+    if [[ -L $tmp/agents/roles || -n $(find "$tmp/agents/roles" -type l) ]]; then
+      log "sync_roles: agents/roles on main contains a symlink: keeping the old roles"
+      rm -rf -- "$tmp"; return
+    fi
     rm -rf "$STATE/roles.old"; [[ -d $STATE/roles ]] && mv "$STATE/roles" "$STATE/roles.old"
     mv "$tmp/agents/roles" "$STATE/roles"
   fi
@@ -376,8 +405,9 @@ loop_once() {
 }
 
 main_loop() {
-  mkdir -p "$WORK/wt" "$LOGS" "$STATE/reviewed" "$STATE/fixed"
+  mkdir -p "$LOGS" "$STATE/reviewed" "$STATE/fixed"
   log "orchestrator start (MAX_DEVS=$MAX_DEVS)"
+  clean_orphans
   while :; do
     loop_once
     [[ -n ${ORCH_ONCE:-} ]] && break
