@@ -1,6 +1,7 @@
 {
   "desc": "Mutt dying: a sagging mid whimper while its robot core winds down and crackles out with a last clunk.",
   "seed": 105,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

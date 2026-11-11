@@ -1,6 +1,7 @@
 {
   "desc": "Acid hiss with bubbling pops: stepping in toxic sludge.",
   "seed": 17,
+  "level_db": -21,
   "voices": [
     {
       "wave": "noise",

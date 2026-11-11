@@ -176,6 +176,8 @@ add_test(NAME bast_py
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_bast.py)
 add_test(NAME sfx_determinism
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sfx.py)
+add_test(NAME sfx_levels
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sfx_levels.py)
 add_test(NAME mkmap_py
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_mkmap.py)
 add_test(NAME quantize
@@ -197,7 +199,7 @@ add_test(NAME fonts
 add_test(NAME pak_py
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_pak.py)
 # Python tests load the libbast.so built here, not a stale one.
-set_tests_properties(palcheck bast_py sfx_determinism mkmap_py quantize editor_roundtrip
+set_tests_properties(palcheck bast_py sfx_determinism sfx_levels mkmap_py quantize editor_roundtrip
   texgen_tile editor_entities editor_launch gibs_determinism gibs_pixels fonts pak_py PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 

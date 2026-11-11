@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ctest `sfx_determinism`: tools/sfx.py renders every assets/src/sfx/*.json
 twice into separate directories; the .snd files must be byte-identical, load
-through libbast, and hit the loudness target. Also checks the SND wrapper in
+through libbast, and never exceed the peak limit (levels: test_sfx_levels.py). Also checks the SND wrapper in
 tools/bast.py and that bad parameter files are rejected. Plain asserts.
 """
 import filecmp
@@ -58,7 +58,7 @@ def test_determinism(d):
         assert filecmp.cmp(os.path.join(a, n), os.path.join(b, n), shallow=False), n
         s = bast.Snd.load(os.path.join(a, n))
         peak = max(abs(v - 256 if v > 127 else v) for v in s.samples)
-        assert peak == sfx.PEAK, (n, peak)
+        assert 0 < peak <= sfx.PEAK, (n, peak)
         # short effects; woofu_death is the one 2-3 s exception (audio.md /
         # issue #42: the boss death is the longest effect in the game)
         limit = 3 * 22050 if n == "woofu_death.snd" else 2 * 22050
@@ -79,7 +79,9 @@ def test_params_documented():
 def test_rejects(d):
     bad = os.path.join(d, "bad.json")
     for params in ({"voices": []}, {"voices": [{"wave": "sine"}]},
-                   {"voices": [{"wave": "square", "frq": 3}]}, {"volume": 1, "voices": []}):
+                   {"voices": [{"wave": "square", "frq": 3}]}, {"volume": 1, "voices": []},
+                   {"voices": [{"wave": "square"}]},
+                   {"level_db": 3, "voices": [{"wave": "square"}]}):
         with open(bad, "w") as f:
             json.dump(params, f)
         rc, log = run(bad, "-o", os.path.join(d, "bad"))

@@ -1,6 +1,7 @@
 {
   "desc": "Metallic double 'cha-chak' of a weapon being cocked, with a low confident blip.",
   "seed": 20,
+  "level_db": -21,
   "voices": [
     {
       "wave": "noise",

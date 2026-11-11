@@ -1,6 +1,7 @@
 {
   "desc": "Wet squelchy splat with a meaty low thud and a smaller second slap.",
   "seed": 41,
+  "level_db": -19,
   "voices": [
     {
       "wave": "noise",

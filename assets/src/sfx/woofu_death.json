@@ -1,6 +1,7 @@
 {
   "desc": "Woofu dies (longest effect): a huge wavering wail sinking for seconds, his anthem chime collapsing out of tune, the motor dying, then a last sarcophagus crash.",
   "seed": 96,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

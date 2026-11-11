@@ -1,6 +1,7 @@
 {
   "desc": "Plasma bolt splashing: a wet electric sizzle-pop with a short crackle.",
   "seed": 124,
+  "level_db": -18,
   "crush": 6,
   "voices": [
     {

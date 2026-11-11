@@ -1,6 +1,7 @@
 {
   "desc": "Shield swings aside and the shock baton crackles up: rising electric buzz with spitting crackle (0.42 s, under the 16-tic windup).",
   "seed": 83,
+  "level_db": -19,
   "voices": [
     {
       "wave": "noise",

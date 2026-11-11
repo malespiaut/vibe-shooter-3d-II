@@ -1,6 +1,7 @@
 {
   "desc": "Lance beam: a searing blast of sunlight, a hard zap that rings down through a buzzing tail.",
   "seed": 60,
+  "level_db": -17,
   "crush": 6,
   "voices": [
     {

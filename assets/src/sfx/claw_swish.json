@@ -1,6 +1,7 @@
 {
   "desc": "Fast airy paw swipe: a band of noise sweeping up and away, no impact.",
   "seed": 51,
+  "level_db": -19,
   "voices": [
     {
       "wave": "noise",

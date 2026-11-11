@@ -1,6 +1,7 @@
 {
   "desc": "Chomper jaws opening: a quick high yip into a metallic double snap, fast enough for its short wind-up.",
   "seed": 112,
+  "level_db": -19,
   "crush": 5,
   "voices": [
     {

@@ -1,6 +1,7 @@
 {
   "desc": "Shieldbearer dies: a yelp falling into a long whine, a baton fizzle, then the shield clattering down.",
   "seed": 86,
+  "level_db": -19,
   "voices": [
     {
       "wave": "saw",

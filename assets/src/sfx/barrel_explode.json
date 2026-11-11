@@ -1,6 +1,7 @@
 {
   "desc": "Big crunchy blast: sharp crack, roaring falling noise and a deep thump with a long rumble tail.",
   "seed": 18,
+  "level_db": -16,
   "crush": 6,
   "voices": [
     {

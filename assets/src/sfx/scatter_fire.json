@@ -1,6 +1,7 @@
 {
   "desc": "Hairball Scattergun: a fat chesty boom, a burst of fuzzy noise and a deep thump that rolls off.",
   "seed": 54,
+  "level_db": -17,
   "crush": 6,
   "voices": [
     {

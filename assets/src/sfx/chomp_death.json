@@ -1,6 +1,7 @@
 {
   "desc": "Chomper dying: a short shrill whine sagging away as its little motor sputters out.",
   "seed": 115,
+  "level_db": -19,
   "crush": 5,
   "voices": [
     {

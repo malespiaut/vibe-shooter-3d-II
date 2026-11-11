@@ -1,6 +1,7 @@
 {
   "desc": "Eye of Ra Lance spooling up: a rising shimmering whine that ends bright.",
   "seed": 59,
+  "level_db": -19,
   "voices": [
     {
       "wave": "saw",

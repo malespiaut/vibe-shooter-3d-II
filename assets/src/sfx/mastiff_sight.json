@@ -1,6 +1,7 @@
 {
   "desc": "Mastiff spots you: two huge deep crushed barks over a chugging tank-tread motor.",
   "seed": 71,
+  "level_db": -19,
   "voices": [
     {
       "wave": "saw",

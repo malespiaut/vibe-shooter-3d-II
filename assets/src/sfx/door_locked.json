@@ -1,6 +1,7 @@
 {
   "desc": "Two short harsh low buzzes, 'access denied'.",
   "seed": 13,
+  "level_db": -21,
   "crush": 5,
   "voices": [
     {

@@ -1,6 +1,7 @@
 {
   "desc": "Bone missile hits: a heavy crunchy blast with a very deep thump and rumbling crushed tail.",
   "seed": 74,
+  "level_db": -16,
   "crush": 5,
   "voices": [
     {

@@ -1,6 +1,7 @@
 {
   "desc": "Punchy 'ka-ching': thump plus bright major chord ring.",
   "seed": 34,
+  "level_db": -27,
   "voices": [
     {
       "wave": "noise",

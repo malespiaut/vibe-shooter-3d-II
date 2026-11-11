@@ -1,6 +1,7 @@
 {
   "desc": "Shock baton connects: a hard thwack and a spitting electric zap.",
   "seed": 84,
+  "level_db": -18,
   "voices": [
     {
       "wave": "noise",

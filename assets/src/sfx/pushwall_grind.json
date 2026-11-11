@@ -1,6 +1,7 @@
 {
   "desc": "Long stone-on-stone scrape: rough rumbling noise that judders, fades out.",
   "seed": 14,
+  "level_db": -21,
   "voices": [
     {
       "wave": "noise",

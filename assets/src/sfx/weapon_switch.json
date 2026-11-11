@@ -1,6 +1,7 @@
 {
   "desc": "Weapon going down and coming up: two quick dry clicks, the second higher.",
   "seed": 62,
+  "level_db": -19,
   "voices": [
     {
       "wave": "square",

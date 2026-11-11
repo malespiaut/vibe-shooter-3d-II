@@ -1,6 +1,7 @@
 {
   "desc": "Ankh Pistol: a bright energy zap falling in pitch over a short crack.",
   "seed": 53,
+  "level_db": -17,
   "crush": 6,
   "voices": [
     {

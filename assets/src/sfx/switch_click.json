@@ -1,6 +1,7 @@
 {
   "desc": "Crisp double mechanical click of a lever.",
   "seed": 15,
+  "level_db": -21,
   "voices": [
     {
       "wave": "noise",

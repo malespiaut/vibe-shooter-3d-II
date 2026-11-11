@@ -1,6 +1,7 @@
 {
   "desc": "Pomeranian hurt: an upper-mid indignant yelp, flipping through a crushed robot blip.",
   "seed": 125,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

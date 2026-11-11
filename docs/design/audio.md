@@ -35,6 +35,34 @@ seed. Output `assets/gen/sfx/<name>.snd`.
 
 Every enemy windup has a sound: the telegraph is audible as well as visible.
 
+### Mix levels
+
+The mix is baked into the files: each parameter file has `level_db`, the target RMS (whole file) in
+dBFS, taken from this table. `tools/sfx.py` scales the effect to that RMS, but never lets the peak
+exceed -1.2 dBFS (112 of 127); an effect that cannot reach its target without clipping is
+peak-limited and lands below it. The mixer has no per-sound volume: distance volume is the only
+runtime gain. `python3 tools/sfx.py --report assets/src/sfx/*.json` prints target, effective RMS
+and peak of every effect; ctest `sfx_levels` checks that every file matches this table and enforces
+the rules below.
+
+| Mix group | level_db | Effects |
+|---|---|---|
+| Explosions | -16 | `barrel_explode`, `scarab_explode`, `bone_explode`, `mortar_land`, `lid_blast` |
+| Player weapons | -17 | `claw_hit`, `pistol_fire`, `scatter_fire`, `repeater_fire`, `scarab_launch`, `lance_fire`, `howler_roar` |
+| Enemy attacks | -18 | `mutt_fire`, `chomp_bite`, `plasma_fire`, `plasma_hit`, `mortar_launch`, `bone_fire`, `shield_block`, `baton_hit`, `fan_fire` |
+| Enemy voices and telegraphs | -19 | `mutt_sight`, `mutt_windup`, `mutt_pain`, `mutt_death`, `chomp_sight`, `chomp_windup`, `chomp_pain`, `chomp_death`, `pom_sight`, `pom_windup`, `pom_pain`, `pom_death`, `dach_sight`, `reticle_beep`, `dach_pain`, `dach_death`, `mastiff_sight`, `mastiff_windup`, `mastiff_step`, `mastiff_pain`, `mastiff_death`, `shep_sight`, `shep_windup`, `shep_pain`, `shep_death`, `woofu_sight`, `pod_open`, `woofu_pain`, `woofu_death` |
+| Player body and handling | -19 | `claw_swish`, `scatter_pump`, `lance_charge`, `weapon_switch`, `player_pain`, `player_death`, `player_land`, `noway` |
+| Gore | -19 | `gib_splat` |
+| World mechanics | -21 | `door_open`, `door_close`, `door_locked`, `pushwall_grind`, `switch_click`, `exit_switch`, `sludge_sizzle` |
+| Pickups and rewards | -21 | `item_pickup`, `weapon_pickup`, `key_pickup`, `powerup_pickup`, `secret_found`, `ninth_life` |
+| UI | -27 | `menu_move`, `menu_select`, `tally_tick`, `tally_done` |
+
+Rules (asserted by `sfx_levels` on the effective levels): no peak above -1.2 dBFS; `barrel_explode`
+is the loudest World effect; `menu_move` and `tally_tick` sit at least 6 dB below `item_pickup`;
+every enemy windup is within 1 dB of the others (a telegraph is never easier to miss on a more
+dangerous enemy); an effect lands within 1 dB of its target unless it is peak-limited, and only
+Explosions may be peak-limited (`lid_blast` is: its long tail caps it near -17).
+
 ## Music
 
 An in-engine 4-channel pattern sequencer with synthesised instruments (square with duty, triangle,

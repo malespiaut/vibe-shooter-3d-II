@@ -1,6 +1,7 @@
 {
   "desc": "Tiny dry tick-blip for moving the menu cursor.",
   "seed": 31,
+  "level_db": -27,
   "voices": [
     {
       "wave": "square",

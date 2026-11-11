@@ -1,6 +1,7 @@
 {
   "desc": "Mortar shell landing: a short descending whistle into a heavy crunchy blast and rumble.",
   "seed": 134,
+  "level_db": -16,
   "crush": 6,
   "voices": [
     {

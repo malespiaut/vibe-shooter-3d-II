@@ -1,6 +1,7 @@
 {
   "desc": "Plasma bolt launch: a bright 'pew' zap dropping in pitch over a fizzy electric burst.",
   "seed": 123,
+  "level_db": -18,
   "crush": 5,
   "voices": [
     {

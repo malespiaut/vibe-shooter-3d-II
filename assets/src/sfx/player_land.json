@@ -1,6 +1,7 @@
 {
   "desc": "Soft padded landing: a low muffled thump with a little dust scuff.",
   "seed": 65,
+  "level_db": -19,
   "voices": [
     {
       "wave": "triangle",

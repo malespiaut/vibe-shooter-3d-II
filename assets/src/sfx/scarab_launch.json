@@ -1,6 +1,7 @@
 {
   "desc": "Scarab Launcher: a hollow thunk and a buzzing beetle-wing whoosh flying off.",
   "seed": 57,
+  "level_db": -17,
   "voices": [
     {
       "wave": "square",

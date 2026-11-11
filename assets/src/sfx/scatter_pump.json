@@ -1,6 +1,7 @@
 {
   "desc": "Pump action: a woody clack back, then a heavier clack forward.",
   "seed": 55,
+  "level_db": -19,
   "voices": [
     {
       "wave": "noise",

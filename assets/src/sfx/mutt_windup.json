@@ -1,6 +1,7 @@
 {
   "desc": "Mutt raising its rifle: a rising servo whine with a gear chatter, ending on a short lock-on blip.",
   "seed": 102,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

@@ -1,6 +1,7 @@
 {
   "desc": "Mortar tube firing: a deep hollow 'thoomp' with a rising whistle of the shell leaving.",
   "seed": 132,
+  "level_db": -18,
   "crush": 6,
   "voices": [
     {

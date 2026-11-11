@@ -1,6 +1,7 @@
 {
   "desc": "Chomper hurt: a piercing high squeal that flips up and down through a crushed blip.",
   "seed": 114,
+  "level_db": -19,
   "crush": 5,
   "voices": [
     {

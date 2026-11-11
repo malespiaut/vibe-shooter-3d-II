@@ -1,6 +1,7 @@
 {
   "desc": "Lever clunk followed by a bright three-note rising chime: level done.",
   "seed": 16,
+  "level_db": -21,
   "voices": [
     {
       "wave": "noise",
