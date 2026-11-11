@@ -748,7 +748,7 @@ add_dependencies(panel_mockup fonts_tex colormap)
 
 # Level completion demos (roadmap.md M4): each levelN-complete demo must reach
 # the exit without god mode, and replay deterministically.
-foreach(n 1 6 7)
+foreach(n 1 5 6 7)
   add_test(NAME complete_level${n}
     COMMAND game --headless --demo ${CMAKE_SOURCE_DIR}/demos/level${n}-complete.demo)
   set_tests_properties(complete_level${n} PROPERTIES

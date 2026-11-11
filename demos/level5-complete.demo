@@ -1,0 +1,43 @@
+# Level 5, Kibble Refinery: walkthrough of the critical path on
+# maps/level5.vmap (layout in maps/src/level5.txt), no enemies yet (#174).
+# Loading Bay -> Sludge Pits walkways -> Control Tower (blue key) -> blue
+# door -> Grinder Hall timed door across the sludge -> Lance Vault (the Lance
+# opens the riveted wall) -> violet key in the lair -> violet door ->
+# Packaging Line -> EXIT. Ends with STATS exit=1; the sludge costs health.
+vsdemo 1
+level 5
+skill 2
+seed 0
+
+goto 12 4              # off the Loading Bay onto the Sludge Pits landing
+goto 21 4              # along the main walkway, over the sludge
+goto 25 9              # up the east platform
+face 0                 # east, toward the Control Tower door (26,9)
+use                    # goto never opens doors: use them, wait 32 tics
+wait 32
+goto 32 4              # into the Control Tower: blue key
+goto 28 12             # below the blue door (28,13)
+face 90
+use                    # opens: the blue key is held
+wait 32
+goto 28 16             # corridor north
+goto 22 20             # Grinder Hall, west end, at the switch
+face 180               # west, toward the switch (21,20)
+use                    # timed door (34,20) opens, closes 350 tics later
+wait 32                # 32 of them go on the door sliding open
+expect health=100
+goto 35 20             # sprint east across the sludge x 29-31 and through
+expect health<100      # the sludge cost health
+goto 37 23             # Lance: fires tag 2, the riveted wall (37,35) slides
+wait 32
+goto 37 38             # into the Mastiff lair: violet key
+goto 36 33             # back down the vault, beside the violet door (35,33)
+face 180
+use                    # opens: the violet key is held
+wait 32
+goto 33 32             # through it; the ammo cache opens south of the corridor
+goto 10 35             # west along the Packaging Line to the exit wall
+face 180
+use                    # exit: the run ends here
+expect exit=1
+expect health>0       # survived the sludge
