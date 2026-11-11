@@ -1,0 +1,43 @@
+{
+  "desc": "Bone missile launch: deep pneumatic thump and a rough rocket whoosh trailing away.",
+  "seed": 73,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 130,
+      "freq_end": 38,
+      "attack": 0.001,
+      "release": 0.2,
+      "lowpass": 450,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "freq": 12000,
+      "freq_end": 1500,
+      "attack": 0.004,
+      "decay": 0.06,
+      "sustain": 0.6,
+      "release": 0.35,
+      "lowpass": 4000,
+      "lowpass_end": 600,
+      "gain": 0.8
+    },
+    {
+      "wave": "noise",
+      "start": 0.02,
+      "freq": 3000,
+      "attack": 0.01,
+      "release": 0.3,
+      "tremolo": [
+        45,
+        0.7
+      ],
+      "crush": 3,
+      "downsample": 3,
+      "lowpass": 2500,
+      "gain": 0.35
+    }
+  ]
+}

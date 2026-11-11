@@ -1,0 +1,81 @@
+{
+  "desc": "Mastiff dies: a long deep growl sinking into a dying motor, then a heavy chassis crash.",
+  "seed": 77,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 140,
+      "freq_end": 38,
+      "vibrato": [
+        7,
+        1.0
+      ],
+      "tremolo": [
+        22,
+        0.4
+      ],
+      "attack": 0.01,
+      "decay": 0.2,
+      "sustain": 0.8,
+      "hold": 0.35,
+      "release": 0.45,
+      "lowpass": 1500,
+      "lowpass_end": 250,
+      "crush": 4,
+      "downsample": 2,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 55,
+      "freq_end": 14,
+      "duty": 0.3,
+      "tremolo": [
+        18,
+        0.7
+      ],
+      "attack": 0.02,
+      "hold": 0.7,
+      "release": 0.3,
+      "lowpass": 350,
+      "gain": 0.6
+    },
+    {
+      "wave": "noise",
+      "start": 0.95,
+      "attack": 0.0005,
+      "release": 0.03,
+      "gain": 0.6
+    },
+    {
+      "wave": "noise",
+      "start": 0.95,
+      "freq": 6000,
+      "freq_end": 250,
+      "attack": 0.002,
+      "release": 0.4,
+      "lowpass": 2500,
+      "lowpass_end": 200,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "start": 0.95,
+      "freq": 70,
+      "freq_end": 28,
+      "attack": 0.001,
+      "release": 0.35,
+      "lowpass": 280,
+      "gain": 0.9
+    },
+    {
+      "wave": "triangle",
+      "start": 1.05,
+      "freq": 700,
+      "attack": 0.001,
+      "release": 0.2,
+      "gain": 0.15
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "desc": "Woofu hit: an indignant pompous \"HARR-umph\" yowl, low and robotic.",
+  "seed": 95,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 210,
+      "freq_end": 150,
+      "arp": [
+        0,
+        5,
+        0
+      ],
+      "arp_step": 0.12,
+      "vibrato": [
+        6,
+        0.4
+      ],
+      "tremolo": [
+        50,
+        0.3
+      ],
+      "attack": 0.01,
+      "decay": 0.1,
+      "sustain": 0.8,
+      "hold": 0.2,
+      "release": 0.18,
+      "lowpass": 2200,
+      "lowpass_end": 600,
+      "crush": 4,
+      "downsample": 2,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 105,
+      "freq_end": 75,
+      "arp": [
+        0,
+        5,
+        0
+      ],
+      "arp_step": 0.12,
+      "duty": 0.2,
+      "attack": 0.01,
+      "hold": 0.3,
+      "release": 0.18,
+      "lowpass": 900,
+      "gain": 0.45
+    },
+    {
+      "wave": "noise",
+      "freq": 3000,
+      "freq_end": 800,
+      "attack": 0.002,
+      "release": 0.07,
+      "lowpass": 2000,
+      "gain": 0.45
+    }
+  ]
+}

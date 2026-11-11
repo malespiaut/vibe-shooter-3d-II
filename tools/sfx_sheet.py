@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Waveform + spectrogram contact sheet of SND files, for evidence/review.
 
-    tools/sfx_sheet.py assets/gen/sfx/*.snd -o sheet.png [--cols 2]
+    tools/sfx_sheet.py assets/gen/sfx/*.snd -o sheet.png [--cols 2] [--px-per-s 400]
 
 Each cell: name and duration, the waveform (int8, +-127 band, the +-PEAK
 lines dashed) and a log-magnitude spectrogram (0..11025 Hz, linear axis, 60 dB
@@ -24,11 +24,11 @@ W, WAVE_H, SPEC_H, LABEL_H = 520, 70, 90, 14
 PX_PER_S = 400  # 1.3 s fits in a cell
 
 
-def spectrogram(x, width, height):
+def spectrogram(x, width, height, px_per_s=PX_PER_S):
     n_fft, out = 512, np.zeros((height, width))
     win = np.hanning(n_fft)
     pad = np.concatenate([np.zeros(n_fft // 2), x, np.zeros(n_fft)])
-    hop = RATE / PX_PER_S
+    hop = RATE / px_per_s
     cols = min(width, int(len(x) / hop) + 1)
     for c in range(cols):
         s = int(c * hop)
@@ -42,7 +42,7 @@ def spectrogram(x, width, height):
     return out, cols
 
 
-def cell(name, pcm):
+def cell(name, pcm, px_per_s=PX_PER_S):
     img = Image.new("RGB", (W, LABEL_H + WAVE_H + SPEC_H + 6), (16, 16, 20))
     d = ImageDraw.Draw(img)
     d.text((4, 1), "%s  %.3f s  %d smp" % (name, len(pcm) / RATE, len(pcm)), fill=(230, 230, 230))
@@ -53,7 +53,7 @@ def cell(name, pcm):
         for xx in range(0, W, 8):
             d.point((xx, yy), fill=(90, 60, 60))
     x = pcm.astype(np.float64)
-    spp = RATE / PX_PER_S
+    spp = RATE / px_per_s
     for c in range(W):
         seg = x[int(c * spp):int((c + 1) * spp)]
         if not len(seg):
@@ -61,7 +61,7 @@ def cell(name, pcm):
         lo, hi = seg.min(), seg.max()
         d.line([(c, mid - hi * (WAVE_H // 2) / 128), (c, mid - lo * (WAVE_H // 2) / 128)],
                fill=(120, 220, 140))
-    spec, cols = spectrogram(x / 128.0, W, SPEC_H)
+    spec, cols = spectrogram(x / 128.0, W, SPEC_H, px_per_s)
     v = (spec * 255).astype(np.uint8)
     vi = v.astype(np.int32)
     rgb = np.stack([np.minimum(255, vi * 3 // 2), vi * vi // 255, vi // 3 + 20],
@@ -76,12 +76,14 @@ def main(argv=None):
     ap.add_argument("snd", nargs="+")
     ap.add_argument("-o", "--out", required=True)
     ap.add_argument("--cols", type=int, default=2)
+    ap.add_argument("--px-per-s", type=int, default=PX_PER_S,
+                    help="time scale (default %d: 1.3 s per cell; 200 fits 2.6 s)" % PX_PER_S)
     a = ap.parse_args(argv)
     cells = []
     for p in a.snd:
         s = bast.Snd.load(p)
         pcm = np.frombuffer(s.samples, dtype=np.int8)
-        cells.append(cell(os.path.splitext(os.path.basename(p))[0], pcm))
+        cells.append(cell(os.path.splitext(os.path.basename(p))[0], pcm, a.px_per_s))
     cw, ch = cells[0].size
     rows = (len(cells) + a.cols - 1) // a.cols
     sheet = Image.new("RGB", (a.cols * (cw + 4) + 4, rows * (ch + 4) + 4), (40, 40, 48))

@@ -1,0 +1,68 @@
+{
+  "desc": "Shoulder pods open: servo whine rising, heavy clunk, two latch clicks and a hydraulic hiss (0.62 s, under the 24-tic windup).",
+  "seed": 72,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 1500,
+      "attack": 0.001,
+      "release": 0.06,
+      "lowpass": 700,
+      "gain": 0.9
+    },
+    {
+      "wave": "square",
+      "freq": 70,
+      "freq_end": 40,
+      "attack": 0.001,
+      "release": 0.09,
+      "lowpass": 300,
+      "gain": 0.9
+    },
+    {
+      "wave": "saw",
+      "start": 0.03,
+      "freq": 150,
+      "freq_end": 420,
+      "vibrato": [
+        30,
+        0.15
+      ],
+      "attack": 0.04,
+      "hold": 0.3,
+      "release": 0.08,
+      "lowpass": 1800,
+      "crush": 4,
+      "gain": 0.45
+    },
+    {
+      "wave": "square",
+      "start": 0.42,
+      "freq": 1400,
+      "duty": 0.25,
+      "attack": 0.001,
+      "release": 0.025,
+      "gain": 0.35
+    },
+    {
+      "wave": "square",
+      "start": 0.47,
+      "freq": 1250,
+      "duty": 0.25,
+      "attack": 0.001,
+      "release": 0.025,
+      "gain": 0.35
+    },
+    {
+      "wave": "noise",
+      "start": 0.43,
+      "freq": 9000,
+      "freq_end": 3000,
+      "attack": 0.01,
+      "release": 0.18,
+      "lowpass": 5000,
+      "lowpass_end": 1200,
+      "gain": 0.4
+    }
+  ]
+}

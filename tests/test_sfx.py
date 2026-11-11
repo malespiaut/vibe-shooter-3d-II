@@ -52,13 +52,21 @@ def test_determinism(d):
         rc, log = run("-q", *PARAMS, "-o", out)
         assert rc == 0, log
     names = sorted(os.listdir(a))
+    lengths = {}
     assert names == sorted(os.path.basename(p)[:-5] + ".snd" for p in PARAMS), names
     for n in names:
         assert filecmp.cmp(os.path.join(a, n), os.path.join(b, n), shallow=False), n
         s = bast.Snd.load(os.path.join(a, n))
         peak = max(abs(v - 256 if v > 127 else v) for v in s.samples)
         assert peak == sfx.PEAK, (n, peak)
-        assert 0 < len(s) <= 2 * 22050, (n, len(s))  # short effects
+        # short effects; woofu_death is the one 2-3 s exception (audio.md /
+        # issue #42: the boss death is the longest effect in the game)
+        limit = 3 * 22050 if n == "woofu_death.snd" else 2 * 22050
+        assert 0 < len(s) <= limit, (n, len(s))
+        lengths[n] = len(s)
+    if "woofu_death.snd" in lengths:
+        assert lengths["woofu_death.snd"] >= 2 * 22050, lengths["woofu_death.snd"]
+        assert max(lengths, key=lengths.get) == "woofu_death.snd"
 
 
 def test_params_documented():
