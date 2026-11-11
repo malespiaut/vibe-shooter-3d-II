@@ -126,7 +126,7 @@ add_test(NAME smoke COMMAND test_smoke)
 target_compile_options(test_smoke PRIVATE -UNDEBUG)
 
 # Core maths tests (fixed, angle, rng, hash).
-foreach(t fixed angle rng hash player_move)
+foreach(t fixed angle rng hash player_move weapon)
   add_executable(test_${t} tests/test_${t}.c)
   target_link_libraries(test_${t} PRIVATE engine)
   target_compile_options(test_${t} PRIVATE -UNDEBUG)
@@ -335,3 +335,10 @@ add_test(NAME draw2d COMMAND test_draw2d ${ASSETS_GEN} ${PALETTE_GPL})
 add_executable(draw2d_specimen tools/draw2d_specimen.c)
 target_link_libraries(draw2d_specimen PRIVATE engine)
 add_dependencies(draw2d_specimen fonts_tex colormap)
+
+# Weapons 1-4 and thinkers: the weapon test demo, run twice.
+add_test(NAME weapon_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_weapon_demo.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/weapon_demo)
+set_tests_properties(weapon_demo PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")

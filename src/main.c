@@ -254,7 +254,7 @@ static int setup(run_t *r)
         return 0;
     }
     demo_rec_init(&r->rec);
-    game_init(&r->gs, r->map, r->level, r->seed);
+    game_init(&r->gs, r->map, r->level, r->skill, r->seed);
     return 1;
 }
 
@@ -427,13 +427,14 @@ static void run_window(run_t *r)
     }
 }
 
-/* Counters that do not exist yet (kills, items, secrets, exit) print 0. */
+/* Counters that do not exist yet (items, secrets, exit) print 0. */
 static void print_stats(const run_t *r)
 {
     const player_t *p = &r->gs.player;
     printf("STATS level=%d tic=%" PRIu32 " hash=%016" PRIx64
-           " health=%d armor=%d kills=0/0 items=0/0 secrets=0/0 exit=0 god=%d\n",
-           r->level, r->gs.tic, game_hash(&r->gs), (int)p->health, (int)p->armour, r->opt.god);
+           " health=%d armor=%d kills=%d/%d items=0/0 secrets=0/0 exit=0 god=%d\n",
+           r->level, r->gs.tic, game_hash(&r->gs), (int)p->health, (int)p->armour,
+           (int)r->gs.things.kills, (int)r->gs.things.kill_total, r->opt.god);
     fflush(stdout);
 }
 

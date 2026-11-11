@@ -1,0 +1,25 @@
+# Weapon test (#65): maps/weapontest.vmap. The pistol kills the Mutt
+# straight ahead, the player picks up the Scattergun and kills the other two
+# with one shot each. Ends with expect lines on the kill counter.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map weapontest
+
+expect kills=0
+fire 40                 # pistol (in hand at start): Mutt at 12,4, 8 u east
+expect kills=1
+goto 4 2                # walk over the Scattergun pickup
+weapon 3                # 10-tic switch while walking
+goto 8 5                # 2 u south of the Mutt at 8,7 (scattergun range)
+face 8 7
+fire 1                  # one 7-pellet shot
+expect kills=2
+goto 10 3               # 2 u north of the Mutt at 10,1
+face 10 1
+fire 1
+expect kills=3
+wait 10
+expect kills=3
+expect health=100
