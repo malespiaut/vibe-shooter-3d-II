@@ -1,5 +1,6 @@
 # Linen Wrap (items.md Armour): a roll of linen bandage lying on its side,
-# lapis tie band, the loose end trailing on the floor to the right. The roll
+# lapis tie band, the loose end unrolling from under it along the floor to
+# the right (one piece with the roll). The roll
 # end faces the top-left light, the cylinder darkens toward the floor.
 name linen_idle_d0_f0
 size 24 16
@@ -29,4 +30,4 @@ grid
 .5675433444444ts443332.
 ..5665443333333sr33322.
 ...556332222222rr22211.
-....444211111111111.453
+....4442111111111112453
