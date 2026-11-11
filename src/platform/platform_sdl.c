@@ -289,6 +289,11 @@ bool platform_write_file(const char *path, const void *data, size_t size)
     return ok;
 }
 
+bool platform_make_dir(const char *path)
+{
+    return SDL_CreateDirectory(path);
+}
+
 uint64_t platform_ticks_ms(void)
 {
     return SDL_GetTicks();

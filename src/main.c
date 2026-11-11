@@ -1,17 +1,29 @@
 /* Vibe Shooter 3D II entry point. M1: runs the 35 Hz simulation on a map and
  * shows it in the dev top-down view until the 3D renderer exists.
- *   game [--map <file.vmap>]       (default maps/m1test.vmap)
- * WASD / arrows move (left/right arrows turn), Shift runs, mouse X turns.
- * Quits on Esc or window close. */
+ *
+ *   game [--map <file.vmap>] [--warp N] [--skill N] [--god] [--topdown]
+ *        [--demo <file.demo>] [--record <file.demo>] [--max-tics N]
+ *        [--hash-log <file>]
+ *   game --headless --demo <file.demo> [--frames-out <dir>] [--frame-every N] ...
+ *
+ * Flags and exit codes: docs/design/roadmap.md (Verification tooling
+ * contract). Window mode: WASD / arrows move (left/right arrows turn), Shift
+ * runs, mouse X turns; quits on Esc or window close. The last stdout line of
+ * every run is the STATS line. */
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "bast.h"
 #include "engine/colormap.h"
 #include "engine/mixer.h"
+#include "engine/png.h"
 #include "engine/video.h"
+#include "game/demo.h"
 #include "game/state.h"
+#include "game/topdown.h"
 #include "platform/platform.h"
 
 #ifndef VS3D_ASSETS_DIR
@@ -21,16 +33,25 @@
 #define VS3D_MAPS_DIR "maps"
 #endif
 
-/* Palette indices (art-bible.md ramps; catlantis.gpl order). */
-enum {
-    PAL_BLACK = 0,
-    PAL_WHITE = 1,
-    PAL_GRAY = 2, /* gray_00..gray_15 = 2..17 */
-    PAL_FB_YELLOW = 241,
-};
-
 #define MOUSE_TURN 40 /* angle units per pixel of mouse X motion */
 #define MAX_CATCHUP_TICS 10
+
+enum { EXIT_OK = 0, EXIT_ERROR = 1, EXIT_EXPECT = 2 };
+
+typedef struct {
+    int headless;
+    const char *demo_path;
+    const char *record_path;
+    const char *frames_dir;
+    int frame_every;
+    long max_tics; /* 0 = no limit */
+    const char *hash_log;
+    const char *map_path;
+    int warp;  /* 0 = not given */
+    int skill; /* 0 = not given */
+    int god;
+    int topdown;
+} options;
 
 static uint8_t framebuffer[SCREEN_W * SCREEN_H];
 
@@ -41,89 +62,252 @@ static void audio_fill(int16_t *out, int frames, void *user)
     mixer_render(out, frames);
 }
 
-static void put(int x, int y, uint8_t c)
-{
-    if (x >= 0 && y >= 0 && x < SCREEN_W && y < SCREEN_H)
-        framebuffer[y * SCREEN_W + x] = c;
-}
-
-/* Dev top-down view: one square of `scale` px per tile, north up, walls in
- * the gray ramp (shade by wall texture), floor dark gray, open sky a step
- * lighter, player as a 3-pixel arrow (white centre, yellow tip). */
-static void draw_topdown(const game_state *gs)
-{
-    const bast_map *m = gs->map;
-    int scale = SCREEN_W / m->width;
-    if (SCREEN_H / m->height < scale)
-        scale = SCREEN_H / m->height;
-    if (scale < 1)
-        scale = 1;
-    const int ox = (SCREEN_W - m->width * scale) / 2;
-    const int oy = (SCREEN_H - m->height * scale) / 2;
-
-    memset(framebuffer, PAL_BLACK, sizeof framebuffer);
-    for (int ty = 0; ty < m->height; ty++) {
-        for (int tx = 0; tx < m->width; tx++) {
-            const bast_map_cell *c = &m->cells[ty * m->width + tx];
-            uint8_t col;
-            if (game_tile_blocks(m, tx, ty))
-                col = (uint8_t)(PAL_GRAY + 8 + (c->wall % 4) * 2);
-            else
-                col = (uint8_t)(PAL_GRAY + (c->ceil == 0 ? 3 : 1));
-            const int sy = oy + (m->height - 1 - ty) * scale;
-            for (int y = 0; y < scale; y++)
-                for (int x = 0; x < scale; x++)
-                    put(ox + tx * scale + x, sy + y, col);
-        }
-    }
-
-    const player_t *p = &gs->player;
-    const int px = ox + (int)(((int64_t)p->x * scale) >> FIX_SHIFT);
-    const int py = oy + m->height * scale - 1 - (int)(((int64_t)p->y * scale) >> FIX_SHIFT);
-    const fix_t c = fine_cos(p->angle), s = fine_sin(p->angle);
-    for (int k = 2; k >= 1; k--) {
-        const int dx = (int)(((int64_t)c * k + FIX_ONE / 2) >> FIX_SHIFT);
-        const int dy = (int)(((int64_t)s * k + FIX_ONE / 2) >> FIX_SHIFT);
-        put(px + dx, py - dy, PAL_FB_YELLOW);
-    }
-    put(px, py, PAL_WHITE);
-}
-
 static int clamp127(int v)
 {
     return v > TICCMD_MAX ? TICCMD_MAX : v < -TICCMD_MAX ? -TICCMD_MAX : v;
 }
 
-int main(int argc, char **argv)
+static void usage(void)
 {
-    const char *map_path = VS3D_MAPS_DIR "/m1test.vmap";
+    fprintf(stderr,
+            "usage: game [--headless] [--demo <file.demo>] [--record <file.demo>]\n"
+            "            [--frames-out <dir>] [--frame-every N] [--max-tics N]\n"
+            "            [--hash-log <file>] [--map <file.vmap>] [--warp N] [--skill 1-3]\n"
+            "            [--god] [--topdown]\n");
+}
+
+static int parse_long(const char *s, long lo, long hi, long *out)
+{
+    char *end;
+    long v = strtol(s, &end, 10);
+    if (*s == '\0' || *end != '\0' || v < lo || v > hi)
+        return 0;
+    *out = v;
+    return 1;
+}
+
+static int parse_args(int argc, char **argv, options *o)
+{
+    memset(o, 0, sizeof *o);
+    o->frame_every = 1;
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--map") == 0 && i + 1 < argc) {
-            map_path = argv[++i];
+        const char *a = argv[i];
+        const char *v = i + 1 < argc ? argv[i + 1] : NULL;
+        long n;
+        if (strcmp(a, "--headless") == 0) {
+            o->headless = 1;
+        } else if (strcmp(a, "--god") == 0) {
+            o->god = 1;
+        } else if (strcmp(a, "--topdown") == 0) {
+            o->topdown = 1; /* the only view until the 3D renderer exists */
+        } else if (!v) {
+            fprintf(stderr, "game: unknown flag or missing value: %s\n", a);
+            return 0;
+        } else if (strcmp(a, "--demo") == 0) {
+            o->demo_path = v;
+            i++;
+        } else if (strcmp(a, "--record") == 0) {
+            o->record_path = v;
+            i++;
+        } else if (strcmp(a, "--frames-out") == 0) {
+            o->frames_dir = v;
+            i++;
+        } else if (strcmp(a, "--hash-log") == 0) {
+            o->hash_log = v;
+            i++;
+        } else if (strcmp(a, "--map") == 0) {
+            o->map_path = v;
+            i++;
+        } else if (strcmp(a, "--frame-every") == 0) {
+            if (!parse_long(v, 1, 1000000, &n)) {
+                fprintf(stderr, "game: --frame-every: bad value '%s'\n", v);
+                return 0;
+            }
+            o->frame_every = (int)n;
+            i++;
+        } else if (strcmp(a, "--max-tics") == 0) {
+            if (!parse_long(v, 1, 100000000, &n)) {
+                fprintf(stderr, "game: --max-tics: bad value '%s'\n", v);
+                return 0;
+            }
+            o->max_tics = n;
+            i++;
+        } else if (strcmp(a, "--warp") == 0) {
+            if (!parse_long(v, 1, 99, &n)) {
+                fprintf(stderr, "game: --warp: bad level '%s'\n", v);
+                return 0;
+            }
+            o->warp = (int)n;
+            i++;
+        } else if (strcmp(a, "--skill") == 0) {
+            if (!parse_long(v, 1, 3, &n)) {
+                fprintf(stderr, "game: --skill: must be 1-3, got '%s'\n", v);
+                return 0;
+            }
+            o->skill = (int)n;
+            i++;
         } else {
-            fprintf(stderr, "usage: game [--map <file.vmap>]\n");
-            return 1;
+            fprintf(stderr, "game: unknown flag: %s\n", a);
+            return 0;
         }
+    }
+    if (o->headless && !o->demo_path && !o->max_tics) {
+        fprintf(stderr, "game: --headless needs --demo <file> or --max-tics N\n");
+        return 0;
+    }
+    if (o->headless && o->record_path) {
+        fprintf(stderr, "game: --record is for window mode\n");
+        return 0;
+    }
+    if (o->frames_dir && !o->headless) {
+        fprintf(stderr, "game: --frames-out needs --headless\n");
+        return 0;
+    }
+    return 1;
+}
+
+/* The run: everything both modes share. */
+typedef struct {
+    options opt;
+    demo_t *demo;
+    bast_map *map;
+    char map_name[DEMO_MAP_NAME_MAX]; /* for the --record header */
+    int level, skill;
+    uint32_t seed;
+    game_state gs;
+    FILE *hash_log;
+    demo_rec rec;
+    int status;
+} run_t;
+
+/* Map choice: --map, else --warp N (maps/levelN.vmap), else the demo's
+ * `map` line (maps/<name>.vmap), else its `level` (maps/levelN.vmap), else
+ * the M1 test map. Level/skill: flag, else demo, else 1 / 2. */
+static int setup(run_t *r)
+{
+    const options *o = &r->opt;
+    if (o->demo_path) {
+        size_t size;
+        char *text = platform_read_file(o->demo_path, &size);
+        if (!text) {
+            fprintf(stderr, "game: %s: cannot read\n", o->demo_path);
+            return 0;
+        }
+        char err[256];
+        r->demo = demo_parse(text, err, sizeof err);
+        free(text);
+        if (!r->demo) {
+            fprintf(stderr, "game: %s: %s\n", o->demo_path, err);
+            return 0;
+        }
+    }
+    r->level = o->warp ? o->warp : r->demo ? r->demo->level : 1;
+    r->skill = o->skill ? o->skill : r->demo ? r->demo->skill : 2;
+    r->seed = r->demo ? r->demo->seed : 0;
+
+    char path[512];
+    const char *map_path = path;
+    if (o->map_path) {
+        map_path = o->map_path;
+        /* Name for a recorded header: basename without .vmap. */
+        const char *b = strrchr(o->map_path, '/');
+        b = b ? b + 1 : o->map_path;
+        snprintf(r->map_name, sizeof r->map_name, "%s", b);
+        char *dot = strrchr(r->map_name, '.');
+        if (dot)
+            *dot = '\0';
+    } else if (o->warp || (r->demo && !r->demo->map[0])) {
+        snprintf(path, sizeof path, "%s/level%d.vmap", VS3D_MAPS_DIR, r->level);
+    } else {
+        snprintf(r->map_name, sizeof r->map_name, "%s",
+                 r->demo && r->demo->map[0] ? r->demo->map : "m1test");
+        snprintf(path, sizeof path, "%s/%s.vmap", VS3D_MAPS_DIR, r->map_name);
     }
 
     /* Palette + light colormap, built by `cmake --build build`. */
     if (!colormap_load(VS3D_ASSETS_DIR)) {
         fprintf(stderr, "game: %s\n", colormap_error());
-        return 1;
+        return 0;
     }
-    bast_map *map = bast_map_load(map_path);
-    if (!map) {
+    r->map = bast_map_load(map_path);
+    if (!r->map) {
         fprintf(stderr, "game: %s: %s\n", map_path, bast_error());
-        return 1;
+        return 0;
     }
+    if (o->hash_log) {
+        r->hash_log = fopen(o->hash_log, "w");
+        if (!r->hash_log) {
+            fprintf(stderr, "game: %s: cannot write\n", o->hash_log);
+            return 0;
+        }
+    }
+    if (o->frames_dir && !platform_make_dir(o->frames_dir)) {
+        fprintf(stderr, "game: %s: cannot create directory\n", o->frames_dir);
+        return 0;
+    }
+    demo_rec_init(&r->rec);
+    game_init(&r->gs, r->map, r->level, r->seed);
+    return 1;
+}
 
-    static game_state gs;
-    game_init(&gs, map, 1, 0);
+/* Runs one tic with `cmd`; logs the hash, records, dumps a frame. */
+static int step(run_t *r, const ticcmd *cmd)
+{
+    game_tic(&r->gs, cmd);
+    if (r->hash_log)
+        fprintf(r->hash_log, "%016" PRIx64 "\n", game_hash(&r->gs));
+    if (r->opt.record_path && !demo_rec_add(&r->rec, cmd)) {
+        fprintf(stderr, "game: out of memory recording\n");
+        return 0;
+    }
+    if (r->opt.frames_dir && r->gs.tic % (uint32_t)r->opt.frame_every == 0) {
+        char path[1024];
+        snprintf(path, sizeof path, "%s/frame_%06" PRIu32 ".png", r->opt.frames_dir, r->gs.tic);
+        topdown_draw(&r->gs, framebuffer);
+        if (!png_write_indexed(path, framebuffer, SCREEN_W, SCREEN_H, colormap_palette())) {
+            fprintf(stderr, "game: %s: cannot write\n", path);
+            return 0;
+        }
+    }
+    return 1;
+}
 
+/* Input for the next tic from the demo. 0 = stop (end, failure). */
+static int demo_input(run_t *r, ticcmd *cmd)
+{
+    char err[256] = "";
+    int s = demo_next(r->demo, &r->gs, cmd, err, sizeof err);
+    if (s == DEMO_FAIL) {
+        fprintf(stderr, "game: %s: %s\n", r->opt.demo_path, err);
+        r->status = EXIT_EXPECT;
+    }
+    return s == DEMO_TIC;
+}
+
+static int tic_limit_hit(const run_t *r)
+{
+    return r->opt.max_tics && (long)r->gs.tic >= r->opt.max_tics;
+}
+
+static void run_headless(run_t *r)
+{
+    while (!tic_limit_hit(r)) {
+        ticcmd cmd = { 0, 0, 0, 0 };
+        if (r->demo && !demo_input(r, &cmd))
+            return;
+        if (!step(r, &cmd)) {
+            r->status = EXIT_ERROR;
+            return;
+        }
+    }
+}
+
+static void run_window(run_t *r)
+{
     if (!platform_init("Vibe Shooter 3D II", 3)) {
         fprintf(stderr, "game: %s\n", platform_error());
-        bast_map_free(map);
-        return 1;
+        r->status = EXIT_ERROR;
+        return;
     }
     /* Mixer before the device opens; menu_select once so the wiring is
      * audible. A missing sound is not fatal. */
@@ -163,43 +347,103 @@ int main(int argc, char **argv)
         if (due > tics_done + MAX_CATCHUP_TICS) {
             tics_done = (uint32_t)due - 1;
         }
-        while (tics_done < due) {
+        while (running && tics_done < due) {
             ticcmd cmd = { 0, 0, 0, 0 };
-            int fwd = 0, side = 0, turn = 0;
-            if (held['w'] || held[PKEY_UP])
-                fwd += TICCMD_MAX;
-            if (held['s'] || held[PKEY_DOWN])
-                fwd -= TICCMD_MAX;
-            if (held['d'])
-                side += TICCMD_MAX;
-            if (held['a'])
-                side -= TICCMD_MAX;
-            if (held[PKEY_LEFT])
-                turn += PLAYER_TURN_SPEED;
-            if (held[PKEY_RIGHT])
-                turn -= PLAYER_TURN_SPEED;
-            turn -= mouse_dx * MOUSE_TURN; /* mouse right = clockwise */
-            mouse_dx = 0;
-            if (turn > INT16_MAX)
-                turn = INT16_MAX;
-            if (turn < INT16_MIN)
-                turn = INT16_MIN;
-            cmd.fwd = (int8_t)clamp127(fwd);
-            cmd.side = (int8_t)clamp127(side);
-            cmd.turn = (int16_t)turn;
-            if (held[PKEY_LSHIFT] || held[PKEY_RSHIFT])
-                cmd.buttons |= BT_RUN;
-            game_tic(&gs, &cmd);
+            if (tic_limit_hit(r)) {
+                running = 0;
+                break;
+            }
+            if (r->demo) {
+                if (!demo_input(r, &cmd)) {
+                    running = 0;
+                    break;
+                }
+            } else {
+                int fwd = 0, side = 0, turn = 0;
+                if (held['w'] || held[PKEY_UP])
+                    fwd += TICCMD_MAX;
+                if (held['s'] || held[PKEY_DOWN])
+                    fwd -= TICCMD_MAX;
+                if (held['d'])
+                    side += TICCMD_MAX;
+                if (held['a'])
+                    side -= TICCMD_MAX;
+                if (held[PKEY_LEFT])
+                    turn += PLAYER_TURN_SPEED;
+                if (held[PKEY_RIGHT])
+                    turn -= PLAYER_TURN_SPEED;
+                turn -= mouse_dx * MOUSE_TURN; /* mouse right = clockwise */
+                mouse_dx = 0;
+                if (turn > INT16_MAX)
+                    turn = INT16_MAX;
+                if (turn < INT16_MIN)
+                    turn = INT16_MIN;
+                cmd.fwd = (int8_t)clamp127(fwd);
+                cmd.side = (int8_t)clamp127(side);
+                cmd.turn = (int16_t)turn;
+                if (held[PKEY_LSHIFT] || held[PKEY_RSHIFT])
+                    cmd.buttons |= BT_RUN;
+            }
+            if (!step(r, &cmd)) {
+                r->status = EXIT_ERROR;
+                running = 0;
+                break;
+            }
             tics_done++;
         }
 
-        draw_topdown(&gs);
+        topdown_draw(&r->gs, framebuffer);
         platform_present(framebuffer, colormap_palette());
         platform_sleep_ms(5);
     }
-
     platform_shutdown();
-    bast_map_free(map);
     mixer_shutdown();
-    return 0;
+
+    if (r->opt.record_path) {
+        if (demo_rec_write(&r->rec, r->opt.record_path, r->level, r->skill, 0, r->map_name))
+            fprintf(stderr, "game: recorded %" PRIu32 " tics to %s\n", r->gs.tic,
+                    r->opt.record_path);
+        else {
+            fprintf(stderr, "game: %s: cannot write\n", r->opt.record_path);
+            r->status = EXIT_ERROR;
+        }
+    }
+}
+
+/* Counters that do not exist yet (kills, items, secrets, exit) print 0. */
+static void print_stats(const run_t *r)
+{
+    const player_t *p = &r->gs.player;
+    printf("STATS level=%d tic=%" PRIu32 " hash=%016" PRIx64
+           " health=%d armor=%d kills=0/0 items=0/0 secrets=0/0 exit=0 god=%d\n",
+           r->level, r->gs.tic, game_hash(&r->gs), (int)p->health, (int)p->armour, r->opt.god);
+    fflush(stdout);
+}
+
+int main(int argc, char **argv)
+{
+    static run_t r;
+    if (!parse_args(argc, argv, &r.opt)) {
+        usage();
+        return EXIT_ERROR;
+    }
+    r.status = EXIT_OK;
+    if (!setup(&r)) {
+        r.status = EXIT_ERROR;
+    } else {
+        if (r.opt.headless)
+            run_headless(&r);
+        else
+            run_window(&r);
+        if (r.status != EXIT_ERROR)
+            print_stats(&r);
+    }
+    if (r.hash_log && fclose(r.hash_log) != 0) {
+        fprintf(stderr, "game: %s: write failed\n", r.opt.hash_log);
+        r.status = EXIT_ERROR;
+    }
+    demo_rec_free(&r.rec);
+    demo_free(r.demo);
+    bast_map_free(r.map);
+    return r.status;
 }

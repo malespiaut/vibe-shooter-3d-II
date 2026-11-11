@@ -96,6 +96,8 @@ void platform_audio_close(void);
  * NUL not counted in *size, or NULL on error. write returns false on error. */
 void *platform_read_file(const char *path, size_t *size);
 bool platform_write_file(const char *path, const void *data, size_t size);
+/* Creates a directory and its missing parents; true if it exists after. */
+bool platform_make_dir(const char *path);
 
 /* Milliseconds since an arbitrary start. For frame pacing only, never for
  * gameplay (tech.md Simulation: gameplay runs on tics). */
