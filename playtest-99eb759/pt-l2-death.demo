@@ -1,0 +1,17 @@
+vsdemo 1
+level 2
+skill 3
+seed 0
+on_death restart
+# Playtest: wake the lobby Mutts and stand still until dead, then restart.
+weapon 2
+fire 1
+wait 1200
+wait 70
+use
+wait 10
+expect health=100
+expect kills=0
+expect tic<20
+goto 8 1
+expect items=1

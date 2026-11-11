@@ -1,0 +1,16 @@
+vsdemo 1
+level 2
+skill 2
+seed 0
+# Playtest: take the Scattergun (tag 3 shuts gallery doors O), then flee south
+# through O (5,21) before it shuts. Can the player get locked out?
+weapon 2
+clear 8
+goto 5 7
+face 90
+use
+wait 32
+goto 5 20
+goto 7 25
+goto 5 19 200
+expect tic<0

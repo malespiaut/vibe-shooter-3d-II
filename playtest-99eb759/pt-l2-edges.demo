@@ -1,0 +1,28 @@
+vsdemo 1
+level 2
+skill 1
+seed 0
+# Playtest: kill lobby, run diagonally into lobby corners, then stand in the
+# doorway D (5,8) and strafe hard into both jambs; walk on: no sticking.
+weapon 2
+clear 8
+goto 1 1
+face 225
+in 40 127 60 0 R
+in 40 127 -60 0 R
+expect tile=1,1
+goto 8 6
+face 45
+in 40 127 60 0 R
+in 40 127 -60 0 R
+goto 5 7
+face 90
+use
+wait 34
+goto 5 8
+in 20 0 127 0 R
+in 20 0 -127 0 R
+in 20 60 127 0 R
+in 20 60 -127 0 R
+goto 5 12
+expect tile=5,12
