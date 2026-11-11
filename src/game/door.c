@@ -76,6 +76,19 @@ int door_use(game_state *gs, int idx)
     return 1;
 }
 
+int door_monster_open(game_state *gs, int idx)
+{
+    door_t *d = &gs->doors[idx];
+    const int mode = DOOR_MODE(d->param);
+    if (d->state != DOOR_CLOSED && d->state != DOOR_CLOSING)
+        return 0;
+    if (DOOR_KEY(d->param) || (d->flags & BAST_CELL_ONEWAY) ||
+        (mode != DOOR_MODE_AUTO && mode != DOOR_MODE_STAY))
+        return 0;
+    d->state = DOOR_OPENING;
+    return 1;
+}
+
 void door_activate(game_state *gs, int idx)
 {
     door_activate_timed(gs, idx, 0);
@@ -96,10 +109,18 @@ void door_activate_timed(game_state *gs, int idx, int32_t close_tics)
     }
 }
 
+/* The player or a live enemy overlaps the door cell. */
 static int player_in(const game_state *gs, const door_t *d)
 {
     const player_t *p = &gs->player;
-    return game_circle_overlaps_tile(p->x, p->y, PLAYER_RADIUS, d->tx, d->ty);
+    if (game_circle_overlaps_tile(p->x, p->y, PLAYER_RADIUS, d->tx, d->ty))
+        return 1;
+    for (int i = 0; i < gs->things.count; i++) {
+        const thinker_t *t = &gs->things.list[i];
+        if (thinker_alive(t) && game_circle_overlaps_tile(t->x, t->y, t->radius, d->tx, d->ty))
+            return 1;
+    }
+    return 0;
 }
 
 /* Timed doors: timer > 0 counts down the switch delay; reaching zero marks

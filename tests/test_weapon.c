@@ -189,10 +189,12 @@ static void test_scattergun_pellets(void)
     rng_t r = gs.rng;
     game_tic(&gs, &FIRE);
     /* 2 u away, max spread 5.6 deg is < 0.2 u sideways: all 7 pellets hit,
-     * each drawing one spread and one damage number. */
-    for (int i = 0; i < 2 * 7; i++)
+     * each drawing one spread, one damage and one pain number (game/ai.c);
+     * the Mutt is then in pain, so its AI draws nothing this tic. */
+    for (int i = 0; i < 3 * 7; i++)
         rng_next(&r);
     assert(gs.rng.state == r.state);
+    assert(gs.things.list[0].state == TH_STATE_PAIN);
     int32_t dmg = 1000 - gs.things.list[0].health;
     printf("scattergun: one shot, 7 pellets, %d damage\n", dmg);
     assert(dmg >= 7 * 5 && dmg <= 7 * 9);
