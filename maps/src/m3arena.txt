@@ -15,7 +15,7 @@
 #   R5 x 33-39 Shieldbearer room behind the keyed (green) door G (32,4).
 #              Eye of Ra Lance + Sun Orb. Wall switch s (36,0), tag 1, opens
 #              the switch door S (40,4).
-#   R6 x 41-55 Mastiff hall: 1 Juggernaut 14 u from the switch door. Exit
+#   R6 x 41-55 Mastiff hall: 1 Juggernaut 7 u past the switch door. Exit
 #              switch X (56,4), used from (55,4).
 # Doors D are mode stay: a closed door stops noise (ai_noise floods open
 # cells only), so each room wakes only when its door opens.
@@ -26,14 +26,14 @@ music 0
 par 300
 
 legend # wall=eg_sand_blocks flags=SOLID
-legend . floor=eg_floor_tiles ceil=eg_planks dark=6
+legend . floor=eg_floor_tiles ceil=eg_planks dark=2
 legend ; floor=eg_floor_tiles ceil=eg_floor_tiles dark=12
 legend ! floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=SECRET
 legend P wall=eg_sand_cracked floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=PUSHWALL
-legend D wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=6 flags=DOOR mode=stay
+legend D wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=2 flags=DOOR mode=stay
 legend Q wall=eg_sand_blocks2 floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=DOOR mode=switch tag=2
-legend G wall=eg_door_green floor=eg_floor_tiles ceil=eg_planks dark=6 flags=DOOR mode=stay key=green
-legend S wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=6 flags=DOOR mode=switch tag=1
+legend G wall=eg_door_green floor=eg_floor_tiles ceil=eg_planks dark=2 flags=DOOR mode=stay key=green
+legend S wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=2 flags=DOOR mode=switch tag=1
 legend s wall=eg_switch_off flags=SOLID|SWITCH tag=1
 legend X wall=eg_switch_off flags=SOLID|SWITCH|EXIT
 
@@ -86,7 +86,7 @@ entity WAYPOINT 20 7 0 pushwall
 entity WAYPOINT 23 4 0 r3door
 
 # R4: the Dachshund, the green key, the Howler.
-entity DACHSHUND_HOWITZER 30 4 180
+entity DACHSHUND_HOWITZER 28 4 180
 entity GREEN_ANKH 31 7 0
 entity SPHINX_HOWLER 31 1 0
 entity SUN_ORB 29 1 0
@@ -102,6 +102,6 @@ entity WAYPOINT 36 1 0 switch
 entity WAYPOINT 39 4 0 r5door
 
 # R6: the Mastiff, the exit.
-entity MASTIFF_JUGGERNAUT 54 4 180
+entity MASTIFF_JUGGERNAUT 51 4 180
 entity TUNA_TIN 42 1 0
 entity WAYPOINT 55 4 0 exit

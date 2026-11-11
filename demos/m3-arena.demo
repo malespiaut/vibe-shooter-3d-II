@@ -58,7 +58,7 @@ goto 20 9               # Tuna Tin
 expect secrets=1
 goto 23 6               # Scarab Crate
 goto 23 2               # Scarab Launcher
-# R4: the Dachshund. Scarab Launcher (5) from the doorway, 7 u away.
+# R4: the Dachshund. Scarab Launcher (5) from the doorway, 5 u away.
 goto @r3door
 weapon 5
 face 0
@@ -87,12 +87,25 @@ goto @switch
 face 270
 use
 wait 10
-# R6: the Mastiff, 14 u down the hall. Eye of Ra Lance (6) from the doorway.
+# R6: the Mastiff, 9 u down the hall. Eye of Ra Lance (6): one beam per
+# re-aim, then a 39-tic side-step out of the bone missiles' path.
 goto @r5door
 weapon 6
 face 0
 wait 30                 # S finishes opening
-fire nearest
+goto 41 4
+face nearest
+in 1 0 0 0 F
+in 39 0 -60 0 -
+face nearest
+in 1 0 0 0 F
+in 39 0 60 0 -
+face nearest
+in 1 0 0 0 F
+in 39 0 60 0 -
+face nearest
+in 1 0 0 0 F
+in 39 0 -60 0 -
 expect kills=12/12
 expect health>0
 goto 42 1               # Tuna Tin
