@@ -1,68 +1,171 @@
-# Level 7 "Pyramid Server Farm" completion (maps/level7.vmap, layout and
-# coordinates in maps/src/level7.txt), skill 2. Layout pass: the map has no
-# enemies yet (#179); the population issue re-records the fights into this
-# route. High-level commands only. goto does not path through a closed
-# door, so each door is opened by hand (goto the tile in front, face, use,
-# wait 32). Route: atrium -> Cooling Hall (green key) -> green door -> lit
-# main aisle -> Blackout switch -> dark west maze (a different route) ->
-# Uplink Core (blue key) -> blue door -> Broadcast Bridge (violet key) ->
-# one-way drop -> violet door -> EXIT.
+# Level 7 "Pyramid Server Farm" completion (maps/level7.vmap, coordinates in
+# maps/src/level7.txt), skill 2, populated (#193). High-level commands only.
+# WORK IN PROGRESS: the run clears the Cooling Hall (Lance duel), the aisle,
+# the switch room and the dark maze (36 kills, health 77), then dies to
+# Uplink Core wave 1 at tic 4187. The bridge, landing and exit-room fights
+# are not recorded yet.
 vsdemo 1
 level 7
 skill 2
 seed 0
 
-# Entry atrium -> Cooling Hall.
+# Atrium: pick up the weapons (see level7.txt), then the Cooling Hall.
+goto 9 6
+goto 9 3
+goto 10 5
 goto 10 4
 face 0
 use
 wait 32
+goto 12 4
+weapon 4
+clear 22
+weapon 6
+fire nearest
+fire nearest
+clear 32
+expect kills=5
+# Server Maze: lit aisle, bays, switch room.
 goto 13 4              # Sun Orb
 goto 20 4              # Linen Wrap
-goto 42 4              # green key at the far end of the hall
-# Green door into the Server Maze.
+goto 25 4              # Tuna Tin
+goto 30 4              # Charge Jar
+goto 35 4              # Scarab
+goto 42 4              # green key
 goto 40 6
 face 90
 use
 wait 32
-# The lit main aisle, through both START_OPEN doors, to the switch room.
+weapon 4
+goto 40 8
+fire 1                 # wake the bays: they come to the aisle
+clear 12
+wait 40
+clear 12
+wait 40
+clear 12
+goto 40 9              # Scarab Launcher
 goto 40 10
-goto 43 10             # south bay: Charge Vial, Scarab
+clear 12
+goto 43 10
+clear 8
+goto 40 14
+clear 12
+wait 30
+clear 12
+goto 40 17
+clear 8
+goto 44 17
+clear 8
 goto 40 18
-goto 44 17             # north bay: Yarn Basket
+goto 40 21
+clear 10
+goto 40 25
+clear 10
 goto 40 27
-goto 43 28             # Charge Jar
+clear 10
+goto 43 28              # Charge Jar
+clear 10
+goto 42 29              # Sun Shard
+clear 10
+goto 38 28              # Tuna Tin
+clear 10
+expect kills=18
+# Blackout.
 goto 40 30
 face 90
 use                    # Blackout: aisle doors close, maintenance walls open, lights go
 wait 40
 expect tile=40,30
-# The dark west maze, five rack bands, a different route south.
+# The dark west maze, five rack bands.
+weapon 4
+goto 37 28
+clear 8
 goto 35 28             # through maintenance wall M (36,28)
-goto 25 29
+clear 20
+goto 30 29
+clear 20
+goto 25 29             # Fish Snack
+clear 20
 goto 18 27             # gap down to band 2
+clear 20
+goto 26 24
+clear 20
 goto 34 23             # band 2, east end
+clear 20
 goto 34 21             # through maintenance wall M (34,22)
+clear 20
+goto 27 20
+clear 20
+goto 20 20             # Tuna Tin
+clear 20
 goto 18 19             # band 3, gap at the west end
+clear 20
+goto 26 16
+clear 20
 goto 34 15             # band 4, east end
+clear 20
 goto 33 13             # gap down to band 5
+clear 20
+goto 26 12
+clear 20
 goto 19 11             # Fish Snack
+clear 20
 goto 14 10             # out of the maze
+clear 20
+expect kills=36
+# Corridor x = 14 and the Uplink Core waves.
+goto 14 14             # Sphinx Howler
+goto 14 16
+clear 20
 goto 13 19
+clear 20
 face 180
 use                    # door into the Uplink Core
 wait 32
-goto 10 19
-goto 4 19
-goto 4 25
-goto 7 25              # blue key on the ring, north of the core pillar
+goto 11 19             # TRIGGER: tag 20 opens the north and south closets
+weapon 6
+wait 40                # the closet doors take 32 tics
+fire 1                 # the shot wakes wave 1
+goto 14 15             # back down the 1-wide corridor: they queue in a line
+face 90
+clear 12               # the Lance pierces the line
+wait 30
+clear 12
+wait 30
+clear 12
+weapon 7               # the Howler breaks the Shieldbearers' shields
+clear 12
+goto 14 17
+clear 12
+goto 11 19
+clear 12
+expect kills=43
+weapon 6
+fire 1                 # wave 2 (west and east closets) is out: wake it
+goto 14 15
+face 90
+clear 12
+wait 30
+clear 12
+wait 30
+clear 12
+weapon 7
+clear 12
+goto 14 17
+clear 12
+goto 11 19
+clear 12
+expect kills=50
+goto 4 19              # Tuna Tin
+goto 4 25              # Scarab Crate
+goto 7 25              # blue key
 goto 5 26
 face 90
 use                    # blue door
 wait 32
+goto 5 30 70           # through the way-out gate (fails if tag 22 did not open it)
 goto 5 37
-goto 6 38
-goto 4 40
 # Broadcast Bridge.
 goto 36 40             # violet key
 goto 43 40
