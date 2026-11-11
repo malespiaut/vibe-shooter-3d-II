@@ -120,6 +120,22 @@ static void test_timed(void)
     gs.player.y = FX(3) + HALF;
     run(&gs, &IDLE, 1);
     assert(door(&gs, 3, 4)->state == DOOR_CLOSING);
+
+    /* A timed switch (param > 0) can be pressed again: failing the run to
+     * the door just means pressing it again (levels.md, Pump House Sprint). */
+    place(&gs, 1, 1, ANG180);
+    run(&gs, &USE, 1);
+    run(&gs, &IDLE, 104 + 32 + 10);
+    assert(door(&gs, 3, 4)->state == DOOR_CLOSED);
+    run(&gs, &USE, 1);
+    assert(gs.tags_fired == 2);
+    assert(door(&gs, 3, 4)->state == DOOR_OPENING);
+    run(&gs, &IDLE, 60);
+    run(&gs, &USE, 1); /* pressing while open restarts the 3 s */
+    run(&gs, &IDLE, 103);
+    assert(door(&gs, 3, 4)->state == DOOR_OPEN);
+    run(&gs, &IDLE, 1);
+    assert(door(&gs, 3, 4)->state == DOOR_CLOSING);
     printf("tags_timed: ok\n");
 }
 

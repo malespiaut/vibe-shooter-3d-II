@@ -161,7 +161,9 @@ void game_use(game_state *gs)
     int used = 0;
     if (c) {
         uint8_t *fired = &gs->cell_fired[ty * gs->map->width + tx];
-        if ((c->flags & BAST_CELL_SWITCH) && !(*fired & FIRED_SWITCH)) {
+        /* A timed switch (param > 0) stays usable: pressing it again
+         * reopens its doors or restarts their close timer. */
+        if ((c->flags & BAST_CELL_SWITCH) && (!(*fired & FIRED_SWITCH) || c->param > 0)) {
             *fired |= FIRED_SWITCH;
             if (!(c->flags & BAST_CELL_EXIT))
                 game_sound(gs, SFX_switch_click, cx, cy);
