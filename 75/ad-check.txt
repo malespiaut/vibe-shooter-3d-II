@@ -1,0 +1,14 @@
+art-director check at e67e828
+
+$ git diff --name-only origin/main...HEAD | grep -vE '^(assets/src/sfx/|tests/test_sfx|tools/sfx.py|docs/design/audio.md|CMakeLists.txt)'
+(no output: no texture, sprite, HUD, font, palette or renderer file touched)
+
+$ cmake -S . -B build -G Ninja && cmake --build build
+[62/63] Linking C executable game
+$ ctest --test-dir build
+100% tests passed out of 32
+$ sh tools/build_assets.sh | tail -2
+palcheck: OK, 71 file(s) checked
+build_assets: ok
+
+note: merging HEAD with origin/main (68f6118) gives a conflict in CMakeLists.txt (set_tests_properties list)
