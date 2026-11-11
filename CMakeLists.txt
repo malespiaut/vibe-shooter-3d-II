@@ -234,3 +234,16 @@ foreach(t music_parse music_render)
   target_compile_options(test_${t} PRIVATE -UNDEBUG)
   add_test(NAME ${t} COMMAND test_${t} ${TITLE_VMUS})
 endforeach()
+
+# Determinism (roadmap.md, Determinism rules): replay a registered demo twice
+# with --hash-log and require byte-identical per-tic logs. Later milestones
+# call add_demo_determinism(m3-arena) and add_demo_determinism(levelN-complete).
+function(add_demo_determinism name)
+  add_test(NAME determinism_${name}
+    COMMAND ${CMAKE_COMMAND}
+            -DGAME=$<TARGET_FILE:game>
+            -DDEMO=${CMAKE_SOURCE_DIR}/demos/${name}.demo
+            -DOUT=${CMAKE_BINARY_DIR}/test_tmp/determinism_${name}
+            -P ${CMAKE_SOURCE_DIR}/tests/determinism.cmake)
+endfunction()
+add_demo_determinism(m1-walk)
