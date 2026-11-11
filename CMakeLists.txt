@@ -304,6 +304,11 @@ add_test(NAME sprite_chomp
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprite_chomp.py)
 set_tests_properties(sprite_chomp PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+# Dachshund Howitzer sprite set: same checks at 72x48, plus the muzzle glow.
+add_test(NAME sprite_dach
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprite_dach.py)
+set_tests_properties(sprite_dach PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 # Music sequencer (docs/design/audio.md, "Music"): parser and render tests,
 # and build/vmus_render <song.vmus> <out.wav> [seconds] for listening/evidence.
