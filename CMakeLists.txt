@@ -416,6 +416,16 @@ foreach(t music_parse music_render)
   add_test(NAME ${t} COMMAND test_${t} ${TITLE_VMUS})
 endforeach()
 
+# Level and intermission songs: lengths, headroom, every channel audible.
+set(MUSIC_SRC ${CMAKE_SOURCE_DIR}/assets/src/music)
+add_executable(test_music_tracks tests/test_music_tracks.c)
+target_link_libraries(test_music_tracks PRIVATE engine)
+target_compile_options(test_music_tracks PRIVATE -UNDEBUG)
+add_test(NAME music_tracks COMMAND test_music_tracks
+  ${MUSIC_SRC}/level_eg.vmus 60 120
+  ${MUSIC_SRC}/level_docks.vmus 60 120
+  ${MUSIC_SRC}/intermission.vmus 8 20)
+
 # Determinism (roadmap.md, Determinism rules): replay a registered demo twice
 # with --hash-log and require byte-identical per-tic logs. Later milestones
 # call add_demo_determinism(m3-arena) and add_demo_determinism(levelN-complete).
