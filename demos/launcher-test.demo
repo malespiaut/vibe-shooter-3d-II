@@ -3,7 +3,8 @@
 # middle of three Mutt Troopers standing 1 u apart: the direct hit and the
 # 96 / 1.5 u splash kill all three. Then the pistol shoots a kibble barrel;
 # 4 tics after its death it explodes (64 / 1.5 u) and kills the Mutt 1 u
-# north of it. Ends with expect lines on kills and health.
+# north of it. The Mutts are AMBUSH and face away, so the AI leaves them
+# standing. Ends with expect lines on kills and health.
 vsdemo 1
 level 1
 skill 2

@@ -176,7 +176,9 @@ void ai_noise(game_state *gs)
     }
     for (int i = 0; i < gs->things.count; i++) {
         thinker_t *t = &gs->things.list[i];
-        if (!thinker_alive(t) || t->state != TH_STATE_STAND || (t->flags & TH_FLAG_AMBUSH))
+        /* Enemies only: a barrel is alive but never wakes. */
+        if (!thinker_alive(t) || !enemy_info(t->type) || t->state != TH_STATE_STAND ||
+            (t->flags & TH_FLAG_AMBUSH))
             continue;
         const int tx = fix_to_int(t->x), ty = fix_to_int(t->y);
         if (in_map(gs, tx, ty) && heard[ty * w + tx])

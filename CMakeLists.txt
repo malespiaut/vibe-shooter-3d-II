@@ -176,7 +176,7 @@ endforeach()
 add_executable(test_projectile tests/test_projectile.c)
 target_link_libraries(test_projectile PRIVATE engine)
 target_compile_options(test_projectile PRIVATE -UNDEBUG)
-foreach(g travel wall splash splash_wall self direct barrel_chain barrel_solid)
+foreach(g travel wall splash splash_wall self direct barrel_chain barrel_solid awake alive)
   add_test(NAME proj_${g} COMMAND test_projectile ${g})
 endforeach()
 # Gameplay code is fixed point only (CLAUDE.md): no float/double in src/game.

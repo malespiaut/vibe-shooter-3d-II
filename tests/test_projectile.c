@@ -6,6 +6,8 @@
 #include <string.h>
 
 #include "bast.h"
+#include "game/ai.h"
+#include "game/door.h"
 #include "game/items.h"
 #include "game/projectile.h"
 #include "game/state.h"
@@ -279,6 +281,88 @@ static void t_barrel_solid(void)
     bast_map_free(m);
 }
 
+/* Awake enemies (#117 states) are hit: a scarab flies at a Chihuahua
+ * Chomper in CHASE and stops on it (direct hit), and the splash reaches a
+ * second chasing Chomper 0.75 u north of it. */
+static void t_awake(void)
+{
+    bast_map *m = open_map();
+    add_entity(m, BAST_ENT_CHIHUAHUA_CHOMPER, FX(9) + HALF, FX(3) + HALF);
+    add_entity(m, BAST_ENT_CHIHUAHUA_CHOMPER, FX(9) + HALF, FX(4) + HALF / 2);
+    game_state gs;
+    setup(&gs, m, FX(2) + HALF, 0);
+    thinker_t *a = thinker_get(&gs.things, 1), *b = thinker_get(&gs.things, 2);
+    a->state = b->state = TH_STATE_CHASE;
+    game_tic(&gs, &FIRE);
+    thinker_t *s = find(&gs, TH_TYPE_SCARAB_PROJ);
+    assert(s);
+    uint8_t sa = 0, sb = 0;
+    int tics = 0;
+    while (s->type == TH_TYPE_SCARAB_PROJ && tics++ < 40) {
+        sa = a->state;
+        sb = b->state;
+        game_tic(&gs, &IDLE);
+    }
+    assert(s->type == TH_TYPE_EXPLOSION_SMALL);
+    const int64_t dx = (int64_t)a->x - s->x, dy = (int64_t)a->y - s->y;
+    const int64_t r = (int64_t)a->radius + s->radius;
+    printf("proj_awake: states before impact %d %d, scarab hit after %d tics, "
+           "health %d %d, kills %d\n", sa, sb, tics, a->health, b->health, gs.things.kills);
+    assert(sa == TH_STATE_CHASE && sb == TH_STATE_CHASE);
+    assert(dx * dx + dy * dy < r * r);           /* stopped on the chasing Chomper */
+    assert(a->state == TH_STATE_DEAD && b->state == TH_STATE_DEAD);
+    assert(b->health < 15 && gs.things.kills == 2); /* b took splash only */
+    bast_map_free(m);
+}
+
+/* Effects, dying barrels and free slots are not "alive": an explosion in a
+ * doorway does not hold the door open, and AI never runs them. */
+static void t_alive(void)
+{
+    bast_map *m = open_map();
+    bast_map_cell_at(m, 10, 3)->flags = BAST_CELL_DOOR;
+    add_entity(m, BAST_ENT_KIBBLE_BARREL, FX(20) + HALF, FX(3) + HALF);
+    game_state gs;
+    setup(&gs, m, FX(2) + HALF, 0);
+    assert(gs.door_count == 1);
+    thinker_t *barrel = thinker_get(&gs.things, 1);
+    assert(thinker_alive(barrel));
+    door_activate(&gs, 0);
+    for (int k = 0; k < 40; k++)
+        game_tic(&gs, &IDLE);
+    assert(gs.doors[0].state == DOOR_OPEN);
+    /* A long-lived explosion effect standing in the doorway. */
+    thinker_t *fx = thinker_get(&gs.things, thinker_alloc(&gs.things));
+    fx->type = TH_TYPE_EXPLOSION_BIG;
+    fx->state = TH_STATE_STAND;
+    fx->x = FX(10) + HALF;
+    fx->y = FX(3) + HALF;
+    fx->radius = BARREL_RADIUS;
+    fx->tics = 100000;
+    assert(!thinker_alive(fx));
+    int closed_at = -1;
+    for (int k = 0; k < DOOR_WAIT_TICS + 80 && closed_at < 0; k++) {
+        game_tic(&gs, &IDLE);
+        if (gs.doors[0].state == DOOR_CLOSED)
+            closed_at = k;
+    }
+    printf("proj_alive: door closed %d tics after the effect entered it\n", closed_at);
+    assert(closed_at >= 0 && fx->type == TH_TYPE_EXPLOSION_BIG && fx->x == FX(10) + HALF);
+    /* A projectile, a dying barrel and a free slot are not alive either. */
+    thinker_t probe = *fx;
+    probe.type = TH_TYPE_SCARAB_PROJ;
+    assert(!thinker_alive(&probe));
+    probe = *barrel;
+    probe.state = TH_STATE_DYING;
+    assert(!thinker_alive(&probe));
+    probe.state = TH_STATE_FREE;
+    assert(!thinker_alive(&probe));
+    /* Gunfire noise never wakes a barrel. */
+    ai_noise(&gs);
+    assert(barrel->state == TH_STATE_STAND);
+    bast_map_free(m);
+}
+
 int main(int argc, char **argv)
 {
     const char *g = argc > 1 ? argv[1] : "all";
@@ -291,5 +375,7 @@ int main(int argc, char **argv)
     if (all || !strcmp(g, "direct")) t_direct();
     if (all || !strcmp(g, "barrel_chain")) t_barrel_chain();
     if (all || !strcmp(g, "barrel_solid")) t_barrel_solid();
+    if (all || !strcmp(g, "awake")) t_awake();
+    if (all || !strcmp(g, "alive")) t_alive();
     return 0;
 }
