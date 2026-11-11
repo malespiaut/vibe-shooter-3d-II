@@ -4,13 +4,19 @@
  *
  *   game [--map <file.vmap>] [--warp N] [--skill N] [--god] [--topdown]
  *        [--demo <file.demo>] [--record <file.demo>] [--max-tics N]
- *        [--hash-log <file>]
+ *        [--hash-log <file>] [--sound-log <file>]
  *   game --headless --demo <file.demo> [--frames-out <dir>] [--frame-every N] ...
  *
  * Flags and exit codes: docs/design/roadmap.md (Verification tooling
  * contract). Window mode: WASD / arrows move (left/right arrows turn), Shift
  * runs, mouse X turns; quits on Esc or window close. The last stdout line of
- * every run is the STATS line. */
+ * every run is the STATS line.
+ *
+ * Sound: after every tic the game's sound events (game/sound.h) go to the
+ * mixer in window mode (distance volume and pan from the player), nowhere in
+ * headless mode, and with --sound-log to a file, one line per event:
+ * `tic name x y` (tic = the tic that made it, 0-based; x y in world units
+ * with 4 decimals, `- -` for local player sounds). */
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -25,6 +31,7 @@
 #include "engine/video.h"
 #include "game/demo.h"
 #include "game/hud.h"
+#include "game/sound.h"
 #include "game/state.h"
 #include "game/topdown.h"
 #include "platform/platform.h"
@@ -49,6 +56,7 @@ typedef struct {
     int frame_every;
     long max_tics; /* 0 = no limit */
     const char *hash_log;
+    const char *sound_log;
     const char *map_path;
     int warp;  /* 0 = not given */
     int skill; /* 0 = not given */
@@ -75,7 +83,8 @@ static void usage(void)
     fprintf(stderr,
             "usage: game [--headless] [--demo <file.demo>] [--record <file.demo>]\n"
             "            [--frames-out <dir>] [--frame-every N] [--max-tics N]\n"
-            "            [--hash-log <file>] [--map <file.vmap>] [--warp N] [--skill 1-3]\n"
+            "            [--hash-log <file>] [--sound-log <file>] [--map <file.vmap>]\n"
+            "            [--warp N] [--skill 1-3]\n"
             "            [--god] [--topdown]\n");
 }
 
@@ -117,6 +126,9 @@ static int parse_args(int argc, char **argv, options *o)
             i++;
         } else if (strcmp(a, "--hash-log") == 0) {
             o->hash_log = v;
+            i++;
+        } else if (strcmp(a, "--sound-log") == 0) {
+            o->sound_log = v;
             i++;
         } else if (strcmp(a, "--map") == 0) {
             o->map_path = v;
@@ -179,6 +191,9 @@ typedef struct {
     uint32_t seed;
     game_state gs;
     FILE *hash_log;
+    FILE *sound_log;
+    int audio;                      /* window mode: sounds go to the mixer */
+    mixer_sound *sfx[SFX_COUNT];    /* loaded effects, NULL if missing */
     demo_rec rec;
     hud_state hud; /* render side: timers, face (game/hud.h) */
     int status;
@@ -255,6 +270,13 @@ static int setup(run_t *r)
             return 0;
         }
     }
+    if (o->sound_log) {
+        r->sound_log = fopen(o->sound_log, "w");
+        if (!r->sound_log) {
+            fprintf(stderr, "game: %s: cannot write\n", o->sound_log);
+            return 0;
+        }
+    }
     if (o->frames_dir && !platform_make_dir(o->frames_dir)) {
         fprintf(stderr, "game: %s: cannot create directory\n", o->frames_dir);
         return 0;
@@ -276,11 +298,59 @@ static void draw(const run_t *r)
     }
 }
 
+/* Writes a 16.16 value as decimal world units with 4 decimals (integer
+ * maths: the log must not depend on float formatting). */
+static void log_fix(FILE *f, fix_t v)
+{
+    int64_t a = v < 0 ? -(int64_t)v : v;
+    int64_t frac = ((a & 0xffff) * 10000 + 0x8000) >> 16;
+    int64_t whole = a >> 16;
+    if (frac == 10000) {
+        whole++;
+        frac = 0;
+    }
+    fprintf(f, "%s%" PRId64 ".%04" PRId64, v < 0 ? "-" : "", whole, frac);
+}
+
+/* Sends the tic's sound events to the log and, in window mode, the mixer:
+ * volume from the distance to the player, pan from the angle between the
+ * view and the source. Reads game state only. */
+static void drain_sounds(run_t *r)
+{
+    const game_state *gs = &r->gs;
+    const player_t *p = &gs->player;
+    for (int i = 0; i < gs->sounds.count; i++) {
+        const sound_event *e = &gs->sounds.ev[i];
+        if (r->sound_log) {
+            fprintf(r->sound_log, "%" PRIu32 " %s ", gs->tic - 1, sfx_name(e->id));
+            if (e->local) {
+                fputs("- -", r->sound_log);
+            } else {
+                log_fix(r->sound_log, e->x);
+                fputc(' ', r->sound_log);
+                log_fix(r->sound_log, e->y);
+            }
+            fputc('\n', r->sound_log);
+        }
+        if (!r->audio || !r->sfx[e->id])
+            continue;
+        int vol = MIXER_VOL_MAX, pan = MIXER_PAN_CENTER;
+        if (!e->local) {
+            const fix_t dx = e->x - p->x, dy = e->y - p->y;
+            vol = mixer_dist_volume(fix_dist(dx, dy));
+            pan = mixer_pan(p->angle, angle_of(dx, dy));
+        }
+        if (vol > 0)
+            mixer_start(r->sfx[e->id], MIXER_SOURCE_NONE, vol, pan);
+    }
+}
+
 /* Runs one tic with `cmd`; logs the hash, records, dumps a frame. */
 static int step(run_t *r, const ticcmd *cmd)
 {
     game_tic(&r->gs, cmd);
     hud_tic(&r->hud, &r->gs);
+    drain_sounds(r);
     if (r->hash_log)
         fprintf(r->hash_log, "%016" PRIx64 "\n", game_hash(&r->gs));
     if (r->opt.record_path && !demo_rec_add(&r->rec, cmd)) {
@@ -340,15 +410,17 @@ static void run_window(run_t *r)
         r->status = EXIT_ERROR;
         return;
     }
-    /* Mixer before the device opens; menu_select once so the wiring is
-     * audible. A missing sound is not fatal. */
+    /* Mixer and every effect before the device opens. A missing sound is
+     * not fatal: that effect stays silent. */
     mixer_init(VS3D_ASSETS_DIR);
-    mixer_sound *startup = mixer_load_snd("menu_select");
-    if (startup)
-        mixer_start(startup, MIXER_SOURCE_NONE, MIXER_VOL_MAX, MIXER_PAN_CENTER);
+    for (int i = 0; i < SFX_COUNT; i++) {
+        r->sfx[i] = mixer_load_snd(sfx_name(i));
+        if (!r->sfx[i])
+            fprintf(stderr, "game: %s\n", mixer_error());
+    }
+    if (platform_audio_open(audio_fill, NULL))
+        r->audio = 1;
     else
-        fprintf(stderr, "game: %s\n", mixer_error());
-    if (!platform_audio_open(audio_fill, NULL))
         fprintf(stderr, "game: audio disabled: %s\n", platform_error());
     platform_set_relative_mouse(true);
 
@@ -476,6 +548,10 @@ int main(int argc, char **argv)
             run_window(&r);
         if (r.status != EXIT_ERROR)
             print_stats(&r);
+    }
+    if (r.sound_log && fclose(r.sound_log) != 0) {
+        fprintf(stderr, "game: %s: write failed\n", r.opt.sound_log);
+        r.status = EXIT_ERROR;
     }
     if (r.hash_log && fclose(r.hash_log) != 0) {
         fprintf(stderr, "game: %s: write failed\n", r.opt.hash_log);

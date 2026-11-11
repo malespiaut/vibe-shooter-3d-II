@@ -183,6 +183,7 @@ void game_tic(game_state *gs, const ticcmd *cmd)
 {
     player_t *p = &gs->player;
 
+    gs->sounds.count = 0; /* the main loop drained last tic's events */
     items_tic(gs);
     p->angle = (angle_t)(p->angle + (uint16_t)cmd->turn);
 

@@ -1,4 +1,5 @@
 #include "game/items.h"
+#include "game/sound.h"
 #include "game/tags.h"
 
 #include <string.h>
@@ -148,6 +149,26 @@ int item_apply(game_state *gs, int type)
     }
 }
 
+/* Pickup sound by group (audio.md World): keys, powerups (Catnip Frenzy,
+ * Cat's Eye Amulet, Ninth Life), weapons, everything else. */
+static int pickup_sfx(int type)
+{
+    if (type >= BAST_ENT_ANKH_PISTOL && type <= BAST_ENT_SPHINX_HOWLER)
+        return SFX_weapon_pickup;
+    switch (type) {
+    case BAST_ENT_GREEN_ANKH:
+    case BAST_ENT_BLUE_ANKH:
+    case BAST_ENT_VIOLET_ANKH:
+        return SFX_key_pickup;
+    case BAST_ENT_CATNIP_FRENZY:
+    case BAST_ENT_CATS_EYE_AMULET:
+    case BAST_ENT_NINTH_LIFE:
+        return SFX_powerup_pickup;
+    default:
+        return SFX_item_pickup;
+    }
+}
+
 void items_touch(game_state *gs)
 {
     const player_t *p = &gs->player;
@@ -208,6 +229,7 @@ static void post_pickup(game_state *gs, int type)
     ev.kind = GEV_PICKUP;
     ev.type = (uint16_t)type;
     game_post_event(gs, &ev);
+    game_sound_local(gs, pickup_sfx(type));
 }
 
 static void damage(game_state *gs, int32_t amount, int has_src, fix_t sx, fix_t sy)
@@ -239,18 +261,22 @@ static void damage(game_state *gs, int32_t amount, int has_src, fix_t sx, fix_t 
     if (p->armour == 0)
         p->armour_class = ARMOUR_NONE;
     p->health -= amount - absorbed;
-    if (p->health > 0)
+    if (p->health > 0) {
+        game_sound_local(gs, SFX_player_pain);
         return;
+    }
     if (p->ninth_life) {
         p->ninth_life = 0;
         p->health = NINTH_LIFE_HEALTH;
         p->armour = armour_before;
         p->armour_class = class_before;
         p->invuln_tics = NINTH_LIFE_INVULN_TICS;
+        game_sound_local(gs, SFX_ninth_life);
         return;
     }
     p->health = 0;
     p->dead = 1;
+    game_sound_local(gs, SFX_player_death);
 }
 
 void player_damage(game_state *gs, int32_t amount)

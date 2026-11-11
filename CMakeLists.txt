@@ -489,3 +489,17 @@ target_compile_options(test_tags PRIVATE -UNDEBUG)
 foreach(c switch start_open timed pushwall trigger secret lights damage exit)
   add_test(NAME tags_${c} COMMAND test_tags ${CMAKE_SOURCE_DIR}/maps/tagstest.vmap ${c})
 endforeach()
+
+# Sound events (issue #118): the sound-ID table matches assets/src/sfx, the
+# queue and door/use sounds (unit), and demos with --sound-log.
+add_test(NAME sfx_names
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sfx_names.py ${CMAKE_SOURCE_DIR})
+add_executable(test_sound tests/test_sound.c)
+target_link_libraries(test_sound PRIVATE engine)
+target_compile_options(test_sound PRIVATE -UNDEBUG)
+add_test(NAME sound_unit COMMAND test_sound unit ${CMAKE_SOURCE_DIR}/maps)
+add_test(NAME sound_events
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sound_events.py
+          $<TARGET_FILE:game> $<TARGET_FILE:test_sound> ${CMAKE_SOURCE_DIR}
+          ${CMAKE_BINARY_DIR}/test_tmp/sound_events)
+add_demo_determinism(door-locked)

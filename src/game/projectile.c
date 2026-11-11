@@ -4,6 +4,7 @@
 
 #include "game/ai.h"
 #include "game/items.h"
+#include "game/sound.h"
 #include "game/state.h"
 
 /* weapons.md: Scarab Launcher, 14 u/s, direct 30..50, splash 96 r1.5.
@@ -144,6 +145,7 @@ static void projectile_move(game_state *gs, thinker_t *t, uint16_t id)
         player_damage(gs, roll(gs, pi->dmg_base, pi->dmg_spread));
     if (pi->splash)
         splash_damage(gs, t->x, t->y, pi->splash, pi->splash_radius, id);
+    game_sound(gs, SFX_scarab_explode, t->x, t->y);
 
     t->type = pi->fx;
     t->tics = fx_tics(pi->fx);
@@ -189,6 +191,7 @@ void projectiles_tic(game_state *gs)
             fx->y = y;
             fx->tics = fx_tics(TH_TYPE_EXPLOSION_BIG);
         }
+        game_sound(gs, SFX_barrel_explode, x, y);
         splash_damage(gs, x, y, BARREL_SPLASH, SPLASH_RADIUS_1_5, boom[i]);
     }
 }

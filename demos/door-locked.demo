@@ -1,0 +1,15 @@
+# Locked-door test (issue #118): from the start (2,1) walk below the green
+# door G at (4,4) without the green key, face it and use it. The door must
+# refuse (door_locked buzz in --sound-log) and stay shut: the player cannot
+# walk through. tests/test_sound_events.py checks the sound log.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+
+goto 4 3               # the corridor tile just south of door G
+face 90                # north, toward the door
+use                    # no green key: refused
+wait 10
+expect tile=4,3

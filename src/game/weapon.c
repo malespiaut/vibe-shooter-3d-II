@@ -3,7 +3,18 @@
 
 #include "game/ai.h"
 #include "game/projectile.h"
+#include "game/sound.h"
 #include "game/state.h"
+
+/* Fire sound per slot (audio.md Player); Claws: claw_swish on a miss,
+ * claw_hit when they connect. Slots 6-7 fire in later issues. */
+static const int FIRE_SFX[WP_SLOTS] = {
+    [WP_CLAWS] = SFX_claw_swish,
+    [WP_PISTOL] = SFX_pistol_fire,
+    [WP_SCATTERGUN] = SFX_scatter_fire,
+    [WP_REPEATER] = SFX_repeater_fire,
+    [WP_LAUNCHER] = SFX_scarab_launch,
+};
 
 /* weapons.md Stats. Damage base..base+spread; spread in angle units. */
 const weapon_info_t weapon_info[WP_SLOTS] = {
@@ -195,9 +206,11 @@ static void fire_weapon(game_state *gs)
     const player_t *p = &gs->player;
     if (wp == WP_LAUNCHER) { /* one scarab from the eye */
         projectile_spawn(gs, TH_TYPE_SCARAB_PROJ, TH_ID_PLAYER, p->x, p->y, PLAYER_EYE_Z, p->angle);
+        game_sound_local(gs, FIRE_SFX[wp]);
         return;
     }
     const fix_t range = wp == WP_CLAWS ? CLAW_REACH : HITSCAN_RANGE;
+    int hit = 0;
     for (int i = 0; i < wi->pellets; i++) {
         angle_t a = (angle_t)(p->angle + spread_offset(gs, wi->spread));
         uint16_t id = weapon_trace(gs, p->x, p->y, a, range, wp == WP_CLAWS, NULL);
@@ -205,8 +218,21 @@ static void fire_weapon(game_state *gs)
         if (t) {
             int32_t dmg = wi->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)wi->dmg_spread + 1);
             ai_damage(gs, t, dmg);
+            hit = 1;
         }
     }
+    if (FIRE_SFX[wp])
+        game_sound_local(gs, wp == WP_CLAWS && hit ? SFX_claw_hit : FIRE_SFX[wp]);
+}
+
+/* weapon_select, with weapon_switch when a switch actually starts. */
+static void select_sound(game_state *gs, int wp)
+{
+    weapons_t *w = &gs->player.weapons;
+    const uint8_t pending = w->pending, tics = w->switch_tics;
+    weapon_select(w, wp);
+    if (w->pending != pending || w->switch_tics != tics)
+        game_sound_local(gs, SFX_weapon_switch);
 }
 
 void weapon_tic(struct game_state *gs, int select_slot, int fire)
@@ -215,7 +241,7 @@ void weapon_tic(struct game_state *gs, int select_slot, int fire)
     player_t *p = &gs->player;
 
     if (select_slot)
-        weapon_select(w, select_slot);
+        select_sound(gs, select_slot);
 
     /* View bob: the phase advances with the player's speed (a full cycle
      * per ~1 s at walk speed). */
@@ -224,8 +250,12 @@ void weapon_tic(struct game_state *gs, int select_slot, int fire)
 
     if (w->flash_tics)
         w->flash_tics--;
-    if (w->refire_tics)
+    if (w->refire_tics) {
         w->refire_tics--;
+        /* Scattergun: fire x2, pump x2 (weapons.md), pump half way. */
+        if (w->ready == WP_SCATTERGUN && w->refire_tics == weapon_info[WP_SCATTERGUN].interval / 2)
+            game_sound_local(gs, SFX_scatter_pump);
+    }
     if (w->switch_tics) {
         w->switch_tics--;
         if (w->switch_tics == WEAPON_SWITCH_TICS / 2) { /* lowered: raise the new one */
@@ -238,12 +268,12 @@ void weapon_tic(struct game_state *gs, int select_slot, int fire)
     }
 
     if (!weapon_has_ammo(w, w->ready)) {
-        weapon_select(w, weapon_auto_pick(w));
+        select_sound(gs, weapon_auto_pick(w));
         return;
     }
     if (fire && w->refire_tics == 0) {
         fire_weapon(gs);
         if (!weapon_has_ammo(w, w->ready))
-            weapon_select(w, weapon_auto_pick(w));
+            select_sound(gs, weapon_auto_pick(w));
     }
 }
