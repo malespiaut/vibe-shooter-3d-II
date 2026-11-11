@@ -1,0 +1,80 @@
+# Level 7 "Pyramid Server Farm" completion (maps/level7.vmap, layout and
+# coordinates in maps/src/level7.txt), skill 2. Layout pass: the map has no
+# enemies yet (#179); the population issue re-records the fights into this
+# route. High-level commands only. goto does not path through a closed
+# door, so each door is opened by hand (goto the tile in front, face, use,
+# wait 32). Route: atrium -> Cooling Hall (green key) -> green door -> lit
+# main aisle -> Blackout switch -> dark west maze (a different route) ->
+# Uplink Core (blue key) -> blue door -> Broadcast Bridge (violet key) ->
+# one-way drop -> violet door -> EXIT.
+vsdemo 1
+level 7
+skill 2
+seed 0
+
+# Entry atrium -> Cooling Hall.
+goto 10 4
+face 0
+use
+wait 32
+goto 13 4              # Sun Orb
+goto 20 4              # Linen Wrap
+goto 42 4              # green key at the far end of the hall
+# Green door into the Server Maze.
+goto 40 6
+face 90
+use
+wait 32
+# The lit main aisle, through both START_OPEN doors, to the switch room.
+goto 40 10
+goto 43 10             # south bay: Charge Vial, Scarab
+goto 40 18
+goto 44 17             # north bay: Yarn Basket
+goto 40 27
+goto 43 28             # Charge Jar
+goto 40 30
+face 90
+use                    # Blackout: aisle doors close, maintenance walls open, lights go
+wait 40
+expect tile=40,30
+# The dark west maze, five rack bands, a different route south.
+goto 35 28             # through maintenance wall M (36,28)
+goto 25 29
+goto 18 27             # gap down to band 2
+goto 34 23             # band 2, east end
+goto 34 21             # through maintenance wall M (34,22)
+goto 18 19             # band 3, gap at the west end
+goto 34 15             # band 4, east end
+goto 33 13             # gap down to band 5
+goto 19 11             # Fish Snack
+goto 14 10             # out of the maze
+goto 13 19
+face 180
+use                    # door into the Uplink Core
+wait 32
+goto 10 19
+goto 4 19
+goto 4 25
+goto 7 25              # blue key on the ring, north of the core pillar
+goto 5 26
+face 90
+use                    # blue door
+wait 32
+goto 5 37
+goto 6 38
+goto 4 40
+# Broadcast Bridge.
+goto 36 40             # violet key
+goto 43 40
+face 0
+use                    # one-way door: opens from the bridge side only
+wait 32
+goto 46 40
+goto 49 37
+face 270
+use                    # violet door
+wait 32
+goto 50 31
+face 270
+use                    # EXIT
+expect exit=1

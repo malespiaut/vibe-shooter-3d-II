@@ -1,0 +1,223 @@
+# Level 7 "Pyramid Server Farm" (docs/design/levels.md section 7): 56x48,
+# built by tools/mkmap.py into maps/level7.vmap. Layout pass only (#179):
+# no enemies; WAYPOINT entities named @... mark the spots for the
+# population issue. Coordinates are (x, y), y counted from the south (the
+# last layout row is y = 0), the same as demo `goto`.
+#
+# Critical path (demos/level7-complete.demo):
+#   Entry atrium (1-10, 1-9), start (6,5) facing east -> door D (11,4)
+#   -> Cooling Hall (12-43, 2-6), 32 tiles long, pumps on both walls,
+#      green key (42,4) at the far end -> green door 1 (40,7)
+#   -> Server Maze, lit main aisle x = 40 (y 8-25) with two START_OPEN
+#      doors O (40,12) and (40,20), side bays (42-45, 9-11) and (42-45, 16-18)
+#   -> switch room (37-44, 26-30), Blackout switch B (40,31) on its north wall
+#   -> tag 1: the O doors close for good (mode=switch: `use` cannot reopen
+#      them), the maintenance walls M (36,28) and (34,22) and the hatch H
+#      (36,16) open, and the LIGHTS entity switches every cell to dark_alt
+#   -> the dark west maze (17-35, 9-30), a serpentine through five rack
+#      bands, out at (16,10) -> corridor x = 14 -> door D (12,19)
+#   -> Uplink Core (3-11, 18-26): ring around a 3x3 screen pillar (6-8,
+#      21-23), blue key (7,25), 4 closets behind switch-only doors (C tag 20:
+#      north (9,27), south (7,17); K tag 21: west (2,22), east (12,23)) for
+#      the population's two kill-trigger waves -> blue door 2 (5,27)
+#   -> corridor x = 5 -> Broadcast Bridge: entry platform (3-7, 37-43), a
+#      1-wide bridge y = 40 over a BLOCK_ALL void (8-43, 36-44), violet key
+#      (36,40), Dachshund platforms f (20-22,44) and (30-32,36)
+#   -> one-way door > (44,40), opens from the west only (the drop)
+#   -> landing (45-53, 37-43) -> violet door 3 (49,36) -> exit room
+#      (47-53, 31-35) -> EXIT E (50,30), used from (50,31) facing south.
+#
+# No soft-lock after the Blackout: the switch room's only ways out after tag
+# 1 are M (36,28) into the dark maze, and the dark maze has a single
+# continuous route to the Uplink Core; the blue and violet keys are both
+# past that point, and nothing behind the closed O doors is needed.
+#
+# Secrets (4):
+#   r (43,15) dt_rack_odd pushwall (the only odd rack) in the south wall of
+#     the north bay, pushed south -> (43,14) SECRET: Scarab Plate
+#   G (4,10) eg_gold_pillar pushwall in the atrium's glyph-band north wall,
+#     pushed north -> (4,11) SECRET: Golden Sardine
+#   H (36,16) maintenance hatch (switch door, tag 1), only open after the
+#     Blackout, off dark band 4 -> (37,16) SECRET: Ninth Life
+#   t (44-50,4) dead-end cable trench east of the Cooling Hall; c (51,4)
+#     dt_steel_cracked pushwall -> (52,4) SECRET: Sun Orb + Scarab Crate
+#
+# Dark layers: lit areas are dark 2-6; the maze (aisle, switch room, racks,
+# dark bands) rises to dark_alt 20-26. Fullbright LEDs of dt_server_rack and
+# the screens ignore cell darkness and stay readable. Areas past the maze
+# rise by 4.
+
+name Pyramid Server Farm
+music 5
+par 540
+
+legend # wall=dt_steel_panel flags=SOLID
+legend b wall=eg_glyph_band flags=SOLID
+legend g wall=eg_gold_pillar flags=SOLID
+legend p wall=dt_pump flags=SOLID
+legend R wall=dt_server_rack dark=2 dark_alt=20 flags=SOLID
+legend S wall=dt_screen_f1 dark=2 dark_alt=20 flags=SOLID
+legend P wall=dt_screen_f0 dark=4 dark_alt=8 flags=SOLID
+legend B wall=dt_switch_off dark=2 dark_alt=20 flags=SOLID|SWITCH tag=1
+legend X wall=dt_switch_off flags=SOLID|EXIT
+legend G wall=eg_gold_pillar floor=dt_diamond_plate ceil=dt_steel_panel_b dark=8 flags=PUSHWALL
+legend r wall=dt_rack_odd floor=dt_diamond_plate ceil=dt_steel_panel_b dark=4 dark_alt=22 flags=PUSHWALL
+legend c wall=dt_steel_cracked floor=dt_grate_floor ceil=dt_steel_panel dark=10 flags=PUSHWALL
+legend . floor=dt_diamond_plate ceil=dt_ceiling_light dark=2
+legend , floor=dt_grate_floor ceil=dt_steel_panel_c dark=4
+legend t floor=dt_grate_floor ceil=dt_steel_panel dark=10
+legend z floor=dt_diamond_plate ceil=dt_steel_panel dark=8
+legend Z floor=dt_diamond_plate ceil=dt_steel_panel dark=8 flags=SECRET
+legend s floor=dt_diamond_plate ceil=dt_steel_panel_b dark=8
+legend Y floor=dt_diamond_plate ceil=dt_steel_panel_b dark=8 flags=SECRET
+legend a floor=dt_diamond_plate ceil=dt_ceiling_light dark=3 dark_alt=24
+legend o floor=dt_diamond_plate ceil=dt_steel_panel_b dark=4 dark_alt=22
+legend Q floor=dt_diamond_plate ceil=dt_steel_panel_b dark=4 dark_alt=22 flags=SECRET
+legend w floor=dt_grate_floor ceil=dt_steel_panel dark=6 dark_alt=24
+legend n floor=dt_grate_floor ceil=dt_steel_panel dark=6 dark_alt=26
+legend N floor=dt_grate_floor ceil=dt_steel_panel dark=6 dark_alt=26 flags=SECRET
+legend k floor=dt_diamond_plate ceil=dt_steel_panel_b dark=4 dark_alt=8
+legend q floor=dt_grate_floor ceil=dt_steel_panel dark=10 dark_alt=14
+legend h floor=dt_grate_floor ceil=dt_steel_panel dark=6 dark_alt=10
+legend e floor=dt_diamond_plate ceil=dt_ceiling_light dark=4 dark_alt=8
+legend = floor=dt_grate_floor ceil=dt_steel_panel dark=8 dark_alt=12
+legend v floor=dt_hazard ceil=dt_steel_panel dark=24 dark_alt=28 flags=BLOCK_ALL
+legend f floor=dt_grate_floor ceil=dt_steel_panel dark=10 dark_alt=14
+legend l floor=dt_diamond_plate ceil=dt_steel_panel_b dark=4 dark_alt=8
+legend x floor=eg_floor_tiles ceil=eg_tomb_floor dark=2 dark_alt=6
+legend D wall=dt_door floor=dt_diamond_plate ceil=dt_steel_panel dark=4 dark_alt=8 flags=DOOR
+legend 1 wall=dt_door_green floor=dt_diamond_plate ceil=dt_steel_panel dark=3 dark_alt=24 flags=DOOR key=green
+legend 2 wall=dt_door_blue floor=dt_grate_floor ceil=dt_steel_panel dark=6 dark_alt=10 flags=DOOR key=blue
+legend 3 wall=eg_door_violet floor=eg_floor_tiles ceil=eg_tomb_floor dark=4 dark_alt=8 flags=DOOR key=violet
+legend O wall=dt_door floor=dt_diamond_plate ceil=dt_ceiling_light dark=3 dark_alt=24 flags=DOOR|START_OPEN mode=switch tag=1
+legend M wall=dt_steel_panel_b floor=dt_grate_floor ceil=dt_steel_panel dark=6 dark_alt=24 flags=DOOR mode=switch tag=1
+legend H wall=dt_steel_panel_b floor=dt_grate_floor ceil=dt_steel_panel dark=6 dark_alt=26 flags=DOOR mode=switch tag=1
+legend C wall=dt_steel_panel_b floor=dt_grate_floor ceil=dt_steel_panel dark=8 dark_alt=12 flags=DOOR mode=switch tag=20
+legend K wall=dt_steel_panel_b floor=dt_grate_floor ceil=dt_steel_panel dark=8 dark_alt=12 flags=DOOR mode=switch tag=21
+legend > wall=dt_door floor=dt_grate_floor ceil=dt_steel_panel dark=8 dark_alt=12 flags=DOOR|ONEWAY side=west
+
+layout
+########################################################
+########################################################
+########################################################
+########vvvvvvvvvvvvfffvvvvvvvvvvvvvvvvvvvvv############
+###eeeeevvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#lllllllll##
+###eeeeevvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#lllllllll##
+###eeeeevvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#lllllllll##
+###eeeee====================================>lllllllll##
+###eeeeevvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#lllllllll##
+###eeeeevvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#lllllllll##
+###eeeeevvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#lllllllll##
+#####h##vvvvvvvvvvvvvvvvvvvvvvfffvvvvvvvvvvv#####3######
+#####h#########################################xxxxxxx##
+#####h#########################################xxxxxxx##
+#####h#########################################xxxxxxx##
+#####h#########################################xxxxxxx##
+#####h##################################B######xxxxxxx##
+#####h##########RwwwwwwwwwwwwwwwwwwwRaaaaaaaaRR###X#####
+#####h##qqq#####RwwwwwwwwwwwwwwwwwwwRaaaaaaaaRR#########
+#####h##qqq#####RwwwwRwwwRwwwRwwwRwwMaaaaaaaaRR#########
+#####2###C######RwwwwwwwwwwwwwwwwwwwRaaaaaaaaRR#########
+###kkkkkkkkk####RRwwRRRRRRRRRRRRRRRRRSaaaaaaSRR#########
+###kkkkkkkkk####RwwwwwwwwwwwwwwwwwwwRRRRaRRRRRR#########
+###kkkkkkkkk#qq#RwwwwwwRwwwRwwwRwwwwRRRRaRRRRRR#########
+#q#kkkPPPkkkKqq#RwwwwwwwwwwwwwwwwwwwRRRRaRRRRRR#########
+#qKkkkPPPkkk#qq#RRRRRRRRRRRRRRRRRRMRRRRRaRRRRRR#########
+#q#kkkPPPkkk####RwwwwwwwwwwwwwwwwwwwRRRRaRRRRRR#########
+###kkkkkkkkk####RwwwwRwwwRwwwRwwwRwwRRRRORRRRRR#########
+###kkkkkkkkkDww#RwwwwwwwwwwwwwwwwwwwRRRRaRRRRRR#########
+###kkkkkkkkk##w#RRwwRRRRRRRRRRRRRRRRRRRRaRaaaaR#########
+#######C######w#RwwwwwwwwwwwwwwwwwwwRnnRaaaaaaR#########
+######qqq#####w#RwwwwwwRwwwRwwwRwwwwHNnRaRaaaaR#########
+######qqq#####w#RwwwwwwwwwwwwwwwwwwwRnnRaRRrRRR#########
+##############w#RRRRRRRRRRRRRRRRRwwRRRRRaRoQoRR#########
+##############w#RwwwwwwwwwwwwwwwwwwwRRRRaRRoRRR#########
+####s#########w#RwwwwwwwwwwwwwwwwwwwRRRRORRRRRR#########
+###sYs########w#RwwwRwwRwwRwwRwwRwwwRRRRaRaaaaR#########
+#bbbGbbbbbb##wwwwwwwwwwwwwwwwwwwwwwwRRRRaaaaaaR#########
+#..........#####RwwwwwwwwwwwwwwwwwwwRRRRaRaaaaR#########
+#..........#####RRRRRRRRRRRRRRRRRRRRRRRRaRRRRRR#########
+#..g....g..#############################1###############
+#..........#,,,,p,,,,p,,,,p,,,,p,,,,p,,,,p,,############
+#..........#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,########z###
+#..g....g..D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,tttttttcZz##
+#..........#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,########z###
+#..........#,,,,p,,,,p,,,,p,,,,p,,,,p,,,,p,,############
+#..........#############################################
+########################################################
+end
+
+entity PLAYER_START 6 5 0
+entity LIGHTS 40 29 0 tag=1
+
+# Keys
+entity GREEN_ANKH 42 4 0
+entity BLUE_ANKH 7 25 0
+entity VIOLET_ANKH 36 40 0
+
+# Health: 8 Fish Snacks, 6 Tuna Tins
+entity FISH_SNACK 2 8 0
+entity FISH_SNACK 9 8 0
+entity FISH_SNACK 40 10 0
+entity FISH_SNACK 25 29 0
+entity FISH_SNACK 33 12 0
+entity FISH_SNACK 19 11 0
+entity FISH_SNACK 10 25 0
+entity FISH_SNACK 6 38 0
+entity TUNA_TIN 25 4 0
+entity TUNA_TIN 40 18 0
+entity TUNA_TIN 38 28 0
+entity TUNA_TIN 20 20 0
+entity TUNA_TIN 4 19 0
+entity TUNA_TIN 48 40 0
+
+# Armour on the path
+entity LINEN_WRAP 20 4 0
+
+# Ammo on the path
+entity SUN_ORB 13 4 0
+entity CHARGE_JAR 30 4 0
+entity SCARAB 35 4 0
+entity CHARGE_VIAL 9 2 0
+entity YARN_BUNDLE 2 2 0
+entity CHARGE_VIAL 43 10 0
+entity SCARAB 44 10 0
+entity YARN_BASKET 44 17 0
+entity CHARGE_JAR 43 28 0
+entity SUN_SHARD 42 29 0
+entity CHARGE_VIAL 30 24 0
+entity SCARAB 25 16 0
+entity SUN_SHARD 30 10 0
+entity CHARGE_VIAL 10 19 0
+entity SCARAB_CRATE 4 25 0
+entity YARN_BUNDLE 4 40 0
+entity YARN_BUNDLE 51 42 0
+
+# Secrets
+entity SCARAB_PLATE 43 14 0
+entity GOLDEN_SARDINE 3 11 0
+entity NINTH_LIFE 38 16 0
+entity SUN_ORB 52 3 0
+entity SCARAB_CRATE 52 5 0
+
+# Waypoints for the population issue
+entity WAYPOINT 6 7 0 @atrium
+entity WAYPOINT 27 3 0 @cool_mutts
+entity WAYPOINT 41 4 180 @cool_mastiffs
+entity WAYPOINT 44 10 180 @aisle_bay_s
+entity WAYPOINT 44 17 180 @aisle_bay_n
+entity WAYPOINT 40 29 270 @switch_room
+entity WAYPOINT 26 29 0 @dark_band1
+entity WAYPOINT 28 24 180 @dark_band2
+entity WAYPOINT 26 20 0 @dark_band3
+entity WAYPOINT 28 16 180 @dark_band4
+entity WAYPOINT 27 11 0 @dark_band5
+entity WAYPOINT 4 22 0 @uplink_ring
+entity WAYPOINT 9 28 270 @uplink_closet_n
+entity WAYPOINT 7 16 90 @uplink_closet_s
+entity WAYPOINT 1 22 0 @uplink_closet_w
+entity WAYPOINT 13 23 180 @uplink_closet_e
+entity WAYPOINT 21 44 270 @bridge_dach_n
+entity WAYPOINT 31 36 90 @bridge_dach_s
+entity WAYPOINT 50 40 180 @bridge_poms
+entity WAYPOINT 50 33 90 @exit_room

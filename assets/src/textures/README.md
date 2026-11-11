@@ -109,6 +109,7 @@ outlines, dithering only through `dither`, never on detail under 16 px.
 | `dt_banner` | wall | Dominion banner, olive cloth, original gold paw emblem; set dressing on DT walls |
 | `dt_screen_f0` / `dt_screen_f1` | wall, 2 frames | flickering screen; the frames differ only in the readout lines and cursor (L5 secret tell, L7 control rooms) |
 | `dt_server_rack` | wall | server rack with fullbright LED rows (L7 server farm) |
+| `dt_rack_odd` | wall | `dt_server_rack` with the cyan/amber LEDs off and two red LEDs per unit in a shifted pattern: L7 Scarab Plate pushwall, used once |
 | `dt_conveyor` | wall | conveyor belt under a hazard hood (L5 Packaging Line, secret tell "belt running into a wall") |
 | `dt_pump` | wall | pump drum between steel pipes, amber lamp (L3 pump houses, L5) |
 | `dt_hazard` | wall | steel with a gold/black diagonal warning band; edges of sludge pits, drops, timed doors |
