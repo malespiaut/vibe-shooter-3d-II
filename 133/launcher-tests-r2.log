@@ -1,0 +1,1431 @@
+UpdateCTestConfiguration  from :/work/build/DartConfiguration.tcl
+Test project /work/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 74
+        Start  74: sprite_chomp
+
+74: Test command: /usr/sbin/python3.14 "/work/tests/test_sprite_chomp.py"
+74: Working Directory: /work/build
+74: Environment variables: 
+74:  BAST_LIB=/work/build/libbast.so
+74:  BAST_PALETTE=/work/assets/gen/palette.bin
+74: Test timeout computed to be: 600
+test 47
+        Start  47: sfx_determinism
+
+47: Test command: /usr/sbin/python3.14 "/work/tests/test_sfx.py"
+47: Working Directory: /work/build
+47: Environment variables: 
+47:  BAST_LIB=/work/build/libbast.so
+47:  BAST_PALETTE=/work/assets/gen/palette.bin
+47: Test timeout computed to be: 10000000
+test 73
+        Start  73: blender_render
+
+73: Test command: /usr/sbin/python3.14 "/work/tests/test_blender_render.py"
+73: Working Directory: /work/build
+73: Environment variables: 
+73:  BAST_LIB=/work/build/libbast.so
+73:  BAST_PALETTE=/work/assets/gen/palette.bin
+73: Test timeout computed to be: 600
+test 52
+        Start  52: texgen_tile
+
+52: Test command: /usr/sbin/python3.14 "/work/tests/test_texgen.py"
+52: Working Directory: /work/build
+52: Environment variables: 
+52:  BAST_LIB=/work/build/libbast.so
+52:  BAST_PALETTE=/work/assets/gen/palette.bin
+52: Test timeout computed to be: 10000000
+test 45
+        Start  45: palcheck
+
+45: Test command: /usr/sbin/python3.14 "/work/tests/test_palette.py"
+45: Working Directory: /work/build
+45: Environment variables: 
+45:  BAST_LIB=/work/build/libbast.so
+45:  BAST_PALETTE=/work/assets/gen/palette.bin
+45: Test timeout computed to be: 10000000
+test 61
+        Start  61: fx_determinism
+
+61: Test command: /usr/sbin/python3.14 "/work/tests/test_fx.py" "determinism"
+61: Working Directory: /work/build
+61: Environment variables: 
+61:  BAST_LIB=/work/build/libbast.so
+61:  BAST_PALETTE=/work/assets/gen/palette.bin
+61: Test timeout computed to be: 10000000
+test 46
+        Start  46: bast_py
+
+46: Test command: /usr/sbin/python3.14 "/work/tests/test_bast.py"
+46: Working Directory: /work/build
+46: Environment variables: 
+46:  BAST_LIB=/work/build/libbast.so
+46:  BAST_PALETTE=/work/assets/gen/palette.bin
+46: Test timeout computed to be: 10000000
+test 48
+        Start  48: sfx_levels
+
+48: Test command: /usr/sbin/python3.14 "/work/tests/test_sfx_levels.py"
+48: Working Directory: /work/build
+48: Environment variables: 
+48:  BAST_LIB=/work/build/libbast.so
+48:  BAST_PALETTE=/work/assets/gen/palette.bin
+48: Test timeout computed to be: 10000000
+46: test_bast: OK
+  1/101 Test  #46: bast_py ..........................   Passed    0.59 sec
+test 64
+        Start  64: title_screen
+
+64: Test command: /usr/sbin/python3.14 "/work/tests/test_title.py"
+64: Working Directory: /work/build
+64: Environment variables: 
+64:  BAST_LIB=/work/build/libbast.so
+64:  BAST_PALETTE=/work/assets/gen/palette.bin
+64: Test timeout computed to be: 10000000
+48: effect           mix group                     target     rms    peak
+48: barrel_explode   Explosions                     -16.0   -16.0    -1.4
+48: baton_hit        Enemy attacks                  -18.0   -18.0    -5.6
+48: bone_explode     Explosions                     -16.0   -16.0    -2.1
+48: bone_fire        Enemy attacks                  -18.0   -18.0    -5.9
+48: chomp_bite       Enemy attacks                  -18.0   -18.0    -3.9
+48: chomp_death      Enemy voices and telegraphs    -19.0   -19.0    -9.9
+48: chomp_pain       Enemy voices and telegraphs    -19.0   -19.0    -9.1
+48: chomp_sight      Enemy voices and telegraphs    -19.0   -19.0    -7.8
+48: chomp_windup     Enemy voices and telegraphs    -19.0   -19.0    -5.5
+48: claw_hit         Player weapons                 -17.0   -17.0    -2.3
+48: claw_swish       Player body and handling       -19.0   -19.0    -6.2
+48: dach_death       Enemy voices and telegraphs    -19.0   -19.0   -10.3
+48: dach_pain        Enemy voices and telegraphs    -19.0   -19.1    -9.1
+48: dach_sight       Enemy voices and telegraphs    -19.0   -19.0    -7.8
+48: door_close       World mechanics                -21.0   -21.0   -10.8
+48: door_locked      World mechanics                -21.0   -21.0   -16.1
+48: door_open        World mechanics                -21.0   -21.0   -10.1
+48: exit_switch      World mechanics                -21.0   -21.0   -11.8
+48: fan_fire         Enemy attacks                  -18.0   -18.0    -8.2
+48: gib_splat        Gore                           -19.0   -19.0    -5.6
+48: howler_roar      Player weapons                 -17.0   -17.0    -7.0
+48: item_pickup      Pickups and rewards            -21.0   -21.0   -16.6
+48: key_pickup       Pickups and rewards            -21.0   -21.0   -10.8
+48: lance_charge     Player body and handling       -19.0   -19.0    -8.3
+48: lance_fire       Player weapons                 -17.0   -17.0    -2.1
+48: lid_blast        Explosions                     -16.0   -17.2    -1.2  peak-limited
+48: mastiff_death    Enemy voices and telegraphs    -19.0   -19.0    -7.0
+48: mastiff_pain     Enemy voices and telegraphs    -19.0   -19.0    -6.9
+48: mastiff_sight    Enemy voices and telegraphs    -19.0   -19.0    -8.2
+48: mastiff_step     Enemy voices and telegraphs    -19.0   -19.0   -10.8
+48: mastiff_windup   Enemy voices and telegraphs    -19.0   -19.0    -4.0
+48: menu_move        UI                             -27.0   -27.0   -25.2
+48: menu_select      UI                             -27.0   -27.0   -22.1
+48: mortar_land      Explosions                     -16.0   -16.0    -2.0
+48: mortar_launch    Enemy attacks                  -18.0   -18.0    -4.6
+48: mutt_death       Enemy voices and telegraphs    -19.0   -19.0   -10.1
+48: mutt_fire        Enemy attacks                  -18.0   -18.0    -4.1
+48: mutt_pain        Enemy voices and telegraphs    -19.0   -19.0    -9.1
+48: mutt_sight       Enemy voices and telegraphs    -19.0   -19.0    -7.0
+48: mutt_windup      Enemy voices and telegraphs    -19.0   -19.0   -13.5
+48: ninth_life       Pickups and rewards            -21.0   -21.0   -13.8
+48: noway            Player body and handling       -19.0   -19.0   -11.5
+48: pistol_fire      Player weapons                 -17.0   -17.0    -5.9
+48: plasma_fire      Enemy attacks                  -18.0   -18.0    -7.7
+48: plasma_hit       Enemy attacks                  -18.0   -18.0    -2.9
+48: player_death     Player body and handling       -19.0   -19.0    -9.5
+48: player_land      Player body and handling       -19.0   -19.0    -8.0
+48: player_pain      Player body and handling       -19.0   -19.0    -7.5
+48: pod_open         Enemy voices and telegraphs    -19.0   -19.0    -6.4
+48: pom_death        Enemy voices and telegraphs    -19.0   -19.0    -9.5
+48: pom_pain         Enemy voices and telegraphs    -19.0   -19.0    -9.1
+48: pom_sight        Enemy voices and telegraphs    -19.0   -19.1    -8.5
+48: pom_windup       Enemy voices and telegraphs    -19.0   -19.0    -8.2
+48: powerup_pickup   Pickups and rewards            -21.0   -21.0   -13.8
+48: pushwall_grind   World mechanics                -21.0   -21.0    -9.9
+48: repeater_fire    Player weapons                 -17.0   -17.0    -3.9
+48: reticle_beep     Enemy voices and telegraphs    -19.0   -19.0   -12.9
+48: scarab_explode   Explosions                     -16.0   -16.0    -1.2
+48: scarab_launch    Player weapons                 -17.0   -17.0    -4.6
+48: scatter_fire     Player weapons                 -17.0   -17.0    -4.4
+48: scatter_pump     Player body and handling       -19.0   -19.0    -4.6
+48: secret_found     Pickups and rewards            -21.0   -21.0   -13.2
+48: shep_death       Enemy voices and telegraphs    -19.0   -19.0    -7.8
+48: shep_pain        Enemy voices and telegraphs    -19.0   -19.0    -8.2
+48: shep_sight       Enemy voices and telegraphs    -19.0   -19.0    -6.6
+48: shep_windup      Enemy voices and telegraphs    -19.0   -19.0    -7.7
+48: shield_block     Enemy attacks                  -18.0   -18.0    -3.1
+48: sludge_sizzle    World mechanics                -21.0   -21.0    -8.0
+48: switch_click     World mechanics                -21.0   -21.0    -6.2
+48: tally_done       UI                             -27.0   -27.0   -12.0
+48: tally_tick       UI                             -27.0   -27.1   -23.1
+48: weapon_pickup    Pickups and rewards            -21.0   -20.9    -9.7
+48: weapon_switch    Player body and handling       -19.0   -19.0    -6.0
+48: woofu_death      Enemy voices and telegraphs    -19.0   -19.0    -8.3
+48: woofu_pain       Enemy voices and telegraphs    -19.0   -19.0    -9.9
+48: woofu_sight      Enemy voices and telegraphs    -19.0   -19.0    -6.9
+48: sfx_levels: ok (76 effects, 11.1 dB spread, windups within 0.1 dB, barrel_explode -16.0 vs loudest other World -20.9, menu_move -27.0 / tally_tick -27.1 vs item_pickup -21.0)
+  2/101 Test  #48: sfx_levels .......................   Passed    0.63 sec
+test 50
+        Start  50: quantize
+
+50: Test command: /usr/sbin/python3.14 "/work/tests/test_quantize.py"
+50: Working Directory: /work/build
+50: Environment variables: 
+50:  BAST_LIB=/work/build/libbast.so
+50:  BAST_PALETTE=/work/assets/gen/palette.bin
+50: Test timeout computed to be: 10000000
+45: test_palette: OK
+  3/101 Test  #45: palcheck .........................   Passed    0.70 sec
+test 57
+        Start  57: fonts
+
+57: Test command: /usr/sbin/python3.14 "/work/tests/test_fonts.py"
+57: Working Directory: /work/build
+57: Environment variables: 
+57:  BAST_LIB=/work/build/libbast.so
+57:  BAST_PALETTE=/work/assets/gen/palette.bin
+57: Test timeout computed to be: 10000000
+64: title: /tmp/tmpofc8e3sd/a/title.tex (320x240, 71 colours)
+50: /work/tests/test_quantize.py:102: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+50:   assert list(img.getdata()) == want
+61: fx_determinism: 60 files identical across runs; palcheck: OK, 60 file(s) checked
+  4/101 Test  #61: fx_determinism ...................   Passed    0.82 sec
+test 65
+        Start  65: hud_faces_t12
+
+65: Test command: /usr/sbin/python3.14 "/work/tests/test_hud_faces.py"
+65: Working Directory: /work/build
+65: Environment variables: 
+65:  BAST_LIB=/work/build/libbast.so
+65:  BAST_PALETTE=/work/assets/gen/palette.bin
+65: Test timeout computed to be: 10000000
+64: title: /tmp/tmpofc8e3sd/b/title.tex (320x240, 71 colours)
+65: hud: 41 images in /tmp/tmprg155xac/hud
+64: ok title 320x240 opaque, deterministic, band colours 4
+64: palcheck: OK, 2 file(s) checked
+  5/101 Test  #64: title_screen .....................   Passed    0.42 sec
+test 63
+        Start  63: hud_assets
+
+63: Test command: /usr/sbin/python3.14 "/work/tests/test_hud.py"
+63: Working Directory: /work/build
+63: Environment variables: 
+63:  BAST_LIB=/work/build/libbast.so
+63:  BAST_PALETTE=/work/assets/gen/palette.bin
+63: Test timeout computed to be: 10000000
+50: quantize: ok
+  6/101 Test  #50: quantize .........................   Passed    0.40 sec
+test 58
+        Start  58: pak_py
+
+58: Test command: /usr/sbin/python3.14 "/work/tests/test_pak.py"
+58: Working Directory: /work/build
+58: Environment variables: 
+58:  BAST_LIB=/work/build/libbast.so
+58:  BAST_PALETTE=/work/assets/gen/palette.bin
+58: Test timeout computed to be: 10000000
+57: fonts: bigdigits ok (192x16, 13 glyphs, 12 indices)
+57: fonts: menu ok (160x56, 64 glyphs, 10 indices)
+57: fonts: small ok (96x48, 95 glyphs, 5 indices)
+57: fonts: ok
+  7/101 Test  #57: fonts ............................   Passed    0.35 sec
+test 66
+        Start  66: sprites_items
+
+66: Test command: /usr/sbin/python3.14 "/work/tests/test_sprites_items.py"
+66: Working Directory: /work/build
+66: Environment variables: 
+66:  BAST_LIB=/work/build/libbast.so
+66:  BAST_PALETTE=/work/assets/gen/palette.bin
+66: Test timeout computed to be: 10000000
+52: deterministic: dt_banner
+52: base2 dt_banner: 286 brown texels (7.0%)
+52: tile dt_banner x: seam D 16.18, max interior D 89.31 -> ok
+52: tile dt_banner y: seam D 11.98, max interior D 73.41 -> ok
+52: deterministic: dt_ceiling_light
+52: base2 dt_ceiling_light: 131 gray texels (3.2%)
+52: tile dt_ceiling_light x: seam D 11.96, max interior D 76.79 -> ok
+52: tile dt_ceiling_light y: seam D 12.14, max interior D 75.92 -> ok
+52: deterministic: dt_concrete
+52: base2 dt_concrete: 83 brown texels (2.0%)
+52: tile dt_concrete x: seam D 4.37, max interior D 112.86 -> ok
+52: tile dt_concrete y: seam D 6.66, max interior D 106.73 -> ok
+52: deterministic: dt_conveyor
+52: base2 dt_conveyor: 104 brown texels (2.5%)
+52: tile dt_conveyor x: seam D 17.78, max interior D 38.20 -> ok
+52: tile dt_conveyor y: seam D 6.33, max interior D 74.94 -> ok
+52: deterministic: dt_diamond_plate
+52: base2 dt_diamond_plate: 319 gray texels (7.8%)
+52: tile dt_diamond_plate x: seam D 39.88, max interior D 76.69 -> ok
+52: tile dt_diamond_plate y: seam D 43.65, max interior D 78.77 -> ok
+52: deterministic: dt_door
+52: base2 dt_door: 78 gray texels (1.9%)
+52: tile dt_door x: seam D 2.18, max interior D 67.33 -> ok
+52: tile dt_door y: seam D 2.29, max interior D 28.03 -> ok
+52: deterministic: dt_door_blue
+52: base2 dt_door_blue: 55 gray texels (1.3%)
+52: tile dt_door_blue x: seam D 1.61, max interior D 63.44 -> ok
+52: tile dt_door_blue y: seam D 1.42, max interior D 26.72 -> ok
+52: deterministic: dt_door_green
+52: base2 dt_door_green: 53 gray texels (1.3%)
+52: tile dt_door_green x: seam D 3.57, max interior D 60.60 -> ok
+52: tile dt_door_green y: seam D 1.40, max interior D 26.67 -> ok
+52: deterministic: dt_door_violet
+52: base2 dt_door_violet: 50 gray texels (1.2%)
+52: tile dt_door_violet x: seam D 1.63, max interior D 52.66 -> ok
+52: tile dt_door_violet y: seam D 1.53, max interior D 25.46 -> ok
+52: deterministic: dt_grate_floor
+52: base2 dt_grate_floor: 2 gray texels (0.0%)
+52: tile dt_grate_floor x: seam D 3.00, max interior D 73.79 -> ok
+52: tile dt_grate_floor y: seam D 13.03, max interior D 98.79 -> ok
+52: deterministic: dt_hazard
+52: base2 dt_hazard: 125 brown texels (3.1%)
+52: tile dt_hazard x: seam D 10.43, max interior D 48.23 -> ok
+52: tile dt_hazard y: seam D 7.27, max interior D 75.64 -> ok
+52: deterministic: dt_kibble_sludge
+52: base2 dt_kibble_sludge: 45 brown texels (1.1%)
+52: tile dt_kibble_sludge x: seam D 9.26, max interior D 15.02 -> ok
+52: tile dt_kibble_sludge y: seam D 7.12, max interior D 14.26 -> ok
+52: deterministic: dt_pump
+52: base2 dt_pump: 238 brown texels (5.8%)
+52: tile dt_pump x: seam D 24.92, max interior D 74.26 -> ok
+52: tile dt_pump y: seam D 14.29, max interior D 54.24 -> ok
+52: deterministic: dt_riveted_plate
+52: base2 dt_riveted_plate: 269 gray texels (6.6%)
+52: tile dt_riveted_plate x: seam D 16.58, max interior D 71.40 -> ok
+52: tile dt_riveted_plate y: seam D 12.43, max interior D 75.30 -> ok
+52: deterministic: dt_scaffold_sandstone
+52: base2 dt_scaffold_sandstone: 267 brown texels (6.5%)
+52: tile dt_scaffold_sandstone x: seam D 38.18, max interior D 70.81 -> ok
+52: tile dt_scaffold_sandstone y: seam D 73.84, max interior D 75.13 -> ok
+52: deterministic: dt_screen_f0
+52: base2 dt_screen_f0: 139 gray texels (3.4%)
+52: tile dt_screen_f0 x: seam D 11.64, max interior D 77.00 -> ok
+52: tile dt_screen_f0 y: seam D 11.41, max interior D 83.58 -> ok
+52: deterministic: dt_screen_f1
+52: base2 dt_screen_f1: 139 gray texels (3.4%)
+52: tile dt_screen_f1 x: seam D 11.64, max interior D 77.00 -> ok
+52: tile dt_screen_f1 y: seam D 11.41, max interior D 78.15 -> ok
+52: deterministic: dt_server_rack
+52: base2 dt_server_rack: 276 gray texels (6.7%)
+52: tile dt_server_rack x: seam D 1.16, max interior D 74.18 -> ok
+52: tile dt_server_rack y: seam D 26.39, max interior D 89.11 -> ok
+52: deterministic: dt_steel_cracked
+52: base2 dt_steel_cracked: 302 gray texels (7.4%)
+52: tile dt_steel_cracked x: seam D 11.18, max interior D 74.38 -> ok
+52: tile dt_steel_cracked y: seam D 11.50, max interior D 74.25 -> ok
+52: deterministic: dt_steel_panel
+52: base2 dt_steel_panel: 214 gray texels (5.2%)
+52: tile dt_steel_panel x: seam D 0.58, max interior D 65.95 -> ok
+52: tile dt_steel_panel y: seam D 1.52, max interior D 78.93 -> ok
+52: deterministic: dt_steel_panel_b
+52: base2 dt_steel_panel_b: 291 gray texels (7.1%)
+52: tile dt_steel_panel_b x: seam D 8.96, max interior D 71.60 -> ok
+52: tile dt_steel_panel_b y: seam D 11.80, max interior D 73.64 -> ok
+52: deterministic: dt_steel_panel_c
+52: base2 dt_steel_panel_c: 278 gray texels (6.8%)
+52: tile dt_steel_panel_c x: seam D 11.40, max interior D 88.16 -> ok
+52: tile dt_steel_panel_c y: seam D 73.05, max interior D 99.15 -> ok
+52: deterministic: dt_switch_off
+52: base2 dt_switch_off: 125 gray texels (3.1%)
+52: tile dt_switch_off x: seam D 11.03, max interior D 79.59 -> ok
+52: tile dt_switch_off y: seam D 11.28, max interior D 75.85 -> ok
+52: deterministic: dt_switch_on
+52: base2 dt_switch_on: 125 gray texels (3.1%)
+52: tile dt_switch_on x: seam D 11.03, max interior D 79.59 -> ok
+52: tile dt_switch_on y: seam D 11.28, max interior D 75.85 -> ok
+52: deterministic: eg_ashlar
+52: base2 eg_ashlar: 80 brown texels (2.0%)
+52: tile eg_ashlar x: seam D 4.51, max interior D 39.99 -> ok
+52: tile eg_ashlar y: seam D 6.13, max interior D 78.24 -> ok
+52: deterministic: eg_door
+52: base2 eg_door: 14 gray texels (0.3%)
+52: tile eg_door x: seam D 47.12, max interior D 79.64 -> ok
+52: tile eg_door y: seam D 5.13, max interior D 51.09 -> ok
+52: deterministic: eg_door_blue
+52: base2 eg_door_blue: 14 gray texels (0.3%)
+52: tile eg_door_blue x: seam D 47.50, max interior D 92.36 -> ok
+52: tile eg_door_blue y: seam D 6.33, max interior D 50.98 -> ok
+52: deterministic: eg_door_green
+52: base2 eg_door_green: 14 gray texels (0.3%)
+52: tile eg_door_green x: seam D 52.94, max interior D 92.36 -> ok
+52: tile eg_door_green y: seam D 6.75, max interior D 51.05 -> ok
+52: deterministic: eg_door_violet
+52: base2 eg_door_violet: 14 gray texels (0.3%)
+52: tile eg_door_violet x: seam D 50.02, max interior D 92.36 -> ok
+52: tile eg_door_violet y: seam D 6.49, max interior D 51.01 -> ok
+52: deterministic: eg_floor_tiles
+52: base2 eg_floor_tiles: 120 brown texels (2.9%)
+52: tile eg_floor_tiles x: seam D 62.86, max interior D 64.46 -> ok
+52: tile eg_floor_tiles y: seam D 62.02, max interior D 66.20 -> ok
+52: deterministic: eg_glyph_band
+52: base2 eg_glyph_band: 8 brown texels (0.2%)
+52: tile eg_glyph_band x: seam D 23.10, max interior D 26.89 -> ok
+52: tile eg_glyph_band y: seam D 82.11, max interior D 120.32 -> ok
+52: deterministic: eg_gold_pillar
+52: base2 eg_gold_pillar: 1 brown texels (0.0%)
+52: tile eg_gold_pillar x: seam D 2.22, max interior D 116.42 -> ok
+52: tile eg_gold_pillar y: seam D 17.98, max interior D 25.00 -> ok
+52: deterministic: eg_mural
+52: base2 eg_mural: 133 brown texels (3.2%)
+52: tile eg_mural x: seam D 25.58, max interior D 31.43 -> ok
+52: tile eg_mural y: seam D 80.67, max interior D 81.48 -> ok
+52: deterministic: eg_museum_plaque
+52: base2 eg_museum_plaque: 1 sand texels (0.0%)
+52: tile eg_museum_plaque x: seam D 1.99, max interior D 15.94 -> ok
+52: tile eg_museum_plaque y: seam D 10.64, max interior D 88.52 -> ok
+52: deterministic: eg_nile
+52: base2 eg_nile: 4 indigo texels (0.1%)
+52: tile eg_nile x: seam D 6.33, max interior D 9.77 -> ok
+52: tile eg_nile y: seam D 4.68, max interior D 9.02 -> ok
+52: deterministic: eg_papyrus
+52: tile eg_papyrus x: seam D 3.15, max interior D 41.93 -> ok
+52: tile eg_papyrus y: seam D 5.19, max interior D 28.59 -> ok
+52: deterministic: eg_paw_wall
+52: base2 eg_paw_wall: 1 brown texels (0.0%)
+52: tile eg_paw_wall x: seam D 38.78, max interior D 45.61 -> ok
+52: tile eg_paw_wall y: seam D 81.72, max interior D 84.83 -> ok
+52: deterministic: eg_planks
+52: base2 eg_planks: 273 gray texels (6.7%)
+52: tile eg_planks x: seam D 11.48, max interior D 14.01 -> ok
+52: tile eg_planks y: seam D 78.58, max interior D 98.31 -> ok
+52: deterministic: eg_sand
+52: tile eg_sand x: seam D 2.72, max interior D 5.00 -> ok
+52: tile eg_sand y: seam D 4.32, max interior D 11.58 -> ok
+52: deterministic: eg_sand_blocks
+52: base2 eg_sand_blocks: 230 brown texels (5.6%)
+52: tile eg_sand_blocks x: seam D 39.46, max interior D 39.48 -> ok
+52: tile eg_sand_blocks y: seam D 81.36, max interior D 83.92 -> ok
+52: deterministic: eg_sand_blocks2
+52: base2 eg_sand_blocks2: 306 brown texels (7.5%)
+52: tile eg_sand_blocks2 x: seam D 54.25, max interior D 57.56 -> ok
+52: tile eg_sand_blocks2 y: seam D 113.91, max interior D 118.09 -> ok
+52: deterministic: eg_sand_cracked
+52: base2 eg_sand_cracked: 11 brown texels (0.3%)
+52: tile eg_sand_cracked x: seam D 38.56, max interior D 44.07 -> ok
+52: tile eg_sand_cracked y: seam D 81.27, max interior D 83.57 -> ok
+52: deterministic: eg_switch_off
+52: base2 eg_switch_off: 27 brown texels (0.7%)
+52: tile eg_switch_off x: seam D 38.76, max interior D 51.36 -> ok
+52: tile eg_switch_off y: seam D 50.96, max interior D 58.56 -> ok
+52: deterministic: eg_switch_on
+52: base2 eg_switch_on: 2 brown texels (0.0%)
+52: tile eg_switch_on x: seam D 38.99, max interior D 50.83 -> ok
+52: tile eg_switch_on y: seam D 51.46, max interior D 61.37 -> ok
+52: deterministic: eg_tomb_floor
+52: base2 eg_tomb_floor: 19 gray texels (0.5%)
+52: tile eg_tomb_floor x: seam D 24.74, max interior D 121.39 -> ok
+52: tile eg_tomb_floor y: seam D 21.52, max interior D 117.52 -> ok
+52: deterministic: eg_tomb_stone
+52: base2 eg_tomb_stone: 148 gray texels (3.6%)
+52: tile eg_tomb_stone x: seam D 14.01, max interior D 14.93 -> ok
+52: tile eg_tomb_stone y: seam D 38.04, max interior D 44.75 -> ok
+52: control ramp: seam D 200.00, max interior D 3.17 -> SEAM
+52: control base2 off dt_banner: 0 texels -> caught
+52: control base2 off dt_ceiling_light: 0 texels -> caught
+52: control base2 off dt_concrete: 0 texels -> caught
+52: control base2 off dt_conveyor: 0 texels -> caught
+52: control base2 off dt_diamond_plate: 0 texels -> caught
+52: control base2 off dt_door: 0 texels -> caught
+52: control base2 off dt_door_blue: 0 texels -> caught
+52: control base2 off dt_door_green: 0 texels -> caught
+52: control base2 off dt_door_violet: 0 texels -> caught
+52: control base2 off dt_grate_floor: 0 texels -> caught
+52: control base2 off dt_hazard: 0 texels -> caught
+52: control base2 off dt_kibble_sludge: 0 texels -> caught
+52: control base2 off dt_pump: 0 texels -> caught
+52: control base2 off dt_riveted_plate: 0 texels -> caught
+52: control base2 off dt_scaffold_sandstone: 0 texels -> caught
+52: control base2 off dt_screen_f0: 0 texels -> caught
+52: control base2 off dt_screen_f1: 0 texels -> caught
+52: control base2 off dt_server_rack: 0 texels -> caught
+52: control base2 off dt_steel_cracked: 0 texels -> caught
+52: control base2 off dt_steel_panel: 0 texels -> caught
+52: control base2 off dt_steel_panel_b: 0 texels -> caught
+52: control base2 off dt_steel_panel_c: 0 texels -> caught
+52: control base2 off dt_switch_off: 0 texels -> caught
+52: control base2 off dt_switch_on: 0 texels -> caught
+52: control base2 off eg_ashlar: 0 texels -> caught
+52: control base2 off eg_door: 0 texels -> caught
+52: control base2 off eg_door_blue: 0 texels -> caught
+52: control base2 off eg_door_green: 0 texels -> caught
+52: control base2 off eg_door_violet: 0 texels -> caught
+52: control base2 off eg_floor_tiles: 0 texels -> caught
+52: control base2 off eg_glyph_band: 0 texels -> caught
+52: control base2 off eg_gold_pillar: 0 texels -> caught
+52: control base2 off eg_mural: 0 texels -> caught
+52: control base2 off eg_museum_plaque: 0 texels -> caught
+52: control base2 off eg_nile: 0 texels -> caught
+52: control base2 off eg_paw_wall: 0 texels -> caught
+52: control base2 off eg_planks: 0 texels -> caught
+52: control base2 off eg_sand_blocks: 0 texels -> caught
+52: control base2 off eg_sand_blocks2: 0 texels -> caught
+52: control base2 off eg_sand_cracked: 0 texels -> caught
+52: control base2 off eg_switch_off: 0 texels -> caught
+52: control base2 off eg_switch_on: 0 texels -> caught
+52: control base2 off eg_tomb_floor: 0 texels -> caught
+52: control base2 off eg_tomb_stone: 0 texels -> caught
+52: stripes: pattern, wrap and period check ok
+52: texgen_tile: OK (46 textures)
+65: palcheck: OK, 44 file(s) checked
+65: ok face_t1_idle0 32x32
+65: ok face_t1_idle1 32x32
+65: ok face_t1_idle2 32x32
+65: ok face_t1_hurtl 32x32
+65: ok face_t1_hurtr 32x32
+65: ok face_t1_hurtf 32x32
+65: ok face_t1_bighit 32x32
+65: ok face_t1_fury 32x32
+65: ok face_t1_smug 32x32
+65: ok face_t1_frenzy 32x32
+65: ok face_t2_idle0 32x32
+65: ok face_t2_idle1 32x32
+65: ok face_t2_idle2 32x32
+65: ok face_t2_hurtl 32x32
+65: ok face_t2_hurtr 32x32
+65: ok face_t2_hurtf 32x32
+65: ok face_t2_bighit 32x32
+65: ok face_t2_fury 32x32
+65: ok face_t2_smug 32x32
+65: ok face_t2_frenzy 32x32
+65: ok face_dead 32x32
+65: ok face_god 32x32
+65: hud_faces_t12: OK, 22 faces
+  8/101 Test  #65: hud_faces_t12 ....................   Passed    0.30 sec
+test 55
+        Start  55: gibs_determinism
+
+55: Test command: /usr/sbin/python3.14 "/work/tests/test_gibs.py" "determinism"
+55: Working Directory: /work/build
+55: Environment variables: 
+55:  BAST_LIB=/work/build/libbast.so
+55:  BAST_PALETTE=/work/assets/gen/palette.bin
+55: Test timeout computed to be: 10000000
+  9/101 Test  #52: texgen_tile ......................   Passed    1.13 sec
+test 77
+        Start  77: determinism_m1-walk
+
+77: Test command: /usr/sbin/cmake "-DGAME=/work/build/game" "-DDEMO=/work/demos/m1-walk.demo" "-DOUT=/work/build/test_tmp/determinism_m1-walk" "-P" "/work/tests/determinism.cmake"
+77: Working Directory: /work/build
+77: Test timeout computed to be: 10000000
+63: hud: 41 images in /tmp/tmpknf531tu/hud
+77: -- run a: STATS level=1 tic=833 hash=485ac26b4588509a health=100 armor=0 kills=0/0 items=0/0 secrets=0/0 exit=0 god=0
+77: -- run b: STATS level=1 tic=833 hash=485ac26b4588509a health=100 armor=0 kills=0/0 items=0/0 secrets=0/0 exit=0 god=0
+66: items: 33 sprite frames in /tmp/tmpyzavsxpk/items
+63: ok ammo_charge  6x6
+63: ok ammo_scarab  6x6
+63: ok ammo_sun     6x6
+63: ok ammo_yarn    6x6
+63: ok icon_fish    12x12
+63: ok icon_scarab  8x8
+63: ok key_blue     12x16
+63: ok key_green    12x16
+63: ok key_socket   12x16
+63: ok key_violet   12x16
+63: ok menu_ankh    12x16
+63: ok statusbar    320x32
+63: ok weapon_1     48x20
+63: ok weapon_2     48x20
+63: ok weapon_3     48x20
+63: ok weapon_4     48x20
+63: ok weapon_5     48x20
+63: ok weapon_6     48x20
+63: ok weapon_7     48x20
+63: palcheck: OK, 82 file(s) checked
+63: hud_assets: OK, 19 files
+58: test_pak: OK
+ 10/101 Test  #63: hud_assets .......................   Passed    0.28 sec
+test 62
+        Start  62: fx_shapes
+
+62: Test command: /usr/sbin/python3.14 "/work/tests/test_fx.py" "shapes"
+62: Working Directory: /work/build
+62: Environment variables: 
+62:  BAST_LIB=/work/build/libbast.so
+62:  BAST_PALETTE=/work/assets/gen/palette.bin
+62: Test timeout computed to be: 10000000
+ 11/101 Test  #58: pak_py ...........................   Passed    0.26 sec
+test 71
+        Start  71: headless_smoke
+
+71: Test command: /usr/sbin/python3.14 "/work/tests/test_headless.py" "/work/build/game" "/work/build/test_tmp/headless"
+71: Working Directory: /work/build
+71: Test timeout computed to be: 10000000
+77: -- determinism: /work/demos/m1-walk.demo: 833 tics identical
+ 12/101 Test  #77: determinism_m1-walk ..............   Passed    0.17 sec
+test 81
+        Start  81: determinism_ai-test
+
+81: Test command: /usr/sbin/cmake "-DGAME=/work/build/game" "-DDEMO=/work/demos/ai-test.demo" "-DOUT=/work/build/test_tmp/determinism_ai-test" "-P" "/work/tests/determinism.cmake"
+81: Working Directory: /work/build
+81: Test timeout computed to be: 10000000
+66: ok amulet_idle_d0_f0      16x16 ramps gold
+66: ok bandage_idle_d0_f0     8x8 ramps beige
+66: ok basket_idle_d0_f0      24x20 ramps brown,red
+66: ok catnip_idle_d0_f0      16x20 ramps brown,olive,pink
+66: ok catnip_idle_d0_f1      16x20 ramps brown,olive,pink
+66: ok crate_scarab_idle_d0_f0 28x20 ramps brown,gold,steel
+66: ok fish_idle_d0_f0        16x12 ramps beige,red,steel
+66: ok jar_idle_d0_f0         16x20 ramps cyan,gold,steel
+66: ok key_blue_idle_d0_f0    16x24 ramps blue
+66: ok key_blue_idle_d0_f1    16x24 ramps blue
+66: ok key_green_idle_d0_f0   16x24 ramps green
+66: ok key_green_idle_d0_f1   16x24 ramps green
+66: ok key_violet_idle_d0_f0  16x24 ramps violet
+66: ok key_violet_idle_d0_f1  16x24 ramps violet
+66: ok linen_idle_d0_f0       24x16 ramps beige,blue
+66: ok ninth_idle_d0_f0       16x24 ramps gold
+66: ok orb_idle_d0_f0         20x20 ramps gold,orange
+66: ok orb_idle_d0_f1         20x20 ramps gold,orange
+66: ok plate_idle_d0_f0       32x20 ramps blue,gold
+66: ok plate_idle_d0_f1       32x20 ramps blue,gold
+66: ok sardine_idle_d0_f0     24x16 ramps gold
+66: ok sardine_idle_d0_f1     24x16 ramps gold
+66: ok satchel_idle_d0_f0     24x20 ramps beige,brown,gold
+66: ok scarab_idle_d0_f0      12x10 ramps blue,gold
+66: ok shard_idle_d0_f0       12x16 ramps gold,orange
+66: ok tuna_idle_d0_f0        24x16 ramps beige,blue,steel
+66: ok vial_idle_d0_f0        8x16 ramps cyan,steel
+66: ok wpn3_idle_d0_f0        32x11 ramps brown,red,steel
+66: ok wpn4_idle_d0_f0        32x15 ramps brown,gold,steel
+66: ok wpn5_idle_d0_f0        32x11 ramps blue,brown,gold
+66: ok wpn6_idle_d0_f0        32x11 ramps blue,gold,steel
+66: ok wpn7_idle_d0_f0        32x14 ramps blue,gold,steel
+66: ok yarn_idle_d0_f0        16x12 ramps red
+66: palcheck: OK, 66 file(s) checked
+66: sprites_items: OK, 33 frames
+81: -- run a: STATS level=1 tic=657 hash=62786686a4fbb5dc health=90 armor=0 kills=5/5 items=2/2 secrets=0/0 exit=0 god=0
+81: -- run b: STATS level=1 tic=657 hash=62786686a4fbb5dc health=90 armor=0 kills=5/5 items=2/2 secrets=0/0 exit=0 god=0
+ 13/101 Test  #66: sprites_items ....................   Passed    0.27 sec
+test 60
+        Start  60: fx_loop
+
+60: Test command: /usr/sbin/python3.14 "/work/tests/test_fx.py" "loop"
+60: Working Directory: /work/build
+60: Environment variables: 
+60:  BAST_LIB=/work/build/libbast.so
+60:  BAST_PALETTE=/work/assets/gen/palette.bin
+60: Test timeout computed to be: 10000000
+55: gibs: /tmp/tmpauz88roc/prop_pot.tex -> /tmp/tmpauz88roc/r1/prop_pot_gib_d0_f0..7.tex (72x40, 9 chunks, opaque 249 -> 249 231 211 195 198 192 178 178)
+55: gibs: /tmp/tmpauz88roc/prop_pot.tex -> /tmp/tmpauz88roc/r2/prop_pot_gib_d0_f0..7.tex (72x40, 9 chunks, opaque 249 -> 249 231 211 195 198 192 178 178)
+55: determinism: 8 frames identical across runs
+55: ok
+ 14/101 Test  #55: gibs_determinism .................   Passed    0.23 sec
+test 56
+        Start  56: gibs_pixels
+
+56: Test command: /usr/sbin/python3.14 "/work/tests/test_gibs.py" "pixels"
+56: Working Directory: /work/build
+56: Environment variables: 
+56:  BAST_LIB=/work/build/libbast.so
+56:  BAST_PALETTE=/work/assets/gen/palette.bin
+56: Test timeout computed to be: 10000000
+81: -- determinism: /work/demos/ai-test.demo: 657 tics identical
+ 15/101 Test  #81: determinism_ai-test ..............   Passed    0.11 sec
+test 38
+        Start  38: platform_audio
+
+38: Test command: /work/build/test_platform_audio
+38: Working Directory: /work/build
+38: Environment variables: 
+38:  SDL_AUDIODRIVER=dummy
+38: Test timeout computed to be: 10000000
+60: fx_loop: plasma_bolt ok (4 frames, steps [12, 20, 28], seam 17)
+60: fx_loop: reticle ok (8 frames, steps [0, 24, 60, 64, 64, 60, 24], seam 0)
+60: fx_loop: scarab_proj ok (4 frames, steps [19, 25, 28], seam 19)
+60: fx_loop: teleport_sparkle ok (8 frames, steps [75, 85, 152, 128, 130, 158, 100], seam 59)
+ 16/101 Test  #60: fx_loop ..........................   Passed    0.13 sec
+test 83
+        Start  83: demo_timeout
+
+83: Test command: /usr/sbin/python3.14 "/work/tests/test_demo_cmds.py" "/work/build/game" "/work/build/test_tmp/demo_cmds" "timeout"
+83: Working Directory: /work/build
+83: Environment variables: 
+83:  BAST_LIB=/work/build/libbast.so
+83:  BAST_PALETTE=/work/assets/gen/palette.bin
+83: Test timeout computed to be: 10000000
+71: headless_smoke: OK; STATS level=1 tic=70 hash=efdb882ed8478c72 health=100 armor=0 kills=0/0 items=0/0 secrets=0/0 exit=0 god=0
+56: prop_pot: opaque 249 -> [249, 231, 211, 195, 198, 192, 178, 178], 48 wound px, floor 40
+56: blob seed 1: opaque 256 -> [256, 156, 44, 34, 34, 34, 47, 66, 72, 67], 77 wound px, floor 20
+56: blob seed 2: opaque 256 -> [256, 150, 54, 47, 45, 46, 46, 49, 45, 43], 81 wound px, floor 20
+56: blob seed 3: opaque 256 -> [256, 171, 65, 32, 32, 34, 46, 70, 75, 73], 83 wound px, floor 20
+56: blob seed 4: opaque 256 -> [256, 156, 69, 34, 23, 23, 23, 23, 23, 27], 86 wound px, floor 20
+56: blob seed 5: opaque 256 -> [256, 162, 75, 56, 53, 53, 68, 105, 145, 146], 85 wound px, floor 20
+56: blob cyan 40x30: opaque 256 -> [256, 248, 211, 162, 165, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160], 78 wound px, floor 30
+56: ok
+ 17/101 Test  #71: headless_smoke ...................   Passed    0.16 sec
+test 69
+        Start  69: png_writer
+
+69: Test command: /usr/sbin/python3.14 "/work/tests/test_png_writer.py" "/work/build/test_png_writer" "/work/assets/gen/palette.bin" "/work/build/test_tmp/png_writer"
+69: Working Directory: /work/build
+69: Test timeout computed to be: 10000000
+ 18/101 Test  #56: gibs_pixels ......................   Passed    0.12 sec
+test 79
+        Start  79: determinism_m1-sprites
+
+79: Test command: /usr/sbin/cmake "-DGAME=/work/build/game" "-DDEMO=/work/demos/m1-sprites.demo" "-DOUT=/work/build/test_tmp/determinism_m1-sprites" "-P" "/work/tests/determinism.cmake"
+79: Working Directory: /work/build
+79: Test timeout computed to be: 10000000
+62: fx_shapes: explosion_small f1 outer radius variation 7.25 px (body 7.25 px), need >= 4
+62: fx_shapes: explosion_small f2 outer radius variation 6.75 px (body 10.50 px), need >= 4
+62: fx_shapes: explosion_big f1 outer radius variation 10.00 px (body 11.25 px), need >= 6
+62: fx_shapes: explosion_big f2 outer radius variation 10.00 px (body 11.00 px), need >= 6
+62: fx_shapes: reticle ok (8 frames)
+38: audio callback calls=1 frames=512
+ 19/101 Test  #38: platform_audio ...................   Passed    0.07 sec
+test 54
+        Start  54: editor_launch
+
+54: Test command: /usr/sbin/python3.14 "/work/tests/editor_launch.py"
+54: Working Directory: /work/build
+54: Environment variables: 
+54:  BAST_LIB=/work/build/libbast.so
+54:  BAST_PALETTE=/work/assets/gen/palette.bin
+54: Test timeout computed to be: 10000000
+79: -- run a: STATS level=1 tic=477 hash=a0f572d6404aa5f8 health=100 armor=0 kills=0/0 items=0/0 secrets=0/0 exit=0 god=0
+79: -- run b: STATS level=1 tic=477 hash=a0f572d6404aa5f8 health=100 armor=0 kills=0/0 items=0/0 secrets=0/0 exit=0 god=0
+ 20/101 Test  #62: fx_shapes ........................   Passed    0.20 sec
+test 49
+        Start  49: mkmap_py
+
+49: Test command: /usr/sbin/python3.14 "/work/tests/test_mkmap.py"
+49: Working Directory: /work/build
+49: Environment variables: 
+49:  BAST_LIB=/work/build/libbast.so
+49:  BAST_PALETTE=/work/assets/gen/palette.bin
+49: Test timeout computed to be: 10000000
+69: png_writer: wrote /work/build/test_tmp/png_writer/png_writer.png
+83: demo_timeout: OK
+ 21/101 Test  #83: demo_timeout .....................   Passed    0.09 sec
+test 82
+        Start  82: demo_goto
+
+82: Test command: /usr/sbin/python3.14 "/work/tests/test_demo_cmds.py" "/work/build/game" "/work/build/test_tmp/demo_cmds" "goto"
+82: Working Directory: /work/build
+82: Environment variables: 
+82:  BAST_LIB=/work/build/libbast.so
+82:  BAST_PALETTE=/work/assets/gen/palette.bin
+82: Test timeout computed to be: 10000000
+79: -- determinism: /work/demos/m1-sprites.demo: 477 tics identical
+ 22/101 Test  #79: determinism_m1-sprites ...........   Passed    0.07 sec
+test 87
+        Start  87: weapon_demo
+
+87: Test command: /usr/sbin/python3.14 "/work/tests/test_weapon_demo.py" "/work/build/game" "/work/build/test_tmp/weapon_demo"
+87: Working Directory: /work/build
+87: Environment variables: 
+87:  BAST_LIB=/work/build/libbast.so
+87:  BAST_PALETTE=/work/assets/gen/palette.bin
+87: Test timeout computed to be: 10000000
+69: png_writer: OK (mode P, 320x240, palette and pixels equal)
+54: validation: ok
+54: argv: ok
+54: launch: ok
+54: textures: ok
+54: editor_launch: ok
+ 23/101 Test  #69: png_writer .......................   Passed    0.10 sec
+test 51
+        Start  51: editor_roundtrip
+
+51: Test command: /usr/sbin/python3.14 "/work/tests/editor_roundtrip.py"
+51: Working Directory: /work/build
+51: Environment variables: 
+51:  BAST_LIB=/work/build/libbast.so
+51:  BAST_PALETTE=/work/assets/gen/palette.bin
+51: Test timeout computed to be: 10000000
+ 24/101 Test  #54: editor_launch ....................   Passed    0.09 sec
+test 84
+        Start  84: demo_expect
+
+84: Test command: /usr/sbin/python3.14 "/work/tests/test_demo_cmds.py" "/work/build/game" "/work/build/test_tmp/demo_cmds" "expect"
+84: Working Directory: /work/build
+84: Environment variables: 
+84:  BAST_LIB=/work/build/libbast.so
+84:  BAST_PALETTE=/work/assets/gen/palette.bin
+84: Test timeout computed to be: 10000000
+49: mkmap_py: ok
+82: demo_goto: OK 851 ce4cc0bf3d3a5dcf
+ 25/101 Test  #49: mkmap_py .........................   Passed    0.10 sec
+test 80
+        Start  80: determinism_tags-test
+
+80: Test command: /usr/sbin/cmake "-DGAME=/work/build/game" "-DDEMO=/work/demos/tags-test.demo" "-DOUT=/work/build/test_tmp/determinism_tags-test" "-P" "/work/tests/determinism.cmake"
+80: Working Directory: /work/build
+80: Test timeout computed to be: 10000000
+ 26/101 Test  #82: demo_goto ........................   Passed    0.06 sec
+test 76
+        Start  76: music_render
+
+76: Test command: /work/build/test_music_render "/work/assets/src/music/title.vmus"
+76: Working Directory: /work/build
+76: Test timeout computed to be: 10000000
+87: STATS level=1 tic=172 hash=0d43bcda6dc1a8d2 health=80 armor=0 kills=3/3 items=1/1 secrets=0/0 exit=0 god=0
+87: weapon_demo: OK
+80: -- run a: STATS level=1 tic=354 hash=9b2ffc08497975dc health=100 armor=0 kills=0/0 items=0/0 secrets=1/1 exit=1 god=0
+80: -- run b: STATS level=1 tic=354 hash=9b2ffc08497975dc health=100 armor=0 kills=0/0 items=0/0 secrets=1/1 exit=1 god=0
+ 27/101 Test  #87: weapon_demo ......................   Passed    0.06 sec
+test 72
+        Start  72: items_demo
+
+72: Test command: /usr/sbin/python3.14 "/work/tests/test_items_demo.py" "/work/build/game" "/work"
+72: Working Directory: /work/build
+72: Test timeout computed to be: 10000000
+84: demo_expect: OK
+80: -- determinism: /work/demos/tags-test.demo: 354 tics identical
+ 28/101 Test  #80: determinism_tags-test ............   Passed    0.05 sec
+test 88
+        Start  88: launcher_demo
+
+88: Test command: /usr/sbin/python3.14 "/work/tests/test_launcher_demo.py" "/work/build/game" "/work/build/test_tmp/launcher_demo"
+88: Working Directory: /work/build
+88: Environment variables: 
+88:  BAST_LIB=/work/build/libbast.so
+88:  BAST_PALETTE=/work/assets/gen/palette.bin
+88: Test timeout computed to be: 10000000
+51: editor_roundtrip: ok
+76: tuning: A-4 440 Hz, A-2 110 Hz, C-5 523 Hz
+76: first pass 1209600 frames (54.85 s), loop to order 1 at 201600 frames
+76: ok: two renders byte-identical (1430100 frames)
+76: window   0-  5 s: mean |x|  3980, peak 18369
+76: window   5- 10 s: mean |x|  4112, peak 20212
+76: window  10- 15 s: mean |x|  4499, peak 21282
+76: window  15- 20 s: mean |x|  4341, peak 20896
+76: window  20- 25 s: mean |x|  4023, peak 18681
+76: window  25- 30 s: mean |x|  4286, peak 21282
+76: window  30- 35 s: mean |x|  4504, peak 20896
+76: window  35- 40 s: mean |x|  4546, peak 19501
+76: window  40- 45 s: mean |x|  4520, peak 19476
+76: window  45- 50 s: mean |x|  4266, peak 19760
+76: window  50- 55 s: mean |x|  4370, peak 20212
+76: window  55- 60 s: mean |x|  4462, peak 21282
+76: ok: 10 s after the loop match the first pass from order 1
+76: ok: music_stop silences
+ 29/101 Test  #76: music_render .....................   Passed    0.05 sec
+test 53
+        Start  53: editor_entities
+
+53: Test command: /usr/sbin/python3.14 "/work/tests/editor_entities.py"
+53: Working Directory: /work/build
+53: Environment variables: 
+53:  BAST_LIB=/work/build/libbast.so
+53:  BAST_PALETTE=/work/assets/gen/palette.bin
+53: Test timeout computed to be: 10000000
+ 30/101 Test  #84: demo_expect ......................   Passed    0.08 sec
+test 78
+        Start  78: determinism_door-test
+
+78: Test command: /usr/sbin/cmake "-DGAME=/work/build/game" "-DDEMO=/work/demos/door-test.demo" "-DOUT=/work/build/test_tmp/determinism_door-test" "-P" "/work/tests/determinism.cmake"
+78: Working Directory: /work/build
+78: Test timeout computed to be: 10000000
+ 31/101 Test  #51: editor_roundtrip .................   Passed    0.08 sec
+test 89
+        Start  89: determinism_launcher-test
+
+89: Test command: /usr/sbin/cmake "-DGAME=/work/build/game" "-DDEMO=/work/demos/launcher-test.demo" "-DOUT=/work/build/test_tmp/determinism_launcher-test" "-P" "/work/tests/determinism.cmake"
+89: Working Directory: /work/build
+89: Test timeout computed to be: 10000000
+72: STATS level=1 tic=145 hash=c0d797b9d6d785cf health=200 armor=200 kills=0/0 items=20/20 secrets=0/0 exit=0 god=0
+72: STATS level=1 tic=145 hash=c0d797b9d6d785cf health=200 armor=200 kills=0/0 items=20/20 secrets=0/0 exit=0 god=0
+72: STATS level=1 tic=145 hash=61730e99c19299e9 health=200 armor=200 kills=0/0 items=20/21 secrets=0/0 exit=0 god=0
+72: items_demo: ok
+ 32/101 Test  #72: items_demo .......................   Passed    0.05 sec
+test 90
+        Start  90: render_floor
+
+90: Test command: /work/build/test_render_floor "/work/maps/m1test.vmap" "/work/assets/gen"
+90: Working Directory: /work/build
+90: Test timeout computed to be: 10000000
+78: -- run a: STATS level=1 tic=85 hash=5174403121973379 health=100 armor=0 kills=0/0 items=0/0 secrets=0/0 exit=0 god=0
+89: -- run a: STATS level=1 tic=116 hash=d3994253c0278e0c health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
+90: pixel (170,143): got 102 want 102
+78: -- run b: STATS level=1 tic=85 hash=5174403121973379 health=100 armor=0 kills=0/0 items=0/0 secrets=0/0 exit=0 god=0
+89: -- run b: STATS level=1 tic=116 hash=d3994253c0278e0c health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
+78: -- determinism: /work/demos/door-test.demo: 85 tics identical
+90: start room: 17262 floor + 17262 ceiling pixels match
+90: dark room: 20012 pixels match with dark 16
+90: sky: 6720 pixels match, column 0 at angle 3000 = sky column 262
+90: sky: 90 deg turn = same rows (320 px offset), 45 deg turn = 160 px shift
+90: render_floor: ok
+ 33/101 Test  #90: render_floor .....................   Passed    0.00 sec
+test 37
+        Start  37: proj_no_floats
+
+37: Test command: /usr/sbin/sh "-c" "! grep -rnE 'float|double' /work/src/game"
+37: Working Directory: /work/build
+37: Test timeout computed to be: 10000000
+ 34/101 Test  #78: determinism_door-test ............   Passed    0.01 sec
+test 92
+        Start  92: render_sprites
+
+92: Test command: /work/build/test_render_sprites "/work/assets/gen"
+92: Working Directory: /work/build
+92: Test timeout computed to be: 10000000
+89: -- determinism: /work/demos/launcher-test.demo: 116 tics identical
+ 35/101 Test  #89: determinism_launcher-test ........   Passed    0.02 sec
+test 68
+        Start  68: mixer_wav
+
+68: Test command: /work/build/test_mixer_wav "/work/assets/gen" "/work/build/mixer_wav.wav"
+68: Working Directory: /work/build
+68: Test timeout computed to be: 10000000
+92: occlusion: 13 columns drawn, 16 hidden behind the pillar, first hidden 129 (depth 2.500, previous 12.500)
+92: size: dist 1.25: 128 px tall (160/d = 128.00), rows 40..167, floor line 168.00
+92: size: dist 2.40: 66 px tall (160/d = 66.67), rows 71..136, floor line 137.33
+92: size: dist 3.60: 44 px tall (160/d = 44.44), rows 82..125, floor line 126.22
+92: size: dist 4.80: 34 px tall (160/d = 33.33), rows 87..120, floor line 120.67
+92: size: dist 6.00: 26 px tall (160/d = 26.67), rows 91..116, floor line 117.33
+92: size: dist 7.20: 22 px tall (160/d = 22.22), rows 93..114, floor line 115.11
+92: size: dist 8.40: 20 px tall (160/d = 19.05), rows 94..113, floor line 113.52
+92: size: dist 9.60: 16 px tall (160/d = 16.67), rows 96..111, floor line 112.33
+92: size: dist 10.80: 14 px tall (160/d = 14.81), rows 97..110, floor line 111.41
+92: size: dist 12.00: 14 px tall (160/d = 13.33), rows 97..110, floor line 110.67
+92: shading: 390 px, all colormap row 14 of 100 = 97
+92: transparency: ok
+92: sort: ok
+92: render_sprites: ok
+ 36/101 Test  #92: render_sprites ...................   Passed    0.00 sec
+test 85
+        Start  85: render_walls
+
+85: Test command: /work/build/test_render_walls "/work/maps/m1test.vmap" "/work/assets/gen"
+85: Working Directory: /work/build
+85: Test timeout computed to be: 10000000
+68: mixer_wav: 23814 frames (1.080 s); door 13693, secret 16913 at 6615
+68: energy L/R  door-only 50484543488/3155283968  overlap 72880214016/98207993856  secret-only 3187662848/51002605568
+68: wrote /work/build/mixer_wav.wav
+ 37/101 Test  #68: mixer_wav ........................   Passed    0.00 sec
+test 86
+        Start  86: draw2d
+
+86: Test command: /work/build/test_draw2d "/work/assets/gen" "/work/assets/src/palette/catlantis.gpl"
+86: Working Directory: /work/build
+86: Test timeout computed to be: 10000000
+53: editor_entities: ok (42 types)
+ 38/101 Test  #37: proj_no_floats ...................   Passed    0.01 sec
+test 24
+        Start  24: ai_drop
+
+24: Test command: /work/build/test_ai "drop"
+24: Working Directory: /work/build
+24: Test timeout computed to be: 10000000
+85: col 160: hit=1 dist=5.0000 height=32 rows 88..120 light=10 tex=2 u=32 cell (2,12)
+85: col 100: hit=1 dist=4.0000 height=40 rows 84..124 light=8 tex=2 u=0 cell (0,11)
+85: col  40: hit=1 dist=2.0000 height=80 rows 64..144 light=4 tex=2 u=0 cell (0,9)
+85: col 220: hit=1 dist=2.0000 height=80 rows 64..144 light=4 tex=4 u=16 cell (3,9)
+85: col 160: hit=1 dist=4.0000 height=40 rows 84..124 light=24 tex=2 u=32 cell (4,23)
+24: drop: charges 50 -> 55, items 0/0
+ 39/101 Test  #24: ai_drop ..........................   Passed    0.00 sec
+test 25
+        Start  25: ai_block
+
+25: Test command: /work/build/test_ai "block"
+25: Working Directory: /work/build
+25: Test timeout computed to be: 10000000
+85: render_walls: ok
+ 40/101 Test  #85: render_walls .....................   Passed    0.00 sec
+test 96
+        Start  96: tags_pushwall
+
+96: Test command: /work/build/test_tags "/work/maps/tagstest.vmap" "pushwall"
+96: Working Directory: /work/build
+96: Test timeout computed to be: 10000000
+86: draw2d: ramp table matches /work/assets/src/palette/catlantis.gpl (16 ramps)
+86: draw2d: patch clipping ok
+86: draw2d: remap ok
+86: draw2d: fill ok
+86: draw2d: fonts ok
+86: draw2d: all ok
+25: block: player x 11.700, mutt x 12.200
+ 41/101 Test  #86: draw2d ...........................   Passed    0.00 sec
+test 1
+        Start   1: smoke
+
+1: Test command: /work/build/test_smoke
+1: Working Directory: /work/build
+1: Test timeout computed to be: 10000000
+ 42/101 Test  #25: ai_block .........................   Passed    0.00 sec
+test 7
+        Start   7: weapon
+
+7: Test command: /work/build/test_weapon
+7: Working Directory: /work/build
+7: Test timeout computed to be: 10000000
+96: tags_pushwall: ok
+ 43/101 Test  #96: tags_pushwall ....................   Passed    0.00 sec
+test 70
+        Start  70: demo_parse
+
+70: Test command: /work/build/test_demo_parse "/work/build/demo_parse_rec.demo"
+70: Working Directory: /work/build
+70: Test timeout computed to be: 10000000
+1: smoke ok
+ 44/101 Test   #1: smoke ............................   Passed    0.00 sec
+test 13
+        Start  13: items_keys
+
+13: Test command: /work/build/test_items "keys"
+13: Working Directory: /work/build
+13: Test timeout computed to be: 10000000
+70: demo_parse: OK
+13: items_keys: ok
+ 45/101 Test  #70: demo_parse .......................   Passed    0.00 sec
+ 46/101 Test  #13: items_keys .......................   Passed    0.00 sec
+test 67
+        Start  67: mixer
+
+67: Test command: /work/build/test_mixer
+67: Working Directory: /work/build
+67: Test timeout computed to be: 10000000
+test 101
+        Start 101: tags_exit
+
+101: Test command: /work/build/test_tags "/work/maps/tagstest.vmap" "exit"
+101: Working Directory: /work/build
+101: Test timeout computed to be: 10000000
+7: weapon 1: interval 14, 25 shots in 350 tics
+7: weapon 2: interval 12, 30 shots in 350 tics
+7: weapon 3: interval 32, 11 shots in 350 tics
+7: weapon 4: interval 4, 88 shots in 350 tics
+7: switch: first shot 10 tics after the select
+7: scattergun: one shot, 7 pellets, 46 damage
+7: kill: 20-HP Mutt dead after 25 tics, health -11
+7: weapon: all tests passed
+ 47/101 Test  #53: editor_entities ..................   Passed    0.03 sec
+test 40
+        Start  40: oklab_nearest
+
+40: Test command: /work/build/test_oklab_nearest "/work/assets/gen/palette.bin"
+40: Working Directory: /work/build
+40: Test timeout computed to be: 10000000
+ 48/101 Test   #7: weapon ...........................   Passed    0.00 sec
+67: mixer: all tests passed
+test 10
+        Start  10: items_armour
+
+10: Test command: /work/build/test_items "armour"
+10: Working Directory: /work/build
+10: Test timeout computed to be: 10000000
+ 49/101 Test  #67: mixer ............................   Passed    0.00 sec
+101: tags_exit: ok
+test 4
+        Start   4: rng
+
+4: Test command: /work/build/test_rng
+4: Working Directory: /work/build
+4: Test timeout computed to be: 10000000
+ 50/101 Test #101: tags_exit ........................   Passed    0.00 sec
+test 94
+        Start  94: tags_start_open
+
+94: Test command: /work/build/test_tags "/work/maps/tagstest.vmap" "start_open"
+94: Working Directory: /work/build
+94: Test timeout computed to be: 10000000
+40: test_oklab_nearest: OK
+10: items_armour: ok
+ 51/101 Test  #40: oklab_nearest ....................   Passed    0.00 sec
+ 52/101 Test  #10: items_armour .....................   Passed    0.00 sec
+test 91
+        Start  91: door
+
+91: Test command: /work/build/test_door "/work/maps/doortest.vmap" "/work/demos/door-test.demo"
+91: Working Directory: /work/build
+91: Test timeout computed to be: 10000000
+test 12
+        Start  12: items_weapons
+
+12: Test command: /work/build/test_items "weapons"
+12: Working Directory: /work/build
+12: Test timeout computed to be: 10000000
+4: rng: ok
+94: tags_start_open: ok
+ 53/101 Test   #4: rng ..............................   Passed    0.00 sec
+ 54/101 Test  #94: tags_start_open ..................   Passed    0.00 sec
+test 41
+        Start  41: snd_roundtrip
+
+41: Test command: /work/build/test_snd_roundtrip
+41: Working Directory: /work/build
+41: Test timeout computed to be: 10000000
+test 97
+        Start  97: tags_trigger
+
+97: Test command: /work/build/test_tags "/work/maps/tagstest.vmap" "trigger"
+97: Working Directory: /work/build
+97: Test timeout computed to be: 10000000
+12: items_weapons: ok
+ 55/101 Test  #12: items_weapons ....................   Passed    0.00 sec
+test 59
+        Start  59: colormap
+
+59: Test command: /work/build/test_colormap "/work/assets/gen" "/work/assets/src/palette/catlantis.gpl"
+59: Working Directory: /work/build
+59: Test timeout computed to be: 10000000
+91: door-test.demo: tic=85 player=(163840/65536, 419550/65536)
+91: door: ok
+ 56/101 Test  #91: door .............................   Passed    0.00 sec
+test 44
+        Start  44: files
+
+44: Test command: /work/build/test_files "/work/build/test_tmp/files"
+44: Working Directory: /work/build
+44: Test timeout computed to be: 10000000
+97: tags_trigger: ok
+41: snd_roundtrip: ok
+ 57/101 Test  #97: tags_trigger .....................   Passed    0.00 sec
+ 58/101 Test  #41: snd_roundtrip ....................   Passed    0.00 sec
+test 6
+        Start   6: player_move
+
+6: Test command: /work/build/test_player_move
+6: Working Directory: /work/build
+6: Test timeout computed to be: 10000000
+test 99
+        Start  99: tags_lights
+
+99: Test command: /work/build/test_tags "/work/maps/tagstest.vmap" "lights"
+99: Working Directory: /work/build
+99: Test timeout computed to be: 10000000
+59: steel_12=30 row16 warm=7 (b=0.0039) plain=24 (b=-0.0146)
+59: colormap: ok
+44: test_files: OK
+ 59/101 Test  #59: colormap .........................   Passed    0.00 sec
+test 43
+        Start  43: pak_roundtrip
+
+43: Test command: /work/build/test_pak_roundtrip "/work/build"
+43: Working Directory: /work/build
+43: Test timeout computed to be: 10000000
+ 60/101 Test  #44: files ............................   Passed    0.00 sec
+test 75
+        Start  75: music_parse
+
+75: Test command: /work/build/test_music_parse "/work/assets/src/music/title.vmus"
+75: Working Directory: /work/build
+75: Test timeout computed to be: 10000000
+99: tags_lights: ok
+6: walk 35 tics: 250918 (expect 250918)
+6: wall stop: x=638976 (expect 638976)
+6: slide dy=5296, slide dy=5296, slide dy=5296, slide dy=5296, slide dy=5296, slide dy=5296, slide dy=5296, slide dy=5296, slide dy=5296, slide dy=5296 (expect 5296)
+6: gap: x=966656
+6: pinch: x=644111 y=512376
+6: hash after 301 tics: 6bc0a4124f199cfe
+6: player_move: ok
+43: test_pak_roundtrip: OK
+75: ok: good song parses
+75: ok: line 19: bad effect 'A3'
+75: ok: line 29: bad note 'H-4'
+75: ok: line 39: undefined instrument '07'
+75: ok: line 49: bad volume (00..40 hex) '41'
+75: ok: line 59: row needs 4 cells of 4 fields (note inst vol fx)
+75: ok: line 72: bad effect 'Z00'
+75: ok: line 1: expected header 'vmus 1'
+75: ok: line 2: tempo must be 1..32 tics per row
+75: ok: line 3: unknown wave 'sine'
+75: ok: line 3: value out of range for 'duty'
+75: ok: line 3: unknown directive 'bogus'
+75: ok: line 4: pattern 0 has 1 rows, expected 64
+75: ok: line 3: too many tokens
+75: ok: line 4: too many tokens
+75: ok: line 4: bad order entry '0'
+75: ok: line 74: loop index past the order list
+75: ok: line 73: order entry 1 names undefined pattern 4
+75: ok: /work/assets/src/music/title.vmus: tempo 5, 6 orders, loop 1
+ 61/101 Test  #99: tags_lights ......................   Passed    0.00 sec
+ 62/101 Test   #6: player_move ......................   Passed    0.00 sec
+ 63/101 Test  #43: pak_roundtrip ....................   Passed    0.00 sec
+ 64/101 Test  #75: music_parse ......................   Passed    0.00 sec
+test 98
+        Start  98: tags_secret
+
+98: Test command: /work/build/test_tags "/work/maps/tagstest.vmap" "secret"
+98: Working Directory: /work/build
+98: Test timeout computed to be: 10000000
+test 8
+        Start   8: sprite_dir
+
+8: Test command: /work/build/test_sprite_dir
+8: Working Directory: /work/build
+8: Test timeout computed to be: 10000000
+test 39
+        Start  39: tex_roundtrip
+
+39: Test command: /work/build/test_tex_roundtrip "/work/assets/gen/palette.bin"
+39: Working Directory: /work/build
+39: Test timeout computed to be: 10000000
+test 5
+        Start   5: hash
+
+5: Test command: /work/build/test_hash
+5: Working Directory: /work/build
+5: Test timeout computed to be: 10000000
+98: tags_secret: ok
+8: sprite_dir: ok
+ 65/101 Test  #98: tags_secret ......................   Passed    0.00 sec
+ 66/101 Test   #8: sprite_dir .......................   Passed    0.00 sec
+test 42
+        Start  42: map_roundtrip
+
+42: Test command: /work/build/test_map_roundtrip
+42: Working Directory: /work/build
+42: Test timeout computed to be: 10000000
+test 23
+        Start  23: ai_pillar
+
+23: Test command: /work/build/test_ai "pillar"
+23: Working Directory: /work/build
+23: Test timeout computed to be: 10000000
+5: hash: ok
+39: test_tex_roundtrip: OK
+ 67/101 Test   #5: hash .............................   Passed    0.00 sec
+ 68/101 Test  #39: tex_roundtrip ....................   Passed    0.00 sec
+test 18
+        Start  18: items_touch
+
+18: Test command: /work/build/test_items "touch"
+18: Working Directory: /work/build
+18: Test timeout computed to be: 10000000
+test 35
+        Start  35: proj_awake
+
+35: Test command: /work/build/test_projectile "awake"
+35: Working Directory: /work/build
+35: Test timeout computed to be: 10000000
+42: map_roundtrip: ok
+ 69/101 Test  #42: map_roundtrip ....................   Passed    0.00 sec
+test 30
+        Start  30: proj_splash_wall
+
+30: Test command: /work/build/test_projectile "splash_wall"
+30: Working Directory: /work/build
+30: Test timeout computed to be: 10000000
+23: pillar: bitten at tic 84, detour 3 tiles off the straight line
+23: door: keyed=0 door state 0, bitten 1
+23: door: keyed=1 door state 0, bitten 0
+18: items_touch: ok
+ 70/101 Test  #23: ai_pillar ........................   Passed    0.00 sec
+test 29
+        Start  29: proj_splash
+
+29: Test command: /work/build/test_projectile "splash"
+29: Working Directory: /work/build
+29: Test timeout computed to be: 10000000
+35: proj_awake: states before impact 3 3, scarab hit after 13 tics, health -30 -16, kills 2
+ 71/101 Test  #18: items_touch ......................   Passed    0.00 sec
+test 22
+        Start  22: ai_chomper
+
+22: Test command: /work/build/test_ai "chomper"
+22: Working Directory: /work/build
+22: Test timeout computed to be: 10000000
+ 72/101 Test  #35: proj_awake .......................   Passed    0.00 sec
+30: proj_splash_wall: d=1.4 open -> 6, behind a wall -> 0
+test 28
+        Start  28: proj_wall
+
+28: Test command: /work/build/test_projectile "wall"
+28: Working Directory: /work/build
+28: Test timeout computed to be: 10000000
+ 73/101 Test  #30: proj_splash_wall .................   Passed    0.00 sec
+29: proj_splash: d=0 -> 96, d=0.75 -> 48, d=1.5 -> 0
+test 17
+        Start  17: items_spawn
+
+17: Test command: /work/build/test_items "spawn"
+17: Working Directory: /work/build
+17: Test timeout computed to be: 10000000
+ 74/101 Test  #29: proj_splash ......................   Passed    0.00 sec
+22: chomper: bit at tic 97 from 0.786 u (centres)
+test 27
+        Start  27: proj_travel
+
+27: Test command: /work/build/test_projectile "travel"
+27: Working Directory: /work/build
+27: Test timeout computed to be: 10000000
+ 75/101 Test  #22: ai_chomper .......................   Passed    0.00 sec
+28: proj_wall: exploded after 26 tics at x=2018498 (wall face 2031616, radius 8192)
+test 95
+        Start  95: tags_timed
+
+95: Test command: /work/build/test_tags "/work/maps/tagstest.vmap" "timed"
+95: Working Directory: /work/build
+95: Test timeout computed to be: 10000000
+ 76/101 Test  #28: proj_wall ........................   Passed    0.00 sec
+17: items_spawn: ok
+test 21
+        Start  21: ai_windup
+
+21: Test command: /work/build/test_ai "windup"
+21: Working Directory: /work/build
+21: Test timeout computed to be: 10000000
+ 77/101 Test  #17: items_spawn ......................   Passed    0.00 sec
+27: proj_travel: 20 tics x 26214 = 524280, start 163840 end 688120
+95: tags_timed: ok
+21: windup: Mutt 20 tics on skill 2, 15 on skill 3
+test 14
+        Start  14: items_powerups
+
+14: Test command: /work/build/test_items "powerups"
+14: Working Directory: /work/build
+14: Test timeout computed to be: 10000000
+ 78/101 Test  #27: proj_travel ......................   Passed    0.00 sec
+ 79/101 Test  #95: tags_timed .......................   Passed    0.00 sec
+ 80/101 Test  #21: ai_windup ........................   Passed    0.00 sec
+test 93
+        Start  93: tags_switch
+
+93: Test command: /work/build/test_tags "/work/maps/tagstest.vmap" "switch"
+93: Working Directory: /work/build
+93: Test timeout computed to be: 10000000
+test 26
+        Start  26: ai_pushwall
+
+26: Test command: /work/build/test_ai "pushwall"
+26: Working Directory: /work/build
+26: Test timeout computed to be: 10000000
+test 15
+        Start  15: items_damage
+
+15: Test command: /work/build/test_items "damage"
+15: Working Directory: /work/build
+15: Test timeout computed to be: 10000000
+14: items_powerups: ok
+93: tags_switch: ok
+ 81/101 Test  #14: items_powerups ...................   Passed    0.00 sec
+test 16
+        Start  16: items_ninth_life
+
+16: Test command: /work/build/test_items "ninth_life"
+16: Working Directory: /work/build
+16: Test timeout computed to be: 10000000
+26: pushwall: wall at (4,2) state 2, mutt tile (5,2) alive 1
+15: items_damage: ok
+ 82/101 Test  #93: tags_switch ......................   Passed    0.00 sec
+test 11
+        Start  11: items_ammo
+
+11: Test command: /work/build/test_items "ammo"
+11: Working Directory: /work/build
+11: Test timeout computed to be: 10000000
+ 83/101 Test  #26: ai_pushwall ......................   Passed    0.00 sec
+ 84/101 Test  #15: items_damage .....................   Passed    0.00 sec
+16: items_ninth_life: ok
+test 100
+        Start 100: tags_damage
+
+100: Test command: /work/build/test_tags "/work/maps/tagstest.vmap" "damage"
+100: Working Directory: /work/build
+100: Test timeout computed to be: 10000000
+test 3
+        Start   3: angle
+
+3: Test command: /work/build/test_angle
+3: Working Directory: /work/build
+3: Test timeout computed to be: 10000000
+11: items_ammo: ok
+ 85/101 Test  #16: items_ninth_life .................   Passed    0.00 sec
+test 31
+        Start  31: proj_self
+
+31: Test command: /work/build/test_projectile "self"
+31: Working Directory: /work/build
+31: Test timeout computed to be: 10000000
+ 86/101 Test  #11: items_ammo .......................   Passed    0.00 sec
+100: tags_damage: ok
+test 2
+        Start   2: fixed
+
+2: Test command: /work/build/test_fixed
+2: Working Directory: /work/build
+2: Test timeout computed to be: 10000000
+ 87/101 Test #100: tags_damage ......................   Passed    0.00 sec
+3: angle_of worst error: 3 angle units (limit 16)
+3: angle: ok
+test 20
+        Start  20: ai_ambush
+
+20: Test command: /work/build/test_ai "ambush"
+20: Working Directory: /work/build
+20: Test timeout computed to be: 10000000
+ 88/101 Test   #3: angle ............................   Passed    0.00 sec
+31: proj_self: point-blank scarab into a wall, health 100 -> 24
+test 19
+        Start  19: ai_sight
+
+19: Test command: /work/build/test_ai "sight"
+19: Working Directory: /work/build
+19: Test timeout computed to be: 10000000
+ 89/101 Test  #31: proj_self ........................   Passed    0.00 sec
+2: fixed: ok
+test 9
+        Start   9: items_health
+
+9: Test command: /work/build/test_items "health"
+9: Working Directory: /work/build
+9: Test timeout computed to be: 10000000
+ 90/101 Test   #2: fixed ............................   Passed    0.00 sec
+20: ambush: plain 4, ambush 0, behind door 0
+test 33
+        Start  33: proj_barrel_chain
+
+33: Test command: /work/build/test_projectile "barrel_chain"
+33: Working Directory: /work/build
+33: Test timeout computed to be: 10000000
+ 91/101 Test  #20: ai_ambush ........................   Passed    0.00 sec
+19: sight: in view 3, facing away 0, behind wall 0
+test 36
+        Start  36: proj_alive
+
+36: Test command: /work/build/test_projectile "alive"
+36: Working Directory: /work/build
+36: Test timeout computed to be: 10000000
+ 92/101 Test  #19: ai_sight .........................   Passed    0.00 sec
+9: items_health: ok
+33: proj_barrel_chain: hit on tic 12, explosions on tics 16 20 24
+36: proj_alive: door closed 162 tics after the effect entered it
+test 34
+        Start  34: proj_barrel_solid
+
+34: Test command: /work/build/test_projectile "barrel_solid"
+34: Working Directory: /work/build
+34: Test timeout computed to be: 10000000
+ 93/101 Test   #9: items_health .....................   Passed    0.00 sec
+ 94/101 Test  #33: proj_barrel_chain ................   Passed    0.00 sec
+ 95/101 Test  #36: proj_alive .......................   Passed    0.00 sec
+34: proj_barrel_solid: player stopped at x=327680 (barrel 360448, radii 32768)
+test 32
+        Start  32: proj_direct
+
+32: Test command: /work/build/test_projectile "direct"
+32: Working Directory: /work/build
+32: Test timeout computed to be: 10000000
+ 96/101 Test  #34: proj_barrel_solid ................   Passed    0.00 sec
+32: proj_direct: hit at d=53184, damage 87 (splash part 44)
+ 97/101 Test  #32: proj_direct ......................   Passed    0.00 sec
+88: STATS level=1 tic=116 hash=d3994253c0278e0c health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
+88: launcher_demo: OK
+ 98/101 Test  #88: launcher_demo ....................   Passed    0.06 sec
+73: blender_render: 16 sprite(s) -> /tmp/tmpdj3w8tdn/out (64x64, origin 32,64)
+73: centroid offsets f0: d0=+1.20 d1=+1.01 d2=+1.90 d3=+0.25 d4=-1.20 d5=-1.01 d6=-1.90 d7=-0.25
+73: red wing pixels: d2=114 d6=0
+73: brightest ramp entry f0: gold_11 red_11 sand_12
+73: palcheck: OK, 32 file(s) checked
+73: blender_render: ok
+ 99/101 Test  #73: blender_render ...................   Passed    2.00 sec
+47: sfx_determinism: ok (76 effects)
+100/101 Test  #47: sfx_determinism ..................   Passed    2.10 sec
+74: blender_render: 128 sprite(s) -> /tmp/tmpcmjg3pyl/out (40x32, origin 20,32)
+74: front idle bbox 22x28, corpse d0 26x16, beige span min 16, idle/walk top beige_15
+74: palcheck: OK, 136 file(s) checked
+74: sprite_chomp: ok
+101/101 Test  #74: sprite_chomp .....................   Passed    3.73 sec
+
+100% tests passed out of 101
+
+Total Test time (real) =   3.73 sec
+STATS level=1 tic=116 hash=d3994253c0278e0c health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
+STATS level=1 tic=116 hash=d3994253c0278e0c health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
+per-tic logs identical (116 lines)
