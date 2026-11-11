@@ -1,0 +1,23 @@
+{
+  "_comment": "Pomeranian Plasmagunner gibs (enemies.md: gib, 8 frames, from the pain frame). A big round fur ball on a 56x56 canvas: more chunks than the Chomper, thrown with moderate force so they stay on the canvas; dogs bleed red (template).",
+  "sprite": "pom",
+  "source": "sprites/pom_pain_d0_f0.tex",
+  "seed": 122,
+  "frames": 8,
+  "chunks": 9,
+  "substeps": 2,
+  "force": 1.6,
+  "lift": 1.2,
+  "jitter": 0.4,
+  "spread": 28.0,
+  "spin": 30.0,
+  "gravity": 0.35,
+  "drag": 0.04,
+  "bounce": 0.15,
+  "friction": 0.5,
+  "centre": [0.5, 0.55],
+  "wound_depth": 2,
+  "blood_ramp": "red",
+  "wound_shade": -0.08,
+  "canvas": [56, 56]
+}
