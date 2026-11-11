@@ -300,6 +300,14 @@ int items_render_things(const game_state *gs, render_thing *out, int max)
     }
     for (int i = 0; i < gs->things.count && n < max; i++) {
         const thinker_t *t = &gs->things.list[i];
+        if (thinker_is_decor(t->type)) {
+            /* Standing, fused or hanging: idle sprite; broken: gibs. */
+            int anim, frame;
+            thinker_anim(t, gs->tic, &anim, &frame);
+            out[n++] = (render_thing){ .type = t->type, .x = t->x, .y = t->y, .angle = t->angle,
+                                       .anim = (uint8_t)anim, .frame = (uint8_t)frame };
+            continue;
+        }
         if (!(t->flags & TH_FLAG_PICKUP) || t->state == TH_STATE_TAKEN)
             continue;
         out[n++] = (render_thing){ .type = t->type, .x = t->x, .y = t->y, .angle = t->angle };

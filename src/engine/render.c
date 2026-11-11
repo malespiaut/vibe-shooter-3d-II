@@ -102,10 +102,11 @@ static bast_tex *load_sprite_frame(const char *dir, const char *name, int *found
     return NULL;
 }
 
-/* Loads frames 0..frames-1 of animation `anim` of sprite `def` into
- * sprite_frames[type][anim]. Returns 1 when loaded, 0 when broken (err_buf
- * set), -1 when a d0 frame is missing (`missing` names it). */
-static int load_anim(const char *dir, int type, const sprite_def *def, int anim, int frames,
+/* Loads frames 0..frames-1 of animation `anim` of sprite `base` (files
+ * <base>_<anim>_d<d>_f<f>) into sprite_frames[type][anim]. Returns 1 when
+ * loaded, 0 when broken (err_buf set), -1 when a d0 frame is missing
+ * (`missing` names it). */
+static int load_anim(const char *dir, int type, const char *base, int anim, int frames,
                      char *missing, size_t missing_size)
 {
     for (int f = 0; f < frames; f++) {
@@ -113,7 +114,7 @@ static int load_anim(const char *dir, int type, const sprite_def *def, int anim,
         for (int d = 0; d < SPRITE_DIRS; d++) {
             char name[128];
             int found;
-            snprintf(name, sizeof name, "%s_%s_d%d_f%d", def->name, sprite_anim_name(anim), d, f);
+            snprintf(name, sizeof name, "%s_%s_d%d_f%d", base, sprite_anim_name(anim), d, f);
             bast_tex *t = load_sprite_frame(dir, name, &found);
             if (!t && found)
                 return 0;
@@ -136,10 +137,16 @@ static int load_sprites(const bast_map *map, const char *dir)
             continue;
         char missing[128];
         if (!def->enemy) {
-            const int r = load_anim(dir, type, def, SPR_IDLE, def->frames, missing, sizeof missing);
+            int r = load_anim(dir, type, def->name, SPR_IDLE, def->frames, missing, sizeof missing);
+            /* Breakable props (sprite_def gib): their gib frames too, from
+             * gibs/<gib>_gib_d0_f<n>, required like the idle frames. */
+            if (r > 0 && def->gib)
+                r = load_anim(dir, type, def->gib, SPR_GIB, sprite_enemy_frames(SPR_GIB), missing,
+                              sizeof missing);
             if (r < 0)
-                snprintf(err_buf, sizeof err_buf, "sprite '%s' not found in %s/sprites or %s/test",
-                         missing, dir, dir);
+                snprintf(err_buf, sizeof err_buf,
+                         "sprite '%s' not found in %s/sprites, %s/test or %s/gibs", missing,
+                         dir, dir, dir);
             if (r <= 0)
                 return 0;
             continue;
@@ -150,7 +157,8 @@ static int load_sprites(const bast_map *map, const char *dir)
         int r = 1;
         for (int a = 0; a < SPR_ANIMS && r > 0; a++)
             if (a != SPR_GIB || !def->no_gib)
-                r = load_anim(dir, type, def, a, sprite_enemy_frames(a), missing, sizeof missing);
+                r = load_anim(dir, type, def->name, a, sprite_enemy_frames(a), missing,
+                              sizeof missing);
         if (r == 0)
             return 0;
         if (r < 0) {
@@ -677,8 +685,9 @@ int render_draw_sprites(const render_sprite *s, int n, uint8_t *fb)
 }
 
 /* Frame of `type` seen from (vx, vy) for a thing at (x, y) facing `angle`:
- * enemies show (`anim`, `frame`), other sprites their idle frame at render
- * tic `tic`. NULL if the type has no loaded sprite. */
+ * enemies show (`anim`, `frame`), breakable props (sprite_def gib) their gib
+ * `frame` when `anim` is SPR_GIB, other sprites their idle frame at render
+ * tic `tic` (sprite_def_frame()). NULL if the type has no loaded sprite. */
 static const bast_tex *thing_frame(int type, fix_t x, fix_t y, angle_t angle, int anim,
                                    int frame, fix_t vx, fix_t vy, uint32_t tic)
 {
@@ -686,8 +695,10 @@ static const bast_tex *thing_frame(int type, fix_t x, fix_t y, angle_t angle, in
     if (!def || !sprite_frames[type][SPR_IDLE][0][0])
         return NULL;
     if (!def->enemy) {
+        if (anim == SPR_GIB && def->gib && frame >= 0 && frame < sprite_enemy_frames(SPR_GIB))
+            return sprite_frames[type][SPR_GIB][frame][0];
         anim = SPR_IDLE;
-        frame = sprite_anim_frame(tic, def->frames);
+        frame = sprite_def_frame(def, tic);
     } else if (anim < 0 || anim >= SPR_ANIMS || frame < 0 ||
                frame >= sprite_enemy_frames(anim)) {
         return NULL;

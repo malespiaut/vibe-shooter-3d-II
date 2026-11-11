@@ -40,9 +40,10 @@ int item_apply(game_state *gs, int type);
 void items_touch(game_state *gs);
 
 /* Fills `out` (up to `max`) with every pickup still lying in the world:
- * untaken pickup_t in spawn order, then live weapon-pickup thinkers in
- * creation order. Read only (the renderer's view of live state). Returns
- * the count. */
+ * untaken pickup_t in spawn order, then, in creation order, live
+ * weapon-pickup thinkers and every decoration thinker (a broken pot or an
+ * exploded barrel with its SPR_GIB frame, thinker_anim()). Read only (the
+ * renderer's view of live state). Returns the count. */
 int items_render_things(const game_state *gs, render_thing *out, int max);
 
 /* Counts down powerup and invulnerability timers. Called by game_tic. */
