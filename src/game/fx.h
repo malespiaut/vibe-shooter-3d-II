@@ -26,6 +26,7 @@ struct game_state;
 #define FX_PUFF_FRAMES 4
 #define FX_BLOOD_FRAMES 4
 #define FX_SCARAB_FRAMES 4
+#define FX_PLASMA_BOLT_FRAMES 4
 
 enum {
     FX_NONE = 0,
