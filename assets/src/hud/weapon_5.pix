@@ -1,0 +1,27 @@
+# Weapon icon 5 (weapons.md). Scarab Launcher: gold tube with steel band rings, flared muzzle collar,
+# a lapis scarab (head, wing-case seam, legs) leaving the muzzle, shaped wooden stock.
+# Drawn by hand.
+name weapon_5
+size 48 20
+shadow sand_00
+grid
+.
+.
+.
+..................................45.d...d...d
+.............45..........45......4554.d..d..d
+.........4eee44eeeeeeeeee44eeeee44434.tuuu
+........o3ddd4edddddddddd4eddddd3333.tuuuutb.e
+.....oooo3ddd33dddddddddd33ddddd33K.tuuuuutbdde
+.4oooppoo3ccc33cccccccccc33ccccc33K.tuutttsbddd
+.3ooooooo2ccc3dcccccccccc3dccccc22K.qqqqqqqbcdd
+.3ooooonn2bbb22bbbbbbbbbb22bbbbb22K.srrrrrqbccd
+.3onnnnnn2bbb22bbbbbbbbbb22bbbbb22K.srrrrqqbcce
+.2nnnnnmm1aaa11aaaaaaaaaa11aaaaa11K..rrqqqqb
+.2nnmmmm.....11...oooo.2222.....1112..qqqq
+.1mmm.............nnnn.2..2......1112.b..b..b
+..................nnnn..222.......11.b...b...b
+..................mmmm
+..................mmm
+.
+.

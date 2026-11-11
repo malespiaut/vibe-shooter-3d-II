@@ -1,0 +1,12 @@
+# Dominion rivet, bolted over the panel (internal: blitted by tools/hud.py, not exported).
+name _rivet
+size 4 4
+shadow sand_05
+= 6 steel_13
+= 7 steel_10
+= 8 steel_06
+= 9 steel_03
+grid
+678
+789
+899

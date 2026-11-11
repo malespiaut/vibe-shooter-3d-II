@@ -1,0 +1,25 @@
+# Weapon icon 6 (weapons.md). Eye of Ra Lance: long steel rifle, gold sun disc with a lapis eye, forked gold emitter.
+# Composed from rough shapes, then pixel-corrected by hand.
+name weapon_6
+size 48 20
+shadow sand_00
+grid
+.
+.
+.
+..............eeeeed
+.............eeeeeddd
+............eeeeeddddc................ddddddddd
+...........eeeeeddddccc...............bbbbbbbbb
+..444444444eeeuuuttrccc444444444444444444
+..333333333eeeuttKrqccb333333333333333333
+..222222222eedttrrqqcbb222222222222222222
+..111111111eddddccccbbb111111111111111111
+......ppppp.dddccccbbb................ddddddddd
+......ooooo..dccccbbb.................bbbbbbbbb
+......ooooo...cccbbb
+......nnnnn
+......nnnnn
+......mmmmm
+.
+.
