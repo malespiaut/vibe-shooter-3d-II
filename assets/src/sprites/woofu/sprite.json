@@ -1,0 +1,76 @@
+{
+  "_comment": "Woofu, the Chrome Pharaoh (enemies.md Boss; art-bible.md Sizes: 96x96 on a 128x112 canvas). model.py builds woofu.blend; tools/build.d/60-sprites.sh renders it. Materials -> gold (case, sceptre, nemes), blue (lapis inlay, beard, heart), steel (chrome head, arms, legs, chain) plus fb_cyan (eyes, sceptre orb, plasma, lid blast). death is lidless: the boss only dies in phase 2.",
+  "object": "Woofu",
+  "canvas": [
+    128,
+    112
+  ],
+  "ramps": {
+    "WoofuGold": "gold",
+    "WoofuGoldDark": "gold",
+    "WoofuLapis": "blue",
+    "WoofuLapisDark": "blue",
+    "WoofuSteel": "steel",
+    "WoofuSteelDark": "steel",
+    "WoofuGlow": "fb_cyan"
+  },
+  "actions": {
+    "WoofuIdle": {
+      "anim": "idle",
+      "frames": [
+        1,
+        2
+      ]
+    },
+    "WoofuWalk": {
+      "anim": "walk",
+      "frames": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "WoofuWindup": {
+      "anim": "windup",
+      "frames": [
+        1,
+        2
+      ]
+    },
+    "WoofuAttack": {
+      "anim": "attack",
+      "frames": [
+        1,
+        2
+      ]
+    },
+    "WoofuPain": {
+      "anim": "pain",
+      "frames": [
+        1
+      ]
+    },
+    "WoofuPhase": {
+      "anim": "phase",
+      "frames": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "WoofuDeath": {
+      "anim": "death",
+      "frames": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "_comment": "Woofu phase 2 (`woofu2_*`): the same model without the sarcophagus lid, built by ../woofu/model.py --lidless (woofu2/model.py). Same ramps as woofu.",
+  "object": "Woofu",
+  "canvas": [
+    128,
+    112
+  ],
+  "ramps": {
+    "WoofuGold": "gold",
+    "WoofuGoldDark": "gold",
+    "WoofuLapis": "blue",
+    "WoofuLapisDark": "blue",
+    "WoofuSteel": "steel",
+    "WoofuSteelDark": "steel",
+    "WoofuGlow": "fb_cyan"
+  },
+  "actions": {
+    "Woofu2Idle": {
+      "anim": "idle",
+      "frames": [
+        1,
+        2
+      ]
+    },
+    "Woofu2Walk": {
+      "anim": "walk",
+      "frames": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "Woofu2Windup": {
+      "anim": "windup",
+      "frames": [
+        1,
+        2
+      ]
+    },
+    "Woofu2Attack": {
+      "anim": "attack",
+      "frames": [
+        1,
+        2
+      ]
+    },
+    "Woofu2Pain": {
+      "anim": "pain",
+      "frames": [
+        1
+      ]
+    }
+  }
+}
