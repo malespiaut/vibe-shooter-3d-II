@@ -70,9 +70,11 @@ add_custom_command(
   OUTPUT ${ASSETS_GEN}/colormap.bin
   COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
           ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/colormap.py
-          --palette ${ASSETS_GEN}/palette.bin --out ${ASSETS_GEN}/colormap.bin
-  DEPENDS bast ${ASSETS_GEN}/palette.bin ${ASSETS_GEN}/palette_flags.bin
+          --palette ${ASSETS_GEN}/palette.bin --gpl ${PALETTE_GPL}
+          --out ${ASSETS_GEN}/colormap.bin
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${ASSETS_GEN}/palette_flags.bin ${PALETTE_GPL}
           ${CMAKE_SOURCE_DIR}/tools/colormap.py ${CMAKE_SOURCE_DIR}/tools/bast.py
+          ${CMAKE_SOURCE_DIR}/tools/palette.py
   COMMENT "Building colormap.bin")
 add_custom_target(colormap ALL DEPENDS ${ASSETS_GEN}/colormap.bin)
 add_dependencies(colormap palette)
