@@ -1,0 +1,36 @@
+# World pickup of weapon 7, Sphinx Howler (weapons.md): side view matching
+# assets/src/hud/weapon_7.pix: steel housing with sight, a sphinx head in a striped nemes headdress
+# feeding a gold-and-lapis bell with a dark mouth, wooden grip. Scaled down from the HUD icon,
+# then pixel-corrected by hand.
+# Colour budget (art-bible: 3 ramps): sphinx face gold instead of sandstone, grip steel (steel, gold, blue).
+name wpn7_idle_d0_f0
+size 32 14
+= q blue_02
+= r blue_04
+= s blue_06
+= t blue_08
+= b gold_04
+= c gold_06
+= d gold_08
+= e gold_10
+= K steel_00
+= 1 steel_03
+= 2 steel_05
+= 3 steel_08
+= 4 steel_11
+= 5 steel_14
+grid
+.............................ee.
+............eeee............eeqd
+...........ettttee.........eerqd
+......4.4..tteeeeed......eetdqqd
+4444445444eeedeeee......eettdqqd
+3353324333eeedeKee....eettddqqqc
+3333324333tttddeeeeeddddddddsqqc
+2252213222tttcddddbbbbcccccsscqc
+1111111111eeeccddd....bbrrccccqc
+...2222...ddd.bccc......bbrrcqqb
+...222222.ccc............bbrbqqb
+...1111..................bbbqqb.
+....111.....................bb..
+................................

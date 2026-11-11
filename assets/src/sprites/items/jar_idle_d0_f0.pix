@@ -1,0 +1,38 @@
+# Charge Jar (items.md Ammo, 50 Ankh charges): squat glass jar of cyan charge under a riveted
+# steel lid, a gold ankh plate on the front. Drawn by hand.
+name jar_idle_d0_f0
+size 16 20
+= v cyan_02
+= k cyan_04
+= l cyan_07
+= j cyan_10
+= J cyan_11
+= c gold_06
+= d gold_08
+= e gold_10
+= 1 steel_03
+= 2 steel_05
+= 3 steel_08
+= 4 steel_11
+= 5 steel_14
+grid
+....5555444.....
+..55544444433...
+.5444444443332..
+.3333333332221..
+..112221211.....
+.JJJjjjlllllkk..
+JJjjjjllllllkkk.
+JJjjjlleedllkkv.
+Jjjjjlle..dlkkv.
+Jjjjjlled.cllkv.
+Jjjjjlllecllkkv.
+Jjjjjleeedccckv.
+Jjjjjlllecllkkv.
+jjjjllllecllkkv.
+jjjjlllldcllkkv.
+jjjllllldcllkkv.
+jjjllllllllkkvv.
+.jjllllllllkkv..
+..2222222111....
+................

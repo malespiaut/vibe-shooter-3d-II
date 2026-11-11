@@ -1,0 +1,33 @@
+# World pickup of weapon 3, Haiball Scattergun (weapons.md): side view matching
+# assets/src/hud/weapon_3.pix i silhouette and colours at world scale: steel barrel and receiver,
+# wooden stock and pump, red yan drum. Scaled down from the HUD icon, then pixel-corrected by hand.
+# Some _00 pixels at inner corners are drawn by hand: they keep the outline colour
+# of the art to their left, where tools/items.py would take the colour of the art above.
+name wpn3_idle_d0_f0
+size 32 11
+= m brown_04
+= n brown_07
+= o brown_10
+= p brown_13
+= A red_04
+= B red_07
+= C red_10
+= D red_13
+= 1 steel_03
+= 2 steel_05
+= 3 steel_08
+= 4 steel_11
+= 9 brown_00
+= 0 red_00
+grid
+........4444444444..............
+....ppp433333333333333333333333.
+.ppppoo333333333222222222222222.
+pponnnn222222222111111111111111.
+nnnnnnn1111111111.ppppppppppp9..
+nnnnnnn11DDCC111..ooooooooooo...
+mmmmmmm9.DDCCB0...mmmmmmmmmmm...
+...mmmm..DCCBB..................
+.........CCBBA..................
+..........BAA...................
+................................

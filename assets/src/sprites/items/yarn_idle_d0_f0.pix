@@ -1,0 +1,23 @@
+# Yarn Bundle (items.md Ammo, 4 yarn shells): three red yarn balls stacked in a pyramid, wound
+# strands as diagonal light/dark runs (no dithering), lit from the top-left, dark crevices between
+# the balls. Composed from one ball shape, then pixel-corrected by hand.
+name yarn_idle_d0_f0
+size 16 12
+= O red_02
+= A red_04
+= B red_07
+= C red_10
+= D red_13
+grid
+......DDC.......
+.....DCDDC......
+....DCDDCCB.....
+....CDDCCBC.....
+..DDCDCCBCDDC...
+.DCDDCBBADCDDC..
+DCDDCCBAODCDDCB.
+CDDCCBCAOCDDCBC.
+DDCCBCBAODDCCBC.
+.CCBCBAO.CCBCBA.
+..BBAAO...BBAA..
+................

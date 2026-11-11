@@ -1,0 +1,38 @@
+# World pickup of weapon 5, Scarab Launcher (weapons.md): side view matching
+# assets/src/hud/weapon_5.pix: gold tube with steel band rings, flared steel muzzle collar, a lapis
+# scarab at the muzzle, shaped wooden stock. Scaled down from the HUD icon, then pixel-corrected by hand.
+# Colour budget (art-bible: 3 ramps): the HUD's steel band rings and collar are gold here (gold, blue, brown).
+# Some _00 pixels at inner corners are drawn by hand: they keep the outline colour
+# of the art to their left, where tools/items.py would take the colour of the art above.
+name wpn5_idle_d0_f0
+size 32 11
+= q blue_02
+= r blue_04
+= s blue_06
+= t blue_08
+= u blue_10
+= m brown_04
+= n brown_07
+= o brown_10
+= p brown_13
+= a gold_02
+= b gold_04
+= c gold_06
+= d gold_08
+= e gold_10
+= I gold_11
+= 9 brown_00
+= 7 gold_00
+= ! blue_00
+grid
+.....................eI.d..d....
+....eeeeeeeeeeeeeeeeeIe.tuu!e...
+...ocddedddddddeddddccctuuutbd..
+eoopccccccccccccccccca.uutttbdd.
+cooobcccccccccccccccba.qqqqqbcd.
+cnnnbbbbbbbbbbbbbbbbba.srrrqbce.
+bnnmaaaaaaaaaaaaaaaaaa.rrqqqb...
+amm........nnn9..ba..aa7.b.b.b..
+...........nnn..bab..aa.b..b....
+...........mm...................
+................................

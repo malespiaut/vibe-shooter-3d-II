@@ -1,0 +1,39 @@
+# Litter Satchel (items.md Ammo): leather shoulder bag, beige strap loop with stitching, a lit front
+# flap with a stitched edge and a gold ankh buckle, bulging body shaded to the bottom-right. Drawn by hand.
+name satchel_idle_d0_f0
+size 24 20
+= W beige_04
+= w beige_07
+= x beige_10
+= y beige_13
+= N brown_01
+= m brown_04
+= n brown_07
+= o brown_10
+= p brown_13
+= b gold_04
+= c gold_06
+= d gold_08
+= e gold_10
+= I gold_11
+grid
+.......xxxxxxxxx........
+......xyw......xw.......
+.....xw.........ww......
+....xw...........ww.....
+...xw.............wW....
+..pppppppppppppppppoo...
+.ppoooooooooooooooooon..
+.poyoyoyoyoyoyoyoyoyon..
+.pooooooooodedoooooonn..
+.poooooooooIeddooooonn..
+.ponooooodeIedcdcoonnn..
+..ponoooooodcdoonnnnn...
+.ponnnnnnnnecbnnnnnnmm..
+pnmmmmmmmmmdcbmmmmmmmmm.
+pooooooooooocooonnnnnnm.
+pooooooooonnnnnnnnnnnmm.
+ponnnnnnnnnnnnnnnnnnmmm.
+.nnnnnnnnnnnnnnnnnnmmm..
+..mmmmmmmmmmmmmmmmmmN...
+........................

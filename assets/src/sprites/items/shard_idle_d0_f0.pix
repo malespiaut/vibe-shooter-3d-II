@@ -1,0 +1,33 @@
+# Sun Shard (items.md Ammo, 20 sun cells): fullbright crystal shard with a smaller shard at its side,
+# white-hot left facets, gold and orange right facets, set in an orange stone chip. Drawn by hand.
+name shard_idle_d0_f0
+size 12 16
+= @ fb_amber
+= % fb_gold
+= & fb_orange
+= * fb_sun
+= + fb_yellow
+= E orange_03
+= F orange_06
+= G orange_09
+outline fb_gold gold_00
+outline fb_orange orange_00
+outline fb_sun gold_00
+outline fb_yellow gold_00
+grid
+....*.......
+....*+......
+...**+%.....
+...*++%.....
+...*++%&....
+..**+%%&....
+..*++%%&....
+..*++%%&.*..
+..*++%%&*+..
+.**+%%%&*+%.
+.*++%%&&*+&.
+.*++%%&@*%&.
+.*+%%%&@+%&.
+..+%%&&@%&..
+EFGGGFGFFE..
+............

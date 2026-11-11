@@ -1,0 +1,33 @@
+# World pickup of weapon 6, Eye of Ra Lance (weapons.md): side view matching
+# assets/src/hud/weapon_6.pix: long steel rifle, gold sun disc with a lapis eye, forked gold
+# emitter, wooden grip. Scaled down from the HUD icon, then pixel-corrected by hand.
+# Colour budget (art-bible: 3 ramps): the grip is steel instead of wood (steel, gold, blue).
+# Some _00 pixels at inner corners are drawn by hand: they keep the outline colour
+# of the art to their left, where tools/items.py would take the colour of the art above.
+name wpn6_idle_d0_f0
+size 32 11
+= q blue_02
+= r blue_04
+= t blue_08
+= u blue_10
+= b gold_04
+= c gold_06
+= d gold_08
+= e gold_10
+= K steel_00
+= 1 steel_03
+= 2 steel_05
+= 3 steel_08
+= 4 steel_11
+grid
+........eeee....................
+.......eeeddd...........ddddddd.
+......eeeeddcc..........bbbbbbb.
+444444eeutKrcc4444444444444K....
+333333eetrrqcb3333333333333.....
+222222edddccbb2222222222222.....
+111111Kdddcbb111111111111.......
+...333..cccbb...........ddddddd.
+...333..cbb.............bbbbbbb.
+...222..........................
+................................

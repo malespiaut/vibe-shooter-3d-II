@@ -1,0 +1,33 @@
+# Charge Vial (items.md Ammo, 10 Ankh charges): stoppered glass vial of cyan charge,
+# steel stopper, a lit glint on the upper-left of the glass. Drawn by hand.
+name vial_idle_d0_f0
+size 8 16
+= v cyan_02
+= k cyan_04
+= l cyan_07
+= j cyan_10
+= J cyan_11
+= ~ fb_cyan
+= K steel_00
+= 1 steel_03
+= 2 steel_05
+= 3 steel_08
+= 4 steel_11
+= 5 steel_14
+grid
+..55....
+.54443..
+.43322..
+..221...
+..Jlk...
+..Jlk...
+.Jjllk..
+Jjjllkk.
+JjlllKk.
+jjll~lk.
+jjl~~~k.
+jll~~lk.
+jlllllk.
+.llllk..
+..vvv...
+........
