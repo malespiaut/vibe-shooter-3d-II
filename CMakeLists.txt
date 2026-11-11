@@ -13,10 +13,22 @@ add_compile_options(-Wall -Wextra -Werror)
 
 find_package(SDL3 REQUIRED CONFIG)
 
+# Host tool: generates the trig tables (floats allowed here only).
+# Output lives in the build tree and is never committed.
+add_executable(gen_trig tools/gen_trig.c)
+target_link_libraries(gen_trig PRIVATE m)
+set(TRIG_TABLES_H ${CMAKE_BINARY_DIR}/gen/trig_tables.h)
+add_custom_command(
+  OUTPUT ${TRIG_TABLES_H}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/gen
+  COMMAND gen_trig ${TRIG_TABLES_H}
+  DEPENDS gen_trig
+  COMMENT "Generating trig_tables.h")
+
 # Engine + game: platform-independent, never includes SDL.
 file(GLOB ENGINE_SOURCES CONFIGURE_DEPENDS src/engine/*.c src/game/*.c)
-add_library(engine STATIC ${ENGINE_SOURCES})
-target_include_directories(engine PUBLIC src)
+add_library(engine STATIC ${ENGINE_SOURCES} ${TRIG_TABLES_H})
+target_include_directories(engine PUBLIC src PRIVATE ${CMAKE_BINARY_DIR}/gen)
 
 # Platform layer: the only code allowed to talk to SDL3.
 add_library(platform STATIC src/platform/platform_sdl.c)
@@ -32,6 +44,15 @@ target_link_libraries(test_smoke PRIVATE engine)
 add_test(NAME smoke COMMAND test_smoke)
 # Tests are plain C asserts: keep them active in every build type.
 target_compile_options(test_smoke PRIVATE -UNDEBUG)
+
+# Core maths tests (fixed, angle, rng, hash).
+foreach(t fixed angle rng hash)
+  add_executable(test_${t} tests/test_${t}.c)
+  target_link_libraries(test_${t} PRIVATE engine)
+  target_compile_options(test_${t} PRIVATE -UNDEBUG)
+  add_test(NAME ${t} COMMAND test_${t})
+endforeach()
+target_link_libraries(test_angle PRIVATE m)
 
 add_executable(test_platform_audio tests/test_platform_audio.c)
 target_link_libraries(test_platform_audio PRIVATE platform)
