@@ -1,0 +1,10 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map itemstest
+wait 5
+in 20 127 0 0 -
+key esc
+expect screen=pause
+wait 20
