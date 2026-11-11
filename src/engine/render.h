@@ -157,6 +157,12 @@ void render_set_pushwalls(const render_pushwall *pw, int n);
  * NULL (the default) uses each cell's map `dark`. */
 void render_set_dark(const uint8_t *dark);
 
+/* Rows added to the light row of every shaded wall, floor, ceiling and
+ * sprite pixel before clamping to 0..31 (sky and fullbright TEX stay
+ * unshaded). Negative is brighter: the muzzle flash passes -4 for its 3
+ * tics (weapons.md Behaviour notes). Default 0; kept until changed. */
+void render_set_light_shift(int rows);
+
 /* 1 if the cell blocks rays: a wall texture and SOLID, PUSHWALL or a closed
  * DOOR in its initial map state (START_OPEN doors are open). Doors with
  * live state go through render_set_doors(). */

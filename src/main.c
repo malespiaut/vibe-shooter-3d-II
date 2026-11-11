@@ -38,6 +38,7 @@
 #include "engine/video.h"
 #include "game/demo.h"
 #include "game/hud.h"
+#include "game/viewmodel.h"
 #include "game/items.h"
 #include "game/jukebox.h"
 #include "game/sound.h"
@@ -280,6 +281,8 @@ static int setup(run_t *r)
         fprintf(stderr, "game: %s\n", hud_error());
         return 0;
     }
+    if (!o->topdown && (!o->headless || o->frames_dir))
+        viewmodel_init(VS3D_ASSETS_DIR); /* missing frames: one warning, skipped */
     if (!o->topdown && (!o->headless || o->frames_dir) &&
         !(menu_font = font_load(VS3D_ASSETS_DIR, "menu"))) {
         fprintf(stderr, "game: %s/fonts/menu.tex: cannot load\n", VS3D_ASSETS_DIR);
@@ -349,8 +352,11 @@ static void draw(const run_t *r)
     /* Pickups from live state: a taken one is gone the same tic. The tic is
      * only read (shimmer frame), so the state hash is unaffected. */
     const int n = items_render_things(&r->gs, things, RENDER_MAX_SPRITES);
+    /* Muzzle flash: the whole view 4 colormap rows brighter (weapons.md). */
+    render_set_light_shift(viewmodel_light_shift(&r->gs.player.weapons));
     render_view_things_eye(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle,
                            game_eye_height(&r->gs), things, n, r->gs.tic, framebuffer);
+    viewmodel_draw(framebuffer, &r->gs);
     hud_draw(framebuffer, &r->hud, &r->gs);
     if (game_restart_ready(&r->gs) && menu_font) {
         const int x = (VIEW_W - text_width(menu_font, DEATH_PROMPT)) / 2;
@@ -659,6 +665,7 @@ int main(int argc, char **argv)
     demo_free(r.demo);
     render_shutdown();
     hud_shutdown();
+    viewmodel_shutdown();
     font_free(menu_font);
     bast_map_free(r.map);
     return r.status;

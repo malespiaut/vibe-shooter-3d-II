@@ -136,12 +136,28 @@ add_custom_command(
 add_custom_target(hud_tex ALL DEPENDS ${ASSETS_GEN}/hud/.stamp)
 add_dependencies(hud_tex palette)
 
+# View-model frames (weapons.md): assets/src/viewmodels/ -> assets/gen/viewmodels/
+# (same as tools/build.d/55-viewmodels.sh), so the game draws the weapon after a plain build.
+file(GLOB VIEWMODEL_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/viewmodels/*)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/viewmodels/.stamp
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          BAST_PALETTE=${ASSETS_GEN}/palette.bin
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/viewmodels.py
+          --src ${CMAKE_SOURCE_DIR}/assets/src/viewmodels -o ${ASSETS_GEN}/viewmodels --clean
+  COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/viewmodels/.stamp
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${VIEWMODEL_SOURCES} ${CMAKE_SOURCE_DIR}/tools/viewmodels.py
+          ${CMAKE_SOURCE_DIR}/tools/hud.py ${CMAKE_SOURCE_DIR}/tools/bast.py
+  COMMENT "Building view-model frames")
+add_custom_target(viewmodel_tex ALL DEPENDS ${ASSETS_GEN}/viewmodels/.stamp)
+add_dependencies(viewmodel_tex palette)
+
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
 target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}"
   VS3D_MAPS_DIR="${CMAKE_SOURCE_DIR}/maps"
   VS3D_MUSIC_DIR="${CMAKE_SOURCE_DIR}/assets/src/music")
-add_dependencies(game colormap sfx testpattern hud_tex fonts_tex)
+add_dependencies(game colormap sfx testpattern hud_tex fonts_tex viewmodel_tex)
 
 enable_testing()
 add_executable(test_smoke tests/test_smoke.c)
@@ -158,6 +174,16 @@ foreach(t fixed angle rng hash player_move weapon sprite_dir)
   add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 target_link_libraries(test_angle PRIVATE m)
+
+# Weapon view-model (weapons.md View-model, issue #100): bob, switch, frames, flash, drawing.
+add_executable(test_viewmodel tests/test_viewmodel.c)
+target_link_libraries(test_viewmodel PRIVATE engine)
+target_compile_options(test_viewmodel PRIVATE -UNDEBUG)
+add_dependencies(test_viewmodel viewmodel_tex colormap testpattern)
+foreach(g bob switch frames flash draw)
+  add_test(NAME viewmodel_${g} COMMAND test_viewmodel ${g} ${ASSETS_GEN}
+    ${CMAKE_SOURCE_DIR}/maps/m1test.vmap)
+endforeach()
 
 # Pickups, inventory, player damage (items.md): one ctest per table group.
 add_executable(test_items tests/test_items.c)

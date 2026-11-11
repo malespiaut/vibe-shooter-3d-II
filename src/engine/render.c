@@ -36,6 +36,8 @@ static int pw_count;
 static uint8_t pw_touch[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
 /* render_set_dark(): live darkness per cell, or NULL (map `dark`). */
 static const uint8_t *dark_live;
+/* render_set_light_shift(): rows added to every shaded light row. */
+static int light_shift;
 
 const char *render_error(void)
 {
@@ -132,6 +134,11 @@ void render_set_pushwalls(const render_pushwall *pw, int n)
 {
     pw_list = pw;
     pw_count = pw ? n : 0;
+}
+
+void render_set_light_shift(int rows)
+{
+    light_shift = rows;
 }
 
 void render_set_dark(const uint8_t *dark)
@@ -322,7 +329,7 @@ static void shade_hit(const bast_map *m, const bast_map_cell *front, double dist
     if (tx > TEX_SIZE - 1)
         tx = TEX_SIZE - 1;
     int dark = front ? cell_dark(m, front) : 0;
-    int row = (int)(32.0 * dist / VIEW_DIST) + dark;
+    int row = (int)(32.0 * dist / VIEW_DIST) + dark + light_shift;
     col->hit = 1;
     col->dist = (float)dist;
     col->tex = tex;
@@ -491,9 +498,11 @@ static void draw_planes(const bast_map *map, double px, double py, double dx, do
             }
             const int u = (int)((wx >> 26) & (TEX_SIZE - 1));
             const int v = TEX_SIZE - 1 - (int)((wy >> 26) & (TEX_SIZE - 1));
-            int light = drow + cell_dark(map, c);
+            int light = drow + cell_dark(map, c) + light_shift;
             if (light > COLORMAP_ROWS - 1)
                 light = COLORMAP_ROWS - 1;
+            if (light < 0)
+                light = 0;
             if (t->flags & BAST_TEX_FULLBRIGHT)
                 light = 0;
             row[sx] = colormap_row(light)[t->pixels[u * TEX_SIZE + v]];
@@ -538,7 +547,7 @@ static void draw_one(const render_sprite *s, double z, double lat, uint8_t *fb)
     if (x0 >= x1 || y0 >= y1)
         return;
 
-    int row = (int)(32.0 * z / VIEW_DIST) + s->dark;
+    int row = (int)(32.0 * z / VIEW_DIST) + s->dark + light_shift;
     row = row < 0 ? 0 : row > COLORMAP_ROWS - 1 ? COLORMAP_ROWS - 1 : row;
     const uint8_t *cm = colormap_row((t->flags & BAST_TEX_FULLBRIGHT) ? 0 : row);
 
