@@ -63,9 +63,13 @@ and add your own. If there is no art-director verdict for this head, request cha
 1. If GitHub reports a conflict, `git fetch origin && git rebase origin/main`. If the rebase is clean,
    rebuild, rerun `ctest`, and `git push --force-with-lease origin HEAD:<branch>`. If not clean, request
    changes ("rebase on main").
-2. Comment `[reviewer] approved at <sha7>` with your verification output (trimmed).
-3. `gh pr edit <pr> --add-label review:approved --remove-label review:changes-requested`
-4. `gh pr merge <pr> --squash --delete-branch`. Confirm the PR state is `MERGED`.
+2. `gh pr merge <pr> --squash --delete-branch`. If it fails, wait 30 s and retry, at most twice.
+3. Confirm `gh pr view <pr> --json state --jq .state` prints `MERGED`. Only then comment
+   `[reviewer] approved at <sha7>` with your verification output (trimmed) and
+   `gh pr edit <pr> --add-label review:approved --remove-label review:changes-requested`.
+4. If it is still not merged, request changes (below) with
+   `1. rebase on main / merge failed: <error>`. Never leave an approved but unmerged PR without
+   `review:changes-requested`.
 
 **Request changes** otherwise:
 1. Comment (`--body-file`):

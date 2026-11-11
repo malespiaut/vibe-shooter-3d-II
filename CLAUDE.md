@@ -1,6 +1,6 @@
 # CLAUDE.md: shared rules for every agent
 
-Read `GAME.md` first. It is the law. Then read the relevant files in `docs/design/` and the existing code before changing anything. `STATUS.md` shows where the project stands.
+Read `GAME.md` first. It is the law. Then read the relevant files in `docs/design/` and the existing code before changing anything. The pinned `Team status` issue shows where the project stands.
 
 Nobody is available to answer questions. Make the decision yourself, justify it against `GAME.md`, and record it in the issue or PR.
 

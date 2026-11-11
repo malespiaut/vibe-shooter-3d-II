@@ -362,6 +362,31 @@ test_orphans_cleaned_at_startup() {
   [[ $(cat "$FIXTURES/sentinel/f") == keep ]]
 }
 
+acceptance_fixture() { # acceptance_fixture <author> <hours since last playtest start>
+  mkrepo
+  issue 50 OPEN "$1" "" | jq '.title = "Final acceptance"' | issues
+  echo $(($(date +%s) - $2 * 3600)) > "$STATE/started-playtester"
+}
+playtested() { grep -q 'podman run .*--name vibe-playtester ' "$FIXTURES/calls.log"; }
+
+test_acceptance_retried_after_2h() {
+  acceptance_fixture malespiaut 3
+  loop
+  playtested && (($(<"$STATE/started-playtester") > $(date +%s) - 60))
+}
+
+test_acceptance_not_retried_within_2h() {
+  acceptance_fixture malespiaut 1
+  loop
+  ! playtested
+}
+
+test_acceptance_ignores_stranger() {
+  acceptance_fixture stranger 3
+  loop
+  ! playtested
+}
+
 for f in $(declare -F | awk '$3 ~ /^test_/ {print $3}'); do t "$f"; done
 if ((fails)); then echo "$fails test(s) failed"; exit 1; fi
 echo "all tests passed"

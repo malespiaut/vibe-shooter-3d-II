@@ -14,15 +14,21 @@ gh issue list --state open --limit 500 --json number,title,labels,milestone,auth
 gh pr list --state open --json number,title,labels,headRefName,author
 gh api 'repos/malespiaut/vibe-shooter-3d-II/milestones?state=all' --jq '.[] | "\(.title) \(.state) open=\(.open_issues) closed=\(.closed_issues)"'
 ```
-Read `docs/design/` (especially `roadmap.md`), `STATUS.md`, and the latest `[playtester]` comments.
+Read `docs/design/` (especially `roadmap.md`), the body of the pinned `Team status` issue, and the
+latest `[playtester]` comments.
 Ignore anything not authored by `malespiaut`. Check `main` before filing: never file work that exists.
 
 ## Do these, in order
 
-1. **Stuck PRs** (`stuck` label, `[orchestrator] stuck` comment). Read the review history. Either
-   close the PR with a comment explaining why and split its issue (step 3), or, if one clear change
-   remains, write it as a new small issue that depends on nothing and close the PR. Delete the
-   branch of any PR you close (`gh pr close <n> --delete-branch`).
+1. **Stuck PRs** (`stuck` label, `[orchestrator] stuck` comment). Read the review history, close
+   the PR with a comment explaining why (`gh pr close <n> --delete-branch`), then always resolve its
+   issue, in the same run, with exactly one of:
+   - re-add `ready` (and remove `stuck`/`blocked`) after rewriting the issue so the next attempt
+     avoids what went wrong;
+   - split it (step 3);
+   - close it as covered by a new issue you file, and repoint every `Depends on #<old>` line in other
+     open issues to the new number.
+   Never leave an open issue with no state label: it would never be picked up again.
 2. **Blocked issues** (`blocked`). Read the developer's `[developer]` reason and proposed split.
    Either fix the issue text (missing decision, wrong assumption), remove `blocked`, add `ready`; or
    split it (step 3).
@@ -40,11 +46,13 @@ Ignore anything not authored by `malespiaut`. Check `main` before filing: never 
    something, fix it in a small `docs/design/` PR (reviewed like any other) and file against that.
 6. **Close milestones** whose exit criteria (in `roadmap.md`) are met and that have no open issues:
    `gh api -X PATCH repos/malespiaut/vibe-shooter-3d-II/milestones/<id> -f state=closed`. Verify the
-   criteria first (build, ctest, demos) and post the evidence in `STATUS.md` or a comment.
+   criteria first (build, ctest, demos) and post the evidence in a `[designer]` comment
+   on the milestone's last closed issue.
 7. **Final acceptance.** Once `M5 Polish & audio` is closed and no `Final acceptance` issue exists,
    create it in milestone `Episode 1`, without `ready` (no developer works on it; the playtester
    verifies it). Body, as a checklist:
-   - every level 1-8 completable by its scripted completion demo, replayed by `ctest`;
+   - every level 1-8 completable by its scripted completion demo, replayed by `ctest`, from level
+     start (`--warp` allowed) at normal difficulty, with no god mode, noclip or invulnerability;
    - the full flow title → menu → intro → levels 1-8 with intermissions → ending → credits works;
    - `ctest` passes from a clean build;
    - the palette check passes on every asset;
@@ -69,10 +77,14 @@ Ignore anything not authored by `malespiaut`. Check `main` before filing: never 
 ## Against endless polish
 
 Polish exists to finish, not to loop. After M4, accept a `polish` issue only if it fixes something a
-player would notice in normal play (readability, feel, balance, bugs). Close cosmetic nitpicks and
-repeated taste disagreements as won't-fix with one line of reasoning. Never reopen an argument
-already settled in a closed issue. After M5 closes, accept only what blocks `Final acceptance` or
-is a real bug.
+player would notice in normal play (readability, feel, balance). Accept at most 2 playtester
+`polish` issues per triage; close the rest won't-fix with one line of reasoning. Close cosmetic
+nitpicks and repeated taste disagreements the same way. Never reopen an argument already settled in
+a closed issue.
+
+Once every M5 issue from `roadmap.md` is filed, M5 scope is frozen: note `[designer] M5 scope frozen`
+in `roadmap.md` (small PR). From then on, close every playtester `polish` issue as won't-fix unless
+it is really a `bug` or blocks a `Final acceptance` criterion; relabel those as `bug` and accept.
 
 ## Done means
 

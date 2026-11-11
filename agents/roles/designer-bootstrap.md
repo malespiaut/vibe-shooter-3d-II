@@ -68,7 +68,9 @@ format once, e.g. 16.16, and the tic rate, e.g. 35 Hz). Sizes are in world units
 - `roadmap.md`: milestones M1-M5 (names from `CLAUDE.md`), each with verifiable exit criteria, and
   a "Verification tooling contract" section that fixes the exact commands everyone will use (below).
   Every M4 level issue must ship a scripted completion demo (`demos/levelN-complete.*`) that `ctest`
-  replays to the exit. The episode ends with a `Final acceptance` issue (milestone `Episode 1`).
+  replays to the exit. Completion demos start at level start (`--warp` allowed), at normal
+  difficulty, with no god mode, noclip or invulnerability flag, and use the high-level commands so
+  balance and AI tuning do not desync them; a tuning PR that breaks one must fix the demo. The episode ends with a `Final acceptance` issue (milestone `Episode 1`).
 
 The palette, the TEX format, the colormap and `pybast` (`libbast.so` + ctypes wrapper) do not exist
 yet. Your design specifies them; M1 issues create them exactly once. Nobody may invent a parallel
@@ -103,7 +105,10 @@ modules involved, a size that fits one 60-minute agent run (split anything bigge
 6. Headless mode and demos: `game --headless --demo <file> --frames-out <dir>` writing PNGs,
    demo recording, a human-writable scripted-input format (so agents can author demos without
    playing in real time), and an end-of-run stats line (tic, state hash, health, kills, items,
-   secrets, level exit reached). Dev flags: `--warp <level>`, `--god`.
+   secrets, level exit reached). Dev flags: `--warp <level>`, `--god`. The script format has raw
+   per-tic input plus high-level commands resolved at run time: go to waypoint or tile (simple path
+   following), face or fire at the nearest visible enemy, use, wait until the area is clear. Split
+   this into two issues if needed (raw demos first, high-level commands second).
 7. Determinism test in `ctest`: play a demo twice, compare hashes per tic.
 8. Then the first renderer issues (DDA walls with colormap shading, floors and ceilings, a test
    map) depending on the tools above.

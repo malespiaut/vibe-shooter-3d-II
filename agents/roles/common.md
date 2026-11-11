@@ -9,7 +9,8 @@ context block from the orchestrator (issue or PR number, branch, mode).
 
 `GAME.md` is the law. `CLAUDE.md` holds the team rules: language override (C17 + SDL3 platform only),
 labels, milestones, working rules, how to verify, definition of done. Follow both; they are not
-repeated here. Then read `docs/design/` (once it exists), `STATUS.md`, and the code you will touch.
+repeated here. Then read `docs/design/` (once it exists), the pinned `Team status` issue, and the
+code you will touch.
 
 ## Environment
 
@@ -50,6 +51,7 @@ change lands through a PR. Never merge `evidence` into `main`.
 
 From inside `/work`:
 ```
+git worktree prune && rm -rf /tmp/ev   # /work may be shared with an earlier role's run
 git fetch origin evidence && git worktree add /tmp/ev origin/evidence
 mkdir -p /tmp/ev/<dir> && cp shots/*.png /tmp/ev/<dir>/
 cd /tmp/ev && git add <dir> && git commit -m "evidence: <dir>" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"

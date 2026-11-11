@@ -5,7 +5,7 @@
 : "${LOGS:=$HOME/vibe-agents/logs}" "${STATE:=$HOME/vibe-agents/state}"
 : "${REPO:=malespiaut/vibe-shooter-3d-II}" "${OWNER:=malespiaut}" "${IMAGE:=vibe-agents}"
 : "${MAX_DEVS:=4}" "${AGENT_TIMEOUT:=90m}" "${POLL:=60}" "${PLAYTEST_EVERY:=5}" "${STALE_SECS:=7200}"
-: "${DESIGNER_COOLDOWN:=1800}" "${MAX_FIX_CYCLES:=5}"
+: "${DESIGNER_COOLDOWN:=1800}" "${MAX_FIX_CYCLES:=5}" "${ACCEPT_EVERY:=7200}"
 RC_INFRA=69  # setup/infrastructure error: not the issue's fault, never counted as a failure
 : "${MIRROR:=$STATE/mirror}"  # host-private: never mounted, so agents can't plant hooks or config in it
 RUNS=$STATE/runs PROMPTS=$STATE/prompts
@@ -125,6 +125,17 @@ episode_done() {
   [[ $(gh issue list --repo "$REPO" --state all --search '"Final acceptance" in:title' --json title,state,author \
         --jq '.[] | select(.title == "Final acceptance" and .author.login == "'"$OWNER"'") | .state') == CLOSED ]] &&
   [[ $(gh api "repos/$REPO/milestones?state=all" --jq '.[] | select(.title == "Episode 1") | .state') == closed ]]
+}
+
+# an open "Final acceptance" by OWNER whose last playtest started over ACCEPT_EVERY ago: retry it even
+# without merges, or a failed acceptance run would never be repeated
+acceptance_due() {
+  local started
+  started=$(cat "$STATE/started-playtester" 2>/dev/null || echo 0)
+  (($1 - started > ACCEPT_EVERY)) || return 1
+  [[ -n $(gh issue list --repo "$REPO" --state open --author "$OWNER" --search '"Final acceptance" in:title' \
+    --json number,title,state,author --jq '.[] | select(.state == "OPEN" and .title == "Final acceptance"
+      and .author.login == "'"$OWNER"'") | .number') ]]
 }
 
 # ---- running agents ----
@@ -311,6 +322,7 @@ dispatch_main() { # dispatch_main <role> <name> <context> [on-success-cmd...]
   shift 3
   cooling "$name" && return
   wt=$(mkrun "$name" --detach origin/main) || { log "$name: run dir setup failed"; return; }
+  date +%s > "$STATE/started-$name"
   ( run_agent "$role" "$name" "$wt" "$ctx"; rc=$?; rmrun "$wt" "$name"; finish_run "$rc" "$name" >/dev/null; ((rc == 0)) && "$@" ) &
 }
 
@@ -388,7 +400,7 @@ loop_once() {
   merges=$(mirror rev-list --count "$last..main" 2>/dev/null || echo 0)
   # also playtest when the team is idle, so the last few merges still get an acceptance pass
   if ! grep -qx vibe-playtester <<<"$names" &&
-     { ((merges >= PLAYTEST_EVERY)) || { ((merges > 0)) && [[ -z $names ]]; }; }; then
+     { ((merges >= PLAYTEST_EVERY)) || { ((merges > 0)) && [[ -z $names ]]; } || acceptance_due "$now"; }; then
     dispatch_main playtester playtester "Playtest main at $head." mark_playtested "$head"
   fi
 
