@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Fake podman: ps lists $FIXTURES/ps.txt, run echoes run-output.txt and exits run-exit.
+printf 'podman %s\n' "$*" >> "$FIXTURES/calls.log"
+case $1 in
+  ps) cat "$FIXTURES/ps.txt" 2>/dev/null ;;
+  run) cat "$FIXTURES/run-output.txt" 2>/dev/null; exit "$(cat "$FIXTURES/run-exit" 2>/dev/null || echo 0)" ;;
+esac
+exit 0
