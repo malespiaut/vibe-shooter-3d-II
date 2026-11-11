@@ -181,7 +181,7 @@ target_compile_options(test_ai PRIVATE -UNDEBUG)
 foreach(g sight ambush windup chomper pillar drop block pushwall
           pom_speed pom_pair pom_dodge pom_still pom_windup
           dach_mortar dach_retreat dach_windup dach_headbutt
-          pom_sound dach_sound)
+          pom_sound dach_sound hitscan_visibility)
   add_test(NAME ai_${g} COMMAND test_ai ${g})
 endforeach()
 # Mastiff Juggernaut and Shepherd Shieldbearer (issue #96).

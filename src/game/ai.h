@@ -40,6 +40,7 @@
 #include "game/state.h"
 
 #define AI_DECIDE_TICS 8
+#define HITSCAN_VIS_ROW 26 /* darkest light row a hitscan enemy may fire from */
 #define AI_ATTACK_TICS 8
 #define AI_PAIN_TICS 6
 #define AI_FOV_HALF ((angle_t)10923) /* 60 degrees */
@@ -109,6 +110,12 @@ void ai_push(game_state *gs, thinker_t *t, fix_t dx, fix_t dy);
 
 /* 1 when enemy `t` has an unobstructed line to the player (live doors). */
 int ai_line_of_sight(const game_state *gs, const thinker_t *t);
+
+/* Visibility cap on hitscan (enemies.md, tech.md Lighting): 1 when the
+ * enemy's sprite light row at the player's distance, 2 * dist + cell_dark
+ * of its own cell (dark_alt after LIGHTS), is at most HITSCAN_VIS_ROW. A
+ * hitscan enemy starts a wind-up only then; one already started resolves. */
+int ai_hitscan_visible(const game_state *gs, const thinker_t *t);
 
 /* Wind-up length of `type` at the game's skill. */
 int32_t ai_windup_tics(const game_state *gs, uint16_t type);

@@ -10,7 +10,7 @@ faces the player and shows a distinct pose plus a fullbright glow, and plays a s
 
 | Enemy | Role | Size (w x h units / px) | HP | Speed | Attack | Wind-up (tics) | Pain | Counter | Intro |
 |---|---|---|---|---|---|---|---|---|---|
-| **Mutt Trooper** | fodder, hitscan | 0.5 x 0.875 / 32x56 | 20 | 1.5 (2809) | rifle hitscan 3..12, one shot, max range 20 u | 20 (rifle raised, muzzle LED glows red) | 200 | Pistol, Claws | L1 |
+| **Mutt Trooper** | fodder, hitscan | 0.5 x 0.875 / 32x56 | 20 | 1.5 (2809) | rifle hitscan 3..12, one shot, max range 20 u, capped by visibility: `min(20, (26 - dark) / 2)` u (see below) | 20 (rifle raised, muzzle LED glows red) | 200 | Pistol, Claws | L1 |
 | **Chihuahua Chomper** | fast melee | 0.375 x 0.4375 / 24x28 | 15 | 5.5 (10299) | bite 4..10 at 0.6 u | 8 (jaws open wide, yip) | 160 | Scattergun | L2 |
 | **Pomeranian Plasmagunner** | ranged projectile | 0.625 x 0.75 / 40x48 | 45 | 2.0 (3745) | 2 plasma bolts 8 u/s (14980), 10 tics apart, 8..16 each, dodgeable sideways | 16 (fur ruffs up, cyan glow on arm cannon) | 128 | Repeater | L3 |
 | **Dachshund Howitzer** | area denial, forces movement | 1.0 x 0.5 / 64x32 (side) | 70 | 1.2 (2247) | mortar: marks the player's current position with a floor reticle, shell lands 42 tics later, splash 40 max, radius 1.5 u. Headbutt 5..10 under 1.5 u | 14 before launch (tube rises) + 42 reticle | 100 | Launcher, rush with Scattergun | L4 |
@@ -22,7 +22,12 @@ faces the player and shows a distinct pose plus a fullbright glow, and plays a s
 
 **Mutt Trooper.** Basset-ish dog-man in olive armour vest (`olive` ramp, fur `beige`), droopy ears,
 rifle held across chest. The slow wind-up makes hitscan fair: when you see the red LED, step behind
-cover. Drops a Charge Vial with 5 charges on death. Silhouette: upright, droopy ears, long rifle.
+cover. To make sure you can see it, every hitscan enemy obeys the **visibility cap**: it may *start* a
+wind-up only when its sprite's light row at the player's distance (`tech.md` Lighting) is readable,
+`2 * dist + cell_dark <= 26` (`HITSCAN_VIS_ROW`, `cell_dark` of the enemy's own cell, `dark_alt` after
+LIGHTS; integer math). So the effective range is `min(20, (26 - dark) / 2)` u: 13 u at `dark` 0, 8 u
+at `dark` 10, and above `dark` 26 it cannot fire at all and must close in. A wind-up already started
+still resolves; the telegraph covers that. Drops a Charge Vial with 5 charges on death. Silhouette: upright, droopy ears, long rifle.
 
 **Chihuahua Chomper.** Tiny, huge ears, oversized cyber-jaw, `beige` fur with `red` visor, runs on
 four legs. Arrives in packs of 3-6, often from ambush closets. Low HP but hard to track: the
@@ -80,7 +85,7 @@ single-frame holds repeated (2 identical frames are fine).
 States: `idle` (asleep; wakes on sight within 120 deg FOV or on hearing the player fire within the
 same connected area, unless flagged deaf) -> `chase` (move toward the player on the tile grid,
 re-evaluating every 8 tics; prefers 8 compass directions; avoids `BLOCK_MONSTER` cells) -> `windup`
--> `attack` -> `chase`. Decision to attack: line of sight and a range check, then `rng() % 256 <
+-> `attack` -> `chase`. Decision to attack: line of sight and a range check (for hitscan, also the visibility cap above), then `rng() % 256 <
 aggression` where aggression per enemy is Mutt 64, Pom 48, Dachshund 40, Mastiff 32, checked every
 8 tics; melee enemies attack whenever in reach. Enemies do not open keyed doors; they open unkeyed
 doors. Infighting: none (keeps encounters readable and deterministic to design).

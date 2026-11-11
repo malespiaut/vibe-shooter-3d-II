@@ -161,6 +161,77 @@ static void test_windup(void)
     assert(ai_windup_tics(&gs, BAST_ENT_CHIHUAHUA_CHOMPER) == 8);
 }
 
+/* Visibility cap (enemies.md, issue #221): a Mutt `gap` tiles east of the
+ * player, every cell `dark`, woken by a shot. Runs up to `tics` tics and
+ * returns the Mutt-to-player distance when it first starts a wind-up, or
+ * -1 if it never does. *hurt gets the player's health loss. */
+static fix_t first_windup_dist(int dark, int gap, int tics, int32_t *hurt)
+{
+    bast_map *m = open_map(gap + 6, 8);
+    for (int y = 0; y < 8; y++)
+        for (int x = 0; x < gap + 6; x++)
+            bast_map_cell_at(m, x, y)->dark = (uint8_t)dark;
+    add_player(m, 2, 3, ANG90);
+    add_entity(m, BAST_ENT_MUTT_TROOPER, 2 + gap, 3, ANG180, BAST_ENT_SKILL_ALL);
+    game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    gs.player.health = 1000; /* stays alive whatever happens */
+    const int32_t h0 = gs.player.health;
+    game_tic(&gs, &FIRE); /* wakes it */
+    fix_t at = -1;
+    for (int tic = 0; tic < tics && at < 0; tic++) {
+        game_tic(&gs, &IDLE);
+        const thinker_t *t = &gs.things.list[0];
+        if (t->state == TH_STATE_WINDUP)
+            at = fix_dist(t->x - gs.player.x, t->y - gs.player.y);
+    }
+    *hurt = h0 - gs.player.health;
+    bast_map_free(m);
+    return at;
+}
+
+/* Rule: a hitscan wind-up starts only when 2 * dist + dark <= 26. */
+static void test_hitscan_visibility(void)
+{
+    int32_t hurt;
+    /* dark 10: black past 8 u, so not at 12 u; it walks in and fires
+     * from 8 u or nearer. */
+    fix_t d = first_windup_dist(10, 12, 600, &hurt);
+    printf("hitscan_visibility: dark 10 from 12 u: wind-up at %.3f u\n", d / 65536.0);
+    assert(d > 0 && 2 * (int64_t)d + 10 * FIX_ONE <= 26 * FIX_ONE);
+    assert(d > FX(7)); /* and it does fire as soon as it is readable */
+    /* dark 10 at 7 u: within the cap, fires at once. */
+    d = first_windup_dist(10, 7, 40, &hurt);
+    printf("hitscan_visibility: dark 10 from 7 u: wind-up at %.3f u\n", d / 65536.0);
+    assert(d > FX(6) && d <= FX(7));
+    /* dark 0 at 12 u: bright, fires from where it stands. */
+    d = first_windup_dist(0, 12, 40, &hurt);
+    printf("hitscan_visibility: dark 0 from 12 u: wind-up at %.3f u\n", d / 65536.0);
+    assert(d > FX(11) && d <= FX(12));
+    /* dark 28: never readable, never fires, even point blank. */
+    d = first_windup_dist(28, 12, 600, &hurt);
+    printf("hitscan_visibility: dark 28: wind-up %s, damage %d\n", d < 0 ? "never" : "yes",
+           (int)hurt);
+    assert(d < 0 && hurt == 0);
+    /* Direct check of the formula at the boundary (dark 10: 8 u). */
+    bast_map *m = open_map(20, 8);
+    for (int y = 0; y < 8; y++)
+        for (int x = 0; x < 20; x++)
+            bast_map_cell_at(m, x, y)->dark = 10;
+    add_player(m, 2, 3, ANG90);
+    add_entity(m, BAST_ENT_MUTT_TROOPER, 10, 3, ANG180, BAST_ENT_SKILL_ALL);
+    game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    thinker_t *t = &gs.things.list[0];
+    t->x = gs.player.x + FX(8);
+    assert(ai_hitscan_visible(&gs, t));
+    t->x += 1;
+    assert(!ai_hitscan_visible(&gs, t));
+    gs.lights_alt = 1; /* dark_alt (0) after LIGHTS */
+    assert(ai_hitscan_visible(&gs, t));
+    bast_map_free(m);
+}
+
 /* A Chomper woken by a shot runs to a still player and bites 4..10. */
 static void test_chomper(void)
 {
@@ -705,6 +776,7 @@ int main(int argc, char **argv)
         { "dach_retreat", test_dach_retreat }, { "dach_windup", test_dach_windup },
         { "dach_headbutt", test_dach_headbutt }, { "pom_sound", test_pom_sound },
         { "dach_sound", test_dach_sound },
+        { "hitscan_visibility", test_hitscan_visibility },
     };
     for (size_t i = 0; i < sizeof groups / sizeof groups[0]; i++) {
         if (argc < 2 || strcmp(argv[1], groups[i].name) == 0) {
