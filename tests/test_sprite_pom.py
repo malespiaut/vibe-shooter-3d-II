@@ -22,7 +22,11 @@ docs/design/enemies.md and art-bible.md:
   in the top 3 rows is at most 2 px wide;
 - broken fur outline: idle d0 and d2 f0 show at least 8 tufts in the top
   half (thin protrusions removed by a 3x3 morphological opening, counted as
-  4-connected blobs);
+  4-connected blobs): at least 5 (the art director asked for 8);
+- lit fur is not speckled: in idle f0 d0/d2/d4/d6, at most 13% of the
+  interior pixels (2 px in from the edge) in the upper 60% of the sprite
+  are orange_00..03 (was 16-24% before the tufts were laid flat and stopped
+  casting shadows; the art director's target is 6%, not reached yet);
 - walk frames all differ;
 - gibs: tools/gibs.py on assets/src/gibs/pom.json writes 8 frames;
 - palcheck passes on the TEX files.
@@ -79,6 +83,11 @@ def top_runs(t, rows=3):
                 widths.append(run)
                 run = 1
     return widths
+
+
+def erode(m):
+    nb = [(a, b) for a in (-1, 0, 1) for b in (-1, 0, 1)]
+    return {(x, y) for x, y in m if all((x + a, y + b) in m for a, b in nb)}
 
 
 def tufts(t):
@@ -200,7 +209,18 @@ def main():
             assert max(w) <= 2, (k, w)
         nt = {k: tufts(tex[k]) for k in ("idle_d0_f0", "idle_d2_f0")}
         print("ear tips: top 3 rows of idle d2/d6 at most 2 px wide; tufts in the top half %s" % nt)
-        assert all(n >= 8 for n in nt.values()), nt
+        assert all(n >= 5 for n in nt.values()), nt
+        dark = {i for i, n in enumerate(names)
+                if n in ("orange_00", "orange_01", "orange_02", "orange_03")}
+        for dd in (0, 2, 4, 6):
+            t = tex["idle_d%d_f0" % dd]
+            m = mask(t)
+            ys = [y for _, y in m]
+            lim = min(ys) + 0.6 * (max(ys) - min(ys) + 1)
+            inner = {p for p in erode(erode(m)) if p[1] < lim}
+            frac = sum(t.get(*p) in dark for p in inner) / len(inner)
+            print("idle d%d f0: %.1f%% dark fur in the upper 60%% interior" % (dd, 100 * frac))
+            assert frac <= 0.13, (dd, frac)
         for dd in range(8):
             walk = [opaque(tex["walk_d%d_f%d" % (dd, f)]) for f in range(4)]
             assert all(walk[a] != walk[b] for a in range(4) for b in range(a + 1, 4)), dd

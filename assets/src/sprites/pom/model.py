@@ -75,6 +75,10 @@ for name, rgb in MATS.items():
 
 # ------------------------------------------------------------------ geometry
 verts, faces, face_mat, vgroup = [], [], [], []
+# Per vertex: True for fur tufts. They go into a second mesh, "PomFluff",
+# that casts no shadow (see the mesh section below).
+fluff = []
+FLUFF = [False]
 RNG = random.Random(122)  # fixed seed: the same tufts every build
 
 
@@ -88,6 +92,7 @@ def add(vs, fs, mat, bone):
     b = len(verts)
     verts.extend((x + SHIFT, y, z) for x, y, z in vs)
     vgroup.extend([bone] * len(vs))
+    fluff.extend([FLUFF[0]] * len(vs))
     for f in fs:
         faces.append(tuple(b + i for i in f))
         face_mat.append(ORDER.index(mat))
@@ -180,19 +185,34 @@ def pyramid(base, apex, mat, bone, side_mat=None):
         face_mat.append(ORDER.index((side_mat or {}).get(i, mat)))
 
 
-def tuft(p, d, length, width, mat, bone):
+def tuft(p, d, length, width, mat, bone, sink=0.02):
     """A tapered fur tuft: triangular-based cone rooted at `p` (sunk a little
     under the fur surface), pointing along `d`, base `width`, `length` long."""
     d = _norm(d)
     u = _norm(_cross(d, (0.0, 0.0, 1.0) if abs(d[2]) < 0.9 else (1.0, 0.0, 0.0)))
     v = _cross(d, u)
     spin, r = RNG.random() * 2 * math.pi, width / math.sqrt(3)
-    root = tuple(p[k] - d[k] * 0.02 for k in range(3))
+    root = tuple(p[k] - d[k] * sink for k in range(3))
     base = []
     for j in range(3):
         a = spin + 2 * math.pi * j / 3
         base.append(tuple(root[k] + r * (math.cos(a) * u[k] + math.sin(a) * v[k]) for k in range(3)))
     pyramid(base, tuple(p[k] + d[k] * length for k in range(3)), mat, bone)
+
+
+def shingle(p, n, t, length, width, lift, mat, bone):
+    """A fur shingle lying on the surface: a thin pyramid whose triangular
+    base sits in the tangent plane at `p` (normal `n`), its point running
+    `length` down the surface along `t` and lifted `lift` off it. Every face
+    stays close to the surface orientation, so a shingle shifts the shading
+    by a step or two instead of casting a dark wedge."""
+    n, t = _norm(n), _norm(t)
+    b = _cross(n, t)
+    sink = tuple(p[k] - n[k] * 0.006 for k in range(3))
+    base = [tuple(sink[k] - t[k] * 0.35 * length + s * b[k] * width / 2 for k in range(3))
+            for s in (1, -1)]
+    base.append(tuple(sink[k] + t[k] * 0.25 * length for k in range(3)))
+    pyramid(base, tuple(p[k] + t[k] * length + n[k] * lift for k in range(3)), mat, bone)
 
 
 # Pivots (bone heads).
@@ -219,61 +239,86 @@ def aim(v):
 # ruff) so the outline is broken fluff, not a smooth hull.
 BALL_R = (0.245, 0.235, 0.265)
 ellipsoid(BALL, BALL_R, "PomFur", "ruff", seg=14, rings=8, tuft=0.05)
-ellipsoid((0.0, -0.17, 0.25), (0.14, 0.10, 0.12), "PomFurLight", "ruff", seg=10, rings=6, tuft=0.10)
+ellipsoid((0.0, -0.17, 0.25), (0.14, 0.10, 0.12), "PomFurLight", "ruff", seg=10, rings=6, tuft=0.04)
 
 
 def ball_tufts():
-    """Rings of tufts at elevations 0..75 deg, every ring offset by half a
-    step and jittered; none over the face, ears, tail or cannon arm."""
-    for e0, count in ((-10, 12), (15, 14), (38, 13), (60, 9), (80, 4)):
+    """Two kinds of tuft, so the outline is broken fluff while the lit fur
+    stays soft:
+    - outline tufts: sparse rings at 18 and 38 deg (8 each) and the upper
+      cap at 60 and 76 deg (on the silhouette in every view): long, pointing
+      outward and a little up;
+    - shingles on the rest of the ball (the camera-facing surface in some
+      view): short and laid flat along the surface, mostly tangent and
+      downward, so each adds a 1-2 step shading change, not a dark wedge.
+    Rings are offset by half a step and jittered; none over the face, ears,
+    tail or cannon arm."""
+    for e0, count, outline in ((-12, 12, False), (8, 14, False), (28, 14, False), (46, 12, False),
+                               (18, 8, True), (38, 8, True), (60, 12, True), (76, 5, True)):
         for j in range(count):
             a = math.radians(360.0 * (j + 0.5 * (count % 2 == 0) + 0.4 * (RNG.random() - 0.5)) / count)
-            e = math.radians(e0 + 8 * (RNG.random() - 0.5))
+            e = math.radians(e0 + 6 * (RNG.random() - 0.5))
             ad = math.degrees(a) % 360
             if 225 < ad < 315 and e0 < 50:          # the face (front, -Y)
                 continue
             if 160 < ad < 205 and e0 < 0:           # the cannon arm (-X)
                 continue
-            if 60 < ad < 120 and e0 >= 58:          # the tail (back, +Y)
+            if 50 < ad < 130 and e0 >= 46:          # the tail (back, +Y)
                 continue
             n = (math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e))
             p = (BALL[0] + BALL_R[0] * n[0], BALL[1] + BALL_R[1] * n[1], BALL[2] + BALL_R[2] * n[2])
             if any(abs(p[0] - s * 0.105) < 0.07 and abs(p[1] + 0.07) < 0.08 and p[2] > 0.5
                    for s in (1, -1)):                # the ears
                 continue
-            d = (n[0], n[1], n[2] - 0.55)            # outward and slightly down
-            tuft(p, d, 0.05 + 0.025 * RNG.random(), 0.07, "PomFur", "ruff")
+            if outline:
+                d = (n[0], n[1], n[2] + 0.15)       # outward, a little up
+                tuft(p, d, 0.05 + 0.025 * RNG.random(), 0.07, "PomFur", "ruff")
+            else:
+                # Down the surface: tangent t = d n / d e, pointing to -elevation.
+                t = (math.sin(e) * math.cos(a), math.sin(e) * math.sin(a), -math.cos(e))
+                shingle(p, n, t, 0.035 + 0.015 * RNG.random(), 0.06, 0.02, "PomFur", "ruff")
 
 
+FLUFF[0] = True
 ball_tufts()
 for a in (-150, -120, -90, -60, -30):                # chest ruff fringe, forward and down
     ar = math.radians(a + 10 * (RNG.random() - 0.5))
     p = (0.13 * math.cos(ar), -0.17 + 0.09 * math.sin(ar), 0.19)
     tuft(p, (math.cos(ar), math.sin(ar), -0.6), 0.04 + 0.02 * RNG.random(), 0.05,
          "PomFurLight", "ruff")
+FLUFF[0] = False
 # Tiny feet barely peeking out under the fur.
 for bone, (x, y, z) in FEET.items():
     box(x - 0.035, x + 0.035, y - 0.07, y + 0.02, 0.0, 0.05, "PomFurDark", bone)
-# Plumed tail curled over the back.
-ellipsoid((0.0, 0.18, 0.60), (0.10, 0.09, 0.07), "PomFur", "tail", seg=8, rings=5, tuft=0.18)
-ellipsoid((0.0, 0.10, 0.65), (0.06, 0.06, 0.04), "PomFurLight", "tail", seg=6, rings=4, tuft=0.15)
-for a in (-20, 35, 145, 200):                     # plume tufts, sideways and back
+FLUFF[0] = True
+# Plumed tail curled over the back: three ellipsoids of decreasing size
+# along an arc that rises from the rump over the back and droops forward and
+# to the dog's left at the cream tip, which carries the tip tufts.
+PLUME = [((0.0, 0.25, 0.52), (0.075, 0.07, 0.075), "PomFur", 0.12),
+         ((0.025, 0.17, 0.625), (0.06, 0.07, 0.05), "PomFur", 0.12),
+         ((0.07, 0.09, 0.625), (0.04, 0.045, 0.032), "PomFurLight", 0.10)]
+for c, r, m, tf in PLUME:
+    ellipsoid(c, r, m, "tail", seg=8, rings=5, tuft=tf)
+for a in (-160, -100, -40):                       # tip tufts, forward, out and down
     ar = math.radians(a + 12 * (RNG.random() - 0.5))
-    tuft((0.085 * math.cos(ar), 0.20 + 0.075 * math.sin(ar), 0.60), (math.cos(ar), math.sin(ar), -0.3),
-         0.04 + 0.02 * RNG.random(), 0.06, "PomFur", "tail")
+    tuft((0.07 + 0.035 * math.cos(ar), 0.09 + 0.04 * math.sin(ar), 0.615),
+         (math.cos(ar), math.sin(ar), -0.8), 0.03 + 0.015 * RNG.random(), 0.04, "PomFurLight", "tail")
+FLUFF[0] = False
 # Small face on the front of the ball: cream muzzle, steel nose and eyes.
-ellipsoid((0.0, -0.245, 0.40), (0.07, 0.05, 0.05), "PomFurLight", "head", seg=8, rings=5)
-box(-0.018, 0.018, -0.30, -0.285, 0.415, 0.44, "PomEye", "head")              # nose
+ellipsoid((0.0, -0.22, 0.40), (0.07, 0.045, 0.045), "PomFurLight", "head", seg=8, rings=5)
+box(-0.018, 0.018, -0.275, -0.255, 0.41, 0.435, "PomEye", "head")              # nose
 for s in (1, -1):
     box(s * 0.075 - 0.018, s * 0.075 + 0.018, -0.255, -0.235, 0.45, 0.485, "PomEye", "head")
 # Two tiny pointed ears poking out of the top of the fur: each a pyramid on
 # a triangular base, tapering to one apex vertex (a triangle from every
 # view); the front face is the dark inner ear.
+FLUFF[0] = True
 for s, bone in ((1, "ear_l"), (-1, "ear_r")):
     pyramid([(s * 0.05, -0.115, 0.56), (s * 0.16, -0.115, 0.54), (s * 0.11, -0.035, 0.56)],
             (s * 0.112, -0.085, 0.745), "PomFur", bone, side_mat={0: "PomFurDark"})
-# Left paw: a small fur stub on the front.
-ellipsoid((0.17, -0.20, 0.26), (0.05, 0.05, 0.045), "PomFurDark", "arm_l", seg=6, rings=4)
+FLUFF[0] = False
+# Left paw: a small cream fur stub on the front.
+ellipsoid((0.17, -0.20, 0.26), (0.05, 0.05, 0.045), "PomFurLight", "arm_l", seg=6, rings=4)
 # Right arm: fur cuff, then the plasma cannon, slung on the outside of the
 # ball and aimed slightly inward (CAN_YAW, toward the line of fire), so the
 # thin barrel sticks out past the fur in profile and still fits the 56 px
@@ -297,18 +342,43 @@ for k in range(c0, len(verts)):
 _g = aim((CAN_X + SHIFT, -0.20, CAN_Z))
 GLOW = (_g[0] - SHIFT, _g[1], _g[2])  # glow bone pivot (bone heads get SHIFT added)
 
-mesh = bpy.data.meshes.new("Pom")
-mesh.from_pydata(verts, [], faces)
-for m in ORDER:
-    mesh.materials.append(mats[m])
-for poly, mi in zip(mesh.polygons, face_mat):
-    poly.material_index = mi
-    poly.use_smooth = False
-mesh.validate()
-mesh.update()
-body = bpy.data.objects.new("Pom", mesh)
+# Two meshes on the same rig: "Pom" (ball, face, ears, plume, cannon) casts
+# the key's hard shadow as usual; "PomFluff" (the fur tufts) does not. Cast
+# by hundreds of little cones, the hard shadow broke the lit fur into dark
+# specks (rule 4); a soft clump of fur casts no crisp shadow anyway. The
+# tufts are still lit and shaded like every other face.
 scene = bpy.context.scene
-scene.collection.objects.link(body)
+
+
+def build(name, keep):
+    remap = {}
+    vs = []
+    for i, v in enumerate(verts):
+        if keep(i):
+            remap[i] = len(vs)
+            vs.append(v)
+    fs, fm = [], []
+    for f, mi in zip(faces, face_mat):
+        if keep(f[0]):
+            fs.append(tuple(remap[i] for i in f))
+            fm.append(mi)
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(vs, [], fs)
+    for m in ORDER:
+        mesh.materials.append(mats[m])
+    for poly, mi in zip(mesh.polygons, fm):
+        poly.material_index = mi
+        poly.use_smooth = False
+    mesh.validate()
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    scene.collection.objects.link(obj)
+    return obj, [vgroup[i] for i in sorted(remap)]
+
+
+body, body_groups = build("Pom", lambda i: not fluff[i])
+fur, fur_groups = build("PomFluff", lambda i: fluff[i])
+fur.visible_shadow = False
 
 # ---------------------------------------------------------------------- rig
 BONES = {  # name: (head, parent)
@@ -341,13 +411,14 @@ for name, (head, parent) in BONES.items():
         arm.edit_bones[name].parent = arm.edit_bones[parent]
 bpy.ops.object.mode_set(mode="OBJECT")
 
-for name in BONES:
-    body.vertex_groups.new(name=name)
-for i, g in enumerate(vgroup):
-    body.vertex_groups[g].add([i], 1.0, "REPLACE")
-body.parent = rig
-mod = body.modifiers.new("Armature", "ARMATURE")
-mod.object = rig
+for obj, groups in ((body, body_groups), (fur, fur_groups)):
+    for name in BONES:
+        obj.vertex_groups.new(name=name)
+    for i, g in enumerate(groups):
+        obj.vertex_groups[g].add([i], 1.0, "REPLACE")
+    obj.parent = rig
+    mod = obj.modifiers.new("Armature", "ARMATURE")
+    mod.object = rig
 for pb in rig.pose.bones:
     pb.rotation_mode = "XYZ"
 
