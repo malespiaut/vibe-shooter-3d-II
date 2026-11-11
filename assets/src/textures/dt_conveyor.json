@@ -1,0 +1,43 @@
+{
+  "desc": "Conveyor belt wall (L5 secret tell): ribbed rubber belt over rollers under a steel hood",
+  "tile": "wall",
+  "size": 64,
+  "seed": 2210,
+  "layers": [
+    {"type": "panel", "rect": [0, 0, 64, 64], "bevel": 0, "depth": 0.0, "region": "frame"},
+    {"type": "panel", "rect": [1, 1, 62, 28], "bevel": 2, "depth": 1.0, "region": "plate"},
+    {"type": "panel", "rect": [0, 30, 64, 4], "bevel": 1, "depth": 1.2, "region": "hood"},
+    {"type": "panel", "rect": [0, 36, 64, 18], "bevel": 1, "depth": 0.8, "region": "belt"},
+    {"type": "grooves", "lines": [[2, 37, 2, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[8, 37, 8, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[14, 37, 14, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[20, 37, 20, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[26, 37, 26, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[32, 37, 32, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[38, 37, 38, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[44, 37, 44, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[50, 37, 50, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[56, 37, 56, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "grooves", "lines": [[62, 37, 62, 52]], "width": 1, "depth": -0.4, "region": "rib"},
+    {"type": "panel", "rect": [0, 55, 64, 9], "bevel": 1, "depth": 0.2, "region": "frame"},
+    {"type": "rivets", "points": [[5, 59], [15, 59], [25, 59], [35, 59], [45, 59], [55, 59]], "radius": 2.5, "height": 1.0, "region": "roller"},
+    {"type": "rivets", "points": [[5, 5], [58, 5], [5, 24], [58, 24]], "radius": 1.5, "height": 0.8},
+    {"type": "stripes", "rect": [0, 30, 64, 4], "period": 8, "width": 4, "region": "hazard"}
+  ],
+  "noise": {"cells": 32, "octaves": 2, "height": 0.12, "amount": 0.08, "blotch_cells": 8, "blotch": 0.5},
+  "light": {"relief": 1.0, "contrast": 0.8, "shadow": 0.25, "shadow_steps": 2, "shadow_slope": 0.45},
+  "grime": {"radius": 2, "cavity": 0.8, "shade": 0.3, "noise": 0.45, "grain": 0.15, "darken": 0.15},
+  "materials": {
+    "frame": {"ramp": "steel", "lo": 2, "hi": 9, "level": 0.45, "base2": false},
+    "plate": {"ramp": "steel", "lo": 4, "hi": 14, "level": 0.6},
+    "groove": {"ramp": "steel", "lo": 2, "hi": 8, "level": 0.4, "base2": 0.6},
+    "rivet": {"ramp": "steel", "lo": 5, "hi": 15, "level": 0.6, "base2": false},
+    "housing": {"ramp": "steel", "lo": 0, "hi": 5, "level": 0.3, "base2": false},
+    "hood": {"ramp": "steel", "lo": 3, "hi": 13, "level": 0.55, "base2": false},
+    "belt": {"ramp": "gray", "lo": 1, "hi": 7, "level": 0.45},
+    "rib": {"ramp": "gray", "lo": 3, "hi": 9, "level": 0.5, "base2": false},
+    "roller": {"ramp": "steel", "lo": 3, "hi": 14, "level": 0.6, "base2": false},
+    "hazard": {"ramp": "gold", "lo": 2, "hi": 9, "level": 0.55, "base2": false}
+  },
+  "base2": {"ramp": "brown", "lo": 2, "hi": 8, "threshold": 0.4}
+}

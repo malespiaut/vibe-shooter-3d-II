@@ -1,0 +1,34 @@
+{
+  "desc": "Dog-tech steel wall: three tall plates, vent slots at the foot, seam line",
+  "tile": "wall",
+  "size": 64,
+  "seed": 2204,
+  "layers": [
+    {"type": "panel", "rect": [0, 0, 64, 64], "bevel": 0, "depth": 0.0, "region": "frame"},
+    {"type": "panel", "rect": [1, 0, 20, 64], "bevel": 2, "depth": 1.0, "region": "plate", "tone": 0.0},
+    {"type": "panel", "rect": [22, 0, 20, 64], "bevel": 2, "depth": 1.0, "region": "plate", "tone": 0.03},
+    {"type": "panel", "rect": [43, 0, 20, 64], "bevel": 2, "depth": 1.0, "region": "plate", "tone": -0.02},
+    {"type": "grooves", "lines": [[1, 20, 63, 20]], "width": 1, "depth": 0.6},
+    {"type": "panel", "rect": [5, 46, 12, 2], "bevel": 0, "depth": -0.8, "region": "housing"},
+    {"type": "panel", "rect": [26, 46, 12, 2], "bevel": 0, "depth": -0.8, "region": "housing"},
+    {"type": "panel", "rect": [47, 46, 12, 2], "bevel": 0, "depth": -0.8, "region": "housing"},
+    {"type": "panel", "rect": [5, 50, 12, 2], "bevel": 0, "depth": -0.8, "region": "housing"},
+    {"type": "panel", "rect": [26, 50, 12, 2], "bevel": 0, "depth": -0.8, "region": "housing"},
+    {"type": "panel", "rect": [47, 50, 12, 2], "bevel": 0, "depth": -0.8, "region": "housing"},
+    {"type": "panel", "rect": [5, 54, 12, 2], "bevel": 0, "depth": -0.8, "region": "housing"},
+    {"type": "panel", "rect": [26, 54, 12, 2], "bevel": 0, "depth": -0.8, "region": "housing"},
+    {"type": "panel", "rect": [47, 54, 12, 2], "bevel": 0, "depth": -0.8, "region": "housing"},
+    {"type": "rivets", "points": [[4, 4], [25, 4], [46, 4], [15, 4], [36, 4], [57, 4], [4, 60], [25, 60], [46, 60], [15, 60], [36, 60], [57, 60]], "radius": 1.4, "height": 0.8}
+  ],
+  "noise": {"cells": 32, "octaves": 2, "height": 0.12, "amount": 0.08, "blotch_cells": 8, "blotch": 0.5},
+  "light": {"relief": 1.0, "contrast": 0.8, "shadow": 0.25, "shadow_steps": 2, "shadow_slope": 0.45},
+  "grime": {"radius": 2, "cavity": 0.8, "shade": 0.3, "noise": 0.45, "grain": 0.15, "darken": 0.15},
+  "materials": {
+    "frame": {"ramp": "steel", "lo": 2, "hi": 9, "level": 0.45, "base2": false},
+    "plate": {"ramp": "steel", "lo": 4, "hi": 14, "level": 0.6},
+    "groove": {"ramp": "steel", "lo": 2, "hi": 8, "level": 0.4, "base2": 0.6},
+    "rivet": {"ramp": "steel", "lo": 5, "hi": 15, "level": 0.6, "base2": false},
+    "housing": {"ramp": "steel", "lo": 0, "hi": 5, "level": 0.3, "base2": false}
+  },
+  "base2": {"ramp": "gray", "lo": 3, "hi": 10, "threshold": 0.35}
+}

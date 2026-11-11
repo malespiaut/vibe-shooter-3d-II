@@ -231,8 +231,25 @@ def prim_glyph(s, p):
     s.region[mask] = p.get("region", "glyph")
 
 
+def prim_stripes(s, p):
+    """Diagonal hazard stripes inside `rect`: texels with
+    (x + y) mod period < width ("/" leaning) or (x - y) mod period < width
+    ("\\") get `region` and `depth` (< 0 inset, > 0 raised). The period
+    must divide the size so the stripes continue across the tile edge."""
+    x, y, w, h = (int(v) for v in p["rect"])
+    period, width = int(p["period"]), int(p["width"])
+    if s.size % period:
+        raise TexgenError("stripes: period must divide the size")
+    mask, _ = s.rect_profile(x, y, w, h, 0)
+    t = s.xx + s.yy if p.get("dir", "/") == "/" else s.xx - s.yy
+    mask &= (t % period) < width
+    s.h[mask] += float(p.get("depth", 0.0))
+    s.region[mask] = p.get("region", "stripe")
+
+
 PRIMITIVES = {
     "bricks": prim_bricks,
+    "stripes": prim_stripes,
     "panel": prim_panel,
     "rivets": prim_rivets,
     "grooves": prim_grooves,
