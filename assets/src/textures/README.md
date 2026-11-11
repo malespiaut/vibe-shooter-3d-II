@@ -7,8 +7,40 @@ Every `<name>.json` here is built by `tools/texgen.py` into `assets/gen/textures
 python3 tools/texgen.py assets/src/textures/dt_steel_panel.json -o /tmp/tex --preview /tmp/png
 ```
 
-Names: `<set>_<what>`, `eg_` Egyptian, `dt_` dog-tech. 1-bit glyph masks (white = carved) live
+Names: `<set>_<what>`, `eg_` Egyptian, `dt_` dog-tech, at most 16 characters (the MAP texture
+name table is `char[16]`, `tech.md`). 1-bit glyph masks (white = carved) live
 in `glyphs/`.
+
+## Texture list
+
+| Name | Kind | Intended use |
+|---|---|---|
+| `eg_sand_blocks` | wall | default Egyptian sandstone, 4 staggered courses (all EG levels) |
+| `eg_sand_blocks2` | wall | small paler blocks, 8 courses: variety next to `eg_sand_blocks`, inner rooms |
+| `eg_ashlar` | wall | large dressed blocks, 2 courses: gatehouses, monumental halls, outer walls |
+| `eg_glyph_band` | wall | carved hieroglyph band (seated cat, cat eye, fish): shrines, landmarks, room trims |
+| `eg_gold_pillar` | wall | pillar face with gold-inlaid centre strip: 1x1 pillars, door surrounds |
+| `eg_papyrus` | wall | green papyrus reed panel in a sandstone frame: shrines, L2 galleries |
+| `eg_mural` | wall | painted Nile-blue mural strip with waves and fish: L3 Customs House, halls |
+| `eg_sand_cracked` | wall | `eg_sand_blocks` with two fine cracks: pushwall secrets (subtle tell) |
+| `eg_paw_wall` | wall | `eg_sand_blocks` with carved paws and claw scratches: L1 scratched-paw secret, used nowhere else on L1 |
+| `eg_tomb_stone` | wall | dark rough brown blocks: L4 tomb, crypt corridors |
+| `eg_museum_plaque` | wall | plaster between cornice and skirting with a gold plaque (cat emblem, illegible glyph lines): L2 gift shop, museum walls |
+| `eg_door` | door | unkeyed door: cedar leaf, gold bands, cat-eye emblem, sandstone jambs |
+| `eg_door_green` | door | Green Ankh door: 4 px green key band on each jamb (x 0-3, 60-63), green emblem |
+| `eg_door_blue` | door | Blue Ankh door: 4 px blue key bands, blue emblem |
+| `eg_door_violet` | door | Violet Ankh door: 4 px violet key bands, violet emblem |
+| `eg_switch_off` | switch | lever up, dim red lamp (`fb_red_dim`): switch and `EXIT` cells before use |
+| `eg_switch_on` | switch | lever down, green lamp (`fb_green`): the same switch after use |
+| `eg_floor_tiles` | floor/ceiling | 2x2 sandstone flags: default EG floor and ceiling |
+| `eg_sand` | floor | loose rippled sand: courtyards, outdoor EG (L1, L6) |
+| `eg_planks` | floor/ceiling | narrow wooden boards: docks and catwalks (L3), museum floors, wooden ceilings |
+| `eg_tomb_floor` | floor/ceiling | dark stone flag in a gold border: L4 tomb chambers, throne rooms |
+| `eg_nile` | floor | Nile water, under `BLOCK_ALL` cells (L3) |
+
+The four doors share every parameter except the `band` and `emblem` materials; the switch pair
+shares everything except the lever glyph and the lamp's fullbright entry, so the switch does not
+shift when it flips.
 
 ## Pipeline
 
