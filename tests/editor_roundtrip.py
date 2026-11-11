@@ -2,7 +2,9 @@
 """ctest `editor_roundtrip`: the editor model opens maps/m1test.vmap and saves
 it byte-identically; the presenter, driven headlessly (no wx), paints a
 rectangle, undoes and redoes it, paints a stroke, erases, uses the eyedropper,
-and the model is checked after each step. Plain asserts. BAST_LIB overrides
+and the model is checked after each step. MVP 2: light strokes, cell
+flags/tag/param, a door's key and mode, three named entities placed, rotated,
+moved, edited and deleted, all undoable, saved and reloaded identically. Plain asserts. BAST_LIB overrides
 the libbast.so path."""
 import os
 import sys
@@ -11,6 +13,7 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from editor import model as M  # noqa: E402
+from editor import presenter as P  # noqa: E402
 from editor.presenter import Presenter  # noqa: E402
 
 SRC = os.path.join(ROOT, "maps", "m1test.vmap")
@@ -149,11 +152,163 @@ def test_new_map(tmp):
     assert back.cell(0, 1)["wall"] == 0
 
 
+def ents(m):
+    return [m.entity(i) for i in range(m.entity_count)]
+
+
+def test_mvp2(tmp):
+    """Light, flags, door param and entities through the presenter; every
+    edit undoes; the result saves and reloads with identical values."""
+    p = Presenter(M.MapModel.open(SRC))
+    m = p.model
+    cf = M.bast.cell_flags()
+    orig_cells, orig_ents = snapshot(m), ents(m)
+
+    # Light: a dark stroke and a dark_alt stroke, each one undo step.
+    p.set_tool("light")
+    p.set_light_field("dark")
+    p.set_light_value(20)
+    p.on_press(2, 2)
+    p.on_drag(3, 2)
+    p.on_drag(4, 2)
+    p.on_release(4, 2)
+    assert [m.cell(x, 2)["dark"] for x in (2, 3, 4)] == [20] * 3
+    p.set_light_field("dark_alt")
+    p.set_light_value(31)
+    p.on_press(2, 3)
+    p.on_release(2, 3)
+    assert m.cell(2, 3)["dark_alt"] == 31
+    try:
+        p.set_light_value(32)
+        raise AssertionError("dark 32 accepted")
+    except ValueError:
+        pass
+    p.set_view_mode("light")
+    n = len(m._undo)
+    p.undo()
+    assert m.cell(2, 3)["dark_alt"] == orig_cells[3 * 24 + 2]["dark_alt"]
+    p.redo()
+    assert len(m._undo) == n
+
+    # Flags tool: select a cell, toggle flags, tag, param, door key and mode.
+    p.set_tool("flags")
+    p.on_press(5, 5)
+    p.on_release(5, 5)
+    assert p.cell_sel == (5, 5)
+    p.set_cell_flag("DOOR", True)
+    p.set_cell_flag("ONEWAY", True)
+    assert p.is_door()
+    p.set_cell_values(tag=7)
+    p.set_door(key=2)          # blue
+    p.set_door(mode=3)         # timed
+    c = m.cell(5, 5)
+    assert c["flags"] & cf["DOOR"] and c["flags"] & cf["ONEWAY"]
+    assert c["tag"] == 7 and c["param"] == 2 | (3 << 2), c
+    assert P.door_key(c["param"]) == 2 and P.door_mode(c["param"]) == 3
+    p.set_cell_flag("ONEWAY", False)
+    assert not m.cell(5, 5)["flags"] & cf["ONEWAY"]
+    p.undo()                    # ONEWAY back on
+    assert m.cell(5, 5)["flags"] & cf["ONEWAY"]
+    p.undo()                    # mode back to 0
+    assert P.door_mode(m.cell(5, 5)["param"]) == 0
+    p.redo()
+    p.redo()
+    p.select_cell(6, 5)
+    p.set_cell_flag("SECRET", True)
+    p.set_cell_flag("TRIGGER", True)
+    p.set_cell_values(tag=9, param=4)
+    p.select_cell(7, 5)
+    p.set_cell_flag("DAMAGE", True)
+    p.set_cell_values(param=10)
+
+    # Entities: place three (with names), rotate, set properties, move, delete.
+    p.set_tool("entity")
+    p.set_entity_type("WAYPOINT")
+    base = m.entity_count
+    p.on_press(8, 8)
+    p.on_drag(9, 8)
+    p.on_release(9, 9)          # place + drag is one step
+    a = p.entity_sel
+    assert a == base and m.entity(a)["x"] == (9 << 16) | 0x8000
+    assert m.entity(a)["y"] == (9 << 16) | 0x8000
+    p.set_entity_props(name="altar")
+    p.undo()
+    assert m.entity(a)["name"] == ""
+    p.undo()
+    assert m.entity_count == base, "place+drag did not undo as one step"
+    p.redo()
+    p.redo()
+    assert m.entity(a)["name"] == "altar"
+
+    p.set_entity_type("MUTT_TROOPER")
+    p.on_press(4, 4)
+    p.on_release(4, 4)
+    b = p.entity_sel
+    p.rotate_entity(3)          # north-west
+    p.set_entity_flag("SKILL1", False)
+    p.set_entity_flag("AMBUSH", True)
+    p.set_entity_props(tag=7, name="gate_guard")
+    e = m.entity(b)
+    assert e["type"] == 16 and e["angle"] == 3 * 8192 and P.entity_dir(e["angle"]) == 3
+    assert e["flags"] == 0x2 | 0x4 | 0x8 and e["tag"] == 7, e
+
+    c3 = p.place_entity(6, 6, "KILL_TRIGGER", tag=7, param=9)
+    p.set_entity_props(name="guards_dead")
+    p.set_entity_flag("SECRET_ONLY", True)
+    # Duplicate names are refused (demo goto @name needs one target).
+    try:
+        p.set_entity_props(name="altar")
+        raise AssertionError("duplicate name accepted")
+    except M.ModelError:
+        pass
+
+    # Clicking an existing entity selects it and drags it, no new entity.
+    n = m.entity_count
+    p.on_press(4, 4)
+    assert p.entity_sel == b and m.entity_count == n
+    p.on_drag(4, 3)
+    p.on_release(4, 3)
+    assert m.entity(b)["y"] == (3 << 16) | 0x8000
+    p.undo()
+    assert m.entity(b)["y"] == (4 << 16) | 0x8000
+
+    # Delete the first original entity and undo: order and values restored.
+    before = ents(m)
+    p.select_entity(0)
+    p.delete_entity()
+    assert m.entity_count == n - 1 and p.entity_sel is None
+    p.undo()
+    assert ents(m) == before
+    p.redo()
+    p.undo()
+
+    want_cells, want_ents = snapshot(m), ents(m)
+    assert want_ents[c3]["name"] == "guards_dead" and want_ents[c3]["flags"] & 0x10
+
+    out = os.path.join(tmp, "mvp2.vmap")
+    p.save(out)
+    back = M.MapModel.open(out)
+    assert snapshot(back) == want_cells, "cells differ after reload"
+    assert ents(back) == want_ents, "entities differ after reload"
+    assert back.cell(5, 5)["param"] == 2 | (3 << 2) and back.cell(2, 2)["dark"] == 20
+    named = {e["name"] for e in ents(back) if e["name"]}
+    assert {"altar", "gate_guard", "guards_dead"} <= named, named
+
+    # Undo everything: back to the original map, byte-identical on save.
+    while m.can_undo():
+        p.undo()
+    assert snapshot(m) == orig_cells and ents(m) == orig_ents
+    out2 = os.path.join(tmp, "mvp2_undone.vmap")
+    p.save(out2)
+    assert read(out2) == read(SRC)
+
+
 def main():
     with tempfile.TemporaryDirectory() as tmp:
         test_roundtrip(tmp)
         test_presenter(tmp)
         test_new_map(tmp)
+        test_mvp2(tmp)
     print("editor_roundtrip: ok")
 
 

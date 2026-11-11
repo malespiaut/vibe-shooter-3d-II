@@ -155,8 +155,11 @@ add_test(NAME editor_roundtrip
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/editor_roundtrip.py)
 add_test(NAME texgen_tile
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_texgen.py)
+add_test(NAME editor_entities
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/editor_entities.py)
 # Python tests load the libbast.so built here, not a stale one.
-set_tests_properties(palcheck bast_py sfx_determinism mkmap_py quantize editor_roundtrip texgen_tile PROPERTIES
+set_tests_properties(palcheck bast_py sfx_determinism mkmap_py quantize editor_roundtrip
+  texgen_tile editor_entities PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 add_executable(test_colormap tests/test_colormap.c)
