@@ -97,6 +97,123 @@ test_episode_done() {
   episode_done
 }
 
+test_usage_limit_ignores_digits() {
+  local f=$LOGS/x.jsonl
+  echo '{"type":"assistant","message":"set the fire rate limit to 4"}' > "$f"
+  echo '{"type":"result","is_error":true,"duration_ms":14290,"num_turns":429}' >> "$f"
+  ! is_usage_limit "$f" || return 1
+  echo '{"type":"result","is_error":true,"result":"Claude AI usage limit reached|1700000000"}' > "$f"
+  is_usage_limit "$f" || return 1
+  echo 'API Error: 429 {"type":"error","error":{"type":"rate_limit_error"}}' > "$f"
+  is_usage_limit "$f"
+}
+
+test_deps_multi() {
+  local form
+  for form in "Depends on #3, #6" "Depends on #3 and #6" "depends on #3 #6"; do
+    { issue 5 OPEN malespiaut ready "Intro.
+$form
+See #9 for context."; issue 3 CLOSED malespiaut ""; issue 6 OPEN malespiaut ""; issue 9 OPEN malespiaut ""; } | issues
+    [[ -z $(ready_issues) ]] || { echo "not blocked: $form"; return 1; }
+  done
+  { issue 5 OPEN malespiaut ready "Depends on #3 and #6"; issue 3 CLOSED malespiaut ""; issue 6 CLOSED malespiaut ""; issue 9 OPEN malespiaut ""; } | issues
+  [[ $(ready_issues) == 5 ]]
+}
+
+test_episode_ignores_stranger() {
+  issue 99 CLOSED stranger "" | jq '.title = "Final acceptance"' | issues
+  mkdir -p "$FIXTURES/api"
+  echo '[{"title": "Episode 1", "state": "closed"}]' > "$FIXTURES/api/$(printf '%s' "repos/$REPO/milestones?state=all" | tr -c 'A-Za-z0-9' _).json"
+  ! episode_done
+}
+
+test_infra_failure_not_counted() {
+  issue 5 OPEN malespiaut ready,in-progress | issues
+  rm "$STATE/roles/developer.md"
+  run_agent developer dev-5 "$WORK" "issue 5"
+  local rc=$?
+  finish_dev 5 $rc
+  [[ $rc == "$RC_INFRA" ]] && grep -q -- '--remove-label in-progress' "$FIXTURES/calls.log" &&
+    ! grep -q 'run failed' "$FIXTURES/calls.log" && ! grep -q 'podman run' "$FIXTURES/calls.log"
+}
+
+prs() { # prs <n:author:labels>...
+  local a; for a in "$@"; do IFS=: read -r n au l <<<"$a"
+    jq -cn --argjson n "$n" --arg a "$au" --arg l "$l" '{number: $n, author: {login: $a}, headRefOid: "sha\($n)",
+      headRefName: "issue-1", labels: ($l | split(",") | map(select(. != "") | {name: .})), files: [{path: "src/a.c"}], comments: []}'
+  done | jq -s . > "$FIXTURES/prs.json"
+}
+
+test_pr_stuck_after_three_review_failures() {
+  prs 7:malespiaut:
+  finish_pr 7 review-7 1; finish_pr 7 review-7 1
+  ! grep -q -- 'pr edit 7.*--add-label stuck' "$FIXTURES/calls.log" || return 1
+  [[ -z $(prs_needing_review) ]] || return 1  # cooling down
+  finish_pr 7 review-7 1
+  grep -q -- 'pr edit 7.*--add-label stuck' "$FIXTURES/calls.log" || return 1
+  rm -rf "$STATE/fail"
+  [[ -z $(prs_needing_review) ]]  # stuck label still excludes it
+}
+
+test_fix_cycle_cap() {
+  prs 7:malespiaut:review:changes-requested
+  mkdir -p "$STATE/cycles"; echo "$MAX_FIX_CYCLES" > "$STATE/cycles/7"
+  dispatch_fix 7
+  grep -q -- 'pr edit 7.*--add-label stuck' "$FIXTURES/calls.log" && ! grep -q 'podman run' "$FIXTURES/calls.log"
+}
+
+test_protected_close_owner_only_and_cached() {
+  prs 8:malespiaut: 9:stranger:
+  jq 'map(.files = [{path: "agents/Containerfile"}])' "$FIXTURES/prs.json" > "$FIXTURES/p" && mv "$FIXTURES/p" "$FIXTURES/prs.json"
+  close_protected
+  grep -q 'pr close 8' "$FIXTURES/calls.log" && ! grep -q 'pr close 9' "$FIXTURES/calls.log" || return 1
+  prs 10:malespiaut:
+  close_protected; close_protected
+  [[ $(grep -c 'pr view 10 .*files' "$FIXTURES/calls.log") == 1 ]]
+}
+
+# ---- loop_once tests: a real local git origin + clone, fakes for gh and podman ----
+mkrepo() {
+  local src=$FIXTURES/src r
+  git init -q -b main "$src"
+  mkdir -p "$src/docs/design" "$src/agents/roles"
+  for r in common designer-bootstrap designer-plan developer developer-fix reviewer art-director playtester; do
+    echo "role $r" > "$src/agents/roles/$r.md"
+  done
+  echo x > "$src/docs/design/a.md"
+  git -C "$src" add -A && git -C "$src" -c user.name=t -c user.email=t@t commit -qm init && git -C "$src" branch issue-1
+  git clone -q --bare "$src" "$FIXTURES/origin.git" && git clone -q "$FIXTURES/origin.git" "$WORK/repo"
+  echo '[]' > "$FIXTURES/prs.json"
+}
+loop() { loop_once; wait; }
+
+test_loop_dev_fails_three_times_stuck() {
+  mkrepo
+  issue 1 OPEN malespiaut ready | issues
+  echo 1 > "$FIXTURES/run-exit"
+  loop; loop; loop; loop
+  [[ $(grep -c 'podman run .*--name vibe-dev-1 ' "$FIXTURES/calls.log") == 3 ]] || return 1
+  [[ $(jq -r '.[0].labels | map(.name) | sort | join(",")' "$FIXTURES/issues.json") == stuck ]]
+}
+
+test_loop_review_failure_cools_down() {
+  mkrepo
+  echo '[]' | issues
+  prs 7:malespiaut:
+  echo 1 > "$FIXTURES/run-exit"
+  loop; loop
+  [[ $(grep -c 'podman run .*--name vibe-review-7 ' "$FIXTURES/calls.log") == 1 ]]
+}
+
+test_loop_podman_down_dispatches_nothing() {
+  mkrepo
+  issue 1 OPEN malespiaut ready | issues
+  prs 7:malespiaut:
+  echo 1 > "$FIXTURES/ps-exit"
+  loop
+  ! grep -qE 'podman (run|rm)' "$FIXTURES/calls.log" && ! grep -q 'issue edit' "$FIXTURES/calls.log"
+}
+
 for f in $(declare -F | awk '$3 ~ /^test_/ {print $3}'); do t "$f"; done
 if ((fails)); then echo "$fails test(s) failed"; exit 1; fi
 echo "all tests passed"

@@ -1,20 +1,31 @@
 #!/usr/bin/env bash
 # Fake gh: reads JSON fixtures from $FIXTURES, logs every call to $FIXTURES/calls.log.
+# issue/pr edit and comment update the fixture so multi-iteration tests see their effects.
+# shellcheck disable=SC2016 # jq programs, not shell expansions
 printf '%s\n' "$*" >> "$FIXTURES/calls.log"
-jqf=. num=
+jqf=. num='' add='' rm='' body=''
 args=("$@")
-for ((i = 0; i < ${#args[@]}; i++)); do
+for ((i = 2; i < ${#args[@]}; i++)); do
   case ${args[i]} in
     --jq) jqf=${args[i+1]} ;;
-    [0-9]*) [[ -z $num && ${args[i]} =~ ^[0-9]+$ ]] && num=${args[i]} ;;
+    --add-label) add=${args[i+1]} ;;
+    --remove-label) rm=${args[i+1]} ;;
+    --body) body=${args[i+1]} ;;
+    *) [[ -z $num && ${args[i]} =~ ^[0-9]+$ && ${args[i-1]} != --* ]] && num=${args[i]} ;;
   esac
 done
+case $1 in issue) f=$FIXTURES/issues.json ;; pr) f=$FIXTURES/prs.json ;; esac
+update() {
+  jq --argjson n "$num" --arg a "$add" --arg r "$rm" --arg b "$body" --arg o "${OWNER:-malespiaut}" \
+    "map(if .number == \$n then $1 else . end)" "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+}
 case "$1 $2" in
-  "issue list") src=$FIXTURES/issues.json ;;
-  "pr list") src=$FIXTURES/prs.json ;;
-  "issue view") jq ".[] | select(.number == $num)" "$FIXTURES/issues.json" | jq -r "$jqf"; exit ;;
-  "pr view") jq ".[] | select(.number == $num)" "$FIXTURES/prs.json" | jq -r "$jqf"; exit ;;
-  api*) src=$FIXTURES/api/$(printf '%s' "$2" | tr -c 'A-Za-z0-9' _).json ;;
-  *) exit 0 ;; # writes (edit, comment, close) are only logged
+  "issue list" | "pr list") if [[ -f $f ]]; then jq -r "$jqf" "$f"; else echo '[]' | jq -r "$jqf"; fi ;;
+  "issue view" | "pr view") jq ".[] | select(.number == $num)" "$f" | jq -r "$jqf" ;;
+  "issue edit" | "pr edit") update '.labels = ([(.labels // [])[], ($a | split(",")[] | select(. != "") | {name: .})]
+      | map(select(.name as $x | $r | split(",") | index($x) | not)) | unique_by(.name))' ;;
+  "issue comment" | "pr comment") update '.comments = ((.comments // []) + [{author: {login: $o}, body: $b}])' ;;
+  api*) src=$FIXTURES/api/$(printf '%s' "$2" | tr -c 'A-Za-z0-9' _).json
+        if [[ -f $src ]]; then jq -r "$jqf" "$src"; else echo '[]' | jq -r "$jqf"; fi ;;
 esac
-if [[ -f $src ]]; then jq -r "$jqf" "$src"; else echo '[]' | jq -r "$jqf"; fi
+exit 0
