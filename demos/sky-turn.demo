@@ -1,0 +1,12 @@
+# Sky turn: stand in the centre of maps/skytest.vmap and turn a full 360
+# degrees left (counter-clockwise) in 32 tics, 2048 angle units per tic
+# (issue #155). With --frame-every 2 the frames are 22.5 degrees apart, so
+# the 90-degree sky repeat shows as frames 0, 4, 8, 12 looking alike.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map skytest
+
+in 32 0 0 2048 -
+expect health=100

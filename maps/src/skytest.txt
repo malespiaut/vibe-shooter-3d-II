@@ -1,0 +1,43 @@
+# Sky test map: 21x21, built by tools/mkmap.py into maps/skytest.vmap.
+# Test fixture for the level skies (issue #155, demos/sky-turn.demo), not a
+# game level. A walled sandstone courtyard open to the sky, four pillars, and
+# a roofed strip along the south wall (ceiling texture, not sky) so a frame
+# shows where sky cells stop. The player starts in the centre facing east.
+# The sky line names sky_dawn; tools/sky_shots.sh swaps it for the other
+# three skies (sky_dusk, sky_midday, sky_sunset) to render each one.
+
+name Sky Test
+sky sky_dawn
+music 0
+par 30
+
+legend # wall=eg_sand_blocks flags=SOLID
+legend o wall=eg_gold_pillar flags=SOLID
+legend . floor=eg_sand ceil=sky dark=0
+legend _ floor=eg_floor_tiles ceil=eg_tomb_stone dark=4
+
+layout
+#####################
+#...................#
+#...................#
+#...................#
+#...o.........o.....#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...................#
+#...o.........o.....#
+#...................#
+#___________________#
+#___________________#
+#___________________#
+#####################
+end
+
+entity PLAYER_START 10 10 0

@@ -1,0 +1,34 @@
+{
+  "_doc": "Dusk over the docks (levels.md L3). tools/skygen.py paints it; format in its docstring. Deep indigo with stars, the last afterglow on the horizon, warehouses and obelisks along the Nile bank in silhouette.",
+  "bands": [
+    [0, "indigo_00"], [16, "indigo_01"], [31, "indigo_02"], [45, "indigo_03"], [57, "indigo_04"],
+    [67, "indigo_05"], [76, "indigo_06"], [83, "pink_03"], [89, "pink_04"], [95, "pink_05"]
+  ],
+  "stars": {"seed": 77, "count": 70, "y_max": 52, "colours": ["indigo_07", "indigo_08", "indigo_09", "indigo_10", "indigo_11", "white"]},
+  "clouds": [
+    {"fill": "indigo_03", "light": "indigo_04", "shade": "indigo_02",
+     "puffs": [[60, 62, 38, 2], [84, 60, 16, 2], [36, 64, 18, 1]]},
+    {"fill": "indigo_05", "light": "indigo_06", "shade": "indigo_04",
+     "puffs": [[200, 74, 44, 1], [224, 72, 20, 2]]},
+    {"fill": "pink_03", "light": "pink_04", "shade": "pink_02",
+     "puffs": [[120, 86, 30, 1], [300, 88, 24, 1]]}
+  ],
+  "layers": [
+    {"fill": "indigo_03", "lit": "indigo_04", "items": [
+      {"type": "pyramid", "x": 96, "top": 64, "slope": [3, 2]},
+      {"type": "pyramid", "x": 136, "top": 76, "slope": [3, 2]},
+      {"type": "pyramid", "x": 262, "top": 70, "slope": [3, 2]}
+    ]},
+    {"fill": "indigo_00", "lit": "indigo_01", "ground": 99, "items": [
+      {"type": "block", "x": 1, "w": 33, "top": 86},
+      {"type": "block", "x": 34, "w": 26, "top": 90},
+      {"type": "obelisk", "x": 64, "top": 62, "w": 5},
+      {"type": "block", "x": 70, "w": 40, "top": 92, "merlon": [3, 3]},
+      {"type": "pyramid", "x": 168, "top": 82, "slope": [4, 3]},
+      {"type": "block", "x": 196, "w": 30, "top": 88},
+      {"type": "block", "x": 226, "w": 18, "top": 84},
+      {"type": "obelisk", "x": 250, "top": 66, "w": 3},
+      {"type": "block", "x": 256, "w": 64, "top": 92, "merlon": [4, 4]}
+    ]}
+  ]
+}
