@@ -1,0 +1,10 @@
+# Playtester: pistol a kibble barrel from the adjacent tile (1 u).
+vsdemo 1
+level 1
+skill 2
+seed 0
+map launchertest
+goto 14 8 200
+face 15 8
+fire 40
+wait 20

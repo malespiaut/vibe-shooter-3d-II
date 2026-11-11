@@ -1,0 +1,13 @@
+# Playtester: fire a scarab into the wall at point blank. weapons.md: splash "hurts the player".
+vsdemo 1
+level 1
+skill 2
+seed 0
+map launchertest
+goto 4 5
+weapon 5
+wait 10
+goto 1 5
+face 180
+fire 1
+wait 20

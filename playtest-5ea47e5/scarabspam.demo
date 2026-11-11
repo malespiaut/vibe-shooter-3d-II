@@ -1,0 +1,12 @@
+# Playtester: empty the launcher into the far wall, then keep pressing fire with 0 scarabs.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map launchertest
+goto 4 5
+weapon 5
+wait 10
+face 0
+fire 120
+wait 30

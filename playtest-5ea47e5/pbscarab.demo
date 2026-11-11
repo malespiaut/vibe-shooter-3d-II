@@ -1,0 +1,13 @@
+# Playtester: scarab at point blank into the middle Mutt (1 u away).
+vsdemo 1
+level 1
+skill 2
+seed 0
+map launchertest
+goto 4 5
+weapon 5
+wait 10
+goto 11 5
+face 12 5
+fire 1
+wait 20
