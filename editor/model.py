@@ -71,6 +71,14 @@ class MapModel:
         self.dirty = False
         self._notify("saved")
 
+    def export(self, path):
+        """Write the map to `path` without changing path or dirty state
+        (temp copy for launching the game)."""
+        try:
+            self.map.save(path)
+        except bast.BastError as e:
+            raise ModelError(str(e))
+
     # queries ---------------------------------------------------------------
     width = property(lambda self: self.map.width)
     height = property(lambda self: self.map.height)
