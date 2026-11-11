@@ -1,0 +1,46 @@
+# Doors: goto does not path through a closed door, so each one is opened by
+# hand (goto the tile in front, face, use, wait 32).
+#
+# Level 1 "Sandbox Gate" completion (maps/level1.vmap, layout and
+# coordinates in maps/src/level1.txt), skill 2. High-level commands only.
+# Takes both secrets and kills all 14 Mutts, then pulls the EXIT lever.
+vsdemo 1
+level 1
+skill 2
+seed 0
+
+weapon 2
+# The Welcome Mat: the Mutt 6 tiles ahead has its back turned.
+fire nearest
+goto 10 4              # Fish Snack behind the east pillar
+# Gatehouse: the door is straight ahead of the start.
+goto 6 7
+face 90
+use
+wait 32
+goto 6 9
+clear
+goto 8 9               # Charge Vial
+goto 4 9               # Fish Snack
+# Litter Courtyard: four Mutts behind the pillars.
+goto 6 10
+face 90
+use
+wait 32
+goto 6 12
+clear 12               # the first shot wakes the courtyard
+wait 35                # the others come out from behind the pillars
+clear 12
+goto 8 13
+clear 12
+goto 8 13              # the shrine-entrance Mutt heard the shots too
+clear 14
+expect kills=7
+# Playtester branch: skip the shrine, try the locked green door at (13,12).
+goto 12 12
+face 0
+use
+wait 40
+in 30 127 0 0 -
+in 30 127 0 0 U
+wait 5

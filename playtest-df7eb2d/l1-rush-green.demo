@@ -1,0 +1,22 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+# Playtester: ignore the route, rush the green door before the key.
+weapon 2
+fire nearest
+goto 6 7
+face 90
+use
+wait 32
+goto 6 10
+face 90
+use
+wait 32
+goto 6 12
+goto 12 12 600
+face 0
+use
+wait 40
+in 40 127 0 0 -
+wait 10

@@ -1,0 +1,10 @@
+STATS level=1 tic=2455 hash=68f05cdbed4cfed5 health=72 armor=85 kills=14/14 items=9/14 secrets=2/2 exit=1 god=0
+STATS level=2 tic=3941 hash=e47e8ef958bf3a37 health=62 armor=185 kills=28/28 items=22/23 secrets=2/3 exit=1 god=0
+game: demos/level1-complete.demo: line 38: expect kills=7 failed: kills is 5 at tic 598
+STATS level=1 tic=598 hash=67dcec4ff026baf9 health=100 armor=0 kills=5/11 items=2/14 secrets=0/2 exit=0 god=0
+game: the player died at tic 651
+STATS level=1 tic=651 hash=1fee89decb723e1c health=0 armor=0 kills=5/17 items=2/14 secrets=0/2 exit=0 god=0
+game: demos/level2-complete.demo: line 27: expect kills=6 failed: kills is 2 at tic 465
+STATS level=2 tic=465 hash=681a78960f1a1614 health=100 armor=0 kills=2/21 items=3/23 secrets=0/3 exit=0 god=0
+game: demos/level2-complete.demo: line 41: expect kills=12 failed: kills is 13 at tic 1060
+STATS level=2 tic=1060 hash=3ac95d521e4d9285 health=31 armor=0 kills=13/34 items=8/23 secrets=0/3 exit=0 god=0
