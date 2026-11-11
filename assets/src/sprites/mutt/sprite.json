@@ -1,0 +1,25 @@
+{
+  "_comment": "Mutt Trooper (enemies.md). model.py builds mutt.blend; tools/build.d/60-sprites.sh renders it. Materials -> olive (vest, fatigues), beige (fur), steel (rifle, boots) plus fb_red (wind-up LED) and fb_yellow (muzzle flash).",
+  "object": "Mutt",
+  "canvas": [48, 64],
+  "ramps": {
+    "MuttVest": "olive",
+    "MuttCloth": "olive",
+    "MuttFur": "beige",
+    "MuttMuzzle": "beige",
+    "MuttEar": "beige",
+    "MuttDark": "beige",
+    "MuttGun": "steel",
+    "MuttMetal": "steel",
+    "MuttLED": "fb_red",
+    "MuttFlash": "fb_yellow"
+  },
+  "actions": {
+    "MuttIdle": {"anim": "idle", "frames": [1, 2]},
+    "MuttWalk": {"anim": "walk", "frames": [1, 2, 3, 4]},
+    "MuttWindup": {"anim": "windup", "frames": [1, 2]},
+    "MuttAttack": {"anim": "attack", "frames": [1, 2]},
+    "MuttPain": {"anim": "pain", "frames": [1]},
+    "MuttDeath": {"anim": "death", "frames": [1, 2, 3, 4, 5]}
+  }
+}
