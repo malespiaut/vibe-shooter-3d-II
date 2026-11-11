@@ -28,6 +28,13 @@
 #define PLAYER_START_HEALTH 100
 #define PLAYER_EYE_Z ((fix_t)32768)     /* eye height 0.5 units (render.h) */
 
+/* Death (hud.md Flow): the death view lasts DEATH_VIEW_TICS, the eye drops
+ * from PLAYER_EYE_HEIGHT to PLAYER_DEAD_EYE_HEIGHT over it, then use
+ * restarts the level. */
+#define DEATH_VIEW_TICS 70
+#define PLAYER_EYE_HEIGHT (FIX_ONE / 2)     /* 0.5 units */
+#define PLAYER_DEAD_EYE_HEIGHT (FIX_ONE / 8) /* 0.125 units */
+
 /* ticcmd buttons. */
 enum {
     BT_FIRE = 1 << 0,
@@ -69,7 +76,21 @@ typedef struct {
     int32_t ninth_life;       /* 0 or 1 */
     int32_t invuln_tics;      /* after Ninth Life saved the player */
     int32_t dead;
+    int32_t death_tics;       /* tics since death, 0..DEATH_VIEW_TICS */
 } player_t;
+
+/* The inventory carried into a level (items.md: health, armour, weapons,
+ * ammo, Litter Satchel; not keys or powerups). A death restarts the level
+ * with it. */
+typedef struct {
+    int32_t health;
+    int32_t armour;
+    int32_t armour_class;
+    int32_t satchel;
+    uint32_t weapons_owned;  /* weapons_t.owned */
+    uint32_t weapon_ready;   /* slot in hand */
+    int32_t ammo[AM_TYPES];
+} inventory_t;
 
 /* A non-weapon pickup spawned from a map entity (game/items.c), or dropped
  * by an enemy (game/ai.c). Weapon pickups are thinkers (TH_FLAG_PICKUP). */
@@ -129,6 +150,11 @@ typedef struct game_state {
      * newest, event_seq counts every event since game_init. */
     uint32_t event_seq;
     game_event events[GAME_EVENT_RING];
+
+    int32_t level;          /* for a restart: game_init's level and seed */
+    uint32_t demo_seed;
+    inventory_t entry;      /* level-entry inventory snapshot */
+    uint32_t restarts;      /* deaths restarted this run; not hashed */
 } game_state;
 
 /* Resets the state for `map` (borrowed, must outlive the state): tic 0, RNG
@@ -139,7 +165,30 @@ typedef struct game_state {
  * pickup_t (game/items.c). Kitten (1): half damage, 1.5x ammo. */
 void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32_t demo_seed);
 
-/* Advances the simulation by one tic. */
+/* Same, then gives the player `inv` (the inventory carried in) instead of
+ * the starting one. The level-entry snapshot (gs->entry) is taken here, in
+ * both functions. */
+void game_init_with(game_state *gs, const bast_map *map, int level, int skill,
+                    uint32_t demo_seed, const inventory_t *inv);
+
+/* Restarts the level after a death: game_init_with() on the same map,
+ * level, skill and seed with the level-entry inventory. Keys, powerups,
+ * counters, tic, RNG and the world go back to their level-start state, so
+ * the hash equals the one at the first start with the same inventory. */
+void game_restart(game_state *gs);
+
+/* The camera's eye height: 0.5 units alive; dead, it drops linearly to
+ * 0.125 over DEATH_VIEW_TICS. Fixed point, from the hashed death timer. */
+fix_t game_eye_height(const game_state *gs);
+
+/* True while dead and the death view is over: the "PRESS USE TO TRY AGAIN"
+ * prompt shows and use restarts the level. */
+int game_restart_ready(const game_state *gs);
+
+/* Advances the simulation by one tic. While the player is dead, movement,
+ * turning, fire, weapon select and use are ignored (the world keeps
+ * running): the death timer counts to DEATH_VIEW_TICS, then a use rising
+ * edge restarts the level (game_restart) instead of running the tic. */
 void game_tic(game_state *gs, const ticcmd *cmd);
 
 /* 64-bit FNV-1a over the canonical serialisation (tech.md State hash):
@@ -152,7 +201,8 @@ void game_tic(game_state *gs, const ticcmd *cmd);
  * the map logic (tags_hash: exit, lights, secrets, tags fired, pushwalls,
  * one-shot cell states), then
  * per thinker its AI fields (movedir, goal tile, movecount), then per
- * thinker its howler_hit flag. New
+ * thinker its howler_hit flag, then the death timer and the level-entry
+ * inventory. New
  * fields are appended as the systems that own them land. */
 uint64_t game_hash(const game_state *gs);
 

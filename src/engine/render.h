@@ -101,6 +101,13 @@ void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *
  * sprite are skipped. render_view() is this with no things and tic 0. */
 void render_view_things(const bast_map *map, fix_t x, fix_t y, angle_t angle,
                         const render_thing *things, int n_things, uint32_t tic, uint8_t *fb);
+/* render_view_things() with the eye `eye_height` units (16.16) above the
+ * floor, clamped to [1/64, 63/64]: walls, floor, ceiling and every sprite
+ * (map and live things) move with it (the death view drops it to 0.125).
+ * render_view_things() is eye 0.5. */
+void render_view_things_eye(const bast_map *map, fix_t x, fix_t y, angle_t angle,
+                            fix_t eye_height, const render_thing *things, int n_things,
+                            uint32_t tic, uint8_t *fb);
 
 /* Sky texture column drawn in screen column sx (0..VIEW_W-1) when facing
  * `angle`: (sx - angle * 1280 / 65536) mod 320. */

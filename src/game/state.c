@@ -7,9 +7,43 @@
 #include "game/items.h"
 #include "game/projectile.h"
 
+static void inventory_take(inventory_t *inv, const player_t *p)
+{
+    memset(inv, 0, sizeof *inv);
+    inv->health = p->health;
+    inv->armour = p->armour;
+    inv->armour_class = p->armour_class;
+    inv->satchel = p->satchel;
+    inv->weapons_owned = p->weapons.owned;
+    inv->weapon_ready = p->weapons.ready;
+    for (int i = 0; i < AM_TYPES; i++)
+        inv->ammo[i] = p->weapons.ammo[i];
+}
+
+static void inventory_give(player_t *p, const inventory_t *inv)
+{
+    p->health = inv->health;
+    p->armour = inv->armour;
+    p->armour_class = inv->armour_class;
+    p->satchel = inv->satchel;
+    weapons_init(&p->weapons); /* timers, switch and bob at rest */
+    p->weapons.owned = (uint8_t)inv->weapons_owned;
+    p->weapons.ready = (uint8_t)inv->weapon_ready;
+    for (int i = 0; i < AM_TYPES; i++)
+        p->weapons.ammo[i] = inv->ammo[i];
+}
+
 void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32_t demo_seed)
 {
+    game_init_with(gs, map, level, skill, demo_seed, NULL);
+}
+
+void game_init_with(game_state *gs, const bast_map *map, int level, int skill,
+                    uint32_t demo_seed, const inventory_t *inv)
+{
     memset(gs, 0, sizeof *gs);
+    gs->level = level;
+    gs->demo_seed = demo_seed;
     gs->map = map;
     gs->skill = skill < 1 ? 1 : skill > 3 ? 3 : skill;
     rng_seed_level(&gs->rng, level, demo_seed);
@@ -28,10 +62,53 @@ void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32
     }
     weapons_init(&p->weapons);
     player_start_inventory(p);
+    if (inv)
+        inventory_give(p, inv);
+    inventory_take(&gs->entry, p);
     thinkers_spawn_map(&gs->things, map, gs->skill);
     doors_init(gs);
     items_spawn(gs);
     tags_init(gs);
+}
+
+void game_restart(game_state *gs)
+{
+    const inventory_t inv = gs->entry;
+    const uint32_t restarts = gs->restarts;
+    game_init_with(gs, gs->map, gs->level, gs->skill, gs->demo_seed, &inv);
+    gs->restarts = restarts + 1;
+}
+
+fix_t game_eye_height(const game_state *gs)
+{
+    const player_t *p = &gs->player;
+    if (!p->dead)
+        return PLAYER_EYE_HEIGHT;
+    int32_t t = p->death_tics > DEATH_VIEW_TICS ? DEATH_VIEW_TICS : p->death_tics;
+    return PLAYER_EYE_HEIGHT -
+           (PLAYER_EYE_HEIGHT - PLAYER_DEAD_EYE_HEIGHT) * t / DEATH_VIEW_TICS;
+}
+
+int game_restart_ready(const game_state *gs)
+{
+    return gs->player.dead && gs->player.death_tics >= DEATH_VIEW_TICS;
+}
+
+/* A dead player's tic: no input but use, which restarts the level once the
+ * death view is over. The body slides to a stop (no thrust), and the world
+ * (doors, pushwalls, enemies) keeps running. Returns 1 when it restarted. */
+static int dead_tic(game_state *gs, const ticcmd *cmd)
+{
+    player_t *p = &gs->player;
+    const int use_edge = (cmd->buttons & BT_USE) && !(gs->prev_buttons & BT_USE);
+    if (use_edge && game_restart_ready(gs)) {
+        game_restart(gs);
+        return 1;
+    }
+    gs->prev_buttons = cmd->buttons;
+    if (p->death_tics < DEATH_VIEW_TICS)
+        p->death_tics++;
+    return 0;
 }
 
 void game_give_keys(game_state *gs, uint32_t keys)
@@ -184,6 +261,23 @@ void game_tic(game_state *gs, const ticcmd *cmd)
     player_t *p = &gs->player;
 
     gs->sounds.count = 0; /* the main loop drained last tic's events */
+    if (p->dead) {
+        if (dead_tic(gs, cmd))
+            return;
+        items_tic(gs);
+        doors_tic(gs);
+        pushwalls_tic(gs);
+        static const ticcmd none = { 0, 0, 0, 0 };
+        player_thrust(p, &none);
+        if (move_axis(gs, &p->x, &p->y, p->momx, 0))
+            p->momx = 0;
+        if (move_axis(gs, &p->x, &p->y, p->momy, 1))
+            p->momy = 0;
+        ai_tic(gs);
+        gs->tic++;
+        return;
+    }
+
     items_tic(gs);
     p->angle = (angle_t)(p->angle + (uint16_t)cmd->turn);
 
@@ -300,6 +394,16 @@ uint64_t game_hash(const game_state *gs)
     }
     for (int i = 0; i < gs->things.count; i++)
         hash_u32(&h, gs->things.list[i].howler_hit);
+    hash_i32(&h, p->death_tics);
+    const inventory_t *e = &gs->entry;
+    hash_i32(&h, e->health);
+    hash_i32(&h, e->armour);
+    hash_i32(&h, e->armour_class);
+    hash_i32(&h, e->satchel);
+    hash_u32(&h, e->weapons_owned);
+    hash_u32(&h, e->weapon_ready);
+    for (int i = 0; i < AM_TYPES; i++)
+        hash_i32(&h, e->ammo[i]);
     return h.value;
 }
 
