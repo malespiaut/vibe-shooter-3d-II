@@ -54,7 +54,7 @@ MATS = {
     "MuttFur": (0.72, 0.64, 0.52),       # beige: tan fur
     "MuttMuzzle": (0.80, 0.74, 0.64),    # beige: lighter muzzle and jowls
     "MuttEar": (0.44, 0.36, 0.28),       # beige: dark droopy ears
-    "MuttDark": (0.42, 0.36, 0.29),      # beige_03..05: nose, eyes
+    "MuttDark": (0.50, 0.43, 0.35),      # beige_03..05: nose, eyes
     "MuttGun": (0.36, 0.41, 0.49),       # steel: rifle body, boots
     "MuttMetal": (0.66, 0.72, 0.80),     # steel: barrel, buckles
     "MuttLED": (1.0, 0.12, 0.12),        # fb_red
@@ -172,7 +172,7 @@ ball((0, 0.5, 47.0), (11.0, 11.0, 10.0), "MuttFur", "head")
 box((0, -7.0, 46.6), (5.4, 11.0, 3.4), "MuttFur", "head", rot=(4, 0, 0))   # bridge
 ball((0, -8.0, 44.2), (6.6, 12.0, 4.6), "MuttMuzzle", "head")              # muzzle
 ball((0, -6.5, 42.2), (7.4, 8.0, 4.4), "MuttMuzzle", "head")             # jowls
-ball((0, -14.0, 46.6), (2.0, 1.4, 1.1), "MuttDark", "head", seg=8, ring=6)  # nose
+ball((0, -13.0, 45.8), (2.2, 1.8, 1.4), "MuttDark", "head", seg=8, ring=6)  # nose
 for x in (-2.6, 2.6):
     ball((x, -4.8, 48.2), (1.8, 1.2, 1.6), "MuttDark", "head", seg=6, ring=4)
     box((x, -4.6, 49.6), (3.0, 1.2, 1.0), "MuttFur", "head")        # droopy brow
