@@ -1,0 +1,51 @@
+$ rm -rf build && cmake -S . -B build -G Ninja && cmake --build build
+colormap: wrote /work/assets/gen/colormap.bin (8192 bytes, 23 cells clamped for monotonic L)
+[76/77] Linking C executable game (from clean build)
+$ ctest --test-dir build --output-on-failure
+ 1/43 Test  #1: smoke ............................   Passed    0.00 sec
+ 2/43 Test  #2: fixed ............................   Passed    0.00 sec
+ 3/43 Test  #3: angle ............................   Passed    0.00 sec
+ 4/43 Test  #4: rng ..............................   Passed    0.00 sec
+ 5/43 Test  #5: hash .............................   Passed    0.00 sec
+ 6/43 Test  #6: player_move ......................   Passed    0.00 sec
+ 7/43 Test  #7: platform_audio ...................   Passed    0.07 sec
+ 8/43 Test  #8: tex_roundtrip ....................   Passed    0.00 sec
+ 9/43 Test  #9: oklab_nearest ....................   Passed    0.00 sec
+10/43 Test #10: snd_roundtrip ....................   Passed    0.00 sec
+11/43 Test #11: map_roundtrip ....................   Passed    0.00 sec
+12/43 Test #12: pak_roundtrip ....................   Passed    0.00 sec
+13/43 Test #13: files ............................   Passed    0.00 sec
+14/43 Test #14: palcheck .........................   Passed    0.50 sec
+15/43 Test #15: bast_py ..........................   Passed    0.47 sec
+16/43 Test #16: sfx_determinism ..................   Passed    1.68 sec
+17/43 Test #17: sfx_levels .......................   Passed    0.48 sec
+18/43 Test #18: mkmap_py .........................   Passed    0.05 sec
+19/43 Test #19: quantize .........................   Passed    0.29 sec
+20/43 Test #20: editor_roundtrip .................   Passed    0.04 sec
+21/43 Test #21: texgen_tile ......................   Passed    0.79 sec
+22/43 Test #22: editor_entities ..................   Passed    0.02 sec
+23/43 Test #23: gibs_determinism .................   Passed    0.18 sec
+24/43 Test #24: gibs_pixels ......................   Passed    0.09 sec
+25/43 Test #25: fonts ............................   Passed    0.24 sec
+26/43 Test #26: pak_py ...........................   Passed    0.20 sec
+27/43 Test #27: colormap .........................   Passed    0.00 sec
+28/43 Test #28: fx_loop ..........................   Passed    0.08 sec
+29/43 Test #29: fx_determinism ...................   Passed    0.56 sec
+30/43 Test #30: fx_shapes ........................   Passed    0.14 sec
+31/43 Test #31: hud_assets .......................   Passed    0.19 sec
+32/43 Test #32: mixer ............................   Passed    0.00 sec
+33/43 Test #33: mixer_wav ........................   Passed    0.00 sec
+34/43 Test #34: png_writer .......................   Passed    0.06 sec
+35/43 Test #35: demo_parse .......................   Passed    0.00 sec
+36/43 Test #36: headless_smoke ...................   Passed    0.10 sec
+37/43 Test #37: blender_render ...................   Passed    1.48 sec
+38/43 Test #38: music_parse ......................   Passed    0.00 sec
+39/43 Test #39: music_render .....................   Passed    0.03 sec
+40/43 Test #40: determinism_m1-walk ..............   Passed    0.13 sec
+41/43 Test #41: demo_goto ........................   Passed    0.04 sec
+42/43 Test #42: demo_timeout .....................   Passed    0.06 sec
+43/43 Test #43: demo_expect ......................   Passed    0.04 sec
+100% tests passed out of 43
+$ sh tools/build_assets.sh | tail -2
+palcheck: OK, 156 file(s) checked
+build_assets: ok
