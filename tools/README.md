@@ -39,6 +39,8 @@ no stale file) and print a one-line summary. Pick `NN` after the steps it depend
 |------|--------|
 | `20-texgen.sh` | `assets/gen/textures/*.tex` from `assets/src/textures/*.json` (`tools/texgen.py`) |
 | `30-sfx.sh` | `assets/gen/sfx/*.snd` from `assets/src/sfx/*.json` |
+| `40-sprites.sh` | `assets/gen/sprites/*.tex` from hand-drawn indexed `assets/src/sprites/*.png` (origin bottom-centre) |
+| `50-gibs.sh` | `assets/gen/gibs/<sprite>_gib_d0_f<n>.tex` from every `assets/src/gibs/*.json` whose `source` (relative to `assets/gen/`) exists |
 
 ## Quantize RGBA to TEX: `quantize.py`
 
@@ -72,6 +74,24 @@ t = quantize.quantize_tex(rgba, w, h, (0, 0))   # bast.Tex, if you want to keep 
 ```
 
 `rgba` is row-major RGBA8 (`Image.convert("RGBA").tobytes()`).
+
+## Gib animations: `gibs.py`
+
+GAME.md 6.2: Voronoi chunks, wound bleeding, simple physics, all in palette-index space.
+
+```
+python3 tools/gibs.py <params.json> -i <source.tex> -o <outdir> [--preview <dir>] [-q]
+```
+
+Writes `<outdir>/<sprite>_gib_d0_f<n>.tex` (frame 0 = intact sprite with its wound cracks) and,
+with `--preview`, the same frames as indexed PNGs plus `<sprite>_gib_sheet.png`. Parameters (all
+of GAME.md 6.2: seed, frames, chunks, force, gravity, drag, spread, spin, wound depth, plus
+`blood_ramp`, `wound_shade`, `lift`, `jitter`, `bounce`, `friction`, `centre`, `substeps`,
+`canvas`) are documented at the top of the script. Keys starting with `_` are comments.
+Spin is applied in 90-degree steps, so chunk pixels are moved, never resampled; chunks never go
+below the floor line (the source `origin_y`). `assets/src/gibs/prop_pot.json` is the pot;
+`assets/src/gibs/template/enemy.json` is the starting point for an enemy (`source` = its `pain`
+frame, `canvas` = its frame canvas, `blood_ramp` `red`; `cyan` for dog-tech props).
 
 ## Other tools
 

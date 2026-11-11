@@ -1,0 +1,29 @@
+{
+  "_comment": "Clay flower pot (items.md papyrus pot): breaks into clay shards whose broken edges show dark brown soil and fired-clay core.",
+  "sprite": "prop_pot",
+  "source": "sprites/prop_pot.tex",
+  "seed": 2,
+  "frames": 8,
+  "chunks": 9,
+  "substeps": 2,
+  "force": 2.6,
+  "lift": 1.4,
+  "jitter": 0.35,
+  "spread": 15.0,
+  "spin": 40.0,
+  "gravity": 0.38,
+  "drag": 0.03,
+  "bounce": 0.2,
+  "friction": 0.7,
+  "centre": [
+    0.5,
+    0.6
+  ],
+  "wound_depth": 2,
+  "blood_ramp": "brown",
+  "wound_shade": -0.1,
+  "canvas": [
+    72,
+    40
+  ]
+}
