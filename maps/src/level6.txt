@@ -1,0 +1,203 @@
+# Level 6 "Sphinx Under Construction" (docs/design/levels.md section 6),
+# 48x48, built by tools/mkmap.py into maps/level6.vmap. Coordinates are
+# (x, y), y counted from the south (the last layout row is y = 0), as demo
+# goto. LAYOUT ONLY: no enemies yet (issue #178 adds the 52 and the named
+# WAYPOINTs below mark their spots).
+#
+# Critical path:
+#   workers' camp (x 2-30, y 2-9, start (4,3) facing north)
+#   -> dt_door D (4,10) -> scaffold climb (x 2-10, y 11-46): a zigzag of
+#      dt_riveted_plate scaffold walls, one gap per level, climbing north
+#   -> one-way drop O (11,44), opens only from the west (side=west): onto
+#      the upper walk (x 12-21, y 44-46) on the Sphinx's back
+#   -> one-way drop N (19,43), opens only from the north (side=north):
+#      down the chute (19,40-42) into Paw Plaza
+#   -> Paw Plaza (x 12-30, y 20-39): two sandstone paws (x 22-29, y 25-26
+#      and y 33-34, eg_ashlar claws at x 22), detached from the chest wall
+#      by the x = 30 column so both paws can be walked around (flanking
+#      routes). Litter Satchel (23,28) and green key (28,30) lie between
+#      the paws, in front of the green door.
+#   -> green door G (31,30) into the Sphinx's chest
+#   -> Heart Chamber (x 32-46, y 27-33): 15 tiles long, the Sphinx Howler
+#      on its pedestal at the east end (45,30) between gold pillars
+#   -> eg_door d (34,34) -> Grinding Room (x 32-46, y 35-46): the face
+#      carving (x 36-42, y 38-42, gold-striped headdress, its muzzle ground
+#      down to dt_steel_cracked), floor below (y 35-43), scaffold above
+#      (y 45-46) behind a railing with gaps at x 34 and x 44; blue key on
+#      the scaffold behind the face (39,46)
+#   -> back through the Heart Chamber to the blue door B (39,26)
+#   -> lift landing (x 36-42, y 20-25) -> EXIT lift switch E (39,19),
+#      used from (39,20) facing south.
+#
+# No soft-lock: O and N are the only one-way doors. Everything after them
+# (Satchel, both keys, Howler, both doors, exit) is in the region they lead
+# into, and that region is connected without one-way doors. The camp and
+# the scaffold (and secret 1) come before the drops.
+#
+# Secrets:
+#   1. P (11,17): a sandstone block with a fresh-cut edge (eg_sand_cracked,
+#      the only use of that texture on the map) in the scaffold's east wall.
+#      Pushed from (10,17) it slides east to (14,17) -> room x 12-14,
+#      y 16-18, SECRET cell x (12,16): Golden Sardine.
+#   2. Q (13,40): scaffold boards (eg_planks as a wall, used only here) in
+#      the plaza's north wall, next to the gap W (15,40), a BLOCK_ALL cell
+#      through which the plaza sees up into the lit nook. Pushed from
+#      (13,39) it slides north to (13,42) -> nook x 12-15, y 41-42, SECRET
+#      cell X (12,41): Cat's Eye Amulet + Sun Orb.
+#
+# Outdoor cells have a dt_concrete ceiling: sky_midday (#155, PR #169) is
+# not on main yet. The follow-up switches the `.` legend to `ceil=sky`.
+# dt_scaffold_sandstone (21 chars) does not fit the 16-char texture name
+# table, so the scaffold uses dt_riveted_plate (as level 1 does).
+
+name Sphinx Under Construction
+music 4
+par 480
+
+legend # wall=eg_ashlar flags=SOLID
+legend a wall=eg_sand_blocks flags=SOLID
+legend b wall=eg_sand_blocks2 flags=SOLID
+legend c wall=eg_ashlar flags=SOLID
+legend g wall=eg_glyph_band flags=SOLID
+legend o wall=eg_gold_pillar flags=SOLID
+legend i wall=eg_gold_pillar flags=SOLID
+legend v wall=dt_steel_cracked flags=SOLID
+legend m wall=eg_mural flags=SOLID
+legend s wall=dt_steel_panel flags=SOLID
+legend t wall=dt_steel_panel_b flags=SOLID
+legend r wall=dt_riveted_plate flags=SOLID
+legend z wall=dt_hazard flags=SOLID
+legend E wall=dt_switch_off flags=SOLID|EXIT
+legend . floor=eg_sand ceil=dt_concrete dark=1
+legend , floor=dt_grate_floor ceil=dt_grate_floor dark=3
+legend w floor=dt_grate_floor ceil=dt_concrete dark=2
+legend D wall=dt_door floor=dt_grate_floor ceil=dt_grate_floor dark=3 flags=DOOR
+legend O wall=dt_door floor=dt_grate_floor ceil=dt_concrete dark=2 flags=DOOR|ONEWAY side=west
+legend N wall=dt_door floor=dt_grate_floor ceil=dt_concrete dark=2 flags=DOOR|ONEWAY side=north
+legend P wall=eg_sand_cracked floor=eg_floor_tiles ceil=eg_floor_tiles dark=2 flags=PUSHWALL
+legend _ floor=eg_floor_tiles ceil=eg_floor_tiles dark=2
+legend x floor=eg_floor_tiles ceil=eg_floor_tiles dark=2 flags=SECRET
+legend Q wall=eg_planks floor=dt_grate_floor ceil=dt_concrete dark=1 flags=PUSHWALL
+legend W floor=dt_grate_floor ceil=dt_concrete dark=1 flags=BLOCK_ALL
+legend n floor=dt_grate_floor ceil=dt_concrete dark=1
+legend X floor=dt_grate_floor ceil=dt_concrete dark=1 flags=SECRET
+legend G wall=eg_door_green floor=eg_tomb_floor ceil=eg_floor_tiles dark=5 flags=DOOR key=green
+legend h floor=eg_tomb_floor ceil=eg_floor_tiles dark=6
+legend d wall=eg_door floor=eg_floor_tiles ceil=dt_concrete dark=5 flags=DOOR
+legend f floor=eg_sand ceil=dt_concrete dark=5
+legend k floor=dt_grate_floor ceil=dt_concrete dark=4
+legend B wall=dt_door_blue floor=dt_diamond_plate ceil=dt_ceiling_light dark=4 flags=DOOR key=blue
+legend l floor=dt_diamond_plate ceil=dt_ceiling_light dark=3
+
+layout
+################################################
+#r,,,,,,,,,awwwwwwwwwwaaaaaaaaagkkkkkkkkkkkkkkk#
+#r,,,,,,,,,awwwwwwwwwwaaaaaaaaagkkkkkkkkkkkkkkk#
+#r,,,,,,,,,Owwwwwwwwwwaaaaaaaaagrrkrrrrrrrrrkrr#
+#r,,,,,,,,,arrrrrrrNrraaaaaaaaagfffffffffffffff#
+#r,,,,,,,,,annnnaaawaaaaaaaaaaagffffobbbbboffff#
+#r,,,,,,,,,aXnnnaaawaaaaaaaaaaagffffobbbbboffff#
+#r,,,,,,,,,aaQaWaaawaaaaaaaaaaagffffobbbbboffff#
+#rrrrrrrr,,a...................gffffobbbbboffff#
+#r,,,,,,,,,a...................gffffobvvvboffff#
+#r,,,,,,,,,a...................gfffffffffffffff#
+#r,,,,,,,,,a...................gfffffffffffffff#
+#r,,rrrrrrra...................gfffffffffffffff#
+#r,,,,,,,,,a..........cbbbbbbb.gggdgggggggggggg#
+#r,,,,,,,,,a....r.....cbbbbbbb.ghhhhhhhhhhhhhhh#
+#r,,,,,,,,,a...................ghhhhhhhhhhhhhih#
+#rrrrrrrr,,a...................ghhhhhhhhhhhhhhh#
+#r,,,,,,,,,a...................Ghhhhhhhhhhhhhhm#
+#r,,,,,,,,,a...................ghhhhhhhhhhhhhhh#
+#r,,,,,,,,,a...................ghhhhhhhhhhhhhih#
+#r,,rrrrrrra...................ghhhhhhhhhhhhhhh#
+#r,,,,,,,,,a....r.....cbbbbbbb.ggggggggBggggggg#
+#r,,,,,,,,,a..........cbbbbbbb.gaaazlllllllzaaa#
+#r,,,,,,,,,a...................gaaazlllllllzaaa#
+#rrrrrrrr,,a...................gaaazlllllllzaaa#
+#r,,,,,,,,,a...................gaaazlllllllzaaa#
+#r,,,,,,,,,a...................gaaazlllllllzaaa#
+#r,,,,,,,,,a...................gaaazlllllllzaaa#
+#r,,rrrrrrraaaaaaaaaaaaaaaaaaaaaaaazzzzEzzzzaaa#
+#r,,,,,,,,,a___aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#
+#r,,,,,,,,,P___aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#
+#r,,,,,,,,,ax__aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#
+#rrrrrrrr,,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#
+#r,,,,,,,,,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#
+#r,,,,,,,,,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#
+#r,,,,,,,,,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#
+#r,,,,,,,,,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#
+#sssDsssssssssssssssssssssssssssaaaaaaaaaaaaaaa#
+#a.............................aaaaaaaaaaaaaaaa#
+#a..................tt.........aaaaaaaaaaaaaaaa#
+#a....tt............tt.........aaaaaaaaaaaaaaaa#
+#a....tt.......................aaaaaaaaaaaaaaaa#
+#a...........tt................aaaaaaaaaaaaaaaa#
+#a...........tt................aaaaaaaaaaaaaaaa#
+#a.........................tt..aaaaaaaaaaaaaaaa#
+#a.............................aaaaaaaaaaaaaaaa#
+################################aaaaaaaaaaaaaaa#
+################################################
+end
+
+entity PLAYER_START 4 3 90
+
+# Named waypoints for the population issue (#178): enemy spots by set piece.
+entity WAYPOINT 15 6 0 @camp
+entity WAYPOINT 25 7 0 @camp_east
+entity WAYPOINT 6 21 0 @scaffold_low
+entity WAYPOINT 6 37 0 @scaffold_top
+entity WAYPOINT 17 45 0 @upper_walk
+entity WAYPOINT 20 30 0 @paw_plaza
+entity WAYPOINT 26 37 0 @paw_north
+entity WAYPOINT 26 22 0 @paw_south
+entity WAYPOINT 30 30 0 @paw_flank
+entity WAYPOINT 42 30 0 @shield_wall
+entity WAYPOINT 45 30 0 @heart_pedestal
+entity WAYPOINT 37 45 0 @grind_dach
+entity WAYPOINT 39 36 0 @grind_chomp
+entity WAYPOINT 39 23 0 @lift
+
+# Critical-path items (secrets excluded): 7 Fish Snacks, 5 Tuna Tins,
+# 1 Scarab Plate, Litter Satchel, 4 Charge Vials, 2 Charge Jars,
+# 2 Yarn Bundles, 1 Scarab Crate, 1 Sun Shard, Sphinx Howler.
+# Workers' camp.
+entity FISH_SNACK 10 4 0
+entity CHARGE_JAR 24 5 0
+entity YARN_BUNDLE 18 8 0
+# Scaffold climb.
+entity FISH_SNACK 3 13 0
+entity CHARGE_VIAL 9 17 0
+entity TUNA_TIN 3 21 0
+entity CHARGE_VIAL 9 26 0
+entity FISH_SNACK 3 30 0
+entity YARN_BUNDLE 9 33 0
+entity TUNA_TIN 3 37 0
+entity FISH_SNACK 9 41 0
+# Upper walk.
+entity CHARGE_VIAL 16 45 0
+entity SUN_SHARD 20 44 0
+# Paw Plaza.
+entity LITTER_SATCHEL 23 28 0
+entity GREEN_ANKH 28 30 0
+entity TUNA_TIN 14 22 0
+entity FISH_SNACK 14 37 0
+entity SCARAB_CRATE 30 21 0
+entity CHARGE_JAR 30 38 0
+# Heart Chamber.
+entity SCARAB_PLATE 33 28 0
+entity SPHINX_HOWLER 45 30 0
+entity TUNA_TIN 44 33 0
+# Grinding Room.
+entity FISH_SNACK 46 35 0
+entity TUNA_TIN 32 43 0
+entity CHARGE_VIAL 46 43 0
+entity BLUE_ANKH 39 46 0
+# Lift landing.
+entity FISH_SNACK 40 22 0
+
+# Secret 1 (fresh-cut block): Golden Sardine.
+entity GOLDEN_SARDINE 13 18 0
+# Secret 2 (gap in the scaffold boards): Cat's Eye Amulet + Sun Orb.
+entity CATS_EYE_AMULET 12 42 0
+entity SUN_ORB 15 42 0

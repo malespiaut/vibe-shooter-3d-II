@@ -1,0 +1,106 @@
+# Level 6 "Sphinx Under Construction" walkthrough (maps/level6.vmap, layout
+# and coordinates in maps/src/level6.txt), skill 2. High-level commands only.
+# Layout only: the map has no enemies yet (#178 adds them and turns this
+# into a fighting run). Climbs the scaffold, takes both secrets, goes
+# through both one-way drops, takes the Satchel, both keys and the Howler,
+# and uses the exit lift.
+# Doors: goto does not path through a closed door, so each one is opened by
+# hand (goto the tile in front, face, use, wait 32).
+vsdemo 1
+level 6
+skill 2
+seed 0
+
+# Workers' camp: the scaffold door is north of the start.
+goto 10 4              # Fish Snack
+goto 18 8              # Yarn Bundle
+goto 24 5              # Charge Jar
+goto 4 9
+face 90
+use
+wait 32
+# Scaffold climb, one gap per level.
+goto 4 12
+goto 3 13              # Fish Snack
+goto 9 17              # Charge Vial
+# Secret 1: the fresh-cut sandstone block in the east wall.
+goto 10 17
+face 0
+use
+wait 140
+goto 12 16
+expect secrets=1
+goto 13 18             # Golden Sardine
+goto 3 21              # Tuna Tin
+goto 9 26              # Charge Vial
+goto 3 30              # Fish Snack
+goto 9 33              # Yarn Bundle
+goto 3 37              # Tuna Tin
+goto 9 41              # Fish Snack
+# One-way drop 1: east onto the Sphinx's back.
+goto 10 44
+face 0
+use
+wait 32
+goto 13 44
+expect tile=13,44
+goto 16 45             # Charge Vial
+goto 20 44             # Sun Shard
+# One-way drop 2: down the chute into Paw Plaza.
+goto 19 44
+face 270
+use
+wait 32
+goto 19 39
+expect tile=19,39
+# Secret 2: the gap in the scaffold boards, then the loose boards beside it.
+goto 15 39
+goto 13 39
+face 90
+use
+wait 105
+goto 12 41
+expect secrets=2
+goto 12 42             # Cat's Eye Amulet
+goto 15 42             # Sun Orb
+# Paw Plaza.
+goto 14 37             # Fish Snack
+goto 30 38             # Charge Jar
+goto 23 28             # Litter Satchel
+goto 30 21             # Scarab Crate
+goto 14 22             # Tuna Tin
+goto 28 30             # green key
+# Green door into the Sphinx's chest.
+goto 30 30
+face 0
+use
+wait 32
+goto 33 28             # Scarab Plate
+expect armor=200
+goto 44 33             # Tuna Tin
+goto 45 30             # Sphinx Howler on its pedestal
+weapon 7
+# Grinding Room.
+goto 34 33
+face 90
+use
+wait 32
+goto 34 36
+goto 46 35             # Fish Snack
+goto 46 43             # Charge Vial
+goto 39 46             # blue key, on the scaffold behind the face
+goto 32 43             # Tuna Tin
+# Back through the Heart Chamber to the blue door.
+goto 34 35
+face 270
+use
+wait 32
+goto 39 27
+face 270
+use
+wait 32
+goto 40 22             # Fish Snack
+goto 39 20
+face 270
+use
+expect exit=1
