@@ -79,7 +79,8 @@ add_dependencies(colormap palette)
 
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
-target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}")
+target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}"
+  VS3D_MAPS_DIR="${CMAKE_SOURCE_DIR}/maps")
 add_dependencies(game colormap)
 
 enable_testing()
@@ -90,7 +91,7 @@ add_test(NAME smoke COMMAND test_smoke)
 target_compile_options(test_smoke PRIVATE -UNDEBUG)
 
 # Core maths tests (fixed, angle, rng, hash).
-foreach(t fixed angle rng hash)
+foreach(t fixed angle rng hash player_move)
   add_executable(test_${t} tests/test_${t}.c)
   target_link_libraries(test_${t} PRIVATE engine)
   target_compile_options(test_${t} PRIVATE -UNDEBUG)
