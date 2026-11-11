@@ -51,7 +51,15 @@ RAMPS = [
     ("indigo", 204, 12, "#06061A", "#9090D8", 0.30),
 ]
 
-RESERVED_FIRST, RESERVED_COUNT = 216, 24
+RESERVED_FIRST, RESERVED_COUNT = 216, 21
+
+# Warm near-blacks between black (Oklab L 0) and the darkest ramp entries
+# (L ~0.14-0.17). Hand-picked, not ramp maths: sRGB compresses this range so
+# much that the anchor interpolation cannot place them. Without them the
+# colormap's darkest rows fall onto indigo_00 (navy) before black, which breaks
+# the art-bible rule "darkness is warm brown, not cold gray".
+SHADOW_FIRST = 237
+SHADOW = [(2, 2, 1), (4, 3, 2), (7, 5, 3)]
 
 FULLBRIGHT = [
     ("fb_sun", "#FFFFF0"), ("fb_yellow", "#FFF040"), ("fb_gold", "#FFD020"),
@@ -94,6 +102,8 @@ def build():
             entries[first + i] = (rgb, "%s_%02d" % (name, i))
     for i in range(RESERVED_COUNT):
         entries[RESERVED_FIRST + i] = ((0, 0, 0), "reserved_%02d" % i)
+    for i, rgb in enumerate(SHADOW):
+        entries[SHADOW_FIRST + i] = (rgb, "shadow_%02d" % i)
     for i, (name, h) in enumerate(FULLBRIGHT):
         entries[240 + i] = (hex_to_rgb(h), name)
     entries[255] = ((255, 0, 255), "transparent")

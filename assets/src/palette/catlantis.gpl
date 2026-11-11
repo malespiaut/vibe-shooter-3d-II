@@ -239,9 +239,9 @@ Columns: 16
   0   0   0	reserved_18
   0   0   0	reserved_19
   0   0   0	reserved_20
-  0   0   0	reserved_21
-  0   0   0	reserved_22
-  0   0   0	reserved_23
+  2   2   1	shadow_00
+  4   3   2	shadow_01
+  7   5   3	shadow_02
 255 255 240	fb_sun
 255 240  64	fb_yellow
 255 208  32	fb_gold
