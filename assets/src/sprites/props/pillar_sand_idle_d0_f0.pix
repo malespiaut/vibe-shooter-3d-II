@@ -1,0 +1,100 @@
+# Sandstone pillar (items.md Decorations): a papyrus-bundle column with
+# an open lotus capital: green sepals on the bell, lapis and green
+# binding bands, a square abacus on top, a round base drum. 0.5 x 1.0 u.
+# Shaded as a cylinder lit from the top-left: brightest a third in from
+# the left, the right edge in shade. Solid.
+name pillar_sand_idle_d0_f0
+size 32 64
+= a blue_02
+= b blue_03
+= c blue_04
+= d blue_05
+= e blue_06
+= f blue_07
+= g blue_08
+= h blue_09
+= i green_02
+= j green_03
+= k green_04
+= l green_05
+= m green_06
+= n green_07
+= o green_08
+= p green_09
+= q green_10
+= r sand_03
+= s sand_04
+= t sand_05
+= u sand_06
+= v sand_07
+= w sand_08
+= x sand_09
+= y sand_10
+= z sand_11
+= A sand_12
+= B sand_13
+grid
+
+
+........zAABBBAzyyxwvvut
+........yzzAAAzyxxwvuuts
+........yzzAAAzyxxwvuuts
+........yzzAAAzyxxwvuuts
+.BBBBBBBBBBBBBBBBBBBBBxxxxxxxxx
+..yzzzzzAAAAzzyyyxxwwvvvuuttts
+..yznzzzqoAAzpyyyxlwwvljuutjts
+...yznzzzoAAzpyyxxlwwvjuuujts
+...ypnzzpooAzpmyxnlwwljiuujis
+....ypnzzqoAzpmyxnlwwljuujis
+....ypnzzqoAzpmyxnlwwljuujis
+.....opnzpooApmmnnkwljiujii
+.....opnzpooApmmnnkwljiujii
+......opnzqoApnmnnkwljujii
+......opnzqoApnmnnkwljujii
+......opnzqoApnmnnkwljujii
+.......onnpoopnmnlkljikii
+.......ynzzoAznyxlwvjuuis
+.......ynzzoAznyxlwvjuuis
+.......ynzzoAznyxlwvjuuis
+.......efffggffeddcbbaaaa
+.......opppqqpponnmllkkji
+.......efffggffeddcbbaaaa
+.......opppqqpponnmllkkji
+.......efffggffeddcbbaaaa
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......fggghhggfeedccbbaa
+.......fggghhggfeedccbbaa
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+.......yzzzyAzzyvxwvvsuts
+...zAAAAABBBAAzzyyyxxwwvvvuut
+...yzzzzzAAAzzyyxxxwwvvuuutts
+...yzzzzzAAAzzyyxxxwwvvuuutts
+...yzzzzzAAAzzyyxxxwwvvuuutts
+...yzzzzzAAAzzyyxxxwwvvuuutts
+...xyyyyyzzzyyxxwwwvvuutttssr

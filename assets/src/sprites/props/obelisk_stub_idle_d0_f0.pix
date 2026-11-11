@@ -1,0 +1,92 @@
+# Obelisk stub (items.md Decorations): a short sandstone obelisk on a
+# stepped foot, gilded pyramidion, carved cat, lapis-filled ankh, eye and
+# water glyphs. 0.5 x 1.0 u. Lit from the top-left: left bevel light,
+# right side face in shade; incised glyphs dark on their top/left walls,
+# light lip below/right. Solid.
+name obelisk_stub_idle_d0_f0
+size 32 64
+= a blue_04
+= b blue_07
+= c gold_04
+= d gold_05
+= e gold_06
+= f gold_07
+= g gold_08
+= h gold_09
+= i gold_10
+= j gold_11
+= k sand_04
+= l sand_05
+= m sand_06
+= n sand_07
+= o sand_08
+= p sand_09
+= q sand_10
+= r sand_11
+= s sand_12
+= t sand_13
+grid
+
+
+
+...............jf
+..............jjfc
+.............jjjfec
+............jiijfeec
+...........jiiijfeeec
+...........jiiijfeeec
+..........jiiiijfeeeec
+.........jiiiiijfeeeeec
+........jiiiiiijfeeeeeec
+........ggggggggdddddddd
+........mmmmmmmmmmmmmmll
+........tsqqqqqqqqqqomml
+........tsqqqqqqqqqqomml
+........tspqqqqqqqqqomml
+........tsqqksksqqqqomml
+........tsqqkknsqqqqomml
+........tsqqknnsqqqqomml
+........tsqqsknsqqqqomml
+........tsqqqknksqqqomml
+........tsqqqknnksqqomml
+........tsqqqknnnsqqomml
+.......tsqqqqknnnksqqomml
+.......tsqqqqknnnnsqqomml
+.......tsqqqknnnnnsqqomml
+.......tsqqqknnnnnksqomml
+.......tsqqqsssssssqqomml
+.......tsqqqqqqqqqqpqomml
+.......tsqqqqqqqqqqqqomml
+.......tsqqqqqaaasqqqomml
+.......tsqqqqasssasqqomml
+.......tsqqqqasqqasoqomml
+.......tsqqqqsasasqoqomml
+.......tsqqqqababasqoomml
+.......tsqqqqssassqqoomml
+.......tsqqqqqqasqqoqomml
+.......tsqqqqqqasqqqqomml
+.......tsqqqqqqasqqqqomml
+.......tsqqqpqqsqqqqqomml
+.......tsqqqqqqqqqqqqomml
+.......tsqqqqqqqqqqqqomml
+.......tsqqqqkkkksqqqomml
+......tsqqqqkskhhksqqqomml
+......tsqqqqsknnksqqqqomml
+......tsqqqqqsksksqqpqomml
+......tsqqqqqqkssksqqqomml
+......tsqqqqqqsqqsqqqqomml
+......tsqqqqqqqqqqqqqqomml
+......tsqqqqksqksqksqqomml
+......tsqqqkskkskksksqomml
+......tsqqqsqssqssqsqqomml
+......tsqqqqqqqqqqpqqqomml
+......tsqqqqqqqqqqqqqqomml
+.....sssssssssssssssssssspp
+.....sqqqqqqqqqqqqqqqqqqqnn
+.....sqqqqqqqqqqqqqqqqqqqnn
+.....sqqqqqqqqqqqqqqqqqqqnn
+..ttttttttttttttttttttttttttpp
+..rpppppppppppppppppppppppppmm
+..rpppppppppppppppppppppppppmm
+..rpppppppppppppppppppppppppmm
+..onnnnnnnnnnnnnnnnnnnnnnnnnmm

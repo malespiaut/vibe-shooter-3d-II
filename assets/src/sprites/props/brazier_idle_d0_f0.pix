@@ -1,0 +1,72 @@
+# Brazier (items.md Decorations): a bronze dish (gold ramp, brown
+# under-lip band) on a splayed tripod with paw feet (brown), holding a
+# fire of fb_fire / fb_amber / fb_gold. 0.375 x 0.625 u. Frame 0 of the
+# 4-frame flicker loop; the fire is the only fullbright. Solid.
+name brazier_idle_d0_f0
+size 24 40
+= a brown_03
+= b brown_04
+= c brown_05
+= d brown_06
+= e brown_07
+= f brown_08
+= g brown_09
+= h brown_11
+= i brown_12
+= j fb_amber
+= k fb_fire
+= l fb_gold
+= m gold_02
+= n gold_03
+= o gold_04
+= p gold_05
+= q gold_06
+= r gold_07
+= s gold_08
+= t gold_09
+= u gold_10
+= v gold_11
+outline fb_fire none
+outline fb_amber none
+outline fb_gold none
+grid
+
+
+................j
+
+......j....k
+...........k
+...........kk
+..........kjk
+..........kjkkk
+........kkkjjkk
+........kkjjjkk
+........kkjjjjj
+.......kjjjjjjjk
+.......kjjjjjjjkkk
+.....kkkjjlllllkkk
+.....kkjllllllljkk
+.....kkjllllllljjjk
+....kjjjllllllljjjk
+....kjjllllllllljjkk
+...kkjjllllllllllljk
+...kjjlllllllllllljkk
+...kjjlllllllllllljjk
+.vvvvvvvvvvvvvvvrrrrrrr
+.abbbbcccbaaaaaaaaaaaaa
+..tuuuvvvuutssrrqqpoon
+...stttuuttsrrqppoonm
+....rssttssrqqponnmm
+.....qrrssrqpoonmmm
+.......qqrqponmmm
+.........pqpnmm
+..........tsqo
+..........tsqo
+.........hfigggd
+........hf.ig..gd
+.......hf..ig...gd
+......hf...ig....gd
+.....hf....ig.....gd
+....hf.....ig......gd
+...hf......ig.......gd
+..see.....see.......see
