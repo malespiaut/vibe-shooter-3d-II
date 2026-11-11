@@ -628,6 +628,13 @@ target_link_libraries(test_world_sprites_items PRIVATE engine m)
 target_compile_options(test_world_sprites_items PRIVATE -UNDEBUG)
 add_dependencies(test_world_sprites_items colormap testpattern)
 add_test(NAME world_sprites_items COMMAND test_world_sprites_items ${ASSETS_GEN})
+# Enemies as animated world sprites from live AI state (issue #146). The
+# Chomper part needs its sprite set from tools/build_assets.sh (60-sprites.sh).
+add_executable(test_world_sprites_enemies tests/test_world_sprites_enemies.c)
+target_link_libraries(test_world_sprites_enemies PRIVATE engine m)
+target_compile_options(test_world_sprites_enemies PRIVATE -UNDEBUG)
+add_dependencies(test_world_sprites_enemies colormap testpattern)
+add_test(NAME world_sprites_enemies COMMAND test_world_sprites_enemies ${ASSETS_GEN})
 
 # Map logic: tags, switches, exit, pushwalls, triggers, secrets, lights,
 # damage floors on maps/tagstest.vmap (issue #66), one ctest per case.

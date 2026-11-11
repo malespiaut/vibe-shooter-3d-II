@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "engine/sprite.h"
+#include "game/ai.h"
 #include "game/enemy_info.h"
 
 int thinker_alive(const thinker_t *t)
@@ -132,4 +134,50 @@ int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage)
     if (t->flags & TH_FLAG_COUNTKILL)
         th->kills++;
     return 1;
+}
+
+static int clamp_frame(uint32_t since, int tics_per_frame, int frames)
+{
+    const uint32_t f = since / (uint32_t)tics_per_frame;
+    return f >= (uint32_t)frames ? frames - 1 : (int)f;
+}
+
+void thinker_anim(const thinker_t *t, uint32_t tic, int *anim, int *frame)
+{
+    const enemy_info_t *info = enemy_info(t->type);
+    int a = SPR_IDLE, f = 0;
+    switch (t->state) {
+    case TH_STATE_CHASE:
+        a = SPR_WALK;
+        if (t->movedir != DI_NONE)
+            f = (int)((tic / TH_ANIM_WALK_TICS) % (uint32_t)sprite_enemy_frames(SPR_WALK));
+        break;
+    case TH_STATE_WINDUP:
+        a = SPR_WINDUP;
+        f = info && t->tics <= info->windup / 2 ? 1 : 0;
+        break;
+    case TH_STATE_ATTACK:
+        a = SPR_ATTACK;
+        f = t->tics > AI_ATTACK_TICS / 2 ? 0 : 1;
+        break;
+    case TH_STATE_PAIN:
+        a = SPR_PAIN;
+        break;
+    case TH_STATE_DEAD: {
+        const uint32_t since = tic >= t->died_tic ? tic - t->died_tic : 0;
+        if (t->flags & TH_FLAG_GIB) {
+            a = SPR_GIB;
+            f = clamp_frame(since, TH_ANIM_GIB_TICS, sprite_enemy_frames(SPR_GIB));
+        } else {
+            a = SPR_DEATH;
+            f = clamp_frame(since, TH_ANIM_DEATH_TICS, sprite_enemy_frames(SPR_DEATH));
+        }
+        break;
+    }
+    default:
+        f = (int)((tic / TH_ANIM_IDLE_TICS) % (uint32_t)sprite_enemy_frames(SPR_IDLE));
+        break;
+    }
+    *anim = a;
+    *frame = f;
 }

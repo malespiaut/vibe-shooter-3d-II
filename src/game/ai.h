@@ -32,6 +32,7 @@
  * - Collision: circle vs the tiles enemies may not stand in, then vs the
  *   player circle, axis-separated (x then y). */
 
+#include "engine/render.h"
 #include "game/state.h"
 
 #define AI_DECIDE_TICS 8
@@ -83,5 +84,10 @@ int32_t ai_windup_tics(const game_state *gs, uint16_t type);
 /* True when a circle of radius r at (x, y) overlaps a tile enemies may not
  * stand in (blocking tiles plus BLOCK_MONSTER). */
 int ai_circle_blocked(const game_state *gs, fix_t x, fix_t y, fix_t r);
+
+/* Fills `out` (up to `max`) with every enemy thinker, live or dead, in
+ * creation order, with its sprite animation and frame (thinker_anim() at
+ * gs->tic). Read only: the state hash is unchanged. Returns the count. */
+int ai_render_things(const game_state *gs, render_thing *out, int max);
 
 #endif

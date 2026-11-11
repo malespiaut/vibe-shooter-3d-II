@@ -84,6 +84,7 @@ typedef struct {
     uint8_t howler_hit; /* set to 1 by every Sphinx Howler hit (game/weapon.c);
                          * the Shieldbearer's 70-tic shield drop reads and
                          * clears it. */
+    uint32_t died_tic; /* game tic of the killing hit (DEAD enemies; hashed then) */
 } thinker_t;
 
 typedef struct {
@@ -134,5 +135,19 @@ thinker_t *thinker_get(thinkers_t *th, uint16_t id);
  * instead becomes TH_STATE_DYING with BARREL_FUSE_TICS on its fuse
  * (projectiles_tic explodes it). Returns 1 when this hit killed it. */
 int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage);
+
+/* Render-side animation timing (enemies.md, Animation list). */
+#define TH_ANIM_IDLE_TICS 18  /* idle: 2 frames */
+#define TH_ANIM_WALK_TICS 6   /* walk: 4 frames, advancing only while moving */
+#define TH_ANIM_DEATH_TICS 5  /* death: 5 frames, frame 4 is the corpse */
+#define TH_ANIM_GIB_TICS 4    /* gib: 8 frames, the last one stays */
+
+/* Sprite animation (SPR_*, engine/sprite.h) and frame an enemy shows at
+ * game tic `tic`. Reads the thinker only: drawing never changes the state
+ * hash. STAND -> idle, CHASE -> walk (frame 0 while not stepping), WINDUP ->
+ * windup (glow frame 1 in the last half of the enemy's wind-up), ATTACK ->
+ * attack (frame 0 for the first half of the recovery), PAIN -> pain, DEAD
+ * -> death from died_tic then frame 4 forever, or gib with TH_FLAG_GIB. */
+void thinker_anim(const thinker_t *t, uint32_t tic, int *anim, int *frame);
 
 #endif

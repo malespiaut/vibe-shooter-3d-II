@@ -36,6 +36,7 @@
 #include "engine/png.h"
 #include "engine/render.h"
 #include "engine/video.h"
+#include "game/ai.h"
 #include "game/demo.h"
 #include "game/hud.h"
 #include "game/items.h"
@@ -348,7 +349,9 @@ static void draw(const run_t *r)
     render_set_dark(dark);
     /* Pickups from live state: a taken one is gone the same tic. The tic is
      * only read (shimmer frame), so the state hash is unaffected. */
-    const int n = items_render_things(&r->gs, things, RENDER_MAX_SPRITES);
+    int n = items_render_things(&r->gs, things, RENDER_MAX_SPRITES);
+    /* Enemies, corpses included: animation from live AI state (read only). */
+    n += ai_render_things(&r->gs, things + n, RENDER_MAX_SPRITES - n);
     render_view_things_eye(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle,
                            game_eye_height(&r->gs), things, n, r->gs.tic, framebuffer);
     hud_draw(framebuffer, &r->hud, &r->gs);

@@ -43,7 +43,33 @@ static const sprite_def defs[BAST_ENT_TYPE_LIMIT] = {
     [BAST_ENT_CATNIP_FRENZY] = { "items/catnip", 2, 1 },
     [BAST_ENT_CATS_EYE_AMULET] = { "items/amulet", 1, 1 },
     [BAST_ENT_NINTH_LIFE] = { "items/ninth", 1, 1 },
+
+    /* enemies.md sprite names (assets/src/sprites/<name>/, pre-rendered by
+     * tools/build.d/60-sprites.sh; gibs by 65-gibs.sh). Sets not built yet
+     * are skipped by the renderer with a warning. */
+    [BAST_ENT_MUTT_TROOPER] = { "mutt", 2, 1, 1 },
+    [BAST_ENT_CHIHUAHUA_CHOMPER] = { "chomp", 2, 1, 1 },
+    [BAST_ENT_POMERANIAN_PLASMAGUNNER] = { "pom", 2, 1, 1 },
+    [BAST_ENT_DACHSHUND_HOWITZER] = { "dach", 2, 1, 1 },
+    [BAST_ENT_MASTIFF_JUGGERNAUT] = { "mastiff", 2, 1, 1 },
+    [BAST_ENT_SHEPHERD_SHIELDBEARER] = { "shield", 2, 1, 1 },
+    [BAST_ENT_WOOFU] = { "woofu", 2, 1, 1 },
 };
+
+static const char *const anim_names[SPR_ANIMS] = {
+    "idle", "walk", "windup", "attack", "pain", "death", "gib",
+};
+static const int enemy_frames[SPR_ANIMS] = { 2, 4, 2, 2, 1, 5, 8 };
+
+const char *sprite_anim_name(int anim)
+{
+    return anim >= 0 && anim < SPR_ANIMS ? anim_names[anim] : NULL;
+}
+
+int sprite_enemy_frames(int anim)
+{
+    return anim >= 0 && anim < SPR_ANIMS ? enemy_frames[anim] : 0;
+}
 
 const sprite_def *sprite_def_for_entity(int type)
 {
