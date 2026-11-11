@@ -1,0 +1,8 @@
+# Does a live Mutt block the player? run straight east into it for 3 s
+vsdemo 1
+level 1
+skill 2
+seed 0
+map weapontest
+in 105 127 0 0 R
+expect tile=11,4

@@ -1,0 +1,14 @@
+# Drain pistol, rely on auto-switch to claws, walk to 0.6 u from the Mutt and bite
+vsdemo 1
+level 1
+skill 2
+seed 0
+map weapontest
+face 180
+fire 620
+goto 11 4
+face 0
+in 3 60 0 0 -
+fire 60
+expect kills=1
+expect health=100

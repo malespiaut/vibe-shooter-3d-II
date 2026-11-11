@@ -1,0 +1,17 @@
+# Scattergun at 6 units (weapons.md: useless past 4 units)
+vsdemo 1
+level 1
+skill 2
+seed 0
+map weapontest
+goto 4 2
+weapon 3
+goto 2 7
+face 8 7
+fire 1
+wait 40
+fire 1
+wait 40
+fire 1
+wait 40
+expect kills=0

@@ -1,0 +1,16 @@
+# m1test: grind into the start room corners and pillars, strafe between pillars
+vsdemo 1
+level 1
+skill 2
+seed 0
+map m1test
+face 225
+in 70 127 0 0 R
+expect tile=1,1
+face 45
+in 140 127 0 0 R
+in 70 0 127 0 R
+in 70 0 -127 0 R
+in 40 -127 0 40 R
+in 60 127 40 -30 R
+in 60 127 -127 0 R

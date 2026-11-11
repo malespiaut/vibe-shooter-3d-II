@@ -1,0 +1,15 @@
+# Drain all 50 pistol charges into the wall, then try the pistol on the Mutt
+vsdemo 1
+level 1
+skill 2
+seed 0
+map weapontest
+face 180
+fire 620
+face 0
+fire 70
+expect kills=0
+goto 11 4
+face 12 4
+fire 70
+expect kills=1

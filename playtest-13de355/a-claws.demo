@@ -1,0 +1,12 @@
+# Claws at point blank, then walk-through test against a live Mutt (12,4)
+vsdemo 1
+level 1
+skill 2
+seed 0
+map weapontest
+weapon 1
+wait 12
+in 60 127 0 0 -
+expect tile=11,4
+fire 60
+expect kills>=1
