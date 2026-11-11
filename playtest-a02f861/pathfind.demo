@@ -1,0 +1,12 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map m1test
+# goto with no line of sight: start room straight to NW dark room and the courtyard
+goto 4 20
+expect tile=4,20
+goto 20 21
+expect tile=20,21
+goto 1 1
+expect tile=1,1

@@ -1,0 +1,12 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map m1test
+# thread through the 1-cell door north of start room at speed with strafing
+goto 4 10
+face 90
+in 30 127 60 0 -
+in 30 127 -60 0 -
+in 60 127 0 0 -
+expect health=100

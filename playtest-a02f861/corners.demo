@@ -1,0 +1,17 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map m1test
+# Start room SW corner: run diagonally into the corner at full speed, then wall-slide.
+face 225
+in 70 127 0 0 -
+expect tile=1,1
+# strafe along south wall eastward at full speed, face west, slide
+face 180
+in 70 0 -127 0 -
+# turn hard while running into east wall
+face 0
+in 70 127 0 127 -
+in 70 127 127 -127 -
+expect health=100
