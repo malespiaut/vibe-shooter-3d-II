@@ -1,0 +1,61 @@
+{
+ "name": "puff",
+ "anim": "hit",
+ "size": [
+  16,
+  16
+ ],
+ "origin": "center",
+ "frames": 4,
+ "mode": "oneshot",
+ "seed": 11,
+ "cutoff": 0.18,
+ "ramp": [
+  "fb_amber",
+  "beige_13",
+  "beige_11",
+  "beige_09",
+  "beige_07",
+  "beige_05"
+ ],
+ "envelope": {
+  "peak": 0.15,
+  "decay": 0.8
+ },
+ "ease": 2,
+ "layers": [
+  {
+   "type": "core",
+   "radius": [
+    0.55,
+    1.0
+   ],
+   "intensity": [
+    1.6,
+    1.0
+   ],
+   "soft": 1.0
+  },
+  {
+   "type": "rays",
+   "count": 5,
+   "length": [
+    0.7,
+    0.95
+   ],
+   "min_length": 0.5,
+   "width": 0.8,
+   "intensity": [
+    1.0,
+    0.2
+   ]
+  },
+  {
+   "type": "noise",
+   "scale": 3.0,
+   "amount": 0.6,
+   "octaves": 2,
+   "drift": 1.0
+  }
+ ]
+}
