@@ -38,10 +38,27 @@ add_custom_command(
   DEPENDS gen_trig
   COMMENT "Generating trig_tables.h")
 
+# libbast: the single implementation of the shared formats (palette, Oklab,
+# TEX). One set of objects, built position-independent, goes both into
+# libbast.so (for the Python tools, via tools/bast.py) and statically into the
+# engine. -ffp-contract=off keeps the Oklab maths bit-identical to the
+# palette generator's expectations (no FMA contraction).
+file(GLOB BAST_SOURCES CONFIGURE_DEPENDS src/bast/*.c)
+add_library(bast_obj OBJECT ${BAST_SOURCES})
+set_target_properties(bast_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(bast_obj PUBLIC src/bast)
+target_compile_options(bast_obj PRIVATE -ffp-contract=off)
+add_library(bast SHARED $<TARGET_OBJECTS:bast_obj>)
+target_link_libraries(bast PRIVATE m)
+add_library(bast_static STATIC $<TARGET_OBJECTS:bast_obj>)
+target_include_directories(bast_static PUBLIC src/bast)
+target_link_libraries(bast_static PUBLIC m)
+
 # Engine + game: platform-independent, never includes SDL.
 file(GLOB ENGINE_SOURCES CONFIGURE_DEPENDS src/engine/*.c src/game/*.c)
 add_library(engine STATIC ${ENGINE_SOURCES} ${TRIG_TABLES_H})
 target_include_directories(engine PUBLIC src PRIVATE ${CMAKE_BINARY_DIR}/gen)
+target_link_libraries(engine PUBLIC bast_static)
 
 # Platform layer: the only code allowed to talk to SDL3.
 add_library(platform STATIC src/platform/platform_sdl.c)
@@ -73,5 +90,19 @@ target_compile_options(test_platform_audio PRIVATE -UNDEBUG)
 add_test(NAME platform_audio COMMAND test_platform_audio)
 set_tests_properties(platform_audio PROPERTIES ENVIRONMENT "SDL_AUDIODRIVER=dummy")
 
+# libbast tests. The palette files come from the palette build step.
+foreach(t tex_roundtrip oklab_nearest)
+  add_executable(test_${t} tests/test_${t}.c)
+  target_link_libraries(test_${t} PRIVATE bast_static)
+  target_compile_options(test_${t} PRIVATE -UNDEBUG)
+  add_dependencies(test_${t} palette)
+  add_test(NAME ${t} COMMAND test_${t} ${ASSETS_GEN}/palette.bin)
+endforeach()
+
 add_test(NAME palcheck
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_palette.py)
+add_test(NAME bast_py
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_bast.py)
+# Python tests load the libbast.so built here, not a stale one.
+set_tests_properties(palcheck bast_py PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
