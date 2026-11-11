@@ -755,3 +755,6 @@ foreach(n 1 5 6 7)
     PASS_REGULAR_EXPRESSION "STATS level=${n} .* exit=1 god=0")
   add_demo_determinism(level${n}-complete)
 endforeach()
+# Level 5 secrets: all three pushwalls open and their SECRET cells count.
+add_test(NAME secrets_level5
+  COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/level5-secrets.demo)
