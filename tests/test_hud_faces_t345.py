@@ -25,6 +25,8 @@ ALL = ["face_t%d_%s" % (t, e) for t in range(1, 6) for e in EXPRS] + ["face_dead
 # Legend entries that mark each tier's damage (assets/src/hud/faces/legend.txt).
 BLOOD = {"red_06", "red_09"}
 LINEN = {"gray_08", "gray_11", "gray_14"}
+# Brow/dirt ink that must not be left beside the bandage pad (a stray dot).
+INK = "steel_00"
 
 # Concavities a tier 3-5 face may add on top of its tier 2 counterpart: the
 # fresh notch cut in hurtr's flattened ear (25,7) and, at tier 5, the cheek
@@ -80,6 +82,18 @@ def main():
             d3, d4 = data["face_t3_" + e], data["face_t4_" + e]
             kept = [i for i, c in enumerate(d3) if c in blood and d4[i] not in linen]
             assert all(d4[i] in blood for i in kept), "face_t4_%s lost tier 3 blood" % e
+        # No leftover ink pixel 4-adjacent to linen in the bandaged tiers.
+        # TEX pixels are column-major, so index i is grid (i // 32, i % 32).
+        ink = names[INK]
+        for n in NEW:
+            if n[6] not in "45":
+                continue
+            d = data[n]
+            near = sorted((i // 32, i % 32) for i, c in enumerate(d) if c == ink and any(
+                0 <= x < 32 and 0 <= y < 32 and d[y * 32 + x] in linen
+                for x, y in ((i % 32 - 1, i // 32), (i % 32 + 1, i // 32),
+                             (i % 32, i // 32 - 1), (i % 32, i // 32 + 1))))
+            assert not near, "%s: ink pixel(s) beside the bandage at %s" % (n, near)
         for n in NEW:
             bad = sorted(enclosed_transparent(data[n], 32, 32) - allowed(n))
             assert not bad, "%s: transparent hole(s) inside the head at %s" % (n, bad)
