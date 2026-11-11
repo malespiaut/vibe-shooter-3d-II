@@ -785,7 +785,11 @@ static void open_pod(game_state *gs, const boss_pod_t *p)
                                                  p->angle));
         if (!c)
             return;
-        wake(c);
+        /* Released awake and silent: pod_open is their sound, not 2 sight
+         * voices per pod. Same state change as wake(). */
+        c->state = TH_STATE_CHASE;
+        c->movecount = 0;
+        c->movedir = DI_NONE;
     }
 }
 

@@ -4,8 +4,9 @@ kills Woofu (and the Chompers of the first pod pair) with the Scarab
 Launcher and the Eye of Ra Lance, walks through the exit door Woofu's death
 opened and uses the exit (STATS kills=5/5 exit=1, health > 0, every expect
 passes); the same STATS hash and per-tic hashes twice; the sound log shows
-lid_blast, pod_open, woofu_death and the door opening 105 tics after the
-death; maps/bosstest.vmap matches its mkmap source.
+lid_blast, pod_open, a single woofu_death and the door opening 105 tics
+after it, one woofu_pain (with lid_blast) and one fan_fire per fan tic;
+maps/bosstest.vmap matches its mkmap source.
 
     test_boss_demo.py <build/game> <tmp dir>
 """
@@ -32,6 +33,11 @@ def first(log, name):
             if sfx == name:
                 return int(tic)
     return None
+
+
+def tics_of(log, name):
+    with open(log) as f:
+        return [int(l.split()[0]) for l in f if len(l.split()) >= 2 and l.split()[1] == name]
 
 
 def main():
@@ -64,6 +70,15 @@ def main():
     assert all(v is not None for v in ev.values()), ev
     assert ev["lid_blast"] < ev["woofu_death"] and ev["pod_open"] < ev["woofu_death"]
     assert ev["door_open"] == ev["woofu_death"] + 105, ev
+    # One sound per event (#188 hooks + boss code): one death voice at the
+    # kill tic, one pain voice with the lid blast, one fan_fire per fan.
+    deaths, pains = tics_of(log, "woofu_death"), tics_of(log, "woofu_pain")
+    fans = tics_of(log, "fan_fire")
+    print("woofu_death tics:", deaths, "woofu_pain tics:", pains, "fan_fire count:", len(fans),
+          "distinct tics:", len(set(fans)))
+    assert deaths == [ev["woofu_death"]], deaths
+    assert pains == [ev["lid_blast"]], pains
+    assert fans and len(fans) == len(set(fans)), fans
     print("boss_demo: OK")
 
 
