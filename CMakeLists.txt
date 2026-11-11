@@ -169,7 +169,9 @@ endforeach()
 add_executable(test_ai tests/test_ai.c)
 target_link_libraries(test_ai PRIVATE engine)
 target_compile_options(test_ai PRIVATE -UNDEBUG)
-foreach(g sight ambush windup chomper pillar drop block pushwall)
+foreach(g sight ambush windup chomper pillar drop block pushwall
+          pom_speed pom_pair pom_dodge pom_still pom_windup
+          dach_mortar dach_retreat dach_windup dach_headbutt)
   add_test(NAME ai_${g} COMMAND test_ai ${g})
 endforeach()
 # Projectiles, splash, Scarab Launcher, kibble barrels (issue #93).

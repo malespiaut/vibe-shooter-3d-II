@@ -25,6 +25,10 @@
  * - A damaging hit that does not kill wakes the enemy and, with chance
  *   pain / 256 (Sabretooth: half), flinches it for AI_PAIN_TICS, cancelling
  *   a wind-up. Death spawns the drop.
+ * - Pomeranian (ATK_PLASMA) and Dachshund (ATK_MORTAR): see the AI_POM_
+ *   and AI_DACH_ constants below. Enemy projectiles and shells hurt any
+ *   shootable thinker but their owner; there is no infighting (nobody
+ *   retargets).
  * - Collision: circle vs the tiles enemies may not stand in, then vs the
  *   player circle, axis-separated (x then y). */
 
@@ -34,6 +38,19 @@
 #define AI_ATTACK_TICS 8
 #define AI_PAIN_TICS 6
 #define AI_FOV_HALF ((angle_t)10923) /* 60 degrees */
+
+/* Pomeranian (enemies.md): a volley of AI_POM_BOLTS bolts AI_POM_BOLT_GAP
+ * tics apart, the first when the wind-up ends, each aimed at the player's
+ * position on its fire tic; AI_ATTACK_TICS of recovery after the last. */
+#define AI_POM_BOLTS 2
+#define AI_POM_BOLT_GAP 10
+#define AI_POM_BOLT_Z ((fix_t)24576) /* 0.375 u: the arm cannon, render-only */
+
+/* Dachshund (enemies.md): keeps 6..10 u away, backs off under 4 u. */
+#define AI_DACH_FLEE (4 * FIX_ONE)  /* starts backing off under this */
+#define AI_DACH_NEAR (6 * FIX_ONE)  /* backs off until this far */
+#define AI_DACH_FAR (10 * FIX_ONE)  /* holds within this, with sight */
+#define AI_DACH_MORTAR_RANGE (20 * FIX_ONE) /* as the Mutt's rifle */
 
 /* One tic of every live enemy, creation order. Called by game_tic after the
  * player moved and fired. */

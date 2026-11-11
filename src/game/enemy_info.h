@@ -13,6 +13,10 @@ enum {
     ATK_NONE = 0,    /* no attack yet (enemies whose attack lands later) */
     ATK_HITSCAN = 1, /* one ray at the player: hits when in sight and range */
     ATK_MELEE = 2,   /* hits when the player's near edge is within range */
+    ATK_PLASMA = 3,  /* Pomeranian: AI_POM_BOLTS plasma bolts, AI_POM_BOLT_GAP
+                      * tics apart; range = max range of the decision */
+    ATK_MORTAR = 4,  /* Dachshund: a reticle (mortar) beyond `range`, a
+                      * headbutt (dmg_*) within it, near edge as melee */
 };
 
 typedef struct {
