@@ -4,113 +4,145 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from draw import *
 
 HDR = [
-    "# View model 3, Hairball Scattergun (weapons.md): 3/4 rear view from the right. Steel receiver",
-    "# (lit top, shaded right face) with a tapered barrel and magazine tube receding toward the",
-    "# view centre, wooden pump fore-end clasped by the left paw, red yarn drum under the receiver,",
-    "# wooden grip wrapped by the right paw. Matches HUD icon weapon_3. Composed in 3D and projected, checked at 3x.",
+    "# View model 3, Hairball Scattergun (weapons.md): 3/4 rear view, canted. Narrow steel receiver",
+    "# (lit top face with the ejection port, shaded side with the gold inlay), separate barrel (left)",
+    "# and magazine tube (right) receding toward the view centre with two bores at the tip, wooden",
+    "# pump fore-end gripped from above by the left paw, red wound-yarn drum on the right of the",
+    "# receiver, wooden grip wrapped by the right paw. Matches HUD icon weapon_3.",
+    "# Composed in tools/vmcompose/vm3.py, checked at 3x in game.",
 ]
 
-FORE = {"idle": 12.0, "fire0": 12.0, "fire1": 12.0, "pump0": 8.6, "pump1": 6.0}
-BARREL = 24.0
+# Screen-space layout (112x64 canvas, the view centre is at about (56, -40)).
+R0 = (77.0, 60.0)            # rear of the receiver
+AIM = (57.0, -40.0)
+D, N, _ = axis(R0, AIM)
+REC = 18.0                   # receiver length (px along the axis)
+GUN = 46.0                   # rear of receiver -> muzzle
+FORE = {"idle": 25.0, "fire0": 25.0, "fire1": 25.0, "pump0": 21.0, "pump1": 18.0}
+FORE_LEN = 11.0
+
+
+def at(t, s=0.0, p=R0):
+    return (p[0] + D[0] * t + N[0] * s, p[1] + D[1] * t + N[1] * s)
 
 
 def frame(kind):
     cv = Canvas(112, 64)
-    cam = Cam(f=150, cx=58, cy=-18, off=(2.0, -8.0, 14.0), roll=0.3)
-    P = lambda x, y, z: cam((x, y, z))
     fz = FORE[kind]
 
-    # ---- magazine tube (under the barrel), far part first
-    box(cv, cam, -0.7, 0.7, -0.2, 1.2, 4.4, BARREL - 1.6,
-        top=lambda u, v: steel(9 - u * 2),
-        side=lambda u, v: steel(5 - u * 1.5 - (v > 0.6)),
-        rear=lambda u, v: steel(6), faces="ts")
-    # action rod on the right, exposed between receiver and fore-end
-    box(cv, cam, 0.7, 1.15, -0.1, 0.45, 4.4, fz + 1.0,
-        top=lambda u, v: steel(14), side=lambda u, v: steel(9), rear=lambda u, v: steel(6), faces="ts")
-    # ---- barrel: on top of the tube, tapers with distance
-    box(cv, cam, -0.9, 0.9, 1.1, 2.5, 4.4, BARREL,
-        top=lambda u, v: steel(15) if v < 0.2 else steel(13 - v * 2 - u * 2.5),
-        side=lambda u, v: steel(7 - u * 2 - (v > 0.7) * 1.5),
-        rear=lambda u, v: steel(6))
-    # muzzle bore
-    mx, my = P(0, 1.8, BARREL)
-    cv.set(round(mx), round(my) - 1, steel(1))
-    cv.set(round(mx) - 1, round(my) - 1, steel(2))
-    # ---- wood fore-end (pump), grooves across it
-    def fe_top(u, v):
-        g = int(u * 7) % 2 == 1 and 0.15 < u < 0.85
-        return brown(13 - v * 3 - (4 if g else 0))
+    # ---- left forearm from the bottom-left up to the fore-end (drawn first, under the gun)
+    pc = at(fz + FORE_LEN * 0.5, -11.5)
+    forearm(cv, (pc[0] - 2, pc[1] + 4), (pc[0] - 40, 78), 7.0, 10.0,
+            [0.12, 0.29, 0.47, 0.66, 0.85], seed=2)
 
-    def fe_side(u, v):
-        g = int(u * 7) % 2 == 1 and 0.15 < u < 0.85
-        return brown(6 - v * 2 - (2 if g else 0))
+    # ---- barrel (left) and magazine tube (right): two cylinders split by a dark seam
+    band(cv, at(REC - 1, -0.2), at(GUN, -0.2), 6.2, 5.0, lambda t, s: steel(2 if abs(s) < 0.3 else 1))
+    band(cv, at(REC - 1, 2.9), at(GUN - 1.0, 2.2), 2.4, 1.8, lambda t, s: cyl_steel(t, s, hi=12.5, lo=3))
+    band(cv, at(REC - 1, -3.2), at(GUN, -2.6), 2.8, 2.2, lambda t, s: cyl_steel(t, s, hi=13.5, lo=4))
+    # bores: 2x2 steel_01 in a lighter rim, barrel above the tube
+    for (bt, bs) in ((GUN - 1.6, -2.6), (GUN - 2.6, 2.2)):
+        x, y = at(bt, bs)
+        x, y = int(round(x)) - 1, int(round(y)) - 1
+        for j in range(-1, 3):
+            for i in range(-1, 3):
+                cv.set(x + i, y + j, steel(11 if (i < 0 or j < 0) else 7))
+        for j in range(2):
+            for i in range(2):
+                cv.set(x + i, y + j, "steel_01")
 
-    box(cv, cam, -1.4, 1.4, -0.9, 1.3, fz, fz + 5.0, fe_top, fe_side,
-        rear=lambda u, v: brown(8 if v < 0.3 else 6), left=lambda u, v: brown(9))
-    # ---- left paw clasping the fore-end from below, forearm off the bottom-left
-    fx, fy = P(-1.9, 0.2, fz + 2.4)
-    forearm(cv, (fx - 3, fy + 3), (fx - 40, 74), 5.0, 9.0, [0.14, 0.31, 0.5, 0.68, 0.86], seed=2)
-    paw_fist(cv, fx - 2.5, fy + 1.0, 5.5, 4.8, [-3.6, -0.4, 2.8],
-             along=(0.85, -0.53), lobe_r=(1.9, 1.8))
-    # ---- receiver
-    def rec_top(u, v):
-        if v < 0.1:
+    # ---- wooden pump fore-end around both, grooves across it
+    def fore(t, s):
+        g = 0.12 < t < 0.88 and int(t * 8) % 2 == 1
+        if s < -0.8:
+            v = 13
+        elif s < -0.1:
+            v = 12 - (s + 0.8) * 2
+        else:
+            v = 8.5 - s * 3.5
+        if g:
+            v -= 3.5
+        if t < 0.08 or t > 0.94:
+            v -= 1.5                              # rounded ends
+        return brown(v)
+    band(cv, at(fz, -0.3), at(fz + FORE_LEN, -0.3), 7.4, 6.8, fore)
+
+    # ---- left paw lying over the top (lit, left) side of the fore-end
+    paw_fist(cv, pc[0] - 1.0, pc[1] + 0.5, 7.0, 8.0, [-5.4, -1.8, 1.8, 5.4],
+             along=(N[0], N[1]), lobe_r=(2.8, 2.7), reach=7.4)
+
+    # ---- grip / stock wood off the bottom edge, right paw on it
+    def grip(t, s):
+        k = int((s + 1) * 4.2)
+        return brown(11 - (s + 1) * 2.4 - (3 if k in (2, 6) else 0))
+    band(cv, at(2.0, 1.0), (90.0, 72.0), 5.6, 6.6, grip)
+
+    # ---- receiver: narrow, lit top face with the ejection port, gold inlay on the side
+    def rec(t, s):
+        d = t * REC
+        if d > REC - 1.0:
+            return steel(9 if s < 0 else 4)       # front edge
+        if s < -0.85:
             return steel(15)
-        if 0.45 < v < 0.6:
-            return steel(10)              # ejection rib
-        return steel(14 - v * 2 - u * 1.5)
+        if s < -0.12:
+            if 4.0 <= d < 10.0 and -0.75 <= s < -0.3:
+                return steel(2) if s < -0.62 else steel(3) if s < -0.45 else steel(2)  # port
+            return steel(13.5 - (s + 0.85) * 2 - t)
+        if s < 0.0:
+            return steel(9)
+        if 0.48 <= s <= 0.62:
+            return gold(7 - t * 2)
+        if s > 0.86:
+            return steel(3)
+        return steel(6.5 - s * 1.5 - t)
+    band(cv, at(0.0), at(REC), 8.5, 7.8, rec)
+    # rear edge of the receiver catches the light
+    cv.line(at(0.4, -8.0), at(0.4, 7.5), steel(11))
 
-    def rec_side(u, v):
-        if 0.35 < u < 0.75 and 0.25 < v < 0.55:
-            return steel(2) if v < 0.35 else steel(3)    # ejection port
-        if 0.66 < v < 0.76:
-            return gold(7 - u * 2)        # gold inlay, like the HUD icon
-        return steel(7 - u * 1.5 - (v > 0.85))
+    # ---- red yarn drum on the right of the receiver: wound strands + lit top-left
+    dx, dy = at(13.0, 17.0)
+    rx, ry = 7.6, 8.0
 
-    def rec_rear(u, v):
-        if u < 0.1 or v < 0.12:
-            return steel(12)
-        return steel(9 - (v > 0.7) * 2)
-    box(cv, cam, -1.1, 1.1, 0.6, 2.6, 0.0, 4.4, rec_top, rec_side, rec_rear)
-
-    # ---- yarn drum under the receiver, right side
-    dx, dy = P(1.6, -1.2, 3.4)
     def yarn(x, y):
-        ddx, ddy = (x + 0.5 - dx) / 9.0, (y + 0.5 - dy) / 8.5
-        v = 9 - (ddx + ddy) * 4.5
-        if (x * 2 + y * 3) % 7 == 0 or (x * 3 - y) % 9 == 0:
-            v -= 3
-        return red(v)
-    cv.ellipse(dx, dy, 9.0, 8.5, yarn)
-    # ---- grip (wood) behind the drum, grain along the grip, wrapped by the right paw
-    gx, gy = P(0.0, 0.7, 0.6)
-    def grain(x, y):
-        k = (x * 2 - y + 40) % 6
-        return brown(10 - (x - gx) * 0.3 - (3 if k == 0 else (1 if k == 3 else 0)))
-    cv.poly([(gx - 4, gy - 3), (gx + 3, gy - 4), (gx + 10, 66), (gx + 1, 66)], grain)
-    hx, hy = gx + 5, gy + 9
-    forearm(cv, (hx + 2, hy + 2), (hx + 34, 74), 6.5, 10.0, [0.2, 0.42, 0.6, 0.83], seed=0)
-    paw_fist(cv, hx + 1, hy, 6.5, 5.5, [-4.6, -1.2, 2.2, 5.6],
-             along=(-0.94, -0.34), lobe_r=(2.0, 2.2))
+        u, v = (x + 0.5 - dx) / rx, (y + 0.5 - dy) / ry
+        lit = 10.5 - (u + v) * 3.2
+        if math.hypot(u, v) > 0.82:
+            lit -= 1.5
+        if u < -0.15 and v < -0.15 and 0.2 < u * u + v * v < 0.5:
+            lit = 13                               # highlight
+        # wound strands: arcs that follow the ball's curvature
+        for (ox, oy, R) in ((1.1, 1.2, 0.75), (1.1, 1.2, 1.2), (1.1, 1.2, 1.65),
+                            (-1.6, 0.9, 1.5)):
+            r = math.hypot(u - ox, v - oy)
+            if abs(r - R) < 0.12:
+                return red(min(lit, 9) - 4)
+        return red(lit)
+    cv.ellipse(dx, dy, rx, ry, yarn)
+
+    # ---- right forearm + paw on the grip
+    hx, hy = 86.0, 55.5
+    forearm(cv, (hx + 2, hy + 3), (hx + 30, 80), 7.0, 10.0, [0.2, 0.42, 0.6, 0.83], seed=0)
+    paw_fist(cv, hx, hy, 7.5, 6.0, [-5.2, -1.7, 1.7, 5.2],
+             along=(-0.92, -0.39), lobe_r=(2.3, 2.4), reach=6.4)
+
     # ---- muzzle effects
     if kind == "fire0":
-        cx_, cy_ = round(mx), round(my) - 2
-        for d in range(1, 7):
-            for sx, sy in ((1, 0), (-1, 0), (0, -1), (1, -1), (-1, -1), (0, 1)):
-                if sy and sx and d > 4:
-                    continue
-                cv.set(cx_ + sx * d, cy_ + sy * d, "fb_sun" if d < 3 else ("fb_yellow" if d < 5 else "fb_orange"))
-        for ddx in (-1, 0, 1):
-            for ddy in (-1, 0, 1):
-                cv.set(cx_ + ddx, cy_ + ddy, "fb_sun")
+        fx, fy = at(GUN + 5.5, 0.0)
+        flash(cv, fx, fy, 10.5, 5.5, "fb_sun", "fb_yellow", "fb_orange",
+              rays=[(-1, -0.25, 3), (1, -0.25, 3), (-0.6, -1, 2), (0.6, -1, 2)], ray_c="fb_orange")
     if kind == "fire1":
-        cv.set(round(mx), round(my) - 1, "fb_orange")
-        cv.set(round(mx) - 1, round(my) - 1, "fb_fire")
+        for (bt, bs) in ((GUN - 1.6, -2.6), (GUN - 2.6, 2.2)):
+            x, y = at(bt, bs)
+            cv.set(int(round(x)) - 1, int(round(y)) - 2, "fb_orange")
     return cv
+
+
+def measure():
+    print("vm3_fire0 fullbright px:", count_fb(frame("fire0")))
 
 
 if __name__ == "__main__":
     for k in FORE:
         cv = frame(k)
         cv.write("%s/vm3_%s.pix" % (SRC, k), "vm3_" + k, HDR + ["# %s." % k])
+    if "-m" in sys.argv:
+        measure()
