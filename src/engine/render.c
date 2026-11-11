@@ -25,6 +25,8 @@ static float depth[VIEW_W];
 /* Camera of the last render_view(), for render_draw_sprites(). */
 static double cam_x, cam_y, cam_dx, cam_dy;
 static char err_buf[2048];
+/* render_set_doors(): live door open amounts per cell, or NULL. */
+static const fix_t *door_open;
 
 const char *render_error(void)
 {
@@ -103,8 +105,25 @@ int render_cell_is_wall(const bast_map_cell *c)
         return 0;
     if (c->flags & (BAST_CELL_SOLID | BAST_CELL_PUSHWALL))
         return 1;
-    /* No door motion exists yet: a door is drawn in its initial state. */
     return (c->flags & BAST_CELL_DOOR) && !(c->flags & BAST_CELL_START_OPEN);
+}
+
+void render_set_doors(const fix_t *open)
+{
+    door_open = open;
+}
+
+/* Open amount of door cell (x, y) as a fraction 0..1. */
+static double door_amount(const bast_map *m, const bast_map_cell *c, int x, int y)
+{
+    if (!door_open)
+        return (c->flags & BAST_CELL_START_OPEN) ? 1.0 : 0.0;
+    fix_t p = door_open[y * m->width + x];
+    if (p <= 0)
+        return 0.0;
+    if (p >= FIX_ONE)
+        return 1.0;
+    return p / 65536.0;
 }
 
 static bast_tex *load_one(const char *dir, const char *name, int w, int h)
@@ -240,7 +259,9 @@ static void cast(const bast_map *m, double px, double py, double rdx, double rdy
         const bast_map_cell *c = cell(m, mx, my);
         if (!c)
             return; /* left the map: nothing to draw */
-        if (!render_cell_is_wall(c)) {
+        const int is_door = c->wall != 0 && (c->flags & BAST_CELL_DOOR) &&
+                            !(c->flags & (BAST_CELL_SOLID | BAST_CELL_PUSHWALL));
+        if (!is_door && !render_cell_is_wall(c)) {
             front = c;
             continue;
         }
@@ -249,20 +270,24 @@ static void cast(const bast_map *m, double px, double py, double rdx, double rdy
                                 : (my - py + (1 - stepy) / 2) / rdy;
         if (dist < 1e-4)
             dist = 1e-4;
+        /* f: position along the face, 0..1 toward +y (side 0) or +x. */
+        double f = side == 0 ? py + dist * rdy : px + dist * rdx;
+        f -= floor(f);
+        if (is_door) {
+            /* The panel covers [p, 1) of the face; the rest is a gap. */
+            const double p = door_amount(m, c, mx, my);
+            if (f < p || p >= 1.0) {
+                front = c;
+                continue;
+            }
+            f -= p;
+        }
         /* Texture u, oriented so every face reads left to right as seen
          * from the open side (screen right = view right). */
-        double u;
-        if (side == 0) {
-            double wy = py + dist * rdy;
-            u = wy - floor(wy);
-            if (stepx > 0) /* looking east: screen right is south */
-                u = 1.0 - u;
-        } else {
-            double wx = px + dist * rdx;
-            u = wx - floor(wx);
-            if (stepy < 0) /* looking south: screen right is west */
-                u = 1.0 - u;
-        }
+        double u = f;
+        if (side == 0 ? stepx > 0  /* looking east: screen right is south */
+                      : stepy < 0) /* looking south: screen right is west */
+            u = 1.0 - u;
         int tx = (int)(u * TEX_SIZE);
         if (tx < 0)
             tx = 0;

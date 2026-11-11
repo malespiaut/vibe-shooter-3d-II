@@ -99,8 +99,23 @@ const render_column *render_get_column(int x);
 /* VIEW_W perpendicular distances of the last render_view() (sprites). */
 const float *render_depth(void);
 
+/* Live door state for the wall pass (doors are game state, game/door.h; the
+ * engine does not read game_state). `open` has one entry per map cell,
+ * index y * map width + x, read only for DOOR cells: how far the door is
+ * open, 0 closed .. FIX_ONE fully open (door_t.pos). The table is borrowed
+ * and read by every later render_view() until replaced; NULL (the default)
+ * draws each door in its initial map state (START_OPEN open, else closed).
+ *
+ * A door at open amount p is drawn on the face of its cell the ray enters,
+ * with the panel slid by p along that face toward +x (faces running east-
+ * west) or +y (faces running north-south): the panel covers [p, 1) of the
+ * face, its texture shifted with it, the uncovered part is a gap the ray
+ * passes through. Fully open draws nothing. */
+void render_set_doors(const fix_t *open);
+
 /* 1 if the cell blocks rays: a wall texture and SOLID, PUSHWALL or a closed
- * DOOR. */
+ * DOOR in its initial map state (START_OPEN doors are open). Doors with
+ * live state go through render_set_doors(). */
 int render_cell_is_wall(const bast_map_cell *c);
 
 #endif
