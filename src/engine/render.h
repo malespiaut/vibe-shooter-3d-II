@@ -9,7 +9,9 @@
  * Walls: one DDA ray per screen column, perpendicular distance (no fisheye),
  * textured from TEX files, shaded once per column with the colormap row
  *   row = clamp(32 * dist / 16 + cell_dark, 0, 31).
- * Floors and ceilings are flat fills until their issue lands. */
+ * Floors and ceilings: horizontal scanlines over the pixels walls left
+ * open, distance shading once per row plus the sampled cell's dark per
+ * pixel. Ceiling texture 0 is sky (map sky_tex, 320x104, unshaded). */
 
 #include <stdint.h>
 
@@ -25,7 +27,15 @@ enum {
     RENDER_MAX_TEXTURES = BAST_MAP_MAX_TEXTURES
 };
 
-/* Flat fills for the not-yet-textured floor and ceiling (gray ramp). */
+/* Sky texture (art-bible.md "Sky"): 320x104, 90 degrees per 320 px. */
+enum {
+    RENDER_SKY_W = 320,
+    RENDER_SKY_H = 104,
+    RENDER_SKY_REPEAT = 4 /* times per full turn */
+};
+
+/* Fills for floor/ceiling pixels with no texture (index 0 without a sky,
+ * or outside the map). */
 enum {
     RENDER_CEIL_FILL = 5,  /* gray_03 */
     RENDER_FLOOR_FILL = 8  /* gray_06 */
@@ -53,6 +63,10 @@ const char *render_error(void);
 
 /* Draws the view from (x, y) facing `angle` (eye height 0.5 units). */
 void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *fb);
+
+/* Sky texture column drawn in screen column sx (0..VIEW_W-1) when facing
+ * `angle`: (sx - angle * 1280 / 65536) mod 320. */
+int render_sky_column(angle_t angle, int sx);
 
 /* Column x (0..VIEW_W-1) of the last render_view(). */
 const render_column *render_get_column(int x);

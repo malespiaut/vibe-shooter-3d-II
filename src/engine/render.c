@@ -16,6 +16,7 @@
 #define MAX_RAY_STEPS (2 * BAST_MAP_MAX_DIM + 2)
 
 static bast_tex *textures[RENDER_MAX_TEXTURES];
+static bast_tex *sky;
 static render_column columns[VIEW_W];
 static float depth[VIEW_W];
 static char err_buf[2048];
@@ -31,6 +32,8 @@ void render_shutdown(void)
         bast_tex_free(textures[i]);
         textures[i] = NULL;
     }
+    bast_tex_free(sky);
+    sky = NULL;
 }
 
 int render_cell_is_wall(const bast_map_cell *c)
@@ -43,7 +46,7 @@ int render_cell_is_wall(const bast_map_cell *c)
     return (c->flags & BAST_CELL_DOOR) && !(c->flags & BAST_CELL_START_OPEN);
 }
 
-static bast_tex *load_one(const char *dir, const char *name)
+static bast_tex *load_one(const char *dir, const char *name, int w, int h)
 {
     /* Through files.c (tech.md "Archives"): game.pak first, loose fallback. */
     static const char *const sub[] = { "textures", "test" };
@@ -58,15 +61,15 @@ static bast_tex *load_one(const char *dir, const char *name)
         free(data);
         if (!t)
             snprintf(err_buf, sizeof err_buf, "%s/%s: %s", dir, path, bast_error());
-        else if (t->width != TEX_SIZE || t->height != TEX_SIZE) {
-            snprintf(err_buf, sizeof err_buf, "%s/%s: wall textures are %dx%d, got %dx%d", dir,
-                     path, TEX_SIZE, TEX_SIZE, t->width, t->height);
+        else if (t->width != w || t->height != h) {
+            snprintf(err_buf, sizeof err_buf, "%s/%s: expected %dx%d, got %dx%d", dir, path, w,
+                     h, t->width, t->height);
             bast_tex_free(t);
             t = NULL;
         }
         return t;
     }
-    snprintf(err_buf, sizeof err_buf, "wall texture '%s' not found in %s/textures or %s/test",
+    snprintf(err_buf, sizeof err_buf, "texture '%s' not found in %s/textures or %s/test",
              name, dir, dir);
     return NULL;
 }
@@ -78,15 +81,32 @@ int render_init(const bast_map *map, const char *assets_dir)
         snprintf(err_buf, sizeof err_buf, "%s", files_error());
         return 0;
     }
+    /* Walls of every cell that can block a ray (doors and pushwalls move
+     * later), floors and ceilings of every cell, the sky if any ceiling is
+     * open. Texture 0 is none. */
     uint8_t used[RENDER_MAX_TEXTURES] = { 0 };
-    for (int i = 0; i < map->width * map->height; i++)
-        if (render_cell_is_wall(&map->cells[i]))
-            used[map->cells[i].wall] = 1;
+    int any_sky = 0;
+    for (int i = 0; i < map->width * map->height; i++) {
+        const bast_map_cell *c = &map->cells[i];
+        if (c->flags & (BAST_CELL_SOLID | BAST_CELL_PUSHWALL | BAST_CELL_DOOR))
+            used[c->wall] = 1;
+        used[c->floor] = 1;
+        used[c->ceil] = 1;
+        any_sky |= c->ceil == 0;
+    }
+    used[0] = 0;
     for (int t = 1; t < map->texture_count; t++) {
         if (!used[t])
             continue;
-        textures[t] = load_one(assets_dir, map->textures[t]);
+        textures[t] = load_one(assets_dir, map->textures[t], TEX_SIZE, TEX_SIZE);
         if (!textures[t]) {
+            render_shutdown();
+            return 0;
+        }
+    }
+    if (any_sky && map->sky_tex != 0) {
+        sky = load_one(assets_dir, map->textures[map->sky_tex], RENDER_SKY_W, RENDER_SKY_H);
+        if (!sky) {
             render_shutdown();
             return 0;
         }
@@ -196,6 +216,82 @@ static void cast(const bast_map *m, double px, double py, double rdx, double rdy
     }
 }
 
+int render_sky_column(angle_t angle, int sx)
+{
+    /* RENDER_SKY_REPEAT * RENDER_SKY_W columns per 65536 angle units;
+     * turning left (angle up) moves the sky right on screen. */
+    const int a = (int)(((uint32_t)angle * (RENDER_SKY_REPEAT * RENDER_SKY_W)) >> 16);
+    return ((sx - a) % RENDER_SKY_W + RENDER_SKY_W) % RENDER_SKY_W;
+}
+
+/* Floors, ceilings and sky (GAME.md 3, Floors and Ceilings; tech.md
+ * Lighting): one horizontal scanline per view row, drawing only the pixels
+ * the wall pass left open. Per row: the distance of the plane at that row
+ * (eye 0.5 units above the floor and below the ceiling), the world point
+ * under column 0 and the per-column step, all in 32.32 fixed point; per
+ * pixel: two adds, a cell lookup, one texel, one add and clamp for the
+ * cell's darkness. The column rays are the wall pass's rays, so floor
+ * edges meet the wall bases.
+ *
+ * Texel (u, v) of world point (wx, wy): u = frac(wx) * 64 (east is +u),
+ * v = 63 - frac(wy) * 64 (north is up on the texture when seen from above).
+ * Sky: texture column render_sky_column(), row = screen row (the 104 px sky
+ * fills the 104 rows above the horizon exactly), never shaded. */
+static void draw_planes(const bast_map *map, double px, double py, double dx, double dy,
+                        double rx, double ry, angle_t angle, uint8_t *fb)
+{
+    const int horizon = VIEW_H / 2;
+    int skycol[VIEW_W];
+    for (int sx = 0; sx < VIEW_W; sx++)
+        skycol[sx] = render_sky_column(angle, sx);
+    const double one = 4294967296.0; /* 2^32 */
+
+    for (int y = 0; y < VIEW_H; y++) {
+        const int floor_row = y >= horizon;
+        /* Rows from the horizon to this pixel row's centre. */
+        const double rows = floor_row ? y + 0.5 - horizon : horizon - (y + 0.5);
+        const double dist = 0.5 * VIEW_PROJ / rows;
+        int drow = (int)(32.0 * dist / VIEW_DIST);
+        if (drow > COLORMAP_ROWS - 1)
+            drow = COLORMAP_ROWS - 1;
+        /* Column sx sees direction (d + r * cam), cam = (sx - 160) / 160. */
+        int64_t wx = (int64_t)((px + dist * (dx - rx)) * one);
+        int64_t wy = (int64_t)((py + dist * (dy - ry)) * one);
+        const int64_t stx = (int64_t)(dist * rx / (VIEW_W / 2) * one);
+        const int64_t sty = (int64_t)(dist * ry / (VIEW_W / 2) * one);
+        uint8_t *row = fb + y * SCREEN_W;
+
+        for (int sx = 0; sx < VIEW_W; sx++, wx += stx, wy += sty) {
+            const render_column *col = &columns[sx];
+            if (floor_row ? y < col->bottom : y >= col->top)
+                continue; /* wall pixel */
+            const int64_t cx = wx >> 32, cy = wy >> 32;
+            const bast_map_cell *c =
+                (cx < 0 || cy < 0 || cx >= map->width || cy >= map->height)
+                    ? NULL
+                    : &map->cells[cy * map->width + cx];
+            const int ti = c ? (floor_row ? c->floor : c->ceil) : 0;
+            if (!floor_row && c && ti == 0 && sky) {
+                row[sx] = sky->pixels[skycol[sx] * RENDER_SKY_H + y];
+                continue;
+            }
+            const bast_tex *t = textures[ti];
+            if (!c || !t) {
+                row[sx] = floor_row ? RENDER_FLOOR_FILL : RENDER_CEIL_FILL;
+                continue;
+            }
+            const int u = (int)((wx >> 26) & (TEX_SIZE - 1));
+            const int v = TEX_SIZE - 1 - (int)((wy >> 26) & (TEX_SIZE - 1));
+            int light = drow + c->dark;
+            if (light > COLORMAP_ROWS - 1)
+                light = COLORMAP_ROWS - 1;
+            if (t->flags & BAST_TEX_FULLBRIGHT)
+                light = 0;
+            row[sx] = colormap_row(light)[t->pixels[u * TEX_SIZE + v]];
+        }
+    }
+}
+
 void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *fb)
 {
     const double px = x / 65536.0, py = y / 65536.0;
@@ -238,8 +334,6 @@ void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *
         col->bottom = ye;
 
         uint8_t *p = fb + sx;
-        for (int yy = 0; yy < ys; yy++)
-            p[yy * SCREEN_W] = RENDER_CEIL_FILL;
         if (col->hit && ye > ys) {
             const bast_tex *t = textures[col->tex];
             const uint8_t *cm = colormap_row(
@@ -263,8 +357,7 @@ void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *
                     p[yy * SCREEN_W] = cm[BAST_INDEX_WHITE];
             }
         }
-        for (int yy = ye; yy < VIEW_H; yy++)
-            p[yy * SCREEN_W] = RENDER_FLOOR_FILL;
     }
+    draw_planes(map, px, py, dx, dy, rx, ry, angle, fb);
     memset(fb + VIEW_H * SCREEN_W, 0, (size_t)(SCREEN_H - VIEW_H) * SCREEN_W);
 }

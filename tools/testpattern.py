@@ -15,7 +15,12 @@ matching, so every pixel is in the palette and never reserved):
 - the texture number in white digits at the top left, readable left to
   right (checks that every face is drawn unmirrored).
 
-Output: <out>/testNN.tex through libbast (tools/bast.py), NN = 01..count.
+Output: <out>/testNN.tex through libbast (tools/bast.py), NN = 01..count,
+plus <out>/testsky.tex: the 320x104 sky fixture (issue #14, art-bible.md
+"Sky": 320 px = 90 degrees of view, repeats 4x per turn). It is a vertical
+gradient down the indigo ramp, a white tick line every 32 px with the
+tick number 0..9 beside it, near the top (so a sky offset can be read off a frame), and a
+full-height steel line at column 0 marking the wrap seam.
 
 Usage: python3 tools/testpattern.py [-o assets/gen/test] [--count 8]
 (libbast.so from $BAST_LIB or build/libbast.so)
@@ -103,12 +108,41 @@ def pattern(n):
     return img
 
 
+SKY_W, SKY_H = 320, 104
+INDIGO = (204, 12)  # night/dusk sky ramp, darkest first (art-bible.md)
+
+
+def draw_digit(img, ch, ox, oy, colour):
+    for gy, row in enumerate(DIGITS[ch]):
+        for gx, c in enumerate(row):
+            if c != "#":
+                continue
+            for sy in range(DIGIT_SCALE):
+                for sx in range(DIGIT_SCALE):
+                    img[oy + gy * DIGIT_SCALE + sy][ox + gx * DIGIT_SCALE + sx] = colour
+
+
+def sky_pattern():
+    """Return a SKY_H x SKY_W row-major list of palette indices."""
+    first, length = INDIGO
+    img = [[first + y * length // SKY_H for _ in range(SKY_W)] for y in range(SKY_H)]
+    for t in range(SKY_W // 32):
+        x0 = t * 32
+        for y in range(4, 40):
+            img[y][x0] = WHITE
+        draw_digit(img, str(t), x0 + 6, 6, WHITE)
+    for y in range(SKY_H):
+        img[y][0] = RAMPS[0][0] + 12  # steel: the wrap seam
+    return img
+
+
 def to_tex(img):
-    px = bytearray(SIZE * SIZE)
-    for x in range(SIZE):
-        for y in range(SIZE):
-            px[x * SIZE + y] = img[y][x]  # TEX is column-major
-    return bast.Tex(SIZE, SIZE, px)
+    h, w = len(img), len(img[0])
+    px = bytearray(w * h)
+    for x in range(w):
+        for y in range(h):
+            px[x * h + y] = img[y][x]  # TEX is column-major
+    return bast.Tex(w, h, px)
 
 
 def main(argv=None):
@@ -124,11 +158,12 @@ def main(argv=None):
     try:
         for n in range(1, args.count + 1):
             to_tex(pattern(n)).save(os.path.join(args.out, "test%02d.tex" % n))
+        to_tex(sky_pattern()).save(os.path.join(args.out, "testsky.tex"))
     except bast.BastError as e:
         print("testpattern: %s" % e, file=sys.stderr)
         return 1
     if not args.quiet:
-        print("testpattern: %d textures in %s" % (args.count, args.out))
+        print("testpattern: %d textures + testsky in %s" % (args.count, args.out))
     return 0
 
 
