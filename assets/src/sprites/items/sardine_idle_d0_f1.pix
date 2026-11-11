@@ -1,0 +1,33 @@
+# Golden Sardine (items.md Health, +100, rare): a slim sardine of
+# fullbright gold, head left. Frame 1 of the 2-frame 18-tic shimmer: the
+# fb_sun glint runs from head (f0) to tail (f1). Shading by fullbright steps
+# (sun > yellow > gold > amber > orange), lit from the top-left.
+name sardine_idle_d0_f1
+size 24 16
+= S fb_sun
+= Y fb_yellow
+= G fb_gold
+= A fb_amber
+= O fb_orange
+= e gold_01
+outline fb_gold gold_00
+outline fb_amber gold_00
+outline fb_orange gold_00
+outline fb_yellow gold_00
+outline fb_sun gold_00
+grid
+.......................
+.......................
+.......................
+.......................
+.......................
+.......................
+.........YYG...........
+.......YYYYGGA......YA.
+.....YYYYYYGGSGA...YGA.
+...YYeYYOYYYGGGGAAYGGA.
+..YYYYYYOYGGGSSGAAAGGA..
+.GGGGGGOGGGGGAAAAAOOAA.
+..AAAAOAAAAAAAOOOOO.OOA
+...AAAAOOOOOOOO.....OO.
+.....OOOOOO............

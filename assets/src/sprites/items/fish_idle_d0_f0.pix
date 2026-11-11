@@ -1,0 +1,27 @@
+# Fish Snack (items.md Health, +10): a small silver fish, head left, lying on
+# the floor. Steel body lit from the top-left, beige belly, red gill slit.
+name fish_idle_d0_f0
+size 16 12
+= 1 steel_04
+= 2 steel_06
+= 3 steel_08
+= 4 steel_10
+= 5 steel_12
+= 6 steel_14
+= e steel_02
+= w beige_07
+= x beige_10
+= y beige_13
+= r red_06
+grid
+...............
+...............
+...............
+......456......
+....456665...45
+..4566e655..452
+.46666655543342
+.56r5554443322.
+..yyxxxww32212.
+...xxwww2221.21
+....wwww111....

@@ -1,0 +1,33 @@
+# Cat's Eye Amulet (items.md Powerups, fullbright): an oval pendant on its
+# bail, fullbright gold frame (fb_gold lit top-left, fb_amber/fb_orange on
+# the far side) around a glowing amber cat's eye with a dark slit pupil.
+name amulet_idle_d0_f0
+size 16 16
+= S fb_sun
+= Y fb_yellow
+= G fb_gold
+= A fb_amber
+= O fb_orange
+= p gold_01
+= q gold_03
+outline fb_gold gold_00
+outline fb_amber gold_00
+outline fb_orange gold_00
+outline fb_yellow gold_00
+outline fb_sun gold_00
+grid
+......GGA......
+.....G..A......
+......GAA......
+....YGGGGAA....
+...YGGAAAAGA...
+..YGAqYYYqAGO..
+..GAqYSpYYqAO..
+.YGAYYYpYYAAGO.
+.YGAYYYpYYAAGO.
+.GGqYYYpYAAqGO.
+..GAqYYpYAqAO..
+..GAAqAAAqAAO..
+...GAAqqqAAO...
+....GOAAAOO....
+.....OOOOO.....

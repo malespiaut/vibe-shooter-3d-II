@@ -244,6 +244,12 @@ add_test(NAME hud_faces_t12
 set_tests_properties(hud_faces_t12 PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# Pickup sprites (items.md): build step output, sizes, origin, ramp budget, palcheck.
+add_test(NAME sprites_items
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprites_items.py)
+set_tests_properties(sprites_items PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
 # Mixer: unit tests on synthetic sounds, and a scripted mix of real effects
 # into build/mixer_wav.wav (evidence).
 add_executable(test_mixer tests/test_mixer.c)

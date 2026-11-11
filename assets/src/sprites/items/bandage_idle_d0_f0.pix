@@ -1,0 +1,18 @@
+# Bandage Scrap (items.md Armour, +2): a small rolled linen scrap, end
+# spiral toward the light, tail on the floor.
+name bandage_idle_d0_f0
+size 8 8
+= 1 beige_05
+= 2 beige_07
+= 3 beige_09
+= 4 beige_11
+= 5 beige_13
+= 6 beige_15
+grid
+.......
+..566..
+.56665.
+.63356.
+.53255.
+.45543.
+..4443
