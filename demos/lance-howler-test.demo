@@ -1,0 +1,32 @@
+# Lance / Howler test (#94): maps/lancetest.vmap, skill 2. The player picks
+# up the Eye of Ra Lance, the Sphinx Howler and a Sun Orb, then one Lance
+# beam through the line of five Mutt Troopers kills the four nearest and a
+# second kills the fifth. The player then opens the stay-open door to the
+# west room and holds the corridor one tile back: the first Howler roar
+# wakes the ring of eight Chihuahua Chompers, which can only come at the
+# player single file through the door, inside the cone, and die to the
+# roars that follow.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map lancetest
+
+expect kills=0
+goto 14 5               # Lance, Howler, Sun Orb: 60 + 50 + 100 cells
+weapon 6
+face 0
+fire 11                 # switch (10 tics), then one beam
+expect kills=4
+fire 41                 # second beam once the 40-tic refire allows it
+expect kills=5
+goto 11 5
+face 180
+use                     # the door face is 0.5 ahead, within 0.75
+wait 30                 # stay-open door slides open
+expect health>=90       # one Mutt got a shot off
+weapon 7
+fire 11                 # switch, then roar 1: wakes the room
+fire 300                # a roar every 50 tics as they come through the door
+expect kills=13
+expect health>0

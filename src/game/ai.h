@@ -47,6 +47,16 @@ void ai_noise(game_state *gs);
  * survivable hit, or the drop on a kill. Returns 1 when it killed. */
 int ai_damage(game_state *gs, thinker_t *t, int32_t damage);
 
+/* ai_damage with a forced flinch: when `pain_tics` > 0 a survivable hit
+ * puts the enemy in PAIN for `pain_tics` tics without the pain roll (Sphinx
+ * Howler, weapons.md); it resumes CHASE after. 0 = the normal pain roll. */
+int ai_damage_pain(game_state *gs, thinker_t *t, int32_t damage, int32_t pain_tics);
+
+/* Knockback: moves `t` by (dx, dy) in four quarter steps, each axis-
+ * separated (x then y) and halved until it does not overlap a tile enemies
+ * may not stand in. It stops at walls, never passes through one. */
+void ai_push(game_state *gs, thinker_t *t, fix_t dx, fix_t dy);
+
 /* 1 when enemy `t` has an unobstructed line to the player (live doors). */
 int ai_line_of_sight(const game_state *gs, const thinker_t *t);
 
