@@ -689,7 +689,9 @@ int demo_next(demo_t *d, const game_state *gs, ticcmd *out, char *err, size_t er
             if (c->name[0] && !find_waypoint(gs->map, c->name, &tx, &ty))
                 return run_fail(err, errlen, c, "goto: no WAYPOINT named '%s' in the map",
                                 c->name);
-            int s = nav_goto(gs, tx, ty, out);
+            if (d->done == 0)
+                nav_reset(&d->nav);
+            int s = nav_goto(gs, tx, ty, &d->nav, out);
             if (s == NAV_ARRIVED)
                 break;
             if (s == NAV_NO_PATH)

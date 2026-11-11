@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "game/demo_nav.h"
 #include "game/state.h"
 
 enum {
@@ -61,6 +62,7 @@ typedef struct {
     int pc;
     int32_t done; /* tics consumed by cmds[pc] */
     uint16_t target; /* face/fire nearest, clear: thinker id being fought, 0 = none yet */
+    nav_state nav;   /* goto: replanning memory, reset per command */
 } demo_t;
 
 /* Parses demo text (NUL-terminated). On error returns NULL and writes
