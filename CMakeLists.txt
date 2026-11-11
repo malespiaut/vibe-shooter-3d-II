@@ -448,6 +448,7 @@ add_demo_determinism(m1-walk)
 add_demo_determinism(door-test)
 add_demo_determinism(m1-sprites)
 add_demo_determinism(tags-test)
+add_demo_determinism(maplogic-test)
 add_demo_determinism(ai-test)
 add_demo_determinism(combat-test)
 add_demo_determinism(lance-howler-test)
@@ -492,6 +493,13 @@ target_compile_options(test_render_doors PRIVATE -UNDEBUG)
 add_dependencies(test_render_doors colormap testpattern)
 add_test(NAME render_doors
   COMMAND test_render_doors ${CMAKE_SOURCE_DIR}/maps/doortest.vmap ${ASSETS_GEN})
+# Renderer: live pushwalls and darkness on maps/tagstest.vmap (#121).
+add_executable(test_render_pushwalls tests/test_render_pushwalls.c)
+target_link_libraries(test_render_pushwalls PRIVATE engine m)
+target_compile_options(test_render_pushwalls PRIVATE -UNDEBUG)
+add_dependencies(test_render_pushwalls colormap testpattern)
+add_test(NAME render_pushwalls
+  COMMAND test_render_pushwalls ${CMAKE_SOURCE_DIR}/maps/tagstest.vmap ${ASSETS_GEN})
 
 # Fonts (docs/design/hud.md Fonts): the committed indexed sheets ->
 # assets/gen/fonts/*.tex (same conversion as tools/build.d/50-fonts.sh), so

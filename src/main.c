@@ -318,6 +318,21 @@ static void draw(const run_t *r)
         door_open[d->ty * r->map->width + d->tx] = d->pos;
     }
     render_set_doors(door_open);
+    /* Live pushwalls (game/tags.h): the block is pos along (dx, dy) from its
+     * current tile. Live darkness: dark or dark_alt. */
+    static render_pushwall pws[MAX_PUSHWALLS];
+    for (int i = 0; i < r->gs.pushwall_count; i++) {
+        const pushwall_t *pw = &r->gs.pushwalls[i];
+        pws[i].x = fix_from_int(pw->tx) + pw->dx * pw->pos;
+        pws[i].y = fix_from_int(pw->ty) + pw->dy * pw->pos;
+        pws[i].tex = pw->wall;
+    }
+    render_set_pushwalls(pws, r->gs.pushwall_count);
+    static uint8_t dark[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
+    for (int ty = 0; ty < r->map->height; ty++)
+        for (int tx = 0; tx < r->map->width; tx++)
+            dark[ty * r->map->width + tx] = (uint8_t)game_cell_dark(&r->gs, tx, ty);
+    render_set_dark(dark);
     /* Pickups from live state: a taken one is gone the same tic. The tic is
      * only read (shimmer frame), so the state hash is unaffected. */
     const int n = items_render_things(&r->gs, things, RENDER_MAX_SPRITES);

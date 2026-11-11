@@ -136,6 +136,27 @@ const float *render_depth(void);
  * passes through. Fully open draws nothing. */
 void render_set_doors(const fix_t *open);
 
+/* One live pushwall block (game/tags.h pushwall_t): a 1x1 unit wall whose
+ * south-west (minimum) corner is at (x, y) in world units, textured with
+ * map texture `tex` on all four faces. */
+typedef struct {
+    fix_t x, y;
+    int tex;
+} render_pushwall;
+
+/* Live pushwall state for the wall pass. With a list (n >= 0, the array
+ * borrowed until replaced), the map's PUSHWALL cells are open floor and
+ * the wall pass draws the `n` blocks where they are now, sliding blocks
+ * between two tiles included: each face is hit exactly, lit by the open
+ * cell the face looks into. NULL (the default) draws every PUSHWALL cell
+ * as a wall in its map position. */
+void render_set_pushwalls(const render_pushwall *pw, int n);
+
+/* Live darkness for walls, floors, ceilings and map sprites: one entry
+ * per map cell (index y * map width + x), 0..31, borrowed until replaced.
+ * NULL (the default) uses each cell's map `dark`. */
+void render_set_dark(const uint8_t *dark);
+
 /* 1 if the cell blocks rays: a wall texture and SOLID, PUSHWALL or a closed
  * DOOR in its initial map state (START_OPEN doors are open). Doors with
  * live state go through render_set_doors(). */
