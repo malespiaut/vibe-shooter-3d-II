@@ -1,0 +1,14 @@
+{
+  "_comment": "Seated Bast cat statue, Egyptian decoration (items.md Decorations; art-bible.md Sizes: props 0.25..1.0 u, pre-rendered statues). 0.5 x 1.0 u = 32x64 on a 32x64 canvas. Symmetric enough to render d0 only (the engine shows d0 from every side). model.py builds cat_statue.blend; tools/build.d/48-props.sh renders it into assets/gen/sprites/props/.",
+  "object": "CatStatue",
+  "canvas": [32, 64],
+  "dirs": 1,
+  "ramps": {
+    "StatueBasalt": "steel",
+    "StatueGold": "gold",
+    "StatuePlinth": "sand"
+  },
+  "actions": {
+    "CatStatueIdle": {"anim": "idle", "frames": [1]}
+  }
+}

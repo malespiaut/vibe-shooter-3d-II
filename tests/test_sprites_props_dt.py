@@ -94,7 +94,11 @@ def main():
                                                          ",".join(sorted(fbs)) or "-"))
             assert seen_fb == fb_ok, "%s: fullbright %s, want %s" % (sprite, sorted(seen_fb),
                                                                     sorted(fb_ok))
-        got = {f for f in os.listdir(out) if f.endswith(".tex")}
+        # The props directory is shared with the Egyptian set (#127): check
+        # only this set's sprites, and that --clean removed the stale file.
+        assert not os.path.exists(os.path.join(out, "stale.tex")), "stale.tex survived"
+        got = {f for f in os.listdir(out)
+               if f.endswith(".tex") and f.split("_idle_")[0] in TABLE}
         assert got == want, "unexpected/missing: %s" % sorted(got ^ want)
         assert len(want) == 6, len(want)
         # Barrel gibs (GAME.md 6.2).

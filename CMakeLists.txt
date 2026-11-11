@@ -317,6 +317,14 @@ add_test(NAME sprites_props_dt
 set_tests_properties(sprites_props_dt PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 300
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# Egyptian decorations (items.md Decorations, #127): hand-drawn obelisk, pillar,
+# brazier and the pre-rendered cat statue: names, sizes, frames, ramp budget,
+# outline/fullbright rules, statue base, palcheck. Runs 48-props.sh (blender).
+add_test(NAME sprites_props_eg
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprites_props_eg.py)
+set_tests_properties(sprites_props_eg PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 300
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
 # Status-bar cat faces, tiers 3-5 (hud.md Cat face): names, 32x32, damage build-up,
 # all 52 faces present, palcheck.
 add_test(NAME hud_faces_t345

@@ -12,7 +12,11 @@ World sprites take a 1 px selective outline instead of the HUD drop shadow
 directly right of art (the edges facing away from the top-left light) becomes
 the darkest entry (<ramp>_00) of the ramp of the art pixel it borders. The
 pixel above wins over the one to the left. Fullbright pixels have no ramp, so
-a file that has art in fb_X on such an edge must say "outline fb_X <entry>".
+a file that has art in fb_X on such an edge must say "outline fb_X <entry>",
+or "outline fb_X none": then fb_X casts no outline (a flame or ember edge
+meets transparency directly, art-bible.md Outline rule, #190), and the
+transparent pixel takes the outline of the other neighbour (left) if that
+one is a ramp pixel.
 Leave the last column and row of art free where an outline should go.
 
 Checks (exit 1 on failure): at most 3 ramps plus fb_* per sprite, never
@@ -62,7 +66,7 @@ def load_item(path, pal):
     def outline(parts):
         if len(parts) != 3 or not parts[1].startswith("fb_"):
             raise hud.HudError("%s: need 'outline fb_<x> <entry>'" % path)
-        fb_out[pal(parts[1])] = pal(parts[2])
+        fb_out[pal(parts[1])] = None if parts[2] == "none" else pal(parts[2])
 
     name, img = hud.load_pix(path, {".": T}, pal,
                              extra={"outline": outline}, shadow=None)
@@ -85,10 +89,13 @@ def load_item(path, pal):
         for x in range(w):
             if art[y][x]:
                 continue
-            if y > 0 and art[y - 1][x]:
-                img.set(x, y, edge_colour(img.get(x, y - 1)))
-            elif x > 0 and art[y][x - 1]:
-                img.set(x, y, edge_colour(img.get(x - 1, y)))
+            for nx, ny in ((x, y - 1), (x - 1, y)):
+                if nx < 0 or ny < 0 or not art[ny][nx]:
+                    continue
+                c = edge_colour(img.get(nx, ny))
+                if c is not None:
+                    img.set(x, y, c)
+                    break
 
     ramps = set()
     for i in set(img.px):
