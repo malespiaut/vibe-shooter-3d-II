@@ -436,7 +436,10 @@ target_compile_options(test_music_tracks PRIVATE -UNDEBUG)
 add_test(NAME music_tracks COMMAND test_music_tracks
   ${MUSIC_SRC}/level_eg.vmus 60 120
   ${MUSIC_SRC}/level_docks.vmus 60 120
-  ${MUSIC_SRC}/intermission.vmus 8 20)
+  ${MUSIC_SRC}/intermission.vmus 8 20
+  ${MUSIC_SRC}/level_tomb.vmus 60 120
+  ${MUSIC_SRC}/level_dt.vmus 60 120
+  ${MUSIC_SRC}/ending.vmus 45 90)
 
 # Determinism (roadmap.md, Determinism rules): replay a registered demo twice
 # with --hash-log and require byte-identical per-tic logs. Later milestones
