@@ -1,0 +1,41 @@
+# Mastiff / Shieldbearer test map: 26x13, built by tools/mkmap.py into
+# maps/mastsheptest.vmap. Test fixture for demos/mastshep-test.demo (#96),
+# not a game level. An east-west corridor (ty=3) holds the player, the
+# Lance, the Howler and a Sun Orb; a Mastiff Juggernaut stands asleep at
+# its east end, facing north. A stay-open door at (8,4) seals off (for
+# noise and sight) the north room, where a Shepherd Shieldbearer stands
+# facing south toward the door.
+# Textures are the renderer test patterns, as m1test.
+
+name Mastiff Shepherd Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+legend D wall=test02 floor=test04 ceil=test05 flags=DOOR mode=stay
+
+layout
+##########################
+#####.......##############
+#####.......##############
+#####.......##############
+#####.......##############
+#####.......##############
+#####.......##############
+#####.......##############
+########D#################
+#........................#
+##########################
+##########################
+##########################
+end
+
+# ty counts from the south: the last layout row is ty = 0.
+entity PLAYER_START 2 3 0
+entity EYE_OF_RA_LANCE 3 3 0
+entity SPHINX_HOWLER 4 3 0
+entity SUN_ORB 5 3 0
+entity MASTIFF_JUGGERNAUT 23 3 90
+entity SHEPHERD_SHIELDBEARER 8 10 270

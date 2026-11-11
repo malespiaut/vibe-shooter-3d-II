@@ -16,6 +16,11 @@ static const projectile_info_t SCARAB = { 26214, 8192, 30, 20, 96, SPLASH_RADIUS
  * (same 12x12 px sprite). */
 static const projectile_info_t PLASMA = { 14980, 8192, 8, 8, 0, 0, TH_TYPE_PLASMA_HIT, SFX_plasma_hit };
 
+/* enemies.md Mastiff Juggernaut: bone missile 6 u/s (11235), direct 20..40,
+ * splash 32 r1.0. "Slow and big": radius 0.25 u, twice the scarab's. */
+static const projectile_info_t BONE = { 11235, 16384, 20, 20, 32, SPLASH_RADIUS_1_0,
+                                        TH_TYPE_EXPLOSION_SMALL, SFX_bone_explode };
+
 const projectile_info_t *projectile_info(uint16_t type)
 {
     switch (type) {
@@ -23,6 +28,8 @@ const projectile_info_t *projectile_info(uint16_t type)
         return &SCARAB;
     case TH_TYPE_PLASMA_BOLT:
         return &PLASMA;
+    case TH_TYPE_BONE_PROJ:
+        return &BONE;
     default:
         return NULL;
     }
@@ -124,7 +131,7 @@ void splash_damage(game_state *gs, fix_t x, fix_t y, int32_t amount, fix_t radiu
             continue;
         const int32_t dmg = splash_at(x, y, t->x, t->y, amount, radius, &d);
         if (dmg > 0 && clear_line(gs, x, y, t->x, t->y, d))
-            ai_damage(gs, t, dmg);
+            ai_damage_from(gs, t, dmg, DMG_SPLASH, x, y);
     }
     player_t *p = &gs->player;
     if (p->dead)
@@ -169,8 +176,9 @@ static void projectile_move(game_state *gs, thinker_t *t, uint16_t id)
     if (!hit && !hit_player && !hit_wall)
         return;
 
-    if (hit)
-        ai_damage(gs, hit, roll(gs, pi->dmg_base, pi->dmg_spread));
+    if (hit) /* it came from where it was one tic ago */
+        ai_damage_from(gs, hit, roll(gs, pi->dmg_base, pi->dmg_spread), DMG_DIRECT, x0 - t->momx,
+                       y0 - t->momy);
     else if (hit_player)
         player_damage(gs, roll(gs, pi->dmg_base, pi->dmg_spread));
     if (pi->splash)

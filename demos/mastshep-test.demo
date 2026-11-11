@@ -1,0 +1,29 @@
+# Mastiff / Shieldbearer test (#96): maps/mastsheptest.vmap, skill 2. The
+# player picks up the Eye of Ra Lance, the Sphinx Howler and a Sun Orb,
+# then beams the Mastiff Juggernaut at the far end of the corridor until it
+# dies (400 HP, 100..140 a beam: 3 or 4 beams) while its bone missiles fly.
+# Then the player opens the stay-open door to the north room with the
+# Howler ready: the Shepherd Shieldbearer sees the player and walks in
+# with its shield up, which the Howler ignores. Two roars kill it.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map mastsheptest
+
+expect kills=0
+goto 5 3                # Lance, Howler, Sun Orb
+weapon 6
+wait 10
+fire nearest            # the Mastiff, 18 u east
+expect kills=1
+expect health>0
+goto 8 3
+weapon 7
+wait 10
+face 90
+use                     # the door face is 0.5 ahead, within 0.75
+wait 90                 # the door slides open; the Shepherd sees the player and walks to within 5 u
+fire 60                 # two roars, 50 tics apart: 80 + 80 > 90 HP
+expect kills=2
+expect health>0

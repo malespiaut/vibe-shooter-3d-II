@@ -20,6 +20,7 @@
 struct game_state;
 
 #define SPLASH_RADIUS_1_5 ((fix_t)98304) /* 1.5 u: scarab and barrel */
+#define SPLASH_RADIUS_1_0 ((fix_t)65536) /* 1.0 u: Mastiff bone missile */
 #define BARREL_SPLASH 64
 #define MORTAR_SPLASH 40     /* Dachshund shell, radius SPLASH_RADIUS_1_5 */
 #define MORTAR_DELAY_TICS 42 /* reticle on the floor to the shell landing */
@@ -56,7 +57,8 @@ uint16_t projectile_spawn(struct game_state *gs, uint16_t type, uint16_t owner, 
  * thinker_alive shootable thinker is hit, awake enemies (CHASE, WINDUP,
  * ATTACK, PAIN) included. Thinkers go through ai_damage (wakes, pain
  * chance, drops; thinker_damage's gib rule; barrels light their fuse), the player
- * through player_damage. */
+ * through player_damage. A frontal shield (ai_damage_from) halves the
+ * splash that comes from in front of it. */
 void splash_damage(struct game_state *gs, fix_t x, fix_t y, int32_t amount, fix_t radius,
                    uint16_t source_id);
 

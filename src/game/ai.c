@@ -234,15 +234,86 @@ int ai_damage_pain(game_state *gs, thinker_t *t, int32_t damage, int32_t pain_ti
     return 0;
 }
 
-/* Player near edge within the melee reach of `t`. */
-static int in_reach(const game_state *gs, const thinker_t *t, const enemy_info_t *info)
+int ai_shield_up(const thinker_t *t)
 {
-    return player_dist(gs, t) - PLAYER_RADIUS <= info->range;
+    const enemy_info_t *info = enemy_info(t->type);
+    return info && info->shield && thinker_alive(t) && t->state != TH_STATE_WINDUP &&
+           t->state != TH_STATE_ATTACK && t->shield_tics == 0;
+}
+
+/* 1 when (sx, sy) lies within the shield arc in front of `t`. */
+static int shield_faces(const thinker_t *t, fix_t sx, fix_t sy)
+{
+    if (sx == t->x && sy == t->y)
+        return 1;
+    const int16_t off = (int16_t)(angle_of(sx - t->x, sy - t->y) - t->angle);
+    return off <= (int32_t)AI_SHIELD_HALF && off >= -(int32_t)AI_SHIELD_HALF;
+}
+
+int ai_damage_from(game_state *gs, thinker_t *t, int32_t damage, int kind, fix_t sx, fix_t sy)
+{
+    if (damage > 0 && ai_shield_up(t) && shield_faces(t, sx, sy)) {
+        if (kind == DMG_SPLASH) {
+            damage /= 2;
+        } else {
+            game_sound(gs, SFX_shield_block, t->x, t->y);
+            wake(t);
+            return 0;
+        }
+    }
+    return ai_damage(gs, t, damage);
+}
+
+/* Telegraph and attack sounds (audio.md) of the enemies that play them;
+ * -1 = none. */
+static int windup_sfx(uint16_t type)
+{
+    switch (type) {
+    case BAST_ENT_MASTIFF_JUGGERNAUT:
+        return SFX_mastiff_windup;
+    case BAST_ENT_SHEPHERD_SHIELDBEARER:
+        return SFX_shep_windup;
+    default:
+        return -1;
+    }
+}
+
+static int hit_sfx(uint16_t type)
+{
+    return type == BAST_ENT_SHEPHERD_SHIELDBEARER ? SFX_baton_hit : -1;
 }
 
 static uint16_t thinker_id(const game_state *gs, const thinker_t *t)
 {
     return (uint16_t)(t - gs->things.list + 1);
+}
+
+/* Mastiff: one missile from the next shoulder, aimed at the player from
+ * the launch point. Left = 90 degrees counter-clockwise of the facing. The
+ * shoulder flips every shot, also when a wall forces the centre. */
+static void launch_missile(game_state *gs, thinker_t *t, const enemy_info_t *info)
+{
+    const angle_t side = (angle_t)(t->angle + (t->shoulder ? (angle_t)(0u - ANG90) : ANG90));
+    fix_t x = t->x + fix_mul(info->shoulder, fine_cos(side));
+    fix_t y = t->y + fix_mul(info->shoulder, fine_sin(side));
+    const projectile_info_t *pi = projectile_info(info->missile);
+    if (pi && game_circle_blocked(gs, x, y, pi->radius)) {
+        /* Shoulder against a wall (a 1-tile corridor): launch from the
+         * centre, which the body keeps clear, rather than into the wall. */
+        x = t->x;
+        y = t->y;
+    }
+    const angle_t aim = angle_of(gs->player.x - x, gs->player.y - y);
+    projectile_spawn(gs, info->missile, thinker_id(gs, t), x, y, AI_MISSILE_Z, aim);
+    if (info->shoulder)
+        t->shoulder ^= 1;
+    game_sound(gs, SFX_bone_fire, x, y);
+}
+
+/* Player near edge within the melee reach of `t`. */
+static int in_reach(const game_state *gs, const thinker_t *t, const enemy_info_t *info)
+{
+    return player_dist(gs, t) - PLAYER_RADIUS <= info->range;
 }
 
 /* A plasma bolt at the player's position now. */
@@ -269,6 +340,10 @@ static int pom_volley_tic(int32_t tics)
 static void resolve_attack(game_state *gs, thinker_t *t, const enemy_info_t *info)
 {
     int hit = 0;
+    if (info->attack == ATK_MISSILE) {
+        launch_missile(gs, t, info);
+        return;
+    }
     if (info->attack == ATK_HITSCAN) {
         hit = player_dist(gs, t) <= info->range && ai_line_of_sight(gs, t);
     } else if (info->attack == ATK_MELEE) {
@@ -285,6 +360,8 @@ static void resolve_attack(game_state *gs, thinker_t *t, const enemy_info_t *inf
     if (hit) {
         const int32_t dmg = info->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)info->dmg_spread + 1);
         player_damage_from(gs, dmg, t->x, t->y);
+        if (hit_sfx(t->type) >= 0)
+            game_sound(gs, hit_sfx(t->type), t->x, t->y);
     }
 }
 
@@ -294,6 +371,8 @@ static void start_windup(game_state *gs, thinker_t *t)
     t->tics = ai_windup_tics(gs, t->type);
     t->angle = angle_to_player(gs, t);
     t->movedir = DI_NONE;
+    if (windup_sfx(t->type) >= 0)
+        game_sound(gs, windup_sfx(t->type), t->x, t->y);
 }
 
 /* Picks the next tile down the route field; DI_NONE when none (or when in
@@ -557,7 +636,8 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
     }
     if (--t->movecount <= 0) {
         t->movecount = AI_DECIDE_TICS;
-        if ((info->attack == ATK_HITSCAN || info->attack == ATK_PLASMA) &&
+        if ((info->attack == ATK_HITSCAN || info->attack == ATK_PLASMA ||
+             info->attack == ATK_MISSILE) &&
             player_dist(gs, t) <= info->range && ai_line_of_sight(gs, t) &&
             (int32_t)rng_range(&gs->rng, 256) < info->aggression) {
             start_windup(gs, t);
@@ -581,8 +661,17 @@ void ai_tic(game_state *gs)
         if (!thinker_alive(t))
             continue;
         const enemy_info_t *info = enemy_info(t->type);
-        if (info)
-            think(gs, t, info, dist, &have_dist);
+        if (!info)
+            continue;
+        if (info->shield) { /* Howler hook (thinker_t.howler_hit) */
+            if (t->shield_tics > 0)
+                t->shield_tics--;
+            if (t->howler_hit) {
+                t->howler_hit = 0;
+                t->shield_tics = AI_SHIELD_DROP_TICS;
+            }
+        }
+        think(gs, t, info, dist, &have_dist);
     }
 }
 

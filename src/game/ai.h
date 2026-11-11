@@ -29,6 +29,10 @@
  *   and AI_DACH_ constants below. Enemy projectiles and shells hurt any
  *   shootable thinker but their owner; there is no infighting (nobody
  *   retargets).
+ * - Missile enemies (Mastiff): the attack launches enemy_info.missile at
+ *   the player from alternating shoulders (lateral offset enemy_info
+ *   .shoulder, left first), aimed from the launch point; from the centre
+ *   when the missile would overlap a wall at the shoulder.
  * - Collision: circle vs the tiles enemies may not stand in, then vs the
  *   player circle, axis-separated (x then y). */
 
@@ -39,6 +43,15 @@
 #define AI_ATTACK_TICS 8
 #define AI_PAIN_TICS 6
 #define AI_FOV_HALF ((angle_t)10923) /* 60 degrees */
+#define AI_SHIELD_HALF ((angle_t)10923) /* Shieldbearer shield: +-60 degrees */
+#define AI_SHIELD_DROP_TICS 70          /* after a Sphinx Howler hit */
+#define AI_MISSILE_Z ((fix_t)39322)     /* 0.6 u: missile launch height (render) */
+
+/* How damage reaches a thinker, for the frontal shield. */
+enum {
+    DMG_DIRECT = 0, /* hitscan, the Lance, claws, a projectile's direct hit */
+    DMG_SPLASH = 1, /* splash_damage */
+};
 
 /* Pomeranian (enemies.md): a volley of AI_POM_BOLTS bolts AI_POM_BOLT_GAP
  * tics apart, the first when the wind-up ends, each aimed at the player's
@@ -64,6 +77,21 @@ void ai_noise(game_state *gs);
 /* Damage from the player's weapons: thinker_damage, then wake/pain on a
  * survivable hit, or the drop on a kill. Returns 1 when it killed. */
 int ai_damage(game_state *gs, thinker_t *t, int32_t damage);
+
+/* ai_damage from a source at (sx, sy). Shieldbearer (enemy_info shield):
+ * while its shield is up (ai_shield_up), damage whose source lies within
+ * +-AI_SHIELD_HALF of its facing is blocked when DMG_DIRECT (0 damage,
+ * shield_block plays, it wakes) and halved (rounded down) when DMG_SPLASH.
+ * A source on its centre counts as in front. Everything else, and every
+ * other thinker, is plain ai_damage. The Howler goes through
+ * ai_damage_pain and is never blocked. */
+int ai_damage_from(game_state *gs, thinker_t *t, int32_t damage, int kind, fix_t sx, fix_t sy);
+
+/* 1 when `t` carries a frontal shield and it is up: not in WINDUP or
+ * ATTACK (the shield swings aside) and no Howler drop running (a Howler
+ * hit, thinker_t.howler_hit, drops it for AI_SHIELD_DROP_TICS tics: it is
+ * down for the next AI_SHIELD_DROP_TICS game tics' weapon fire). */
+int ai_shield_up(const thinker_t *t);
 
 /* ai_damage with a forced flinch: when `pain_tics` > 0 a survivable hit
  * puts the enemy in PAIN for `pain_tics` tics without the pain roll (Sphinx

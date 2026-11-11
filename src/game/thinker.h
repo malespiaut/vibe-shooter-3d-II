@@ -40,6 +40,7 @@ enum {
     TH_TYPE_PLASMA_HIT = 260,  /* its impact effect (fx plasma_hit) */
     TH_TYPE_RETICLE = 261,     /* Dachshund mortar mark (fx reticle): the
                                 * shell lands when `tics` runs out */
+    TH_TYPE_BONE_PROJ = 262,   /* Mastiff Juggernaut bone missile */
 };
 
 /* Owner id of projectiles the player fired (thinker ids are 1..MAX_THINKERS). */
@@ -85,6 +86,8 @@ typedef struct {
                          * the Shieldbearer's 70-tic shield drop reads and
                          * clears it. */
     uint32_t died_tic; /* game tic of the killing hit (DEAD enemies; hashed then) */
+    int32_t shield_tics; /* Shieldbearer: tics left of a Howler shield drop */
+    uint8_t shoulder;    /* Mastiff: shoulder of the next missile, 0 left, 1 right */
 } thinker_t;
 
 typedef struct {

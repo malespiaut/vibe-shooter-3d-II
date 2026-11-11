@@ -247,7 +247,8 @@ static void fire_lance(game_state *gs, const weapon_info_t *wi)
     const int n = weapon_trace_multi(gs, p->x, p->y, p->angle, HITSCAN_RANGE, 0, ids,
                                      WEAPON_PIERCE_MAX, NULL);
     for (int i = 0; i < n; i++)
-        ai_damage(gs, thinker_get(&gs->things, ids[i]), roll_damage(gs, wi));
+        ai_damage_from(gs, thinker_get(&gs->things, ids[i]), roll_damage(gs, wi), DMG_DIRECT, p->x,
+                       p->y);
 }
 
 /* Sphinx Howler: every target of weapon_howler_targets, in creation order:
@@ -315,7 +316,7 @@ static void fire_weapon(game_state *gs)
         uint16_t id = weapon_trace(gs, p->x, p->y, a, range, wp == WP_CLAWS, NULL);
         thinker_t *t = thinker_get(&gs->things, id);
         if (t) {
-            ai_damage(gs, t, roll_damage(gs, wi));
+            ai_damage_from(gs, t, roll_damage(gs, wi), DMG_DIRECT, p->x, p->y);
             hit = 1;
         }
     }

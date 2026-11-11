@@ -411,6 +411,10 @@ uint64_t game_hash(const game_state *gs)
     hash_u32(&h, e->weapon_ready);
     for (int i = 0; i < AM_TYPES; i++)
         hash_i32(&h, e->ammo[i]);
+    for (int i = 0; i < gs->things.count; i++) {
+        hash_i32(&h, gs->things.list[i].shield_tics);
+        hash_u32(&h, gs->things.list[i].shoulder);
+    }
     return h.value;
 }
 

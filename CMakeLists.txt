@@ -184,6 +184,14 @@ foreach(g sight ambush windup chomper pillar drop block pushwall
           pom_sound dach_sound)
   add_test(NAME ai_${g} COMMAND test_ai ${g})
 endforeach()
+# Mastiff Juggernaut and Shepherd Shieldbearer (issue #96).
+add_executable(test_ai_mastshep tests/test_ai_mastshep.c)
+target_link_libraries(test_ai_mastshep PRIVATE engine)
+target_compile_options(test_ai_mastshep PRIVATE -UNDEBUG)
+foreach(g mastiff_shoulders mastiff_speed mastiff_lance mastiff_hit shep_front shep_splash
+        shep_howler shep_windup)
+  add_test(NAME ai_${g} COMMAND test_ai_mastshep ${g})
+endforeach()
 # Projectiles, splash, Scarab Launcher, kibble barrels (issue #93).
 add_executable(test_projectile tests/test_projectile.c)
 target_link_libraries(test_projectile PRIVATE engine)
@@ -621,6 +629,14 @@ add_test(NAME pomdach_demo
 set_tests_properties(pomdach_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 add_demo_determinism(pomdach-test)
+
+# Mastiff / Shieldbearer test demo, run twice (issue #96).
+add_test(NAME mastshep_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_mastshep_demo.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/mastshep_demo)
+set_tests_properties(mastshep_demo PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+add_demo_determinism(mastshep-test)
 
 # Renderer: floors, ceilings and sky on maps/m1test.vmap (issue #14).
 add_executable(test_render_floor tests/test_render_floor.c)
