@@ -1,0 +1,22 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+# Open plain door D, step into the doorway and stand there past the 140-tic auto-close.
+goto 2 3
+face 90
+use
+wait 32
+goto 2 4
+wait 250
+expect tile=2,4
+goto 2 6
+expect tile=2,6
+# Try the one-way door O from the wrong (north) side.
+goto 6 5
+face 270
+use
+wait 40
+in 40 127 0 0 -
+expect tile=6,5

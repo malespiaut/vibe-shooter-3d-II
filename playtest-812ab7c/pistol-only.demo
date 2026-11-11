@@ -1,0 +1,16 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map aitest
+# Skip the scattergun: hold the corridor mouth with the starting pistol.
+weapon 2
+face 10 4
+fire 1
+wait 60
+fire nearest
+fire nearest
+fire nearest
+fire nearest
+fire nearest
+expect kills=5

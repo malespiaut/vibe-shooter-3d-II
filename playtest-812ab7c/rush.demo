@@ -1,0 +1,15 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map aitest
+# Grab scattergun, wake them, then advance into the corridor and fight at point blank.
+goto 3 4
+weapon 3
+goto 9 4
+fire 1
+face 10 4
+clear 12 2100
+goto 15 4
+clear 12 2100
+expect kills=5

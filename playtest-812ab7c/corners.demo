@@ -1,0 +1,17 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+# Scrape into the SW corner diagonally while running, then wall-slide along the south wall, strafe into door frames.
+face 225
+in 70 127 0 0 R
+face 0
+in 70 127 0 0 R
+face 90
+in 30 127 -127 0 R
+in 30 127 127 0 R
+in 60 0 127 0 R
+face 270
+in 40 127 0 0 R
+expect health=100
