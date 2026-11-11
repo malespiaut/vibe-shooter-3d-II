@@ -6,6 +6,7 @@
 #include "game/enemy_info.h"
 #include "game/items.h"
 #include "game/projectile.h"
+#include "game/sound.h"
 #include "game/tags.h"
 
 /* Compass steps, DI_EAST.. counter-clockwise (y grows north). */
@@ -249,6 +250,19 @@ static void fire_bolt(game_state *gs, thinker_t *t)
     t->angle = angle_to_player(gs, t);
     projectile_spawn(gs, TH_TYPE_PLASMA_BOLT, thinker_id(gs, t), t->x, t->y, AI_POM_BOLT_Z,
                      t->angle);
+    game_sound(gs, SFX_plasma_fire, t->x, t->y);
+}
+
+/* 1 when `tics` (counting down through the Pomeranian's attack state) is
+ * the fire tic of bolt 2..AI_POM_BOLTS: bolt k fires (k - 1) gaps after
+ * bolt 1, which resolve_attack fires as the state starts. */
+static int pom_volley_tic(int32_t tics)
+{
+    const int32_t start = AI_ATTACK_TICS + (AI_POM_BOLTS - 1) * AI_POM_BOLT_GAP;
+    for (int k = 2; k <= AI_POM_BOLTS; k++)
+        if (tics == start - (k - 1) * AI_POM_BOLT_GAP)
+            return 1;
+    return 0;
 }
 
 static void resolve_attack(game_state *gs, thinker_t *t, const enemy_info_t *info)
@@ -262,8 +276,10 @@ static void resolve_attack(game_state *gs, thinker_t *t, const enemy_info_t *inf
         fire_bolt(gs, t);
     } else if (info->attack == ATK_MORTAR) {
         hit = in_reach(gs, t, info); /* headbutt */
-        if (!hit)
+        if (!hit) {
+            game_sound(gs, SFX_mortar_launch, t->x, t->y);
             reticle_spawn(gs, thinker_id(gs, t), gs->player.x, gs->player.y);
+        }
     }
     if (hit) {
         const int32_t dmg = info->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)info->dmg_spread + 1);
@@ -504,7 +520,7 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
     case TH_STATE_ATTACK:
         --t->tics;
         if (t->state == TH_STATE_ATTACK && info->attack == ATK_PLASMA && player_alive &&
-            t->tics > 0 && (AI_POM_BOLT_GAP + AI_ATTACK_TICS - t->tics) % AI_POM_BOLT_GAP == 0)
+            pom_volley_tic(t->tics))
             fire_bolt(gs, t); /* the next bolt of the volley */
         if (t->tics <= 0) {
             t->state = TH_STATE_CHASE;

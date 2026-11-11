@@ -23,6 +23,7 @@ struct game_state;
 #define BARREL_SPLASH 64
 #define MORTAR_SPLASH 40     /* Dachshund shell, radius SPLASH_RADIUS_1_5 */
 #define MORTAR_DELAY_TICS 42 /* reticle on the floor to the shell landing */
+#define RETICLE_BEEP_TICS 8  /* audio.md: reticle_beep repeats every 8 tics */
 #define FX_TICS_PER_FRAME 3
 #define PROJ_SUBSTEPS 4 /* collision checks per tic of motion */
 
@@ -33,6 +34,7 @@ typedef struct {
     int32_t splash;         /* at the impact point, linear falloff to 0 */
     fix_t splash_radius;
     uint16_t fx;            /* effect thinker type it becomes */
+    uint16_t sfx;           /* SFX_* queued at the impact point */
 } projectile_info_t;
 
 /* NULL when `type` is not a projectile. */

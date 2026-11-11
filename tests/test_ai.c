@@ -9,6 +9,7 @@
 #include "game/enemy_info.h"
 #include "game/items.h"
 #include "game/projectile.h"
+#include "game/sound.h"
 #include "game/state.h"
 #include "game/tags.h"
 
@@ -582,6 +583,107 @@ static void test_dach_headbutt(void)
     bast_map_free(m);
 }
 
+/* Records the tics on which sound `sfx` was queued; with `at` set, only
+ * events at that exact position. */
+static int sound_tics(const game_state *gs, int sfx, const fix_t *at, int tic, int *out, int n,
+                      int max)
+{
+    for (int i = 0; i < gs->sounds.count; i++) {
+        const sound_event *e = &gs->sounds.ev[i];
+        if (e->id == sfx && n < max && (!at || (e->x == at[0] && e->y == at[1])))
+            out[n++] = tic;
+    }
+    return n;
+}
+
+/* audio.md: plasma_fire on each bolt's fire tic, plasma_hit where each
+ * bolt strikes the standing player. Every volley over 120 tics counts. */
+static void test_pom_sound(void)
+{
+    bast_map *m = open_map(24, 5);
+    add_entity(m, BAST_ENT_POMERANIAN_PLASMAGUNNER, 18, 2, ANG180, BAST_ENT_SKILL_ALL);
+    add_player(m, 2, 2, 0);
+    game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    gs.player.health = 1000;
+    force_windup(&gs, &gs.things.list[0]);
+    int fire[16], hit[16], bolts[16], nf = 0, nh = 0, nb = 0, nbolt_hit = 0;
+    uint8_t was_bolt[MAX_THINKERS] = { 0 };
+    for (int tic = 1; tic <= 120; tic++) {
+        game_tic(&gs, &IDLE);
+        for (int i = 0; i < gs.things.count; i++) {
+            const thinker_t *t = &gs.things.list[i];
+            const int bolt = t->type == TH_TYPE_PLASMA_BOLT && t->state == TH_STATE_STAND;
+            if (bolt && !was_bolt[i] && nb < 16)
+                bolts[nb++] = tic; /* a new bolt in this slot */
+            if (!bolt && was_bolt[i] && t->type == TH_TYPE_PLASMA_HIT)
+                nbolt_hit++; /* a bolt turned into its impact effect */
+            was_bolt[i] = (uint8_t)bolt;
+        }
+        nf = sound_tics(&gs, SFX_plasma_fire, NULL, tic, fire, nf, 16);
+        nh = sound_tics(&gs, SFX_plasma_hit, NULL, tic, hit, nh, 16);
+    }
+    printf("pom_sound: bolts at");
+    for (int i = 0; i < nb; i++)
+        printf(" %d", bolts[i]);
+    printf(", plasma_fire at");
+    for (int i = 0; i < nf; i++)
+        printf(" %d", fire[i]);
+    printf(", %d impacts, plasma_hit at", nbolt_hit);
+    for (int i = 0; i < nh; i++)
+        printf(" %d", hit[i]);
+    printf("\n");
+    assert(nb >= 4 && nf == nb);
+    for (int i = 0; i < nb; i++)
+        assert(fire[i] == bolts[i]);
+    assert(fire[0] == 16 && fire[1] == 26);
+    assert(nh >= 2 && nh == nbolt_hit && hit[0] > fire[0] && hit[1] > fire[1]);
+    bast_map_free(m);
+}
+
+/* audio.md: mortar_launch with the reticle, reticle_beep every 8 tics
+ * while the reticle lives (from its spawn), mortar_land when the shell
+ * lands. The player strafes so later reticles sit elsewhere; beeps are
+ * counted at the first reticle's position only. */
+static void test_dach_sound(void)
+{
+    bast_map *m = open_map(20, 64);
+    add_entity(m, BAST_ENT_DACHSHUND_HOWITZER, 10, 58, ANG180, BAST_ENT_SKILL_ALL);
+    add_player(m, 2, 58, 0);
+    game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    gs.player.health = 1000;
+    force_windup(&gs, &gs.things.list[0]);
+    const ticcmd strafe = { 0, 127, 0, 0 };
+    int launch[8], beep[16], land[8], nl = 0, nb = 0, nd = 0;
+    fix_t at[2] = { 0, 0 };
+    int have_at = 0;
+    for (int tic = 1; tic <= 70; tic++) {
+        game_tic(&gs, &strafe);
+        if (!have_at && gs.things.count > 1 && gs.things.list[1].type == TH_TYPE_RETICLE) {
+            at[0] = gs.things.list[1].x;
+            at[1] = gs.things.list[1].y;
+            have_at = 1;
+        }
+        nl = sound_tics(&gs, SFX_mortar_launch, NULL, tic, launch, nl, 8);
+        if (have_at) {
+            nb = sound_tics(&gs, SFX_reticle_beep, at, tic, beep, nb, 16);
+            nd = sound_tics(&gs, SFX_mortar_land, at, tic, land, nd, 8);
+        }
+    }
+    printf("dach_sound: mortar_launch at %d, first reticle's beeps at", launch[0]);
+    for (int i = 0; i < nb; i++)
+        printf(" %d", beep[i]);
+    printf(", mortar_land at %d\n", land[0]);
+    assert(have_at && nl >= 1 && launch[0] == 14);
+    assert(nd == 1 && land[0] == 14 + MORTAR_DELAY_TICS);
+    int expect = 0;
+    for (int t = 14; t < land[0]; t += 8)
+        assert(expect < nb && beep[expect++] == t);
+    assert(nb == expect && nb == 6); /* 14, 22, 30, 38, 46, 54 */
+    bast_map_free(m);
+}
+
 int main(int argc, char **argv)
 {
     static const struct {
@@ -595,7 +697,8 @@ int main(int argc, char **argv)
         { "pom_dodge", test_pom_dodge }, { "pom_still", test_pom_still },
         { "pom_windup", test_pom_windup }, { "dach_mortar", test_dach_mortar },
         { "dach_retreat", test_dach_retreat }, { "dach_windup", test_dach_windup },
-        { "dach_headbutt", test_dach_headbutt },
+        { "dach_headbutt", test_dach_headbutt }, { "pom_sound", test_pom_sound },
+        { "dach_sound", test_dach_sound },
     };
     for (size_t i = 0; i < sizeof groups / sizeof groups[0]; i++) {
         if (argc < 2 || strcmp(argv[1], groups[i].name) == 0) {
