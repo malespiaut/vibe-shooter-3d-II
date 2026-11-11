@@ -7,7 +7,10 @@
  *   test_sound enemies <maps dir> <demo>  replays a demo and prints one
  *       line per enemy whose state changed in a tic:
  *       `tic index type before after x y gib` (states TH_STATE_*, x y raw
- *       16.16, gib = TH_FLAG_GIB). Oracle for tests/test_enemy_sounds.py. */
+ *       16.16, gib = TH_FLAG_GIB), and `player tic before after` on each
+ *       tic the player's health dropped, and `spawn tic bolt|reticle owner
+ *       ox oy` for each new plasma bolt or mortar reticle (ox oy: the owner
+ *       enemy's position). Oracle for tests/test_enemy_sounds.py. */
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -200,6 +203,7 @@ static void trace(const char *maps, const char *path)
 static void enemies(const char *maps, const char *path)
 {
     static uint8_t before[MAX_THINKERS];
+    static uint16_t before_type[MAX_THINKERS];
     char err[256];
     char *text = slurp(path);
     demo_t *d = demo_parse(text, err, sizeof err);
@@ -210,12 +214,27 @@ static void enemies(const char *maps, const char *path)
     int r;
     while ((r = demo_next(d, &gs, &cmd, err, sizeof err)) == DEMO_TIC) {
         const uint32_t tic = gs.tic;
-        for (int i = 0; i < gs.things.count; i++)
+        const int nbefore = gs.things.count;
+        for (int i = 0; i < nbefore; i++) {
             before[i] = gs.things.list[i].state;
+            before_type[i] = gs.things.list[i].type;
+        }
+        const int32_t hp = gs.player.health;
         game_tic(&gs, &cmd);
+        if (gs.player.health < hp)
+            printf("player %u %ld %ld\n", (unsigned)tic, (long)hp, (long)gs.player.health);
         for (int i = 0; i < gs.things.count; i++) {
             const thinker_t *t = &gs.things.list[i];
-            if (!enemy_info(t->type) || t->state == before[i])
+            const int shot = t->type == TH_TYPE_PLASMA_BOLT || t->type == TH_TYPE_RETICLE;
+            if (shot && t->state == TH_STATE_STAND &&
+                (i >= nbefore || before_type[i] != t->type || before[i] != TH_STATE_STAND) &&
+                t->owner >= 1 && t->owner <= gs.things.count) {
+                const thinker_t *o = &gs.things.list[t->owner - 1];
+                printf("spawn %u %s %d %ld %ld\n", (unsigned)tic,
+                       t->type == TH_TYPE_RETICLE ? "reticle" : "bolt", t->owner - 1,
+                       (long)o->x, (long)o->y);
+            }
+            if (i >= nbefore || !enemy_info(t->type) || t->state == before[i])
                 continue;
             printf("%u %d %u %u %u %ld %ld %d\n", (unsigned)tic, i, (unsigned)t->type,
                    (unsigned)before[i], (unsigned)t->state, (long)t->x, (long)t->y,
