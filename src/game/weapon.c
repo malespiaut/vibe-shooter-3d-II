@@ -75,10 +75,11 @@ void weapon_select(weapons_t *w, int wp)
 
 /* Distance along the unit ray (dx, dy) from (x, y) to the first blocking
  * tile, or `range` if none is reached within it. Grid DDA, fixed point. */
-static fix_t trace_wall(const bast_map *map, fix_t x, fix_t y, fix_t dx, fix_t dy, fix_t range)
+static fix_t trace_wall(const struct game_state *gs, fix_t x, fix_t y, fix_t dx, fix_t dy,
+                        fix_t range)
 {
     int tx = fix_to_int(x), ty = fix_to_int(y);
-    if (game_tile_blocks(map, tx, ty))
+    if (game_tile_blocks(gs, tx, ty))
         return 0;
     const int stepx = dx > 0 ? 1 : -1, stepy = dy > 0 ? 1 : -1;
     const int64_t BIG = INT64_MAX / 4;
@@ -113,7 +114,7 @@ static fix_t trace_wall(const bast_map *map, fix_t x, fix_t y, fix_t dx, fix_t d
         }
         if (dist >= range)
             return range;
-        if (game_tile_blocks(map, tx, ty))
+        if (game_tile_blocks(gs, tx, ty))
             return (fix_t)dist;
     }
 }
@@ -122,7 +123,7 @@ uint16_t weapon_trace(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t 
                       fix_t *wall_dist)
 {
     const fix_t dx = fine_cos(a), dy = fine_sin(a);
-    const fix_t wall = trace_wall(gs->map, x, y, dx, dy, HITSCAN_RANGE);
+    const fix_t wall = trace_wall(gs, x, y, dx, dy, HITSCAN_RANGE);
     if (wall_dist)
         *wall_dist = wall < range ? wall : range;
 

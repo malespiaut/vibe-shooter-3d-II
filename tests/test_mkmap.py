@@ -75,6 +75,22 @@ def test_m1test(tmp):
     assert read(out) == read(COMMITTED), "maps/m1test.vmap is stale: rerun mkmap.py"
 
 
+def test_doortest(tmp):
+    out = os.path.join(tmp, "doortest.vmap")
+    m = mkmap.build(open(os.path.join(ROOT, "maps", "src", "doortest.txt")).read())
+    m.save(out)
+    flags = bast.cell_flags()
+    door = flags["DOOR"]
+    # Door param: key bits 0-1, mode bits 2-3, ONEWAY side bits 4-5.
+    want = {2: (door, 0), 4: (door, 1), 6: (door | flags["ONEWAY"], 2 << 4),
+            8: (door, 1 << 2), 10: (door | flags["START_OPEN"], 0)}
+    for x, (f, param) in want.items():
+        c = m.get_cell(x, 4)
+        assert (c["flags"], c["param"]) == (f, param), (x, c)
+    assert read(out) == read(os.path.join(ROOT, "maps", "doortest.vmap")), \
+        "maps/doortest.vmap is stale: rerun mkmap.py"
+
+
 def test_binding(tmp):
     m = bast.Map(3, 2)
     m.name = "tiny"
@@ -122,6 +138,7 @@ def test_errors():
         (good + "entity WAYPOINT 2 0 0\n", "outside"),
         (good + "entity WAYPOINT 0 0 0 a\nentity WAYPOINT 1 0 0 a\n", "duplicate"),
         ("legend . floor=a\nlayout\n.\n", "end"),
+        ("legend . key=gold\nlayout\n.\nend\n", "key="),
     ]:
         try:
             mkmap.build(text)
@@ -136,6 +153,7 @@ def test_errors():
 def main():
     with tempfile.TemporaryDirectory() as tmp:
         test_m1test(tmp)
+        test_doortest(tmp)
         test_binding(tmp)
     test_errors()
     print("mkmap_py: ok")

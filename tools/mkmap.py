@@ -25,6 +25,10 @@ be a legend character):
                         SECRET, DAMAGE, ONEWAY, START_OPEN, BLOCK_MONSTER,
                         BLOCK_ALL, TRIGGER), or a number
         tag=<0..255>  param=<0..255>
+        Door fields, OR-ed into param (tech.md Map, door param):
+        key=none|green|blue|violet      bits 0-1
+        mode=auto|stay|switch|timed     bits 2-3
+        side=north|east|south|west      bits 4-5, the ONEWAY opening side
       A texture value of `-` means none.
 
     layout                          starts the grid; one char per cell
@@ -52,6 +56,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bast  # noqa: E402
 
 FIX_ONE = 65536
+
+# Door param fields (tech.md Map): name -> (shift, value names).
+DOOR_FIELDS = {
+    "key": (0, ("none", "green", "blue", "violet")),
+    "mode": (2, ("auto", "stay", "switch", "timed")),
+    "side": (4, ("north", "east", "south", "west")),
+}
 
 
 class MapSyntaxError(Exception):
@@ -128,8 +139,16 @@ def parse(text):
                 raise MapSyntaxError("line %d: legend %r defined twice" % (ln, ch))
             cell = {"wall": "", "floor": "", "ceil": "", "dark": 0, "dark_alt": None,
                     "flags": 0, "tag": 0, "param": 0}
+            door_bits = 0
             for t in toks[1:]:
                 k, eq, v = t.partition("=")
+                if eq and k in DOOR_FIELDS:
+                    shift, names = DOOR_FIELDS[k]
+                    if v not in names:
+                        raise MapSyntaxError("line %d: %s=%r (known: %s)"
+                                             % (ln, k, v, ", ".join(names)))
+                    door_bits |= names.index(v) << shift
+                    continue
                 if not eq or k not in cell:
                     raise MapSyntaxError("line %d: bad legend field %r" % (ln, t))
                 if k in ("wall", "floor"):
@@ -142,6 +161,7 @@ def parse(text):
                     cell[k] = _flags(v, cflags, ln)
                 else:
                     cell[k] = _int(v, 0, 255, k, ln)
+            cell["param"] |= door_bits
             if cell["dark_alt"] is None:
                 cell["dark_alt"] = cell["dark"]
             out["legend"][ch] = cell

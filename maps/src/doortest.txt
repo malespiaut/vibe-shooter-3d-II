@@ -1,0 +1,39 @@
+# Door test map: 13x9, built by tools/mkmap.py into maps/doortest.vmap.
+# Test fixture for doors and keys (tests/test_door.c, demos/door-test.demo),
+# not a game level. Texture names are the numbered test patterns.
+#
+# A south hall (y 1-2) and a north hall (y 6-7) joined by five one-tile
+# corridors, each closed by a door at y = 4 (door x in brackets):
+#   D (2)  plain, auto-closes 140 tics after fully open
+#   G (4)  green key
+#   O (6)  ONEWAY, opens only from the south side
+#   S (8)  mode stay: stays open
+#   P (10) START_OPEN
+# The player starts at (2, 1) facing north, below door D.
+
+name Door Test
+sky testsky
+music 0
+par 30
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+legend D wall=test02 floor=test04 ceil=test05 flags=DOOR
+legend G wall=test02 floor=test04 ceil=test05 flags=DOOR key=green
+legend O wall=test02 floor=test04 ceil=test05 flags=DOOR|ONEWAY side=south
+legend S wall=test02 floor=test04 ceil=test05 flags=DOOR mode=stay
+legend P wall=test02 floor=test04 ceil=test05 flags=DOOR|START_OPEN
+
+layout
+#############
+#...........#
+#...........#
+##.#.#.#.#.##
+##D#G#O#S#P##
+##.#.#.#.#.##
+#...........#
+#...........#
+#############
+end
+
+entity PLAYER_START 2 1 90

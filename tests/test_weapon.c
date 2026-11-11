@@ -218,12 +218,30 @@ static void test_wall_blocks(void)
     assert(weapon_trace(&gs, gs.player.x, gs.player.y, 0, HITSCAN_RANGE, 0, &wall) == 0);
     assert(wall == FX(1) + HALF);
 
-    /* A closed door blocks too; an open one does not. */
+    /* A closed door blocks too; an open one does not. Hitscan reads the
+     * live door state (door.h), so START_OPEN takes effect at game_init. */
     bast_map_cell_at(m, 4, 3)->flags = BAST_CELL_DOOR;
     setup(&gs, m, WP_PISTOL);
     assert(weapon_trace(&gs, gs.player.x, gs.player.y, 0, HITSCAN_RANGE, 0, NULL) == 0);
     bast_map_cell_at(m, 4, 3)->flags = BAST_CELL_DOOR | BAST_CELL_START_OPEN;
+    setup(&gs, m, WP_PISTOL);
     assert(weapon_trace(&gs, gs.player.x, gs.player.y, 0, HITSCAN_RANGE, 0, NULL) == 1);
+
+    /* Firing: a closed door shields the mutt; once it is fully open
+     * (door_activate, 32 tics) the same shot hits. */
+    bast_map_cell_at(m, 4, 3)->flags = BAST_CELL_DOOR;
+    bast_map_cell_at(m, 4, 3)->param = DOOR_MODE_STAY << 2;
+    setup(&gs, m, WP_PISTOL);
+    assert(gs.door_count == 1 && gs.doors[0].state == DOOR_CLOSED);
+    run(&gs, &FIRE, 24);
+    assert(gs.player.weapons.shots == 2);
+    assert(gs.things.list[0].health == 20); /* closed door: never hit */
+    door_activate(&gs, 0);
+    run(&gs, &IDLE, FIX_ONE / DOOR_SPEED);
+    assert(gs.doors[0].state == DOOR_OPEN);
+    assert(weapon_trace(&gs, gs.player.x, gs.player.y, 0, HITSCAN_RANGE, 0, NULL) == 1);
+    game_tic(&gs, &FIRE);
+    assert(gs.things.list[0].health < 20); /* open door: hit */
     bast_map_free(m);
 }
 

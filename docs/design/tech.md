@@ -90,7 +90,12 @@ Cell flags: `SOLID`, `DOOR`, `PUSHWALL` (secret, slides 2 tiles away from the us
 16 tics), `ONEWAY` (door openable only from the side its param points to), `START_OPEN`,
 `BLOCK_MONSTER`, `BLOCK_ALL` (impassable but drawn as floor, e.g. water), `TRIGGER` (walk-over fires tag). Door `param`: bits 0-1 key (none/green/blue/violet),
 bits 2-3 mode (0 auto-close after 140 tics, 1 stays open, 2 switch-only, 3 timed: closes param2
-seconds after its switch, stored in the switch cell's param). A tag fires every door and pushwall with
+seconds after its switch, stored in the switch cell's param), bits 4-5 `ONEWAY` side (0 north,
+1 east, 2 south, 3 west: the player must stand past that edge of the door cell to open it). Doors
+take 32 tics to open or close, block until fully open, never start closing while the player overlaps
+the cell, and re-open if the player enters a closing one. Use (`BT_USE`, rising edge) targets the first
+non-empty tile within 0.75 units along the view (grid DDA). `START_OPEN` doors ignore use and
+auto-close; a tag closes them once, after which they follow their mode. A tag fires every door and pushwall with
 the same tag: closed ones open, `START_OPEN` ones close. This is how layouts change.
 
 Special entity types fire or react to tags: `KILL_TRIGGER` (fires its `param` tag when every

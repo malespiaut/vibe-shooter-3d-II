@@ -26,17 +26,26 @@ void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32
     p->armour = 0;
     weapons_init(&p->weapons);
     thinkers_spawn_map(&gs->things, map, skill);
+    doors_init(gs);
 }
 
-int game_tile_blocks(const bast_map *map, int tx, int ty)
+void game_give_keys(game_state *gs, uint32_t keys)
 {
+    gs->player.keys |= keys & (KEY_GREEN | KEY_BLUE | KEY_VIOLET);
+}
+
+int game_tile_blocks(const game_state *gs, int tx, int ty)
+{
+    const bast_map *map = gs->map;
     if (tx < 0 || ty < 0 || tx >= map->width || ty >= map->height)
         return 1;
     uint16_t f = map->cells[ty * map->width + tx].flags;
     if (f & (BAST_CELL_SOLID | BAST_CELL_BLOCK_ALL | BAST_CELL_PUSHWALL))
         return 1;
-    if ((f & BAST_CELL_DOOR) && !(f & BAST_CELL_START_OPEN))
-        return 1;
+    if (f & BAST_CELL_DOOR) {
+        int d = door_at(gs, tx, ty);
+        return d < 0 || !door_passable(&gs->doors[d]);
+    }
     return 0;
 }
 
@@ -45,35 +54,35 @@ static fix_t clamp_fix(fix_t v, fix_t lo, fix_t hi)
     return v < lo ? lo : v > hi ? hi : v;
 }
 
-int game_circle_blocked(const bast_map *map, fix_t x, fix_t y, fix_t r)
+int game_circle_overlaps_tile(fix_t x, fix_t y, fix_t r, int tx, int ty)
 {
-    const int64_t r2 = (int64_t)r * r;
-    for (int ty = fix_to_int(y - r); ty <= fix_to_int(y + r); ty++) {
-        for (int tx = fix_to_int(x - r); tx <= fix_to_int(x + r); tx++) {
-            if (!game_tile_blocks(map, tx, ty))
-                continue;
-            /* Closest point of the tile square to the centre. */
-            fix_t x0 = fix_from_int(tx), y0 = fix_from_int(ty);
-            int64_t dx = (int64_t)x - clamp_fix(x, x0, x0 + FIX_ONE);
-            int64_t dy = (int64_t)y - clamp_fix(y, y0, y0 + FIX_ONE);
-            if (dx * dx + dy * dy < r2)
+    /* Closest point of the tile square to the centre. */
+    fix_t x0 = fix_from_int(tx), y0 = fix_from_int(ty);
+    int64_t dx = (int64_t)x - clamp_fix(x, x0, x0 + FIX_ONE);
+    int64_t dy = (int64_t)y - clamp_fix(y, y0, y0 + FIX_ONE);
+    return dx * dx + dy * dy < (int64_t)r * r;
+}
+
+int game_circle_blocked(const game_state *gs, fix_t x, fix_t y, fix_t r)
+{
+    for (int ty = fix_to_int(y - r); ty <= fix_to_int(y + r); ty++)
+        for (int tx = fix_to_int(x - r); tx <= fix_to_int(x + r); tx++)
+            if (game_tile_blocks(gs, tx, ty) && game_circle_overlaps_tile(x, y, r, tx, ty))
                 return 1;
-        }
-    }
     return 0;
 }
 
 /* Moves *pos by `delta` along one axis, stopping at the last fixed unit
  * where the player circle does not overlap a blocking tile. Returns 1 when
  * the move was cut short (the caller then kills momentum on that axis). */
-static int move_axis(const bast_map *map, fix_t *x, fix_t *y, fix_t delta, int axis_y)
+static int move_axis(const game_state *gs, fix_t *x, fix_t *y, fix_t delta, int axis_y)
 {
     if (delta == 0)
         return 0;
     fix_t *pos = axis_y ? y : x;
     const fix_t start = *pos;
     *pos = start + delta;
-    if (!game_circle_blocked(map, *x, *y, PLAYER_RADIUS))
+    if (!game_circle_blocked(gs, *x, *y, PLAYER_RADIUS))
         return 0;
 
     /* Binary search the largest free step in [0, |delta|). Speeds are below
@@ -83,7 +92,7 @@ static int move_axis(const bast_map *map, fix_t *x, fix_t *y, fix_t delta, int a
     while (hi - lo > 1) {
         fix_t mid = lo + (hi - lo) / 2;
         *pos = start + sign * mid;
-        if (game_circle_blocked(map, *x, *y, PLAYER_RADIUS))
+        if (game_circle_blocked(gs, *x, *y, PLAYER_RADIUS))
             hi = mid;
         else
             lo = mid;
@@ -144,12 +153,24 @@ void game_tic(game_state *gs, const ticcmd *cmd)
     player_t *p = &gs->player;
 
     p->angle = (angle_t)(p->angle + (uint16_t)cmd->turn);
+
+    /* Use acts on the rising edge, along the view after this tic's turn. */
+    if ((cmd->buttons & BT_USE) && !(gs->prev_buttons & BT_USE)) {
+        int d = door_use_target(gs);
+        if (d >= 0)
+            door_use(gs, d);
+    }
+    gs->prev_buttons = cmd->buttons;
+
+    /* Doors move before the player, who sees this tic's door state. */
+    doors_tic(gs);
+
     player_thrust(p, cmd);
 
     /* Axis-separated slide: x first, then y. */
-    if (move_axis(gs->map, &p->x, &p->y, p->momx, 0))
+    if (move_axis(gs, &p->x, &p->y, p->momx, 0))
         p->momx = 0;
-    if (move_axis(gs->map, &p->x, &p->y, p->momy, 1))
+    if (move_axis(gs, &p->x, &p->y, p->momy, 1))
         p->momy = 0;
 
     weapon_tic(gs, (cmd->buttons & BT_WEAPON_MASK) >> BT_WEAPON_SHIFT, cmd->buttons & BT_FIRE);
@@ -200,5 +221,14 @@ uint64_t game_hash(const game_state *gs)
     }
     hash_i32(&h, gs->things.kills);
     hash_i32(&h, gs->things.kill_total);
+    hash_u32(&h, p->keys);
+    hash_u32(&h, gs->prev_buttons);
+    hash_i32(&h, gs->door_count);
+    for (int i = 0; i < gs->door_count; i++) {
+        const door_t *d = &gs->doors[i];
+        hash_u32(&h, d->state);
+        hash_i32(&h, d->pos);
+        hash_i32(&h, d->timer);
+    }
     return h.value;
 }

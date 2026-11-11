@@ -8,7 +8,7 @@ goto:    goto @hall / @courtyard / tiles, each followed by expect tile=X,Y;
          exit 0, and the same demo twice gives the same STATS hash.
 timeout: a goto to a reachable tile with too small a max times out after
          exactly max tics; a goto to an open tile sealed off by walls, one
-         behind a closed door (no door motion yet), and one to a solid tile
+         behind a closed door (goto does not open doors), and one to a solid tile
          exit 2 at once. Every failure exits 2 naming the goto's line.
 expect:  true expects of every op pass (exit 0); each false one exits 2
          naming its line, before any later tic runs.

@@ -42,8 +42,8 @@ static void run(game_state *gs, const ticcmd *cmd, int n)
     for (int i = 0; i < n; i++) {
         game_tic(gs, cmd);
         /* Invariant: never inside a blocking tile, never overlapping one. */
-        assert(!game_tile_blocks(gs->map, fix_to_int(gs->player.x), fix_to_int(gs->player.y)));
-        assert(!game_circle_blocked(gs->map, gs->player.x, gs->player.y, PLAYER_RADIUS));
+        assert(!game_tile_blocks(gs, fix_to_int(gs->player.x), fix_to_int(gs->player.y)));
+        assert(!game_circle_blocked(gs, gs->player.x, gs->player.y, PLAYER_RADIUS));
     }
 }
 

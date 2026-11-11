@@ -1,0 +1,16 @@
+# Door test: from the start (2,1) facing north, go below plain door D at
+# (2,4), face it, use it, wait for it to open, go through into the north
+# hall and check the player ended past the door (tile y = 6 > 5).
+# tests/test_door.c replays this too and asserts y > 5 and the door is open.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+
+goto 2 3               # the corridor tile just south of door D
+face 90                # north, toward the door
+use                    # the door face is 0.5 ahead, within 0.75
+wait 32                # 32 tics to open fully
+goto 2 6               # through the door into the north hall
+expect tile=2,6
