@@ -39,6 +39,7 @@
 #include "game/ai.h"
 #include "game/demo.h"
 #include "game/hud.h"
+#include "game/fx.h"
 #include "game/items.h"
 #include "game/jukebox.h"
 #include "game/sound.h"
@@ -352,6 +353,8 @@ static void draw(const run_t *r)
     int n = items_render_things(&r->gs, things, RENDER_MAX_SPRITES);
     /* Enemies, corpses included: animation from live AI state (read only). */
     n += ai_render_things(&r->gs, things + n, RENDER_MAX_SPRITES - n);
+    /* Projectiles, explosions and impact effects (game/fx.h), read only. */
+    n = fx_render_things(&r->gs, things, n, RENDER_MAX_SPRITES);
     render_view_things_eye(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle,
                            game_eye_height(&r->gs), things, n, r->gs.tic, framebuffer);
     hud_draw(framebuffer, &r->hud, &r->gs);

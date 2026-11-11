@@ -262,6 +262,7 @@ void game_tic(game_state *gs, const ticcmd *cmd)
     player_t *p = &gs->player;
 
     gs->sounds.count = 0; /* the main loop drained last tic's events */
+    fx_tic(gs); /* first: an effect spawned this tic lives its full lifetime */
     if (p->dead) {
         if (dead_tic(gs, cmd))
             return;
@@ -414,6 +415,14 @@ uint64_t game_hash(const game_state *gs)
     for (int i = 0; i < gs->things.count; i++) {
         hash_i32(&h, gs->things.list[i].shield_tics);
         hash_u32(&h, gs->things.list[i].shoulder);
+    }
+    hash_u32(&h, gs->fx.spawned);
+    for (int i = 0; i < MAX_FX; i++) {
+        const fx_t *f = &gs->fx.list[i];
+        hash_u32(&h, f->kind);
+        hash_i32(&h, f->tics);
+        hash_i32(&h, f->x);
+        hash_i32(&h, f->y);
     }
     return h.value;
 }

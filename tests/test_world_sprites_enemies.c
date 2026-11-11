@@ -266,8 +266,8 @@ static void check_all_types(const char *assets)
     game_init(&gs, m, 1, 2, 0);
     render_view(m, gs.player.x, gs.player.y, gs.player.angle, base);
     for (int type = BAST_ENT_MUTT_TROOPER; type <= BAST_ENT_WOOFU; type++) {
-        const render_thing one = { (uint16_t)type, (fix_t)(5.5 * 65536), (fix_t)(3.5 * 65536),
-                                   0, SPR_IDLE, 0 };
+        const render_thing one = { .type = (uint16_t)type, .x = (fix_t)(5.5 * 65536),
+                                   .y = (fix_t)(3.5 * 65536), .anim = SPR_IDLE };
         render_view_things(m, gs.player.x, gs.player.y, gs.player.angle, &one, 1, gs.tic, fb);
         const int px = diff_count(base, fb, 100, 220);
         printf("%s idle f0: %d px\n", sprite_name_for_entity(type), px);

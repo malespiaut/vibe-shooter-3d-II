@@ -91,3 +91,17 @@ int sprite_anim_frame(uint32_t tic, int frames)
         return 0;
     return (int)((tic / SPRITE_SHIMMER_TICS) % (uint32_t)frames);
 }
+
+/* Names and frame counts of assets/src/fx/ (tools/fx.py params). */
+static const fx_sprite_def fx_defs[FXS_COUNT] = {
+    [FXS_SCARAB_PROJ] = { "scarab_proj_fly", 4, 1 },
+    [FXS_EXPLOSION_SMALL] = { "explosion_small_boom", 8, 1 },
+    [FXS_EXPLOSION_BIG] = { "explosion_big_boom", 10, 1 },
+    [FXS_PUFF] = { "puff_hit", 4, 0 },
+    [FXS_BLOOD] = { "blood_hit", 4, 0 },
+};
+
+const fx_sprite_def *fx_sprite_def_for(int id)
+{
+    return id >= 0 && id < FXS_COUNT ? &fx_defs[id] : NULL;
+}

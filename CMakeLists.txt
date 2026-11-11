@@ -610,6 +610,13 @@ add_test(NAME weapon_demo
 set_tests_properties(weapon_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# Impact effects and fx world sprites (issue #147).
+add_executable(test_fx tests/test_fx.c)
+target_link_libraries(test_fx PRIVATE engine)
+target_compile_options(test_fx PRIVATE -UNDEBUG)
+foreach(g lifetime overflow pistol_wall pistol_enemy render_projectile hash)
+  add_test(NAME fx_${g} COMMAND test_fx ${g})
+endforeach()
 # Launcher test map and demo (issue #93): scarab splash and barrel kills.
 add_test(NAME launcher_demo
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_launcher_demo.py

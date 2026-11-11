@@ -250,9 +250,14 @@ static int shield_faces(const thinker_t *t, fix_t sx, fix_t sy)
     return off <= (int32_t)AI_SHIELD_HALF && off >= -(int32_t)AI_SHIELD_HALF;
 }
 
+int ai_shield_blocks(const thinker_t *t, fix_t sx, fix_t sy)
+{
+    return ai_shield_up(t) && shield_faces(t, sx, sy);
+}
+
 int ai_damage_from(game_state *gs, thinker_t *t, int32_t damage, int kind, fix_t sx, fix_t sy)
 {
-    if (damage > 0 && ai_shield_up(t) && shield_faces(t, sx, sy)) {
+    if (damage > 0 && ai_shield_blocks(t, sx, sy)) {
         if (kind == DMG_SPLASH) {
             damage /= 2;
         } else {
@@ -684,7 +689,8 @@ int ai_render_things(const game_state *gs, render_thing *out, int max)
             continue;
         int anim, frame;
         thinker_anim(t, gs->tic, &anim, &frame);
-        out[n++] = (render_thing){ t->type, t->x, t->y, t->angle, (uint8_t)anim, (uint8_t)frame };
+        out[n++] = (render_thing){ .type = t->type, .x = t->x, .y = t->y, .angle = t->angle,
+                                   .anim = (uint8_t)anim, .frame = (uint8_t)frame };
     }
     return n;
 }

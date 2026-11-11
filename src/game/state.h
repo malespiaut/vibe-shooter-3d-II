@@ -14,6 +14,7 @@
 #include "game/thinker.h"
 #include "game/weapon.h"
 #include "game/door.h"
+#include "game/fx.h"
 #include "game/tags.h"
 #include "game/sound.h"
 
@@ -145,6 +146,7 @@ typedef struct game_state {
     uint32_t kill_fired; /* bit i: the i-th KILL_TRIGGER entity (map order) fired */
     uint8_t exit;        /* an EXIT cell was used: the level run ends */
     int32_t last_tag;    /* last non-zero tag fired (tests); not hashed */
+    fx_list_t fx;        /* impact puffs and blood hits (game/fx.h); hashed */
     sound_queue sounds;  /* this tic's sound events (game/sound.h); not hashed */
 
     /* HUD events (not hashed): events[(seq-1) % GAME_EVENT_RING] is the
@@ -203,7 +205,8 @@ void game_tic(game_state *gs, const ticcmd *cmd);
  * one-shot cell states), then
  * per thinker its AI fields (movedir, goal tile, movecount), then per
  * thinker its howler_hit flag, then the death timer and the level-entry
- * inventory. New
+ * inventory, then the effect list (spawn count, then per slot kind, tics,
+ * x, y). New
  * fields are appended as the systems that own them land. */
 uint64_t game_hash(const game_state *gs);
 

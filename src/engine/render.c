@@ -23,6 +23,8 @@ static bast_tex *sky;
 static bast_tex *sprite_frames[BAST_ENT_TYPE_LIMIT][SPR_ANIMS][SPRITE_MAX_FRAMES][SPRITE_DIRS];
 /* Enemy sprite sets already reported missing (one warning per name). */
 static unsigned char sprite_warned[BAST_ENT_TYPE_LIMIT];
+/* Effect sprite frames (sprite.h FXS_*), NULL when not built. */
+static bast_tex *fx_frames[FXS_COUNT][FX_SPRITE_MAX_FRAMES];
 static render_column columns[VIEW_W];
 static float depth[VIEW_W];
 /* Camera of the last render_view(), for render_draw_sprites(). */
@@ -68,6 +70,12 @@ void render_shutdown(void)
     sky = NULL;
     for (int t = 0; t < BAST_ENT_TYPE_LIMIT; t++)
         free_sprite_set(t);
+    for (int i = 0; i < FXS_COUNT; i++) {
+        for (int f = 0; f < FX_SPRITE_MAX_FRAMES; f++) {
+            bast_tex_free(fx_frames[i][f]);
+            fx_frames[i][f] = NULL;
+        }
+    }
 }
 
 /* Sprite frame `path` from files.c ("sprites/..." or "test/..."): the TEX, or
@@ -151,6 +159,30 @@ static int load_sprites(const bast_map *map, const char *dir)
                 sprite_warned[type] = 1;
                 fprintf(stderr, "render: warning: sprite set '%s' incomplete (no %s), not drawn\n",
                         def->name, missing);
+            }
+        }
+    }
+    return 1;
+}
+
+/* Effect sprites from fx/ (files.c: game.pak, then loose files). A missing
+ * frame is skipped; a broken one is an error. */
+static int load_fx_sprites(const char *dir)
+{
+    for (int i = 0; i < FXS_COUNT; i++) {
+        const fx_sprite_def *def = fx_sprite_def_for(i);
+        for (int f = 0; f < def->frames && !fx_frames[i][f]; f++) {
+            char path[256];
+            snprintf(path, sizeof path, "fx/%s_d0_f%d.tex", def->name, f);
+            int64_t n = 0;
+            uint8_t *data = files_read(path, &n);
+            if (!data)
+                continue;
+            fx_frames[i][f] = bast_tex_from_memory(data, n);
+            free(data);
+            if (!fx_frames[i][f]) {
+                snprintf(err_buf, sizeof err_buf, "%s/%s: %s", dir, path, bast_error());
+                return 0;
             }
         }
     }
@@ -321,7 +353,7 @@ int render_init(const bast_map *map, const char *assets_dir)
             return 0;
         }
     }
-    if (!load_sprites(map, assets_dir)) {
+    if (!load_sprites(map, assets_dir) || !load_fx_sprites(assets_dir)) {
         render_shutdown();
         return 0;
     }
@@ -583,7 +615,8 @@ static void draw_one(const render_sprite *s, double z, double lat, uint8_t *fb)
 
     int row = (int)(32.0 * z / VIEW_DIST) + s->dark;
     row = row < 0 ? 0 : row > COLORMAP_ROWS - 1 ? COLORMAP_ROWS - 1 : row;
-    const uint8_t *cm = colormap_row((t->flags & BAST_TEX_FULLBRIGHT) ? 0 : row);
+    const uint8_t *cm = colormap_row(
+        (s->dark == RENDER_DARK_FULLBRIGHT || (t->flags & BAST_TEX_FULLBRIGHT)) ? 0 : row);
 
     /* Texel steps in 16.16, like the wall columns. */
     const double inv = 1.0 / scale;
@@ -679,12 +712,23 @@ static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
     }
     for (int i = 0; i < n_things && n < RENDER_MAX_SPRITES; i++) {
         const render_thing *th = &things[i];
-        const bast_tex *t = thing_frame(th->type, th->x, th->y, th->angle, th->anim, th->frame, vx, vy,
-                                         tic);
+        int fullbright = 0;
+        const bast_tex *t;
+        if (th->type >= SPRITE_FX_BASE) {
+            const fx_sprite_def *def = fx_sprite_def_for(th->type - SPRITE_FX_BASE);
+            if (!def || th->frame >= def->frames)
+                continue;
+            t = fx_frames[th->type - SPRITE_FX_BASE][th->frame];
+            fullbright = def->fullbright;
+        } else {
+            t = thing_frame(th->type, th->x, th->y, th->angle, th->anim, th->frame, vx, vy,
+                            tic);
+        }
         if (!t)
             continue;
         const bast_map_cell *c = cell(map, th->x >> 16, th->y >> 16);
-        list[n] = (render_sprite){ th->x, th->y, 0, t, c ? cell_dark(map, c) : 0 };
+        const int dark = fullbright ? RENDER_DARK_FULLBRIGHT : c ? cell_dark(map, c) : 0;
+        list[n] = (render_sprite){ th->x, th->y, th->z, t, dark };
         n++;
     }
     render_draw_sprites(list, n, fb);

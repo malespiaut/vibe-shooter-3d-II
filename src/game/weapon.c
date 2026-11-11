@@ -3,6 +3,7 @@
 
 #include "game/ai.h"
 #include "game/enemy_info.h"
+#include "game/fx.h"
 #include "game/projectile.h"
 #include "game/sound.h"
 #include "game/state.h"
@@ -280,6 +281,23 @@ static angle_t spread_offset(game_state *gs, angle_t spread)
     return (angle_t)((int32_t)rng_range(&gs->rng, 2u * spread + 1) - spread);
 }
 
+/* Distance from (x, y) along angle `a` to the projection of t's centre. */
+static fix_t thinker_along(fix_t x, fix_t y, angle_t a, const thinker_t *t)
+{
+    const int64_t ox = (int64_t)t->x - x, oy = (int64_t)t->y - y;
+    return (fix_t)((ox * fine_cos(a) + oy * fine_sin(a)) / FIX_ONE);
+}
+
+/* Impact effect `kind` at distance `d` (clamped to >= 0) along the player's
+ * ray at angle `a`: the trace end. */
+static void impact_fx(game_state *gs, int kind, angle_t a, fix_t d)
+{
+    const player_t *p = &gs->player;
+    if (d < 0)
+        d = 0;
+    fx_spawn(gs, kind, p->x + fix_mul(d, fine_cos(a)), p->y + fix_mul(d, fine_sin(a)));
+}
+
 static void fire_weapon(game_state *gs)
 {
     weapons_t *w = &gs->player.weapons;
@@ -313,11 +331,20 @@ static void fire_weapon(game_state *gs)
     int hit = 0;
     for (int i = 0; i < wi->pellets; i++) {
         angle_t a = (angle_t)(p->angle + spread_offset(gs, wi->spread));
-        uint16_t id = weapon_trace(gs, p->x, p->y, a, range, wp == WP_CLAWS, NULL);
+        fix_t wall;
+        uint16_t id = weapon_trace(gs, p->x, p->y, a, range, wp == WP_CLAWS, &wall);
         thinker_t *t = thinker_get(&gs->things, id);
         if (t) {
+            /* Impact fx on the near side of the thinker, before the damage
+             * can gib it (fx only reads its position). A shot stopped by a
+             * Shieldbearer's shield hits the shield, not flesh: puff. */
+            const int blocked = ai_shield_blocks(t, p->x, p->y);
+            impact_fx(gs, blocked ? FX_PUFF : FX_BLOOD, a,
+                      thinker_along(p->x, p->y, a, t) - t->radius);
             ai_damage_from(gs, t, roll_damage(gs, wi), DMG_DIRECT, p->x, p->y);
             hit = 1;
+        } else if (wall < range) {
+            impact_fx(gs, FX_PUFF, a, wall - FX_WALL_PULLBACK);
         }
     }
     if (FIRE_SFX[wp])
