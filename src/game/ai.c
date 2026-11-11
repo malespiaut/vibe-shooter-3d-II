@@ -5,6 +5,7 @@
 #include "game/door.h"
 #include "game/enemy_info.h"
 #include "game/items.h"
+#include "game/tags.h"
 
 /* Compass steps, DI_EAST.. counter-clockwise (y grows north). */
 static const int DIR_DX[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
@@ -50,7 +51,9 @@ static int route_ok(const game_state *gs, int tx, int ty)
     if (!in_map(gs, tx, ty))
         return 0;
     const uint16_t f = cell_flags(gs, tx, ty);
-    if (f & (BAST_CELL_SOLID | BAST_CELL_BLOCK_ALL | BAST_CELL_PUSHWALL | BAST_CELL_BLOCK_MONSTER))
+    if (f & (BAST_CELL_SOLID | BAST_CELL_BLOCK_ALL | BAST_CELL_BLOCK_MONSTER))
+        return 0;
+    if (pushwall_blocks(gs, tx, ty)) /* where the wall is now, not where it spawned */
         return 0;
     if (f & BAST_CELL_DOOR) {
         int d = door_at(gs, tx, ty);

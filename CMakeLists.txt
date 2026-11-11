@@ -150,7 +150,7 @@ endforeach()
 add_executable(test_ai tests/test_ai.c)
 target_link_libraries(test_ai PRIVATE engine)
 target_compile_options(test_ai PRIVATE -UNDEBUG)
-foreach(g sight ambush windup chomper pillar drop block)
+foreach(g sight ambush windup chomper pillar drop block pushwall)
   add_test(NAME ai_${g} COMMAND test_ai ${g})
 endforeach()
 

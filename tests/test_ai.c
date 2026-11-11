@@ -9,6 +9,7 @@
 #include "game/enemy_info.h"
 #include "game/items.h"
 #include "game/state.h"
+#include "game/tags.h"
 
 #define FX(i) fix_from_int(i)
 #define HALF (FIX_ONE / 2)
@@ -302,6 +303,37 @@ static void test_block(void)
     bast_map_free(m);
 }
 
+/* A pushwall never slides into a live enemy (like the player and doors):
+ * pushed east from (2,2) it would travel (3,2) -> (5,2), but a Mutt
+ * stands at (5,2), so it stops at (4,2). The tile it left becomes open
+ * to enemy routes (route_ok follows pushwall_blocks, not the spawn flag). */
+static void test_pushwall(void)
+{
+    bast_map *m = open_map(12, 5);
+    for (int x = 1; x <= 10; x++) {
+        bast_map_cell_at(m, x, 1)->flags = BAST_CELL_SOLID;
+        bast_map_cell_at(m, x, 3)->flags = BAST_CELL_SOLID;
+    }
+    bast_map_cell_at(m, 3, 2)->flags = BAST_CELL_PUSHWALL;
+    add_player(m, 2, 2, 0);
+    add_entity(m, BAST_ENT_MUTT_TROOPER, 5, 2, 0, BAST_ENT_SKILL_ALL | BAST_ENT_AMBUSH);
+    game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    const ticcmd use = { 0, 0, 0, BT_USE };
+    game_tic(&gs, &use);
+    assert(gs.pushwalls[0].state == PUSHWALL_MOVING);
+    run(&gs, &IDLE, 200);
+    const thinker_t *t = &gs.things.list[0];
+    printf("pushwall: wall at (%d,%d) state %d, mutt tile (%d,%d) alive %d\n", gs.pushwalls[0].tx,
+           gs.pushwalls[0].ty, gs.pushwalls[0].state, fix_to_int(t->x), fix_to_int(t->y),
+           thinker_alive(t));
+    assert(gs.pushwalls[0].tx == 4 && gs.pushwalls[0].ty == 2);
+    assert(gs.pushwalls[0].state == PUSHWALL_DONE);
+    assert(!game_tile_blocks(&gs, 3, 2) && game_tile_blocks(&gs, 4, 2));
+    assert(!game_circle_overlaps_tile(t->x, t->y, t->radius, 4, 2));
+    bast_map_free(m);
+}
+
 int main(int argc, char **argv)
 {
     static const struct {
@@ -310,7 +342,7 @@ int main(int argc, char **argv)
     } groups[] = {
         { "sight", test_sight },   { "ambush", test_ambush }, { "windup", test_windup },
         { "chomper", test_chomper }, { "pillar", test_pillar }, { "drop", test_drop },
-        { "block", test_block },
+        { "block", test_block }, { "pushwall", test_pushwall },
     };
     for (size_t i = 0; i < sizeof groups / sizeof groups[0]; i++) {
         if (argc < 2 || strcmp(argv[1], groups[i].name) == 0) {

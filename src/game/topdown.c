@@ -24,7 +24,7 @@ static void put(uint8_t *framebuffer, int x, int y, uint8_t c)
  * the gray ramp (shade by wall texture), floor dark gray, open sky a step
  * lighter, player as a 3-pixel arrow (white centre, yellow tip), enemies
  * as 3x3 squares (dim red asleep, bright red awake, orange winding up or
- * attacking) and corpses as one dark red pixel. */
+ * attacking) and corpses as one red_07 pixel (red_04 vanished on the floor). */
 void topdown_draw(const game_state *gs, uint8_t *framebuffer)
 {
     const bast_map *m = gs->map;
@@ -59,7 +59,7 @@ void topdown_draw(const game_state *gs, uint8_t *framebuffer)
         const int ex = ox + (int)(((int64_t)t->x * scale) >> FIX_SHIFT);
         const int ey = oy + m->height * scale - 1 - (int)(((int64_t)t->y * scale) >> FIX_SHIFT);
         if (t->state == TH_STATE_DEAD) {
-            put(framebuffer, ex, ey, PAL_RED + 4);
+            put(framebuffer, ex, ey, PAL_RED + 7);
             continue;
         }
         uint8_t col = PAL_RED + 12;
