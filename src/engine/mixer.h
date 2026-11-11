@@ -5,8 +5,8 @@
  *
  * Output: 22050 Hz, stereo interleaved signed 16-bit. 16 sound-effect voices
  * are summed into 32-bit accumulators, then clipped to int16. Four further
- * music channels are reserved: the sequencer (follow-up issue) renders into
- * the same accumulator through mixer_set_music().
+ * music channels are reserved: the sequencer (engine/music.h, music_attach)
+ * renders into the same accumulator through mixer_set_music().
  *
  * Gain law (exact, integer):
  *   out = (sample << 8) * vol * pan_gain / (64 * 64)     per voice, per channel

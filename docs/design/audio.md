@@ -54,3 +54,48 @@ order list. Synthesis is integer, inside the mixer.
 | `boss` | level 8 arena | Woofu's anthem, a pompous march that falls apart in phase 2 |
 | `intermission` | tally screens | short loop |
 | `ending` | ending, credits | the title theme, slow and happy |
+
+### `.vmus` format (version 1)
+
+Implemented by `src/engine/music.c`; render with `build/vmus_render <song.vmus> <out.wav> [seconds]`
+and plot with `tools/wav_plot.py <wav> <png>`. Plain text, one directive per line. `#` starts a
+comment (except the sharp inside a note like `C#4`); blank lines are ignored. Errors name the line.
+
+```
+vmus 1                                   # header, first non-comment line
+tempo 5                                  # tics per row, 1..32
+inst 01 square vol=40 a=1 d=6 s=40 r=6 duty=64
+pattern 0                                # 0..63, then exactly 64 row lines
+C-4 01 40 A37 | --- .. .. ... | D-2 02 .. ... | === .. .. ...
+...
+order 0 1 0 2                            # pattern numbers, up to 128 entries
+loop 1                                   # order index played after the last entry (default 0)
+```
+
+- **Timing**: one tic = 22050 / 35 = 630 samples. A row lasts `tempo` tics; a pattern 64 rows.
+  Rows advance on this tic clock, so a pattern at tempo 5 lasts 64 x 5 / 35 = 9.14 s.
+- **Instruments** `inst <id> <wave> [key=value ...]`, id `01`..`1f` (hex). Waves: `square`,
+  `triangle` (32-step, 16 levels), `noise` (15-bit LFSR clocked 16 times per pitch period, at most
+  once per sample), `pluck` (Karplus-Strong: a delay line of `22050 / f` samples filled with a
+  softened noise burst, fed back through a 2-tap average). Keys (decimal): `vol` 0..64 (default 64),
+  ADSR `a` `d` `r` in tics 0..255 and `s` sustain level 0..64 (defaults 0, 0, 0, 64), `duty`
+  1..255 /256 for square (default 128 = 50 %), `mode` 0/1 for noise (1 = short, metallic
+  sequence), `damp` 0..256 for pluck feedback (256 = plain average, lower = shorter).
+- **Rows**: 4 cells (channels 0..3), each `note inst vol fx`, separated by spaces and optional `|`.
+  - note: `C-4`, `C#4` ... `B-8` (octaves 0..8, A-4 = 440 Hz, 12-TET), `---` nothing, `===` note
+    off (enter release).
+  - inst: two hex digits, or `..` to keep the channel's instrument.
+  - vol: two hex digits `00`..`40` (0..64), or `..`. A new note without volume plays at 64.
+  - fx: three characters, or `...`. Effects apply only on rows that carry them:
+    - `Axy` arpeggio: each tic cycles note, note + x, note + y semitones.
+    - `Uxx` / `Dxx` slide up / down by xx sixty-fourths of a semitone per tic; the offset stays
+      until the next note.
+    - `Vxy` vibrato: triangle LFO, x 64ths of a cycle per tic, depth y sixteenths of a semitone.
+- **Note on** restarts the channel completely (oscillator phase, noise seed, pluck burst,
+  envelope, slide, vibrato), so playback from any row where all four channels start a note is
+  independent of what came before. A song's loop target should start that way.
+- **Mix**: the gain `env * inst vol * cell vol` is updated per tic and ramped linearly over the
+  tic's 630 samples (no zipper clicks). Each channel peaks at a quarter of full scale, centred, and
+  is added into the mixer's accumulator after the 16 sound-effect voices. Integer only.
+- **Threads**: `music_play` / `music_stop` post a request the audio thread applies at the start of
+  its next render call.

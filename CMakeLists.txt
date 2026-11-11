@@ -220,3 +220,15 @@ add_test(NAME blender_render
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_blender_render.py)
 set_tests_properties(blender_render PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
+# Music sequencer (docs/design/audio.md, "Music"): parser and render tests,
+# and build/vmus_render <song.vmus> <out.wav> [seconds] for listening/evidence.
+add_executable(vmus_render tools/vmus_render.c)
+target_link_libraries(vmus_render PRIVATE engine)
+set(TITLE_VMUS ${CMAKE_SOURCE_DIR}/assets/src/music/title.vmus)
+foreach(t music_parse music_render)
+  add_executable(test_${t} tests/test_${t}.c)
+  target_link_libraries(test_${t} PRIVATE engine)
+  target_compile_options(test_${t} PRIVATE -UNDEBUG)
+  add_test(NAME ${t} COMMAND test_${t} ${TITLE_VMUS})
+endforeach()
