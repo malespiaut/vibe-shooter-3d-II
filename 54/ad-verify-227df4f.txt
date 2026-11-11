@@ -1,0 +1,30 @@
+[art-director] verification at 227df4f
+$ rm -rf build && cmake ... && cmake --build build
+[62/63] Linking C executable game
+$ ctest --test-dir build
+31/31 Test #31: blender_render ...................   Passed    1.50 sec
+100% tests passed out of 31
+$ ctest -R blender_render -V
+centroid offsets f0: d0=+1.20 d1=+1.01 d2=+1.90 d3=+0.25 d4=-1.20 d5=-1.01 d6=-1.90 d7=-0.25
+red wing pixels: d2=114 d6=0
+brightest ramp entry f0: gold_11 red_11 sand_12
+palcheck: OK, 32 file(s) checked
+$ rm -rf assets/gen && tools/build_assets.sh
+== sh tools/build.d/45-sprites.sh
+sprites: 1 sprite(s) in assets/gen/sprites
+== sh tools/build.d/50-gibs.sh
+gibs: 1 animation(s), 8 frames in assets/gen/gibs
+== sh tools/build.d/60-sprites.sh
+sprites: 0 sprite(s), 0 frames in assets/gen/sprites
+palcheck: OK, 71 file(s) checked
+build_assets: ok
+$ ls assets/gen/sprites
+prop_pot.tex
+# arrow fixture temporarily in assets/src/sprites/arrow (removed after)
+$ sh tools/build.d/45-sprites.sh && sh tools/build.d/60-sprites.sh
+sprites: 1 sprite(s) in assets/gen/sprites
+blender_render: 16 sprite(s) -> assets/gen/sprites (64x64, origin 32,64)
+sprites: 1 sprite(s), 16 frames in assets/gen/sprites
+$ ls assets/gen/sprites | wc -l  -> 17 (prop_pot.tex present)
+palcheck: OK, 17 file(s) checked
+re-run 60: arrow_bob_d0_f0.tex md5 3015cc86963b80e90662dd871cae34f1 both times
