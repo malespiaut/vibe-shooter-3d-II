@@ -85,6 +85,7 @@ These names are fixed. Every issue, PR, review and playtest uses them exactly.
 | Test map from ASCII | `python3 tools/mkmap.py maps/src/<name>.txt maps/<name>.vmap` |
 | Determinism | `ctest --test-dir build -R determinism` (each registered demo replayed twice with `--hash-log`, logs compared byte for byte) |
 | Level completion | `ctest --test-dir build -R complete_level` (`complete_levelN` runs `build/game --headless --demo demos/levelN-complete.demo --frames-out <tmp> --frame-every 35` and checks exit code 0 and `exit=1 god=0` in the stats line) |
+| Level stats | `python3 tools/levelstats.py maps/levelN.vmap [--level N] [--check] [--json]` (per-skill enemy counts, HP pool, critical-path/secret supply, ratio; `--check` compares skill 2 with `levels.md` within 10%, Kitten 15-35% fewer and Sabretooth 10-30% more enemies; exit 2 on a failed check). ctest `levelstats_levelN` runs `--check` on every `maps/level[1-8].vmap` |
 | Contact sheet for evidence | `magick montage <dir>/*.png -filter point -tile 6x -geometry +2+2 sheet.png` |
 
 Frames are named `frame_<tic, 6 digits>.png`, 320x240 indexed PNG written through the palette by
