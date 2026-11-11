@@ -2,6 +2,7 @@
 #include "game/sound.h"
 #include "game/tags.h"
 
+#include <stdio.h>
 #include <string.h>
 
 /* weapons.md Ammo types: small and large pickup, per AM_* type. Caps are
@@ -34,16 +35,28 @@ void items_spawn(game_state *gs)
     gs->items_got = 0;
     for (int i = 0; i < m->entity_count && gs->pickup_count < MAX_PICKUPS; i++) {
         const bast_map_entity *e = &m->entities[i];
-        if (!item_is_pickup(e->type) || e->type <= BAST_ENT_SPHINX_HOWLER ||
+        const int respawner = e->type == BAST_ENT_RESPAWN_ITEM;
+        int type = e->type;
+        if (respawner) {
+            type = e->param;
+            if (type < BAST_ENT_FISH_SNACK || type > BAST_ENT_NINTH_LIFE) {
+                fprintf(stderr, "map: RESPAWN_ITEM entity %d: param %d is not a pickup "
+                        "type 48..68, ignored\n", i, e->param);
+                continue;
+            }
+        }
+        if (!item_is_pickup(type) || type <= BAST_ENT_SPHINX_HOWLER ||
             !entity_on_skill(e, gs->skill))
             continue;
         pickup_t *pk = &gs->pickups[gs->pickup_count++];
-        pk->type = e->type;
-        pk->flags = e->flags;
+        memset(pk, 0, sizeof *pk);
+        pk->type = (uint16_t)type;
+        /* A respawner's tag stops it; it never fires the tag itself. */
+        pk->flags = respawner ? (uint16_t)(e->flags & ~BAST_ENT_PICKUP_TRIGGER) : e->flags;
         pk->tag = e->tag;
-        pk->taken = 0;
         pk->x = e->x;
         pk->y = e->y;
+        pk->respawner = pk->respawn_on = (uint8_t)respawner;
     }
     gs->items_total = gs->pickup_count;
     for (int i = 0; i < gs->things.count; i++)
@@ -189,8 +202,10 @@ void items_touch(game_state *gs)
             continue;
         }
         pk->taken = 1;
-        if (!pk->dropped)
+        if (!pk->dropped && !pk->respawned)
             gs->items_got++;
+        if (pk->respawn_on)
+            pk->respawn_tics = RESPAWN_TICS;
         post_pickup(gs, pk->type);
         if (pk->flags & BAST_ENT_PICKUP_TRIGGER)
             game_fire_tag(gs, pk->tag);
@@ -221,6 +236,25 @@ void items_tic(game_state *gs)
         p->catseye_tics--;
     if (p->invuln_tics > 0)
         p->invuln_tics--;
+    /* Reappearance is silent: audio.md has no item_respawn sound. */
+    for (int i = 0; i < gs->pickup_count; i++) {
+        pickup_t *pk = &gs->pickups[i];
+        if (pk->respawn_tics > 0 && --pk->respawn_tics == 0) {
+            pk->taken = 0;
+            pk->respawned = 1;
+        }
+    }
+}
+
+void items_tag_fired(game_state *gs, int tag)
+{
+    for (int i = 0; i < gs->pickup_count; i++) {
+        pickup_t *pk = &gs->pickups[i];
+        if (pk->respawner && pk->tag == tag) {
+            pk->respawn_on = 0;
+            pk->respawn_tics = 0;
+        }
+    }
 }
 
 static void post_pickup(game_state *gs, int type)
