@@ -51,10 +51,10 @@ def V(x, y, z):
 MATS = {
     "MuttVest": (0.62, 0.64, 0.36),      # olive: vest, helmet
     "MuttCloth": (0.46, 0.48, 0.27),     # olive: fatigues, pouches
-    "MuttFur": (0.90, 0.82, 0.66),       # beige
-    "MuttMuzzle": (0.97, 0.93, 0.84),    # beige, lighter snout
-    "MuttEar": (0.58, 0.47, 0.36),       # beige, dark droopy ears
-    "MuttDark": (0.20, 0.17, 0.14),      # beige low end: nose, eyes
+    "MuttFur": (0.72, 0.64, 0.52),       # beige: tan fur
+    "MuttMuzzle": (0.80, 0.74, 0.64),    # beige: lighter muzzle and jowls
+    "MuttEar": (0.44, 0.36, 0.28),       # beige: dark droopy ears
+    "MuttDark": (0.42, 0.36, 0.29),      # beige_03..05: nose, eyes
     "MuttGun": (0.36, 0.41, 0.49),       # steel: rifle body, boots
     "MuttMetal": (0.66, 0.72, 0.80),     # steel: barrel, buckles
     "MuttLED": (1.0, 0.12, 0.12),        # fb_red
@@ -150,36 +150,46 @@ for x in (-6.0, 6.0):
 # Torso: fur underneath, olive armour vest (front plate, back plate,
 # shoulder pads), so the vest is the dominant read.
 ball((0, 0, 35.5), (17.0, 11.5, 15.0), "MuttFur", "chest")
-box((0, -1.0, 35.0), (19.0, 11.0, 12.5), "MuttVest", "chest")
-box((0, -6.4, 35.5), (15.0, 2.2, 10.5), "MuttVest", "chest")     # front plate
+box((0, -1.0, 34.4), (19.0, 11.0, 11.4), "MuttVest", "chest")
+box((0, -6.4, 35.0), (15.0, 2.2, 9.6), "MuttVest", "chest")     # front plate
 box((0, 5.6, 36.0), (15.0, 1.8, 10.0), "MuttVest", "chest")      # back plate
 for x in (-9.5, 9.5):
-    ball((x, 0, 40.5), (7.0, 9.0, 5.0), "MuttVest", "chest")    # shoulder pads
+    ball((x, 0.5, 39.6), (7.0, 9.0, 5.0), "MuttVest", "chest")    # shoulder pads
 box((0, -7.7, 37.0), (9.0, 0.8, 2.0), "MuttGun", "chest")         # chest strap
+box((0, 8.2, 36.0), (10.0, 4.0, 8.0), "MuttCloth", "chest")       # pack
+box((0, 10.4, 33.0), (8.0, 1.0, 1.2), "MuttGun", "chest")         # pack strap
+for x in (-5.5, 5.5):
+    box((x, 7.0, 31.0), (3.0, 2.6, 3.4), "MuttCloth", "chest")    # kidney pouches
 # Neck.
 tube((0, 0, 40.0), (0, -0.5, 45.0), 3.4, "MuttFur", "chest")
 
 # Head: round skull, long basset muzzle with jowls, dark nose and eyes,
 # small olive helmet; long dark ears hang on both sides.
-ball((0, 0.5, 47.5), (11.0, 11.0, 10.0), "MuttFur", "head")
-ball((0, -6.5, 45.0), (7.5, 11.0, 6.4), "MuttMuzzle", "head", rot=(10, 0, 0))
-for x in (-2.4, 2.4):
-    ball((x, -5.0, 42.6), (4.4, 6.0, 3.6), "MuttMuzzle", "head")  # jowls
-ball((0, -11.8, 46.0), (3.8, 2.6, 2.8), "MuttDark", "head")         # nose
-for x in (-2.7, 2.7):
-    ball((x, -4.6, 48.8), (2.0, 1.4, 1.8), "MuttDark", "head", seg=6, ring=4)
-    box((x, -4.4, 50.4), (3.0, 1.2, 1.0), "MuttFur", "head")        # droopy brow
-ball((0, 1.0, 51.5), (12.4, 13.0, 8.0), "MuttVest", "head")         # helmet
-box((0, 1.0, 50.0), (13.2, 13.6, 1.4), "MuttVest", "head")          # helmet rim
-for side, x in (("R", -6.4), ("L", 6.4)):
-    ball((x * 1.2, 0.0, 40.0), (3.0, 7.5, 19.0), "MuttEar", "ear_" + side,
-         rot=(0, 20 if x > 0 else -20, 0))
+# The muzzle is long and level (a basset's), the fur-coloured bridge on
+# top, the lighter muzzle under it; the nose is a small dark knob at the
+# tip; the jowls hang 2-3 px below the jaw.
+ball((0, 0.5, 47.0), (11.0, 11.0, 10.0), "MuttFur", "head")
+box((0, -7.0, 46.6), (5.4, 11.0, 3.4), "MuttFur", "head", rot=(4, 0, 0))   # bridge
+ball((0, -8.0, 44.2), (6.6, 12.0, 4.6), "MuttMuzzle", "head")              # muzzle
+ball((0, -6.5, 42.2), (7.4, 8.0, 4.4), "MuttMuzzle", "head")             # jowls
+ball((0, -14.0, 46.6), (2.0, 1.4, 1.1), "MuttDark", "head", seg=8, ring=6)  # nose
+for x in (-2.6, 2.6):
+    ball((x, -4.8, 48.2), (1.8, 1.2, 1.6), "MuttDark", "head", seg=6, ring=4)
+    box((x, -4.6, 49.6), (3.0, 1.2, 1.0), "MuttFur", "head")        # droopy brow
+ball((0, 1.5, 51.5), (12.4, 12.0, 8.0), "MuttVest", "head")         # helmet
+box((0, 1.5, 50.4), (13.0, 12.6, 1.4), "MuttVest", "head")          # helmet rim
+# Ears: long soft flaps hanging from under the rim beside the jaw, turned
+# 35 deg toward the front so they show as flaps (not edges) from d0, top
+# under the rim (z 48.8), tip below the jowls (z 30.4).
+for side, x in (("R", -7.0), ("L", 7.0)):
+    ball((x, 0.2, 39.6), (2.6, 6.4, 18.4), "MuttEar", "ear_" + side,
+         rot=(-18, 0, -40 if x > 0 else 40))
 
 # Arms: upper arm (vest-coloured sleeve), forearm and fur hand. Rest pose =
 # port arms, the IK chains just reach their targets.
 SHOULDER = {"R": (-11.5, 0.0, 40.0), "L": (11.5, 0.0, 40.0)}
-ELBOW = {"R": (-13.0, -2.5, 31.5), "L": (14.0, -4.0, 32.0)}
-HAND = {"R": (-5.5, -9.0, 28.0), "L": (5.0, -10.5, 39.5)}
+ELBOW = {"R": (-13.0, -2.5, 31.5), "L": (14.0, -4.0, 30.5)}
+HAND = {"R": (-5.5, -9.0, 28.0), "L": (5.5, -10.0, 35.5)}
 for s in ("R", "L"):
     tube(SHOULDER[s], ELBOW[s], 2.7, "MuttFur", "uparm_" + s)
     tube(ELBOW[s], HAND[s], 2.4, "MuttFur", "forearm_" + s)
@@ -257,8 +267,8 @@ UP_BONES = [
     ("shin_L", "thigh_L", (4.5, 0, 13.5)),
     ("chest", "hips", (0, 0, 29.0)),
     ("head", "chest", (0, 0, 43.0)),
-    ("ear_R", "head", (-6.4, 0.5, 49.0)),
-    ("ear_L", "head", (6.4, 0.5, 49.0)),
+    ("ear_R", "head", (-7.0, 1.2, 48.0)),
+    ("ear_L", "head", (7.0, 1.2, 48.0)),
     ("gun", "chest", tuple(GRIP)),
     ("led", "gun", tuple(LED)),
     ("flash", "gun", tuple(MUZZLE)),
@@ -421,24 +431,34 @@ POSES = {
          "thigh_L": {"rot": (-30, 0, 0)}, "shin_R": {"rot": (70, 0, 0)},
          "shin_L": {"rot": (60, 0, 0)}, "chest": {"rot": (14, 0, 0)},
          "head": {"rot": (24, 0, 0)}, "gun": {"rot": (40, 0, 0)},
-         "ear_R": {"rot": (0, -10, 0)}, "ear_L": {"rot": (0, 10, 0)}},
+         "ear_R": {"rot": (-34, -6, 0)}, "ear_L": {"rot": (-34, 6, 0)}},
         # f2: on the knees, slumping, rifle sliding down.
         {"root": {"loc": (0, 7, -11)}, "thigh_R": {"rot": (-14, 0, 0)},
          "thigh_L": {"rot": (-8, 0, 0)}, "shin_R": {"rot": (95, 0, 0)},
          "shin_L": {"rot": (92, 0, 0)}, "chest": {"rot": (26, 0, 8)},
-         "head": {"rot": (34, 0, 10)}, "gun": {"rot": (70, 0, 0), "locv": Vector((0, 4, -4))}},
-        # f3: toppling to its left (+X).
-        {"root": {"rot": (0, 50, 0), "loc": (-22, 7, 2)}, "thigh_R": {"rot": (-70, 0, 0)},
-         "thigh_L": {"rot": (-62, 0, 0)}, "shin_R": {"rot": (95, 0, 0)},
-         "shin_L": {"rot": (100, 0, 0)}, "chest": {"rot": (28, 0, 0)},
-         "head": {"rot": (20, 20, 0)}, "gun": {"rot": (80, 0, 0), "locv": Vector((0, 4, -2))},
-         "ear_R": {"rot": (0, 25, 0)}, "ear_L": {"rot": (0, 25, 0)}},
-        # f4: corpse on its side, knees drawn up; the rifle lies beside it.
-        {"root": {"rot": (0, 90, 0), "loc": (-30, 6, 14)}, "thigh_R": {"rot": (-100, 0, 0)},
-         "thigh_L": {"rot": (-92, 0, 0)}, "shin_R": {"rot": (118, 0, 0)},
-         "shin_L": {"rot": (112, 0, 0)}, "chest": {"rot": (38, 0, 0)},
-         "head": {"rot": (26, 12, 0)}, "gun": {"rot": (88, 0, 0), "locv": Vector((0, 6, -2))},
-         "ear_R": {"rot": (0, 50, 0)}, "ear_L": {"rot": (0, 70, 0)}},
+         "head": {"rot": (34, 0, 10)}, "gun": {"rot": (70, 0, 0), "locv": Vector((0, 4, -4))},
+         "ear_R": {"rot": (-54, 0, 0)}, "ear_L": {"rot": (-54, 0, 0)}},
+        # f3: pitching forward off the knees (thighs stay upright, the body
+        # tilts 50 deg); the ears still hang down from the head.
+        {"root": {"rot": (50, 0, 0), "loc": (0, 24, -3)}, "thigh_R": {"rot": (-48, 0, 0)},
+         "thigh_L": {"rot": (-42, 0, 0)}, "shin_R": {"rot": (95, 0, 0)},
+         "shin_L": {"rot": (92, 0, 0)}, "chest": {"rot": (10, 0, 6)},
+         "head": {"rot": (14, 0, 16)}, "gun": {"rot": (30, 0, 0), "locv": Vector((0, 2, -4))},
+         "ear_R": {"rot": (-66, 0, 0)}, "ear_L": {"rot": (-66, 0, 0)}},
+        # f4: corpse face down, head turned to its left so the snout shows
+        # in profile, legs folded out to the sides (frog) so the body is
+        # short enough for every view of the 48 px canvas; ears lie flat on
+        # the floor beside the head; the rifle lies beside the body.
+        {"root": {"rot": (90, 0, 0), "loc": (0, 33, 8)}, "thigh_R": {"rot": (0, 70, 0)},
+         "thigh_L": {"rot": (0, -70, 0)},
+         # shins fold back in the floor plane, twisted 90 deg about the
+         # leg so the boots lie flat on their sides instead of standing up.
+         "shin_R": {"q": Quaternion((0, 1, 0), math.radians(-125))
+                         @ Quaternion((0, 0, 1), math.radians(90))},
+         "shin_L": {"q": Quaternion((0, 1, 0), math.radians(125))
+                         @ Quaternion((0, 0, 1), math.radians(-90))}, "chest": {"rot": (0, 0, 8)},
+         "head": {"rot": (-6, 0, 72)}, "gun": {"rot": (0, 0, 20), "locv": Vector((9, 4, -6))},
+         "ear_R": {"rot": (0, 0, 0)}, "ear_L": {"rot": (-50, 0, 0)}},
     ],
 }
 

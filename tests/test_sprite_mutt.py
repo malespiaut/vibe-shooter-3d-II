@@ -16,7 +16,10 @@ assets/src/gibs/mutt.json, then checks (enemies.md, art-bible.md):
   no frame touches the left, right or top canvas edge (nothing clipped);
 - the wind-up LED (fb_red) shows on windup f1 only among windup frames, in
   d0; the muzzle flash (fb_yellow) on attack f0 only;
-- 8 gib frames mutt_gib_d0_f<0..7>.tex; palcheck passes on everything.
+- 8 gib frames mutt_gib_d0_f<0..7>.tex, none with an opaque pixel on row 0
+  or in column 0 / 47, all chunks at rest by f7 (f6 == f7);
+- the death f4 corpse is at most 24 px tall in every direction;
+- palcheck passes on everything.
 Exit 77 (ctest SKIP) when `blender` is not installed.
 """
 import os
@@ -103,6 +106,8 @@ def main():
                         bad_interior += 1
             assert min(xs) > 0 and max(xs) < W - 1 and min(ys) > 0, \
                 ("clipped at the canvas edge", fn, min(xs), max(xs), min(ys))
+            if fn.startswith("mutt_death") and fn.endswith("_f4.tex"):
+                assert H - min(ys) <= 24, (fn, "corpse taller than 24 px", H - min(ys))
             if not fn.startswith("mutt_death"):
                 assert max(ys) == H - 1, (fn, "not standing on the floor row")
                 olive_min = min(olive_min, len(olive))
@@ -129,6 +134,20 @@ def main():
              "-i", os.path.join(out, "mutt_pain_d0_f0.tex"), "-o", gib])
         g = sorted(os.listdir(gib))
         assert g == ["mutt_gib_d0_f%d.tex" % k for k in range(8)], g
+        # Gib frames: nothing clipped (no opaque pixel on row 0 or in the
+        # first/last column) and every chunk resting by f7 (f6 == f7).
+        prev = None
+        for fn in g:
+            t = bast.Tex.load(os.path.join(gib, fn))
+            assert (t.width, t.height) == (W, H), (fn, t.width, t.height)
+            px = [[t.get(x, y) for x in range(W)] for y in range(H)]
+            edge = (sum(px[0][x] != 255 for x in range(W)),
+                    sum(px[y][0] != 255 for y in range(H)),
+                    sum(px[y][W - 1] != 255 for y in range(H)))
+            assert edge == (0, 0, 0), ("gib clipped (row 0, col 0, col %d)" % (W - 1), fn, edge)
+            last, prev = prev, px
+        assert last == prev, "gib chunks still moving between f6 and f7"
+        print("gib frames: 0 edge pixels, f6 == f7 (at rest)")
         print(run([sys.executable, os.path.join(TOOLS, "palcheck.py"), out, gib]).strip())
     print("sprite_mutt: ok")
     return 0
