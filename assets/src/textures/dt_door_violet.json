@@ -14,7 +14,7 @@
     {"type": "panel", "rect": [5, 50, 54, 4], "bevel": 1, "depth": 0.5, "region": "rib"},
     {"type": "rivets", "points": [[8, 12], [28, 12], [36, 12], [56, 12], [8, 52], [28, 52], [36, 52], [56, 52]], "radius": 1.3, "height": 0.7},
     {"type": "panel", "rect": [24, 21, 16, 24], "bevel": 2, "depth": -0.6, "region": "housing"},
-    {"type": "glyph", "png": "ankh.png", "x": 28, "y": 25, "depth": -0.4, "region": "ankh"}
+    {"type": "glyph", "png": "ankh.png", "x": 26, "y": 23, "depth": -0.4, "region": "ankh"}
   ],
   "noise": {"cells": 32, "octaves": 2, "height": 0.12, "amount": 0.08, "blotch_cells": 8, "blotch": 0.5},
   "light": {"relief": 1.0, "contrast": 0.8, "shadow": 0.25, "shadow_steps": 2, "shadow_slope": 0.45},
@@ -28,7 +28,7 @@
     "band": {"ramp": "violet", "lo": 2, "hi": 11, "level": 0.6, "base2": false},
     "leaf": {"ramp": "steel", "lo": 3, "hi": 13, "level": 0.55},
     "rib": {"ramp": "steel", "lo": 4, "hi": 14, "level": 0.6, "base2": false},
-    "ankh": {"ramp": "violet", "lo": 3, "hi": 11, "level": 0.65, "base2": false}
+    "ankh": {"ramp": "violet", "lo": 6, "hi": 11, "level": 0.65, "base2": false}
   },
   "base2": {"ramp": "gray", "lo": 3, "hi": 10, "threshold": 0.35}
 }
