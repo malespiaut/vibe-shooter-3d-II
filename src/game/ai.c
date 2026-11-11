@@ -289,12 +289,20 @@ static uint16_t thinker_id(const game_state *gs, const thinker_t *t)
 }
 
 /* Mastiff: one missile from the next shoulder, aimed at the player from
- * the launch point. Left = 90 degrees counter-clockwise of the facing. */
+ * the launch point. Left = 90 degrees counter-clockwise of the facing. The
+ * shoulder flips every shot, also when a wall forces the centre. */
 static void launch_missile(game_state *gs, thinker_t *t, const enemy_info_t *info)
 {
     const angle_t side = (angle_t)(t->angle + (t->shoulder ? (angle_t)(0u - ANG90) : ANG90));
-    const fix_t x = t->x + fix_mul(info->shoulder, fine_cos(side));
-    const fix_t y = t->y + fix_mul(info->shoulder, fine_sin(side));
+    fix_t x = t->x + fix_mul(info->shoulder, fine_cos(side));
+    fix_t y = t->y + fix_mul(info->shoulder, fine_sin(side));
+    const projectile_info_t *pi = projectile_info(info->missile);
+    if (pi && game_circle_blocked(gs, x, y, pi->radius)) {
+        /* Shoulder against a wall (a 1-tile corridor): launch from the
+         * centre, which the body keeps clear, rather than into the wall. */
+        x = t->x;
+        y = t->y;
+    }
     const angle_t aim = angle_of(gs->player.x - x, gs->player.y - y);
     projectile_spawn(gs, info->missile, thinker_id(gs, t), x, y, AI_MISSILE_Z, aim);
     if (info->shoulder)

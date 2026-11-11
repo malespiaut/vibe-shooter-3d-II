@@ -630,6 +630,14 @@ set_tests_properties(pomdach_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 add_demo_determinism(pomdach-test)
 
+# Mastiff / Shieldbearer test demo, run twice (issue #96).
+add_test(NAME mastshep_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_mastshep_demo.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/mastshep_demo)
+set_tests_properties(mastshep_demo PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+add_demo_determinism(mastshep-test)
+
 # Renderer: floors, ceilings and sky on maps/m1test.vmap (issue #14).
 add_executable(test_render_floor tests/test_render_floor.c)
 target_link_libraries(test_render_floor PRIVATE engine m)

@@ -31,7 +31,8 @@
  *   retargets).
  * - Missile enemies (Mastiff): the attack launches enemy_info.missile at
  *   the player from alternating shoulders (lateral offset enemy_info
- *   .shoulder, left first), aimed from the launch point.
+ *   .shoulder, left first), aimed from the launch point; from the centre
+ *   when the missile would overlap a wall at the shoulder.
  * - Collision: circle vs the tiles enemies may not stand in, then vs the
  *   player circle, axis-separated (x then y). */
 
