@@ -107,3 +107,5 @@ frame, `canvas` = its frame canvas, `blood_ramp` `red`; `cyan` for dog-tech prop
 | `sfx.py`, `sfx_sheet.py` | sound-effect synthesiser and its review sheet |
 | `mkmap.py` | ASCII layout -> `.vmap` |
 | `gen_trig.c` | build-time trig table generator |
+| `vmus_render.c` | `build/vmus_render <song.vmus> <out.wav> [seconds]`: renders a `.vmus` song through the engine mixer |
+| `wav_plot.py` | waveform + spectrogram PNG of a WAV (audio evidence) |
