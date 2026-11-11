@@ -132,8 +132,8 @@ Body, executed in order, each line consuming tics:
 | `use` | Press use for one tic facing the current direction. |
 | `weapon <n>` | Select weapon slot n. |
 | `fire <n>` | Hold fire for n tics. |
-| `face nearest` / `fire nearest [max]` | Turn to (and shoot) the nearest visible live enemy until it dies or `max` tics. (M3) |
-| `clear [radius] [max]` | Fight visible enemies within radius (default 10 units) until none is visible and awake. (M3) |
+| `face nearest` / `fire nearest [max]` | Turn to (and shoot) the nearest visible live enemy until it dies or `max` tics (default 350). Nearest = smallest distance with line of sight, ties to the lower thinker id; picked on the first tic and kept. Turns at keyboard rate; fires when the aim error after the turn is under 1 degree (182). No visible enemy, or a timeout, exits 2. |
+| `clear [radius] [max]` | Fight visible live enemies (awake or not) within radius (default 10 units) until none is left; fails after `max` tics (default 2100). Re-targets the nearest when the current one dies, hides or leaves the radius. No pathing; strafes left 17 tics, right 18, while fighting. Weapon is the author's (`weapon n`). |
 | `expect <stat><op><value>` | Assert on the stats (e.g. `expect exit=1`, `expect health>=20`). Failure makes the run exit 2. |
 
 High-level commands are resolved each tic from game state into the same per-tic input a player

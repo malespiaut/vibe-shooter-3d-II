@@ -342,6 +342,7 @@ add_demo_determinism(door-test)
 add_demo_determinism(m1-sprites)
 add_demo_determinism(tags-test)
 add_demo_determinism(ai-test)
+add_demo_determinism(combat-test)
 
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)
@@ -349,6 +350,21 @@ foreach(c goto timeout expect)
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_demo_cmds.py
             $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/demo_cmds ${c})
   set_tests_properties(demo_${c} PROPERTIES
+    ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+endforeach()
+
+# Combat demo commands (#98): face/fire nearest, clear.
+add_executable(test_demo_combat tests/test_demo_combat.c)
+target_link_libraries(test_demo_combat PRIVATE engine)
+target_compile_options(test_demo_combat PRIVATE -UNDEBUG)
+foreach(g face tie aim parse)
+  add_test(NAME demo_combat_${g} COMMAND test_demo_combat ${g})
+endforeach()
+foreach(c fire clear notarget)
+  add_test(NAME demo_combat_${c}
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_demo_combat.py
+            $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/demo_combat ${c})
+  set_tests_properties(demo_combat_${c} PROPERTIES
     ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 endforeach()
 

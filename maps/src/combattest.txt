@@ -1,0 +1,37 @@
+# Combat test map: 16x11, built by tools/mkmap.py into maps/combattest.vmap.
+# Test fixture for demos/combat-test.demo and tests/test_demo_combat.py
+# (#98), not a game level. One open room: the player at the west end, 3
+# Chihuahua Chompers in the middle and 3 Mutt Troopers at the east end, all
+# within clear's default 10-unit radius. Textures are the renderer test
+# patterns, as m1test.
+
+name Combat Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+
+layout
+################
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+#..............#
+################
+end
+
+# ty counts from the south: the last layout row is ty = 0.
+entity PLAYER_START 2 5 0
+entity CHIHUAHUA_CHOMPER 8 3 180
+entity CHIHUAHUA_CHOMPER 9 5 180
+entity CHIHUAHUA_CHOMPER 8 7 180
+entity MUTT_TROOPER 11 2 180
+entity MUTT_TROOPER 12 5 180
+entity MUTT_TROOPER 11 8 180

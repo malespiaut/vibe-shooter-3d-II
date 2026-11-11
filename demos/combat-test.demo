@@ -1,0 +1,14 @@
+# Combat test (#98): maps/combattest.vmap, skill 2. `clear` on its own:
+# the pistol against 3 Chihuahua Chompers and 3 Mutt Troopers in one open
+# room, strafing left and right. face/fire nearest are replayed twice by
+# tests/test_demo_combat.py (fire) on tests/fixtures/combat_one.txt.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map combattest
+
+expect kills=0
+clear
+expect kills=6
+expect health>0

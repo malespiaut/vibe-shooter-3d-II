@@ -1,0 +1,21 @@
+# Demo combat fixture (tests/test_demo_combat.py): one Mutt Trooper standing
+# in a short room, facing away from the player, and a second one sealed in a
+# pocket the player cannot see (fire nearest must ignore it).
+name Combat One
+
+legend # wall=w flags=SOLID
+legend . floor=f ceil=c
+
+layout
+############
+#..........#
+#..........#
+#..........#
+############
+#..........#
+############
+end
+
+entity PLAYER_START 2 3 90
+entity MUTT_TROOPER 8 3 0
+entity MUTT_TROOPER 3 1 0
