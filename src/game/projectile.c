@@ -193,8 +193,10 @@ void projectiles_tic(game_state *gs)
         thinker_t *t = &th->list[i];
         if (t->state == TH_STATE_DYING && --t->tics <= 0) {
             t->state = TH_STATE_DEAD;
-            t->tics = 0;
+            t->tics = PROP_GIB_TICS; /* the barrel's gibs play from here */
             boom[nboom++] = (uint16_t)(i + 1);
+        } else if (t->state == TH_STATE_DEAD && t->tics > 0) {
+            t->tics--; /* broken pot / barrel gib animation (thinker_gib_frame) */
         }
     }
 

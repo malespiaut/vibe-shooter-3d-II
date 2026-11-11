@@ -191,6 +191,11 @@ target_compile_options(test_projectile PRIVATE -UNDEBUG)
 foreach(g travel wall splash splash_wall self direct barrel_chain barrel_solid awake alive)
   add_test(NAME proj_${g} COMMAND test_projectile ${g})
 endforeach()
+# Decorations (issue #131, items.md Decorations): solid props, banner, pot.
+add_executable(test_decorations tests/test_decorations.c)
+target_link_libraries(test_decorations PRIVATE engine)
+target_compile_options(test_decorations PRIVATE -UNDEBUG)
+add_test(NAME decorations COMMAND test_decorations all)
 # Gameplay code is fixed point only (CLAUDE.md): no float/double in src/game.
 add_test(NAME proj_no_floats
   COMMAND sh -c "! grep -rnE 'float|double' ${CMAKE_SOURCE_DIR}/src/game")
@@ -577,6 +582,11 @@ add_test(NAME launcher_demo
 set_tests_properties(launcher_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 add_demo_determinism(launcher-test)
+
+# Decoration test map and demo (issue #131): every prop, the pot broken.
+add_test(NAME decor_demo
+  COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/decor-test.demo)
+add_demo_determinism(decor-test)
 
 # Weapons 6-7: the Lance / Howler test demo, run twice.
 add_test(NAME lance_demo

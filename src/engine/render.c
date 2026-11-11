@@ -21,6 +21,8 @@ static bast_tex *sky;
 /* Sprite frames per entity type, direction and idle frame; d1..d7 may
  * alias d0 of the same frame. */
 static bast_tex *sprite_frames[BAST_ENT_TYPE_LIMIT][SPRITE_MAX_FRAMES][SPRITE_DIRS];
+/* Gib animation frames per entity type (sprite_def gib), d0 only. */
+static bast_tex *gib_frames[BAST_ENT_TYPE_LIMIT][SPRITE_GIB_FRAMES];
 static render_column columns[VIEW_W];
 static float depth[VIEW_W];
 /* Camera of the last render_view(), for render_draw_sprites(). */
@@ -51,6 +53,10 @@ void render_shutdown(void)
     bast_tex_free(sky);
     sky = NULL;
     for (int t = 0; t < BAST_ENT_TYPE_LIMIT; t++) {
+        for (int f = 0; f < SPRITE_GIB_FRAMES; f++) {
+            bast_tex_free(gib_frames[t][f]);
+            gib_frames[t][f] = NULL;
+        }
         for (int f = 0; f < SPRITE_MAX_FRAMES; f++) {
             bast_tex **fr = sprite_frames[t][f];
             for (int d = SPRITE_DIRS - 1; d >= 0; d--) {
@@ -67,7 +73,7 @@ void render_shutdown(void)
  * it is broken. */
 static bast_tex *load_sprite_frame(const char *dir, const char *name, int *found)
 {
-    static const char *const sub[] = { "sprites", "test" };
+    static const char *const sub[] = { "sprites", "test", "gibs" };
     char path[256];
     *found = 0;
     for (size_t i = 0; i < sizeof sub / sizeof sub[0]; i++) {
@@ -108,6 +114,18 @@ static int load_sprites(const bast_map *map, const char *dir)
                     return 0;
                 }
                 fr[d] = t ? t : fr[0];
+            }
+        }
+        for (int f = 0; def->gib && f < SPRITE_GIB_FRAMES; f++) {
+            char name[128];
+            int found;
+            snprintf(name, sizeof name, "%s_gib_d0_f%d", def->gib, f);
+            gib_frames[type][f] = load_sprite_frame(dir, name, &found);
+            if (!gib_frames[type][f]) {
+                if (!found)
+                    snprintf(err_buf, sizeof err_buf, "gib frame '%s' not found in %s/gibs",
+                             name, dir);
+                return 0;
             }
         }
     }
@@ -594,16 +612,19 @@ int render_draw_sprites(const render_sprite *s, int n, uint8_t *fb)
 }
 
 /* Frame of `type` seen from (vx, vy) for a thing at (x, y) facing `angle`,
- * at render tic `tic`; NULL if the type has no loaded sprite. */
+ * at render tic `tic`, or gib frame `gib` - 1 when `gib` > 0; NULL if the
+ * type has no loaded sprite (or gib frame). */
 static const bast_tex *thing_frame(int type, fix_t x, fix_t y, angle_t angle, fix_t vx,
-                                   fix_t vy, uint32_t tic)
+                                   fix_t vy, uint32_t tic, int gib)
 {
     const sprite_def *def = sprite_def_for_entity(type);
     if (!def || !sprite_frames[type][0][0])
         return NULL;
+    if (gib > 0)
+        return gib <= SPRITE_GIB_FRAMES ? gib_frames[type][gib - 1] : NULL;
     /* Angle of the vector thing -> viewer picks the facing frame. */
     const int dir = sprite_dir(angle_of(vx - x, vy - y), angle);
-    return sprite_frames[type][sprite_anim_frame(tic, def->frames)][dir];
+    return sprite_frames[type][sprite_def_frame(def, tic)][dir];
 }
 
 /* Static sprites of the map's entities (non-live types, e.g. TEST_SPRITE)
@@ -619,7 +640,7 @@ static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
         const sprite_def *def = sprite_def_for_entity(e->type);
         if (!def || def->live)
             continue;
-        const bast_tex *t = thing_frame(e->type, e->x, e->y, e->angle, vx, vy, tic);
+        const bast_tex *t = thing_frame(e->type, e->x, e->y, e->angle, vx, vy, tic, 0);
         if (!t)
             continue;
         const bast_map_cell *c = cell(map, e->x >> 16, e->y >> 16);
@@ -628,7 +649,7 @@ static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
     }
     for (int i = 0; i < n_things && n < RENDER_MAX_SPRITES; i++) {
         const render_thing *th = &things[i];
-        const bast_tex *t = thing_frame(th->type, th->x, th->y, th->angle, vx, vy, tic);
+        const bast_tex *t = thing_frame(th->type, th->x, th->y, th->angle, vx, vy, tic, th->gib);
         if (!t)
             continue;
         const bast_map_cell *c = cell(map, th->x >> 16, th->y >> 16);

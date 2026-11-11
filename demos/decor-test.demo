@@ -1,0 +1,27 @@
+# Decoration test (#131): maps/decortest.vmap. The player looks down the
+# room at every decoration, shoots the papyrus pot with the pistol (it
+# breaks into its gibs, drops nothing, counts no kill) and lets the gibs
+# settle, walks through the hanging dog banner where the pot stood behind
+# it, then walks north into the cat statue, which stops it (0.25 u plus the
+# player radius). The kibble barrel is never shot.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map decortest
+
+wait 16                 # every prop in view, brazier and rack animating
+expect kills=0
+face 4 4                # the pot
+fire 1                  # one pistol shot breaks it
+wait 40                 # its gib animation runs out (32 tics)
+expect kills=0
+goto 10 4               # over the shards and through the banner
+expect tile=10,4
+face 2 4                # look back: debris and the banner from behind
+wait 16
+goto 11 4
+face 11 6               # the cat statue
+in 40 127 0 0 -         # walk into it
+expect tile=11,6        # stopped at y 6.0 = 6.5 - 0.25 - 0.25 (open floor: ty 7)
+wait 16
