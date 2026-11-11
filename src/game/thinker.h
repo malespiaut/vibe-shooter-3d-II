@@ -36,6 +36,10 @@ enum {
     TH_TYPE_SCARAB_PROJ = 256,
     TH_TYPE_EXPLOSION_SMALL = 257,
     TH_TYPE_EXPLOSION_BIG = 258,
+    TH_TYPE_PLASMA_BOLT = 259, /* Pomeranian bolt (fx plasma_bolt) */
+    TH_TYPE_PLASMA_HIT = 260,  /* its impact effect (fx plasma_hit) */
+    TH_TYPE_RETICLE = 261,     /* Dachshund mortar mark (fx reticle): the
+                                * shell lands when `tics` runs out */
 };
 
 /* Owner id of projectiles the player fired (thinker ids are 1..MAX_THINKERS). */
@@ -56,6 +60,7 @@ enum {
     TH_FLAG_PICKUP = 1 << 3,    /* touched by the player (weapon pickups) */
     TH_FLAG_TRIGGER = 1 << 4,   /* pickup with PICKUP_TRIGGER: fires `tag` */
     TH_FLAG_AMBUSH = 1 << 5,    /* entity AMBUSH (deaf): wakes on sight only */
+    TH_FLAG_RETREAT = 1 << 6,   /* Dachshund backing off (game/ai.c) */
 };
 
 typedef struct {

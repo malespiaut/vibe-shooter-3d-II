@@ -5,6 +5,8 @@
 #include "game/door.h"
 #include "game/enemy_info.h"
 #include "game/items.h"
+#include "game/projectile.h"
+#include "game/sound.h"
 #include "game/tags.h"
 
 /* Compass steps, DI_EAST.. counter-clockwise (y grows north). */
@@ -19,7 +21,7 @@ int32_t ai_windup_tics(const game_state *gs, uint16_t type)
     const enemy_info_t *info = enemy_info(type);
     if (!info)
         return 0;
-    return gs->skill == 3 ? info->windup - info->windup / 4 : info->windup;
+    return gs->skill == 3 ? info->windup * 3 / 4 : info->windup; /* 25% off, rounded down */
 }
 
 static int32_t pain_chance(const game_state *gs, const enemy_info_t *info)
@@ -237,13 +239,48 @@ static int in_reach(const game_state *gs, const thinker_t *t, const enemy_info_t
     return player_dist(gs, t) - PLAYER_RADIUS <= info->range;
 }
 
+static uint16_t thinker_id(const game_state *gs, const thinker_t *t)
+{
+    return (uint16_t)(t - gs->things.list + 1);
+}
+
+/* A plasma bolt at the player's position now. */
+static void fire_bolt(game_state *gs, thinker_t *t)
+{
+    t->angle = angle_to_player(gs, t);
+    projectile_spawn(gs, TH_TYPE_PLASMA_BOLT, thinker_id(gs, t), t->x, t->y, AI_POM_BOLT_Z,
+                     t->angle);
+    game_sound(gs, SFX_plasma_fire, t->x, t->y);
+}
+
+/* 1 when `tics` (counting down through the Pomeranian's attack state) is
+ * the fire tic of bolt 2..AI_POM_BOLTS: bolt k fires (k - 1) gaps after
+ * bolt 1, which resolve_attack fires as the state starts. */
+static int pom_volley_tic(int32_t tics)
+{
+    const int32_t start = AI_ATTACK_TICS + (AI_POM_BOLTS - 1) * AI_POM_BOLT_GAP;
+    for (int k = 2; k <= AI_POM_BOLTS; k++)
+        if (tics == start - (k - 1) * AI_POM_BOLT_GAP)
+            return 1;
+    return 0;
+}
+
 static void resolve_attack(game_state *gs, thinker_t *t, const enemy_info_t *info)
 {
     int hit = 0;
-    if (info->attack == ATK_HITSCAN)
+    if (info->attack == ATK_HITSCAN) {
         hit = player_dist(gs, t) <= info->range && ai_line_of_sight(gs, t);
-    else if (info->attack == ATK_MELEE)
+    } else if (info->attack == ATK_MELEE) {
         hit = in_reach(gs, t, info);
+    } else if (info->attack == ATK_PLASMA) {
+        fire_bolt(gs, t);
+    } else if (info->attack == ATK_MORTAR) {
+        hit = in_reach(gs, t, info); /* headbutt */
+        if (!hit) {
+            game_sound(gs, SFX_mortar_launch, t->x, t->y);
+            reticle_spawn(gs, thinker_id(gs, t), gs->player.x, gs->player.y);
+        }
+    }
     if (hit) {
         const int32_t dmg = info->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)info->dmg_spread + 1);
         player_damage_from(gs, dmg, t->x, t->y);
@@ -283,6 +320,40 @@ static void choose_step(game_state *gs, thinker_t *t, const int16_t *dist)
         if (d < best_d || (d == best_d && best != DI_NONE && off < best_off)) {
             best = dir;
             best_d = d;
+            best_off = off;
+        }
+    }
+    if (best == DI_NONE)
+        return;
+    t->movedir = (uint8_t)best;
+    t->goal_tx = (uint8_t)(tx + DIR_DX[best]);
+    t->goal_ty = (uint8_t)(ty + DIR_DY[best]);
+}
+
+/* Dachshund backing off: the step that raises the route distance from the
+ * player (any step pointing away when the player's tile is unreachable),
+ * the one closest in angle to straight away first. DI_NONE when cornered. */
+static void choose_retreat(game_state *gs, thinker_t *t, const int16_t *dist)
+{
+    const int w = gs->map->width;
+    const int tx = fix_to_int(t->x), ty = fix_to_int(t->y);
+    t->movedir = DI_NONE;
+    if (!in_map(gs, tx, ty))
+        return;
+    const int here = dist[ty * w + tx];
+    const angle_t away = (angle_t)(angle_to_player(gs, t) + ANG180);
+    int best = DI_NONE;
+    int32_t best_off = 0;
+    for (int dir = 0; dir < 8; dir++) {
+        if (!step_ok(gs, tx, ty, dir, route_ok))
+            continue;
+        const int d = dist[(ty + DIR_DY[dir]) * w + tx + DIR_DX[dir]];
+        const int16_t off16 = (int16_t)((angle_t)(dir * ANG45) - away);
+        const int32_t off = off16 < 0 ? -(int32_t)off16 : off16;
+        if (here == UNREACHED ? off >= (int32_t)ANG90 : (d == UNREACHED || d <= here))
+            continue;
+        if (best == DI_NONE || off < best_off) {
+            best = dir;
             best_off = off;
         }
     }
@@ -376,6 +447,66 @@ static void chase_move(game_state *gs, thinker_t *t, const enemy_info_t *info)
         t->movedir = DI_NONE; /* reached the tile centre: choose again */
 }
 
+static void need_route(game_state *gs, int16_t *dist, int *have_dist)
+{
+    if (!*have_dist) {
+        route_field(gs, dist);
+        *have_dist = 1;
+    }
+}
+
+/* Dachshund chase (enemies.md): closer than AI_DACH_FLEE it backs off, and
+ * keeps backing off until AI_DACH_NEAR; within AI_DACH_FAR with line of
+ * sight it holds its ground facing the player; otherwise it walks in like
+ * any enemy. Every AI_DECIDE_TICS, unless backing off, it lobs a mortar
+ * when it sees the player within AI_DACH_MORTAR_RANGE and rolls under its
+ * aggression. A cornered Dachshund (no step away) holds instead. */
+static void dach_chase(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_t *dist,
+                       int *have_dist)
+{
+    const fix_t d = player_dist(gs, t);
+    const int was_retreating = (t->flags & TH_FLAG_RETREAT) != 0;
+    int retreat = d < AI_DACH_FLEE || (was_retreating && d < AI_DACH_NEAR);
+    if (retreat != was_retreating)
+        t->movedir = DI_NONE; /* the current step was for the other mode */
+    if (retreat && t->movedir == DI_NONE) {
+        need_route(gs, dist, have_dist);
+        choose_retreat(gs, t, dist);
+        if (t->movedir == DI_NONE)
+            retreat = 0; /* cornered */
+    }
+    if (retreat)
+        t->flags |= TH_FLAG_RETREAT;
+    else
+        t->flags &= (uint8_t)~TH_FLAG_RETREAT;
+
+    const int los = ai_line_of_sight(gs, t);
+    if (--t->movecount <= 0) {
+        t->movecount = AI_DECIDE_TICS;
+        if (!retreat && d <= AI_DACH_MORTAR_RANGE && los &&
+            (int32_t)rng_range(&gs->rng, 256) < info->aggression) {
+            start_windup(gs, t);
+            return;
+        }
+        if (!retreat)
+            t->movedir = DI_NONE; /* re-evaluate the route */
+    }
+    if (retreat) {
+        chase_move(gs, t, info);
+        return;
+    }
+    if (d <= AI_DACH_FAR && los) { /* in its band: hold, aim */
+        t->movedir = DI_NONE;
+        t->angle = angle_to_player(gs, t);
+        return;
+    }
+    if (t->movedir == DI_NONE) {
+        need_route(gs, dist, have_dist);
+        choose_step(gs, t, dist);
+    }
+    chase_move(gs, t, info);
+}
+
 static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_t *dist,
                   int *have_dist)
 {
@@ -387,7 +518,11 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
         return;
     case TH_STATE_PAIN:
     case TH_STATE_ATTACK:
-        if (--t->tics <= 0) {
+        --t->tics;
+        if (t->state == TH_STATE_ATTACK && info->attack == ATK_PLASMA && player_alive &&
+            pom_volley_tic(t->tics))
+            fire_bolt(gs, t); /* the next bolt of the volley */
+        if (t->tics <= 0) {
             t->state = TH_STATE_CHASE;
             t->tics = 0;
             t->movedir = DI_NONE;
@@ -399,6 +534,8 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
             resolve_attack(gs, t, info);
             t->state = TH_STATE_ATTACK;
             t->tics = AI_ATTACK_TICS;
+            if (info->attack == ATK_PLASMA)
+                t->tics += (AI_POM_BOLTS - 1) * AI_POM_BOLT_GAP;
             t->movecount = AI_DECIDE_TICS;
         }
         return;
@@ -409,14 +546,18 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
     }
     if (!player_alive)
         return;
-    if (info->attack == ATK_MELEE && in_reach(gs, t, info)) {
-        start_windup(gs, t);
+    if ((info->attack == ATK_MELEE || info->attack == ATK_MORTAR) && in_reach(gs, t, info)) {
+        start_windup(gs, t); /* bite, headbutt */
+        return;
+    }
+    if (info->attack == ATK_MORTAR) {
+        dach_chase(gs, t, info, dist, have_dist);
         return;
     }
     if (--t->movecount <= 0) {
         t->movecount = AI_DECIDE_TICS;
-        if (info->attack == ATK_HITSCAN && player_dist(gs, t) <= info->range &&
-            ai_line_of_sight(gs, t) &&
+        if ((info->attack == ATK_HITSCAN || info->attack == ATK_PLASMA) &&
+            player_dist(gs, t) <= info->range && ai_line_of_sight(gs, t) &&
             (int32_t)rng_range(&gs->rng, 256) < info->aggression) {
             start_windup(gs, t);
             return;
@@ -424,10 +565,7 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
         t->movedir = DI_NONE; /* re-evaluate the route */
     }
     if (t->movedir == DI_NONE) {
-        if (!*have_dist) {
-            route_field(gs, dist);
-            *have_dist = 1;
-        }
+        need_route(gs, dist, have_dist);
         choose_step(gs, t, dist);
     }
     chase_move(gs, t, info);

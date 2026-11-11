@@ -21,6 +21,9 @@ struct game_state;
 
 #define SPLASH_RADIUS_1_5 ((fix_t)98304) /* 1.5 u: scarab and barrel */
 #define BARREL_SPLASH 64
+#define MORTAR_SPLASH 40     /* Dachshund shell, radius SPLASH_RADIUS_1_5 */
+#define MORTAR_DELAY_TICS 42 /* reticle on the floor to the shell landing */
+#define RETICLE_BEEP_TICS 8  /* audio.md: reticle_beep repeats every 8 tics */
 #define FX_TICS_PER_FRAME 3
 #define PROJ_SUBSTEPS 4 /* collision checks per tic of motion */
 
@@ -31,6 +34,7 @@ typedef struct {
     int32_t splash;         /* at the impact point, linear falloff to 0 */
     fix_t splash_radius;
     uint16_t fx;            /* effect thinker type it becomes */
+    uint16_t sfx;           /* SFX_* queued at the impact point */
 } projectile_info_t;
 
 /* NULL when `type` is not a projectile. */
@@ -56,9 +60,16 @@ uint16_t projectile_spawn(struct game_state *gs, uint16_t type, uint16_t owner, 
 void splash_damage(struct game_state *gs, fix_t x, fix_t y, int32_t amount, fix_t radius,
                    uint16_t source_id);
 
+/* Spawns a mortar reticle (TH_TYPE_RETICLE) at (x, y) for thinker
+ * `owner`: MORTAR_DELAY_TICS later the shell lands there (splash_damage
+ * MORTAR_SPLASH / 1.5 u) and the reticle becomes an explosion_small effect.
+ * Returns its id, 0 when the list is full. */
+uint16_t reticle_spawn(struct game_state *gs, uint16_t owner, fix_t x, fix_t y);
+
 /* One tic of the transient thinkers, in three passes: barrel fuses count
  * down (a barrel at 0 becomes TH_STATE_DEAD and is queued); projectiles
- * move and explode, effects count down; queued barrels explode in thinker
+ * move and explode, reticles count down and land (in thinker order, with
+ * the projectiles), effects count down; queued barrels explode in thinker
  * order (explosion_big effect, BARREL_SPLASH / 1.5 u). A barrel killed
  * during a tic is first counted down on the next one, so a chain explodes
  * exactly BARREL_FUSE_TICS apart. game_tic order: player move, items,

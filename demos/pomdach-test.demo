@@ -1,0 +1,81 @@
+# Pomeranian / Dachshund test (#95): maps/pomdachtest.vmap, skill 2. Two
+# Pomeranian Plasmagunners and a Dachshund Howitzer, all facing west, wake
+# on sight. The player grabs the Sistrum Repeater and kills all three while
+# strafing in long runs: bolts aimed where the player stood fly past, and
+# mortar shells land on reticles the player has already left. Each burst is
+# a re-aim (face) then 6 tics of strafe + fire. Ends with kills=3/3 and the
+# player alive.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map pomdachtest
+
+expect kills=0
+goto 3 7                # Sistrum Repeater
+goto 3 8                # Charge Jar
+weapon 4
+wait 10
+# north Pomeranian, strafing south then north
+face 13 10
+in 6 0 127 0 F
+face 13 10
+in 6 0 -127 0 F
+face 13 10
+in 6 0 -127 0 F
+face 13 10
+in 6 0 -127 0 F
+face 13 10
+in 6 0 -127 0 F
+face 13 10
+in 6 0 -127 0 F
+expect kills=1
+# south Pomeranian, strafing south
+face 13 5
+in 6 0 127 0 F
+face 13 5
+in 6 0 127 0 F
+face 13 5
+in 6 0 127 0 F
+face 13 5
+in 6 0 127 0 F
+face 13 5
+in 6 0 127 0 F
+face 13 5
+in 6 0 127 0 F
+face 13 5
+in 6 0 127 0 F
+face 13 5
+in 6 0 127 0 F
+face 13 5
+in 6 0 127 0 F
+face 13 5
+in 6 0 127 0 F
+expect kills=2
+# Dachshund, strafing north
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 -127 0 F
+face 18 7
+in 6 0 127 0 F
+face 18 7
+in 6 0 127 0 F
+expect kills=3
+expect health>0

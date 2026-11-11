@@ -10,17 +10,31 @@
 /* weapons.md: Scarab Launcher, 14 u/s, direct 30..50, splash 96 r1.5.
  * Radius 0.125 u: the 12x12 px scarab_proj sprite is 0.1875 u across. */
 static const projectile_info_t SCARAB = { 26214, 8192, 30, 20, 96, SPLASH_RADIUS_1_5,
-                                          TH_TYPE_EXPLOSION_SMALL };
+                                          TH_TYPE_EXPLOSION_SMALL, SFX_scarab_explode };
+
+/* enemies.md Pomeranian: 8 u/s, 8..16, no splash. Radius as the scarab's
+ * (same 12x12 px sprite). */
+static const projectile_info_t PLASMA = { 14980, 8192, 8, 8, 0, 0, TH_TYPE_PLASMA_HIT, SFX_plasma_hit };
 
 const projectile_info_t *projectile_info(uint16_t type)
 {
-    return type == TH_TYPE_SCARAB_PROJ ? &SCARAB : NULL;
+    switch (type) {
+    case TH_TYPE_SCARAB_PROJ:
+        return &SCARAB;
+    case TH_TYPE_PLASMA_BOLT:
+        return &PLASMA;
+    default:
+        return NULL;
+    }
 }
 
 int32_t fx_tics(uint16_t fx)
 {
-    /* Frame counts of assets/src/fx/explosion_{small,big}.json. */
+    /* Frame counts of assets/src/fx/{explosion_small,explosion_big,
+     * plasma_hit}.json. */
     switch (fx) {
+    case TH_TYPE_PLASMA_HIT:
+        return 5 * FX_TICS_PER_FRAME;
     case TH_TYPE_EXPLOSION_SMALL:
         return 8 * FX_TICS_PER_FRAME;
     case TH_TYPE_EXPLOSION_BIG:
@@ -50,6 +64,22 @@ uint16_t projectile_spawn(game_state *gs, uint16_t type, uint16_t owner, fix_t x
     t->momx = fix_mul(pi->speed, fine_cos(angle));
     t->momy = fix_mul(pi->speed, fine_sin(angle));
     t->owner = owner;
+    return id;
+}
+
+uint16_t reticle_spawn(game_state *gs, uint16_t owner, fix_t x, fix_t y)
+{
+    const uint16_t id = thinker_alloc(&gs->things);
+    thinker_t *t = thinker_get(&gs->things, id);
+    if (!t)
+        return 0;
+    t->type = TH_TYPE_RETICLE;
+    t->state = TH_STATE_STAND;
+    t->x = x;
+    t->y = y;
+    t->tics = MORTAR_DELAY_TICS;
+    t->owner = owner;
+    game_sound(gs, SFX_reticle_beep, x, y);
     return id;
 }
 
@@ -145,7 +175,7 @@ static void projectile_move(game_state *gs, thinker_t *t, uint16_t id)
         player_damage(gs, roll(gs, pi->dmg_base, pi->dmg_spread));
     if (pi->splash)
         splash_damage(gs, t->x, t->y, pi->splash, pi->splash_radius, id);
-    game_sound(gs, SFX_scarab_explode, t->x, t->y);
+    game_sound(gs, pi->sfx, t->x, t->y);
 
     t->type = pi->fx;
     t->tics = fx_tics(pi->fx);
@@ -174,6 +204,15 @@ void projectiles_tic(game_state *gs)
             continue;
         if (projectile_info(t->type)) {
             projectile_move(gs, t, (uint16_t)(i + 1));
+        } else if (t->type == TH_TYPE_RETICLE) {
+            if (--t->tics <= 0) { /* the shell lands on the mark */
+                game_sound(gs, SFX_mortar_land, t->x, t->y);
+                splash_damage(gs, t->x, t->y, MORTAR_SPLASH, SPLASH_RADIUS_1_5, (uint16_t)(i + 1));
+                t->type = TH_TYPE_EXPLOSION_SMALL;
+                t->tics = fx_tics(TH_TYPE_EXPLOSION_SMALL);
+            } else if ((MORTAR_DELAY_TICS - t->tics) % RETICLE_BEEP_TICS == 0) {
+                game_sound(gs, SFX_reticle_beep, t->x, t->y); /* first beep at spawn */
+            }
         } else if (fx_tics(t->type)) {
             if (--t->tics <= 0)
                 t->state = TH_STATE_FREE;
