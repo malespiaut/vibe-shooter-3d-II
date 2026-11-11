@@ -145,10 +145,23 @@ static int sees_player(const game_state *gs, const thinker_t *t)
     return ai_line_of_sight(gs, t);
 }
 
-static void wake(thinker_t *t)
+/* Plays the encoded snd_* field `snd` (enemy_info.h) at the thinker. Sound
+ * is an event only: it never touches the hashed state. */
+static void enemy_sound(game_state *gs, const thinker_t *t, uint16_t snd)
+{
+    if (snd)
+        game_sound(gs, enemy_snd_id(snd), t->x, t->y);
+}
+
+/* STAND -> CHASE. Only a standing enemy wakes, so the sight voice plays once
+ * per enemy however many times noise, sight or damage reach it. */
+static void wake(game_state *gs, thinker_t *t)
 {
     if (t->state != TH_STATE_STAND)
         return;
+    const enemy_info_t *info = enemy_info(t->type);
+    if (info)
+        enemy_sound(gs, t, info->snd_sight);
     t->state = TH_STATE_CHASE;
     t->movecount = 0;
     t->movedir = DI_NONE;
@@ -184,7 +197,7 @@ void ai_noise(game_state *gs)
             continue;
         const int tx = fix_to_int(t->x), ty = fix_to_int(t->y);
         if (in_map(gs, tx, ty) && heard[ty * w + tx])
-            wake(t);
+            wake(gs, t);
     }
 }
 
@@ -213,14 +226,21 @@ int ai_damage_pain(game_state *gs, thinker_t *t, int32_t damage, int32_t pain_ti
         return 0;
     if (thinker_damage(&gs->things, t, damage)) {
         t->died_tic = gs->tic;
-        if (info)
+        if (info) {
             spawn_drop(gs, t, info);
+            if (t->flags & TH_FLAG_GIB)
+                game_sound(gs, SFX_gib_splat, t->x, t->y);
+            else
+                enemy_sound(gs, t, info->snd_death);
+        }
         return 1;
     }
     if (!info || damage <= 0)
         return 0;
-    wake(t);
+    wake(gs, t);
     if (pain_tics > 0) { /* forced: no pain roll */
+        if (t->state != TH_STATE_PAIN)
+            enemy_sound(gs, t, info->snd_pain);
         t->state = TH_STATE_PAIN;
         t->tics = pain_tics;
         t->movedir = DI_NONE;
@@ -228,6 +248,8 @@ int ai_damage_pain(game_state *gs, thinker_t *t, int32_t damage, int32_t pain_ti
     }
     const int32_t pain = pain_chance(gs, info);
     if (pain > 0 && (int32_t)rng_range(&gs->rng, 256) < pain) {
+        if (t->state != TH_STATE_PAIN) /* one voice per flinch, not per pellet */
+            enemy_sound(gs, t, info->snd_pain);
         t->state = TH_STATE_PAIN;
         t->tics = AI_PAIN_TICS;
     }
@@ -257,30 +279,11 @@ int ai_damage_from(game_state *gs, thinker_t *t, int32_t damage, int kind, fix_t
             damage /= 2;
         } else {
             game_sound(gs, SFX_shield_block, t->x, t->y);
-            wake(t);
+            wake(gs, t);
             return 0;
         }
     }
     return ai_damage(gs, t, damage);
-}
-
-/* Telegraph and attack sounds (audio.md) of the enemies that play them;
- * -1 = none. */
-static int windup_sfx(uint16_t type)
-{
-    switch (type) {
-    case BAST_ENT_MASTIFF_JUGGERNAUT:
-        return SFX_mastiff_windup;
-    case BAST_ENT_SHEPHERD_SHIELDBEARER:
-        return SFX_shep_windup;
-    default:
-        return -1;
-    }
-}
-
-static int hit_sfx(uint16_t type)
-{
-    return type == BAST_ENT_SHEPHERD_SHIELDBEARER ? SFX_baton_hit : -1;
 }
 
 static uint16_t thinker_id(const game_state *gs, const thinker_t *t)
@@ -307,8 +310,15 @@ static void launch_missile(game_state *gs, thinker_t *t, const enemy_info_t *inf
     projectile_spawn(gs, info->missile, thinker_id(gs, t), x, y, AI_MISSILE_Z, aim);
     if (info->shoulder)
         t->shoulder ^= 1;
-    game_sound(gs, SFX_bone_fire, x, y);
+    if (info->snd_attack) /* bone_fire, from the launch point */
+        game_sound(gs, enemy_snd_id(info->snd_attack), x, y);
 }
+
+/* Each enemy attack sound (enemy_info snd_attack) has one owner, the code
+ * that makes the attack: hitscan on the shot (hit or miss), melee only on
+ * a hit, a missile at its launch point, plasma once per bolt, and the
+ * Dachshund's mortar_launch only with a reticle (its headbutt is silent).
+ * Nothing else plays them. */
 
 /* Player near edge within the melee reach of `t`. */
 static int in_reach(const game_state *gs, const thinker_t *t, const enemy_info_t *info)
@@ -317,12 +327,12 @@ static int in_reach(const game_state *gs, const thinker_t *t, const enemy_info_t
 }
 
 /* A plasma bolt at the player's position now. */
-static void fire_bolt(game_state *gs, thinker_t *t)
+static void fire_bolt(game_state *gs, thinker_t *t, const enemy_info_t *info)
 {
     t->angle = angle_to_player(gs, t);
     projectile_spawn(gs, TH_TYPE_PLASMA_BOLT, thinker_id(gs, t), t->x, t->y, AI_POM_BOLT_Z,
                      t->angle);
-    game_sound(gs, SFX_plasma_fire, t->x, t->y);
+    enemy_sound(gs, t, info->snd_attack); /* plasma_fire, once per bolt */
 }
 
 /* 1 when `tics` (counting down through the Pomeranian's attack state) is
@@ -346,33 +356,33 @@ static void resolve_attack(game_state *gs, thinker_t *t, const enemy_info_t *inf
     }
     if (info->attack == ATK_HITSCAN) {
         hit = player_dist(gs, t) <= info->range && ai_line_of_sight(gs, t);
+        enemy_sound(gs, t, info->snd_attack); /* the shot, hit or miss */
     } else if (info->attack == ATK_MELEE) {
         hit = in_reach(gs, t, info);
     } else if (info->attack == ATK_PLASMA) {
-        fire_bolt(gs, t);
+        fire_bolt(gs, t, info);
     } else if (info->attack == ATK_MORTAR) {
         hit = in_reach(gs, t, info); /* headbutt */
         if (!hit) {
-            game_sound(gs, SFX_mortar_launch, t->x, t->y);
+            enemy_sound(gs, t, info->snd_attack); /* mortar_launch */
             reticle_spawn(gs, thinker_id(gs, t), gs->player.x, gs->player.y);
         }
     }
     if (hit) {
         const int32_t dmg = info->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)info->dmg_spread + 1);
         player_damage_from(gs, dmg, t->x, t->y);
-        if (hit_sfx(t->type) >= 0)
-            game_sound(gs, hit_sfx(t->type), t->x, t->y);
+        if (info->attack == ATK_MELEE)
+            enemy_sound(gs, t, info->snd_attack); /* bite, baton: on a hit */
     }
 }
 
-static void start_windup(game_state *gs, thinker_t *t)
+static void start_windup(game_state *gs, thinker_t *t, const enemy_info_t *info)
 {
+    enemy_sound(gs, t, info->snd_windup);
     t->state = TH_STATE_WINDUP;
     t->tics = ai_windup_tics(gs, t->type);
     t->angle = angle_to_player(gs, t);
     t->movedir = DI_NONE;
-    if (windup_sfx(t->type) >= 0)
-        game_sound(gs, windup_sfx(t->type), t->x, t->y);
 }
 
 /* Picks the next tile down the route field; DI_NONE when none (or when in
@@ -565,7 +575,7 @@ static void dach_chase(game_state *gs, thinker_t *t, const enemy_info_t *info, i
         t->movecount = AI_DECIDE_TICS;
         if (!retreat && d <= AI_DACH_MORTAR_RANGE && los &&
             (int32_t)rng_range(&gs->rng, 256) < info->aggression) {
-            start_windup(gs, t);
+            start_windup(gs, t, info);
             return;
         }
         if (!retreat)
@@ -594,14 +604,14 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
     switch (t->state) {
     case TH_STATE_STAND:
         if (player_alive && sees_player(gs, t))
-            wake(t);
+            wake(gs, t);
         return;
     case TH_STATE_PAIN:
     case TH_STATE_ATTACK:
         --t->tics;
         if (t->state == TH_STATE_ATTACK && info->attack == ATK_PLASMA && player_alive &&
             pom_volley_tic(t->tics))
-            fire_bolt(gs, t); /* the next bolt of the volley */
+            fire_bolt(gs, t, info); /* the next bolt of the volley */
         if (t->tics <= 0) {
             t->state = TH_STATE_CHASE;
             t->tics = 0;
@@ -627,7 +637,7 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
     if (!player_alive)
         return;
     if ((info->attack == ATK_MELEE || info->attack == ATK_MORTAR) && in_reach(gs, t, info)) {
-        start_windup(gs, t); /* bite, headbutt */
+        start_windup(gs, t, info); /* bite, headbutt */
         return;
     }
     if (info->attack == ATK_MORTAR) {
@@ -640,7 +650,7 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
              info->attack == ATK_MISSILE) &&
             player_dist(gs, t) <= info->range && ai_line_of_sight(gs, t) &&
             (int32_t)rng_range(&gs->rng, 256) < info->aggression) {
-            start_windup(gs, t);
+            start_windup(gs, t, info);
             return;
         }
         t->movedir = DI_NONE; /* re-evaluate the route */

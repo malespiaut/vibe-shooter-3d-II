@@ -3,13 +3,18 @@
  *   test_sound trace <maps dir> <demo>  replays a demo in-process and prints
  *       one line per tic: `tic use keys` (use = BT_USE in that tic's cmd,
  *       keys = player key bits after it). tests/test_sound_events.py uses
- *       it as the game-state oracle for the --sound-log checks. */
+ *       it as the game-state oracle for the --sound-log checks.
+ *   test_sound enemies <maps dir> <demo>  replays a demo and prints one
+ *       line per enemy whose state changed in a tic:
+ *       `tic index type before after x y gib` (states TH_STATE_*, x y raw
+ *       16.16, gib = TH_FLAG_GIB). Oracle for tests/test_enemy_sounds.py. */
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "game/demo.h"
+#include "game/enemy_info.h"
 #include "game/items.h"
 #include "game/sound.h"
 #include "game/state.h"
@@ -192,14 +197,47 @@ static void trace(const char *maps, const char *path)
     free(text);
 }
 
+static void enemies(const char *maps, const char *path)
+{
+    static uint8_t before[MAX_THINKERS];
+    char err[256];
+    char *text = slurp(path);
+    demo_t *d = demo_parse(text, err, sizeof err);
+    assert(d);
+    bast_map *m = load_map(maps, d->map[0] ? d->map : "m1test");
+    game_init(&gs, m, d->level, d->skill, d->seed);
+    ticcmd cmd;
+    int r;
+    while ((r = demo_next(d, &gs, &cmd, err, sizeof err)) == DEMO_TIC) {
+        const uint32_t tic = gs.tic;
+        for (int i = 0; i < gs.things.count; i++)
+            before[i] = gs.things.list[i].state;
+        game_tic(&gs, &cmd);
+        for (int i = 0; i < gs.things.count; i++) {
+            const thinker_t *t = &gs.things.list[i];
+            if (!enemy_info(t->type) || t->state == before[i])
+                continue;
+            printf("%u %d %u %u %u %ld %ld %d\n", (unsigned)tic, i, (unsigned)t->type,
+                   (unsigned)before[i], (unsigned)t->state, (long)t->x, (long)t->y,
+                   (t->flags & TH_FLAG_GIB) != 0);
+        }
+    }
+    assert(r == DEMO_END);
+    demo_free(d);
+    bast_map_free(m);
+    free(text);
+}
+
 int main(int argc, char **argv)
 {
     if (argc == 3 && strcmp(argv[1], "unit") == 0)
         test_unit(argv[2]);
     else if (argc == 4 && strcmp(argv[1], "trace") == 0)
         trace(argv[2], argv[3]);
+    else if (argc == 4 && strcmp(argv[1], "enemies") == 0)
+        enemies(argv[2], argv[3]);
     else {
-        fprintf(stderr, "usage: test_sound unit <maps> | trace <maps> <demo>\n");
+        fprintf(stderr, "usage: test_sound unit <maps> | trace|enemies <maps> <demo>\n");
         return 1;
     }
     return 0;

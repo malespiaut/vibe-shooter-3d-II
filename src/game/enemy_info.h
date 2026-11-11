@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "engine/fixed.h"
+#include "game/sound.h"
 
 enum {
     ATK_NONE = 0,    /* no attack yet (enemies whose attack lands later) */
@@ -39,7 +40,23 @@ typedef struct {
     fix_t shoulder;      /* ATK_MISSILE: lateral launch offset, alternating sides;
                           * 0 = from the centre */
     uint8_t shield;      /* 1: frontal shield (ai_damage_from) */
+    /* Voices and attack sound (audio.md, Enemy voices and telegraphs, Enemy
+     * attacks), stored as ENEMY_SND(name) = SFX_name + 1 so that 0 means
+     * none even though SFX ids start at 0. enemy_snd_id() decodes. */
+    uint16_t snd_sight;  /* woken (once per enemy) */
+    uint16_t snd_windup; /* entering the wind-up telegraph */
+    uint16_t snd_attack; /* the attack; ai.c says when per attack kind */
+    uint16_t snd_pain;   /* entering pain */
+    uint16_t snd_death;  /* killed (a gib death plays gib_splat instead) */
 } enemy_info_t;
+
+#define ENEMY_SND(name) ((uint16_t)(SFX_##name + 1))
+
+/* The SFX_* id of an encoded snd_* field, -1 when none. */
+static inline int enemy_snd_id(uint16_t snd)
+{
+    return (int)snd - 1;
+}
 
 /* The row for `type`, or NULL when `type` is not an enemy. */
 const enemy_info_t *enemy_info(uint16_t type);
