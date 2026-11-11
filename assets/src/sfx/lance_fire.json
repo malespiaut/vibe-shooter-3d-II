@@ -1,0 +1,51 @@
+{
+  "desc": "Lance beam: a searing blast of sunlight, a hard zap that rings down through a buzzing tail.",
+  "seed": 60,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 2000,
+      "freq_end": 90,
+      "vibrato": [
+        30,
+        0.5
+      ],
+      "attack": 0.001,
+      "decay": 0.1,
+      "sustain": 0.5,
+      "release": 0.4,
+      "lowpass": 8000,
+      "lowpass_end": 700,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 1200,
+      "freq_end": 300,
+      "duty": 0.125,
+      "attack": 0.001,
+      "release": 0.3,
+      "gain": 0.5
+    },
+    {
+      "wave": "noise",
+      "freq": 16000,
+      "freq_end": 2000,
+      "attack": 0.001,
+      "release": 0.25,
+      "lowpass": 9000,
+      "lowpass_end": 1000,
+      "gain": 0.7
+    },
+    {
+      "wave": "square",
+      "freq": 70,
+      "freq_end": 35,
+      "attack": 0.001,
+      "release": 0.25,
+      "lowpass": 300,
+      "gain": 0.8
+    }
+  ]
+}

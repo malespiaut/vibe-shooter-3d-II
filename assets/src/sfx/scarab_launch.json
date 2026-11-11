@@ -1,0 +1,46 @@
+{
+  "desc": "Scarab Launcher: a hollow thunk and a buzzing beetle-wing whoosh flying off.",
+  "seed": 57,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 180,
+      "freq_end": 70,
+      "attack": 0.001,
+      "release": 0.12,
+      "lowpass": 600,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "attack": 0.001,
+      "release": 0.03,
+      "lowpass": 3000,
+      "gain": 0.7
+    },
+    {
+      "wave": "saw",
+      "start": 0.02,
+      "freq": 140,
+      "freq_end": 260,
+      "tremolo": [
+        45,
+        0.7
+      ],
+      "attack": 0.02,
+      "release": 0.35,
+      "lowpass": 1800,
+      "gain": 0.55
+    },
+    {
+      "wave": "noise",
+      "start": 0.02,
+      "freq": 5000,
+      "attack": 0.05,
+      "release": 0.3,
+      "lowpass": 1200,
+      "lowpass_end": 3500,
+      "gain": 0.45
+    }
+  ]
+}

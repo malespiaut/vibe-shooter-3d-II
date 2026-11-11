@@ -1,0 +1,27 @@
+{
+  "desc": "Fast airy paw swipe: a band of noise sweeping up and away, no impact.",
+  "seed": 51,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 6000,
+      "freq_end": 14000,
+      "attack": 0.05,
+      "release": 0.13,
+      "lowpass": 900,
+      "lowpass_end": 5000,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "freq": 3000,
+      "freq_end": 9000,
+      "start": 0.02,
+      "attack": 0.04,
+      "release": 0.09,
+      "lowpass": 1500,
+      "lowpass_end": 7000,
+      "gain": 0.5
+    }
+  ]
+}

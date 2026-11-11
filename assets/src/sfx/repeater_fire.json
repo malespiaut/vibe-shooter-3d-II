@@ -1,0 +1,44 @@
+{
+  "desc": "Sistrum Repeater: one tight metallic jingle-tick with a little zap; short enough to retrigger every 4 tics.",
+  "seed": 56,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 2400,
+      "freq_end": 1700,
+      "duty": 0.3,
+      "tremolo": [
+        90,
+        0.8
+      ],
+      "attack": 0.001,
+      "release": 0.085,
+      "gain": 0.6
+    },
+    {
+      "wave": "square",
+      "freq": 3170,
+      "freq_end": 2300,
+      "duty": 0.5,
+      "attack": 0.001,
+      "release": 0.06,
+      "gain": 0.4
+    },
+    {
+      "wave": "saw",
+      "freq": 700,
+      "freq_end": 150,
+      "attack": 0.001,
+      "release": 0.07,
+      "gain": 0.5
+    },
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "release": 0.02,
+      "lowpass": 9000,
+      "gain": 0.7
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "desc": "Swipe that connects: short whoosh into a meaty slap with a scratchy rake of claws.",
+  "seed": 52,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 8000,
+      "attack": 0.03,
+      "release": 0.03,
+      "lowpass": 1200,
+      "lowpass_end": 5000,
+      "gain": 0.5
+    },
+    {
+      "wave": "noise",
+      "start": 0.05,
+      "freq": 6000,
+      "freq_end": 900,
+      "attack": 0.001,
+      "decay": 0.03,
+      "sustain": 0.3,
+      "release": 0.09,
+      "lowpass": 3500,
+      "lowpass_end": 500,
+      "gain": 1.0
+    },
+    {
+      "wave": "triangle",
+      "start": 0.05,
+      "freq": 160,
+      "freq_end": 55,
+      "attack": 0.001,
+      "release": 0.12,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "start": 0.06,
+      "freq": 2500,
+      "attack": 0.001,
+      "release": 0.12,
+      "tremolo": [
+        55,
+        0.9
+      ],
+      "lowpass": 7000,
+      "gain": 0.45
+    }
+  ]
+}

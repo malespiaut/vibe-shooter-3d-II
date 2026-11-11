@@ -1,0 +1,32 @@
+{
+  "desc": "Using a plain wall: a short grumpy low 'mrrp' grunt, nothing happens.",
+  "seed": 66,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 230,
+      "freq_end": 170,
+      "vibrato": [
+        30,
+        1.5
+      ],
+      "attack": 0.01,
+      "hold": 0.08,
+      "release": 0.06,
+      "lowpass": 900,
+      "lowpass_end": 500,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 115,
+      "freq_end": 85,
+      "duty": 0.3,
+      "attack": 0.01,
+      "hold": 0.08,
+      "release": 0.06,
+      "lowpass": 600,
+      "gain": 0.5
+    }
+  ]
+}

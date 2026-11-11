@@ -1,0 +1,23 @@
+{
+  "desc": "Soft padded landing: a low muffled thump with a little dust scuff.",
+  "seed": 65,
+  "voices": [
+    {
+      "wave": "triangle",
+      "freq": 110,
+      "freq_end": 50,
+      "attack": 0.001,
+      "release": 0.1,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "freq": 3000,
+      "attack": 0.002,
+      "release": 0.07,
+      "lowpass": 1200,
+      "lowpass_end": 300,
+      "gain": 0.6
+    }
+  ]
+}
