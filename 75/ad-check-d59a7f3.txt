@@ -1,0 +1,5 @@
+[76/77] Linking C executable game
+100% tests passed out of 43
+17: sfx_levels: ok (76 effects, 11.1 dB spread, windups within 0.1 dB, barrel_explode -16.0 vs loudest other World -20.9, menu_move -27.0 / tally_tick -27.1 vs item_pickup -21.0)
+palcheck: OK, 156 file(s) checked
+build_assets: ok
