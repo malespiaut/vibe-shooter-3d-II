@@ -100,16 +100,17 @@ def box(x0, x1, y0, y1, z0, z1, mat, bone):
 
 
 def ellipsoid(c, r, mat, bone, seg=8, rings=5, tuft=0.0, twist=0.5):
-    """Low-poly UV ellipsoid; flat shaded facets. `tuft` > 0 pushes every
-    other vertex outward (checkerboard, seeded random amount), which turns the
-    facets into irregular pointed fur clumps instead of a smooth ball."""
+    """Low-poly UV ellipsoid; flat shaded facets. `tuft` > 0 pushes each
+    vertex outward by its own seeded random amount (no parity pattern), and
+    odd rings are offset by half a segment (`twist`), so the facets break into
+    irregular fur clumps instead of lining up into repeating zigzags."""
     vs = [(c[0], c[1], c[2] - r[2])]
     for i in range(1, rings):
         t = math.pi * i / rings
         z, s = -math.cos(t), math.sin(t)
         for j in range(seg):
-            a = 2 * math.pi * (j + twist * (i % 2)) / seg
-            k = 1.0 + tuft * (0.35 + 0.65 * RNG.random() if (i + j) % 2 else 0.25 * RNG.random())
+            a = 2 * math.pi * (j + twist * (i % 2) + 0.3 * (RNG.random() - 0.5)) / seg
+            k = 1.0 + tuft * RNG.random()
             vs.append((c[0] + k * r[0] * s * math.cos(a), c[1] + k * r[1] * s * math.sin(a),
                        c[2] + k * r[2] * z))
     vs.append((c[0], c[1], c[2] + r[2] * (1.0 + tuft)))
@@ -140,15 +141,62 @@ def cylinder(x, z, y0, y1, r, mat, bone, seg=6):
     add(vs, fs, mat, bone)
 
 
-def prism(tri, y0, y1, mat, bone):
-    """Triangle `tri` [(x, z)] x3 extruded from y0 (front) to y1 (back)."""
-    vs = [(x, y0, z) for x, z in tri] + [(x, y1, z) for x, z in tri]
-    fs = [(0, 1, 2), (5, 4, 3), (0, 3, 4, 1), (1, 4, 5, 2), (2, 5, 3, 0)]
-    add(vs, fs, mat, bone)
+def _sub(a, b):
+    return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+
+
+def _cross(a, b):
+    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+
+def _dot(a, b):
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+
+def _norm(a):
+    n = math.sqrt(_dot(a, a))
+    return (a[0] / n, a[1] / n, a[2] / n)
+
+
+def pyramid(base, apex, mat, bone, side_mat=None):
+    """Convex pyramid: polygon `base` [(x, y, z)] plus one `apex` vertex, so it
+    tapers to a single point and reads as a triangle from every side. Faces
+    are wound outward. `side_mat` {side index: material} recolours single
+    sides (side i spans base[i] -> base[i + 1] -> apex)."""
+    n = len(base)
+    vs = list(base) + [apex]
+    cen = tuple(sum(v[k] for v in vs) / len(vs) for k in range(3))
+
+    def outward(f):
+        a, b, c = (vs[i] for i in f[:3])
+        fc = tuple(sum(vs[i][k] for i in f) / len(f) for k in range(3))
+        return f if _dot(_cross(_sub(b, a), _sub(c, a)), _sub(fc, cen)) > 0 else f[::-1]
+
+    add(vs, [outward(tuple(range(n)))], mat, bone)
+    b = len(verts) - len(vs)
+    for i in range(n):
+        f = outward((i, (i + 1) % n, n))
+        faces.append(tuple(b + k for k in f))
+        face_mat.append(ORDER.index((side_mat or {}).get(i, mat)))
+
+
+def tuft(p, d, length, width, mat, bone):
+    """A tapered fur tuft: triangular-based cone rooted at `p` (sunk a little
+    under the fur surface), pointing along `d`, base `width`, `length` long."""
+    d = _norm(d)
+    u = _norm(_cross(d, (0.0, 0.0, 1.0) if abs(d[2]) < 0.9 else (1.0, 0.0, 0.0)))
+    v = _cross(d, u)
+    spin, r = RNG.random() * 2 * math.pi, width / math.sqrt(3)
+    root = tuple(p[k] - d[k] * 0.02 for k in range(3))
+    base = []
+    for j in range(3):
+        a = spin + 2 * math.pi * j / 3
+        base.append(tuple(root[k] + r * (math.cos(a) * u[k] + math.sin(a) * v[k]) for k in range(3)))
+    pyramid(base, tuple(p[k] + d[k] * length for k in range(3)), mat, bone)
 
 
 # Pivots (bone heads).
-BALL = (0.0, 0.02, 0.335)            # fur ball centre (the ruff bone scales about it)
+BALL = (0.0, 0.02, 0.315)            # fur ball centre (the ruff bone scales about it)
 FACE = (0.0, -0.17, 0.42)
 SHOULDER_R = (-0.22, -0.06, 0.28)   # cannon arm (the dog's right is world -X)
 SHOULDER_L = (0.20, -0.10, 0.30)
@@ -166,25 +214,64 @@ def aim(v):
     return (px + (x - px) * c - (y - py) * s, py + (x - px) * s + (y - py) * c, z)
          # cannon axis
 
-# The fur ball: one big tufted ellipsoid, a cream chest ruff in front.
-ellipsoid(BALL, (0.285, 0.25, 0.285), "PomFur", "ruff", seg=14, rings=8, tuft=0.12)
-ellipsoid((0.0, -0.17, 0.25), (0.14, 0.10, 0.12), "PomFurLight", "ruff", seg=10, rings=6, tuft=0.12)
+# The fur ball: one big noisy ellipsoid, a cream chest ruff in front, and
+# tapered tuft cones sticking out of its upper and side silhouette (and the
+# ruff) so the outline is broken fluff, not a smooth hull.
+BALL_R = (0.245, 0.235, 0.265)
+ellipsoid(BALL, BALL_R, "PomFur", "ruff", seg=14, rings=8, tuft=0.05)
+ellipsoid((0.0, -0.17, 0.25), (0.14, 0.10, 0.12), "PomFurLight", "ruff", seg=10, rings=6, tuft=0.10)
+
+
+def ball_tufts():
+    """Rings of tufts at elevations 0..75 deg, every ring offset by half a
+    step and jittered; none over the face, ears, tail or cannon arm."""
+    for e0, count in ((-10, 12), (15, 14), (38, 13), (60, 9), (80, 4)):
+        for j in range(count):
+            a = math.radians(360.0 * (j + 0.5 * (count % 2 == 0) + 0.4 * (RNG.random() - 0.5)) / count)
+            e = math.radians(e0 + 8 * (RNG.random() - 0.5))
+            ad = math.degrees(a) % 360
+            if 225 < ad < 315 and e0 < 50:          # the face (front, -Y)
+                continue
+            if 160 < ad < 205 and e0 < 0:           # the cannon arm (-X)
+                continue
+            if 60 < ad < 120 and e0 >= 58:          # the tail (back, +Y)
+                continue
+            n = (math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e))
+            p = (BALL[0] + BALL_R[0] * n[0], BALL[1] + BALL_R[1] * n[1], BALL[2] + BALL_R[2] * n[2])
+            if any(abs(p[0] - s * 0.105) < 0.07 and abs(p[1] + 0.07) < 0.08 and p[2] > 0.5
+                   for s in (1, -1)):                # the ears
+                continue
+            d = (n[0], n[1], n[2] - 0.55)            # outward and slightly down
+            tuft(p, d, 0.05 + 0.025 * RNG.random(), 0.07, "PomFur", "ruff")
+
+
+ball_tufts()
+for a in (-150, -120, -90, -60, -30):                # chest ruff fringe, forward and down
+    ar = math.radians(a + 10 * (RNG.random() - 0.5))
+    p = (0.13 * math.cos(ar), -0.17 + 0.09 * math.sin(ar), 0.19)
+    tuft(p, (math.cos(ar), math.sin(ar), -0.6), 0.04 + 0.02 * RNG.random(), 0.05,
+         "PomFurLight", "ruff")
 # Tiny feet barely peeking out under the fur.
 for bone, (x, y, z) in FEET.items():
     box(x - 0.035, x + 0.035, y - 0.07, y + 0.02, 0.0, 0.05, "PomFurDark", bone)
 # Plumed tail curled over the back.
 ellipsoid((0.0, 0.18, 0.60), (0.10, 0.09, 0.07), "PomFur", "tail", seg=8, rings=5, tuft=0.18)
 ellipsoid((0.0, 0.10, 0.65), (0.06, 0.06, 0.04), "PomFurLight", "tail", seg=6, rings=4, tuft=0.15)
+for a in (-20, 35, 145, 200):                     # plume tufts, sideways and back
+    ar = math.radians(a + 12 * (RNG.random() - 0.5))
+    tuft((0.085 * math.cos(ar), 0.20 + 0.075 * math.sin(ar), 0.60), (math.cos(ar), math.sin(ar), -0.3),
+         0.04 + 0.02 * RNG.random(), 0.06, "PomFur", "tail")
 # Small face on the front of the ball: cream muzzle, steel nose and eyes.
 ellipsoid((0.0, -0.245, 0.40), (0.07, 0.05, 0.05), "PomFurLight", "head", seg=8, rings=5)
 box(-0.018, 0.018, -0.30, -0.285, 0.415, 0.44, "PomEye", "head")              # nose
 for s in (1, -1):
     box(s * 0.075 - 0.018, s * 0.075 + 0.018, -0.255, -0.235, 0.45, 0.485, "PomEye", "head")
-# Two tiny pointed ears poking out of the top of the fur.
+# Two tiny pointed ears poking out of the top of the fur: each a pyramid on
+# a triangular base, tapering to one apex vertex (a triangle from every
+# view); the front face is the dark inner ear.
 for s, bone in ((1, "ear_l"), (-1, "ear_r")):
-    prism([(s * 0.05, 0.56), (s * 0.16, 0.54), (s * 0.115, 0.745)], -0.11, -0.03, "PomFur", bone)
-    prism([(s * 0.075, 0.635), (s * 0.13, 0.625), (s * 0.112, 0.71)], -0.115, -0.11,
-          "PomFurDark", bone)
+    pyramid([(s * 0.05, -0.115, 0.56), (s * 0.16, -0.115, 0.54), (s * 0.11, -0.035, 0.56)],
+            (s * 0.112, -0.085, 0.745), "PomFur", bone, side_mat={0: "PomFurDark"})
 # Left paw: a small fur stub on the front.
 ellipsoid((0.17, -0.20, 0.26), (0.05, 0.05, 0.045), "PomFurDark", "arm_l", seg=6, rings=4)
 # Right arm: fur cuff, then the plasma cannon, slung on the outside of the

@@ -18,6 +18,11 @@ docs/design/enemies.md and art-bible.md:
 - fb_cyan charge glow shows on windup f1 and on the attack shot (attack f0)
   in every view that sees the cannon (d0, d1, d6, d7), and nowhere else (idle, walk, windup
   f0, attack f1, pain, death);
+- ears taper to a point: in idle d2/d6 (profile) every run of opaque pixels
+  in the top 3 rows is at most 2 px wide;
+- broken fur outline: idle d0 and d2 f0 show at least 8 tufts in the top
+  half (thin protrusions removed by a 3x3 morphological opening, counted as
+  4-connected blobs);
 - walk frames all differ;
 - gibs: tools/gibs.py on assets/src/gibs/pom.json writes 8 frames;
 - palcheck passes on the TEX files.
@@ -53,6 +58,50 @@ def run(cmd):
 def opaque(t):
     return [(x, y, t.get(x, y)) for x in range(t.width) for y in range(t.height)
             if t.get(x, y) != 255]
+
+
+def mask(t):
+    return {(x, y) for x, y, _ in opaque(t)}
+
+
+def top_runs(t, rows=3):
+    """Widths of the opaque runs in the top `rows` rows."""
+    m = mask(t)
+    top = min(y for _, y in m)
+    widths = []
+    for y in range(top, top + rows):
+        xs = sorted(x for x, yy in m if yy == y)
+        run = 1
+        for a, b in zip(xs, xs[1:] + [None]):
+            if b == a + 1:
+                run += 1
+            else:
+                widths.append(run)
+                run = 1
+    return widths
+
+
+def tufts(t):
+    """Thin protrusions of the silhouette in its top half: pixels a 3x3
+    opening (erode, dilate) removes, counted as 4-connected blobs."""
+    m = mask(t)
+    nb = [(a, b) for a in (-1, 0, 1) for b in (-1, 0, 1)]
+    er = {(x, y) for x, y in m if all((x + a, y + b) in m for a, b in nb)}
+    op = {(x + a, y + b) for x, y in er for a, b in nb}
+    ys = [y for _, y in m]
+    mid = (min(ys) + max(ys)) / 2
+    rest = {p for p in m - op if p[1] < mid}
+    n = 0
+    while rest:
+        st = [rest.pop()]
+        n += 1
+        while st:
+            x, y = st.pop()
+            for q in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if q in rest:
+                    rest.remove(q)
+                    st.append(q)
+    return n
 
 
 def main():
@@ -146,6 +195,12 @@ def main():
                        or k.endswith("_f0") and k.startswith("windup"))
         assert not stray, stray
         print("fb_cyan glow in %d frames (windup f1, attack f0 only)" % len(glow))
+        for k in ("idle_d2_f0", "idle_d6_f0", "idle_d2_f1", "idle_d6_f1"):
+            w = top_runs(tex[k])
+            assert max(w) <= 2, (k, w)
+        nt = {k: tufts(tex[k]) for k in ("idle_d0_f0", "idle_d2_f0")}
+        print("ear tips: top 3 rows of idle d2/d6 at most 2 px wide; tufts in the top half %s" % nt)
+        assert all(n >= 8 for n in nt.values()), nt
         for dd in range(8):
             walk = [opaque(tex["walk_d%d_f%d" % (dd, f)]) for f in range(4)]
             assert all(walk[a] != walk[b] for a in range(4) for b in range(a + 1, 4)), dd
