@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ctest `sprite_mutt`: the Mutt Trooper pre-rendered sprite set (issue #91).
 
-Builds assets/src/sprites/mutt/mutt_model.py with Blender, renders it with
+Builds assets/src/sprites/mutt/model.py with Blender, renders it with
 tools/blender_render.py (the same commands as tools/build.d/60-sprites.sh)
 into a temp dir, makes the gib frames with tools/gibs.py from
 assets/src/gibs/mutt.json, then checks (enemies.md, art-bible.md):
@@ -64,8 +64,7 @@ def main():
     with tempfile.TemporaryDirectory() as d:
         mdl, out, gib = (os.path.join(d, s) for s in ("model", "sprites", "gibs"))
         run([blender, "-b", "--factory-startup", "--python",
-             os.path.join(SRC, "mutt_model.py"), "--", mdl])
-        shutil.copy(os.path.join(SRC, "sprite.json"), mdl)
+             os.path.join(SRC, "model.py"), "--", mdl])
         line = run([blender, "-b", os.path.join(mdl, "mutt.blend"), "--python",
                     os.path.join(TOOLS, "blender_render.py"), "--", "--sprite", "mutt",
                     "--canvas", "%dx%d" % (W, H), "--out", out])

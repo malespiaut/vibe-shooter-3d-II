@@ -1,9 +1,10 @@
 """Mutt Trooper model and animations (docs/design/enemies.md, Mutt Trooper).
 
-    blender -b --factory-startup --python assets/src/sprites/mutt/mutt_model.py -- <out_dir>
+    blender -b --factory-startup --python assets/src/sprites/mutt/model.py -- <out_dir>
 
-writes <out_dir>/mutt.blend (tools/build.d/60-sprites.sh runs this, copies
-sprite.json next to it and renders with tools/blender_render.py).
+writes <out_dir>/mutt.blend and copies sprite.json next to it
+(tools/build.d/60-sprites.sh runs this, then renders with
+tools/blender_render.py).
 
 Look: a basset-ish dog-man, upright, in an olive armour vest and olive
 fatigues, beige fur, long droopy dark-beige ears hanging out under a small
@@ -26,12 +27,14 @@ character's right side is -X (seen from the d0 camera it is on the left).
 """
 import math
 import os
+import shutil
 import sys
 
 import bmesh
 import bpy
 from mathutils import Euler, Matrix, Quaternion, Vector
 
+HERE = os.path.dirname(os.path.abspath(__file__))
 out_dir = sys.argv[sys.argv.index("--") + 1]
 os.makedirs(out_dir, exist_ok=True)
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -492,4 +495,5 @@ scene.frame_start, scene.frame_end = 1, 5
 
 blend = os.path.join(out_dir, "mutt.blend")
 bpy.ops.wm.save_as_mainfile(filepath=blend)
-print("mutt_model: wrote %s (%d verts, %d faces)" % (blend, len(verts), len(faces)))
+shutil.copy(os.path.join(HERE, "sprite.json"), os.path.join(out_dir, "sprite.json"))
+print("mutt model: wrote %s (%d verts, %d faces)" % (blend, len(verts), len(faces)))

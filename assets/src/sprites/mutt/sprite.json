@@ -1,5 +1,5 @@
 {
-  "_comment": "Mutt Trooper (enemies.md). mutt_model.py builds mutt.blend; tools/build.d/60-sprites.sh renders it. Materials -> olive (vest, fatigues), beige (fur), steel (rifle, boots) plus fb_red (wind-up LED) and fb_yellow (muzzle flash).",
+  "_comment": "Mutt Trooper (enemies.md). model.py builds mutt.blend; tools/build.d/60-sprites.sh renders it. Materials -> olive (vest, fatigues), beige (fur), steel (rifle, boots) plus fb_red (wind-up LED) and fb_yellow (muzzle flash).",
   "object": "Mutt",
   "canvas": [48, 64],
   "ramps": {
