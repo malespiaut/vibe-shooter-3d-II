@@ -260,7 +260,9 @@ static int32_t stat_value(const game_state *gs, const char *name)
         return gs->player.health;
     if (strcmp(name, "armor") == 0)
         return gs->player.armour;
-    return 0; /* kills, items, secrets, exit: no counters yet */
+    if (strcmp(name, "kills") == 0)
+        return gs->things.kills;
+    return 0; /* items, secrets, exit: no counters yet */
 }
 
 /* expect <stat><op><value>, or expect tile=X,Y / tile!=X,Y */

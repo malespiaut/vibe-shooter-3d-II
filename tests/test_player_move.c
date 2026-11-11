@@ -28,7 +28,7 @@ static void solid(bast_map *m, int x, int y, uint16_t flags)
 
 static void place(game_state *gs, const bast_map *m, fix_t x, fix_t y, angle_t a)
 {
-    game_init(gs, m, 1, 0);
+    game_init(gs, m, 1, 2, 0);
     gs->player.x = x;
     gs->player.y = y;
     gs->player.angle = a;
@@ -171,8 +171,8 @@ static void test_hash(void)
 {
     bast_map *m = open_map();
     game_state a, b;
-    game_init(&a, m, 1, 0);
-    game_init(&b, m, 1, 0);
+    game_init(&a, m, 1, 2, 0);
+    game_init(&b, m, 1, 2, 0);
     assert(game_hash(&a) == game_hash(&b));
 
     uint64_t h0 = game_hash(&a);
@@ -191,8 +191,8 @@ static void test_hash(void)
     printf("hash after 301 tics: %016llx\n", (unsigned long long)game_hash(&a));
 
     /* A different level seed changes the hash (RNG state is hashed). */
-    game_init(&b, m, 2, 0);
-    game_init(&a, m, 1, 0);
+    game_init(&b, m, 2, 2, 0);
+    game_init(&a, m, 1, 2, 0);
     assert(game_hash(&a) != game_hash(&b));
     bast_map_free(m);
 }

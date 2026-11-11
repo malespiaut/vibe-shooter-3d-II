@@ -4,7 +4,7 @@
 
 #include "engine/hash.h"
 
-void game_init(game_state *gs, const bast_map *map, int level, uint32_t demo_seed)
+void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32_t demo_seed)
 {
     memset(gs, 0, sizeof *gs);
     gs->map = map;
@@ -24,6 +24,8 @@ void game_init(game_state *gs, const bast_map *map, int level, uint32_t demo_see
     }
     p->health = PLAYER_START_HEALTH;
     p->armour = 0;
+    weapons_init(&p->weapons);
+    thinkers_spawn_map(&gs->things, map, skill);
 }
 
 int game_tile_blocks(const bast_map *map, int tx, int ty)
@@ -150,6 +152,8 @@ void game_tic(game_state *gs, const ticcmd *cmd)
     if (move_axis(gs->map, &p->x, &p->y, p->momy, 1))
         p->momy = 0;
 
+    weapon_tic(gs, (cmd->buttons & BT_WEAPON_MASK) >> BT_WEAPON_SHIFT, cmd->buttons & BT_FIRE);
+
     gs->tic++;
 }
 
@@ -168,5 +172,33 @@ uint64_t game_hash(const game_state *gs)
     hash_i32(&h, p->momy);
     hash_i32(&h, p->health);
     hash_i32(&h, p->armour);
+
+    const weapons_t *w = &p->weapons;
+    hash_u32(&h, w->owned);
+    hash_u32(&h, w->ready);
+    hash_u32(&h, w->pending);
+    hash_u32(&h, w->switch_tics);
+    hash_u32(&h, w->refire_tics);
+    hash_u32(&h, w->flash_tics);
+    hash_u32(&h, w->bob_phase);
+    for (int i = 0; i < AM_TYPES; i++)
+        hash_i32(&h, w->ammo[i]);
+    hash_u32(&h, w->shots);
+
+    hash_i32(&h, gs->things.count);
+    for (int i = 0; i < gs->things.count; i++) {
+        const thinker_t *t = &gs->things.list[i];
+        hash_u32(&h, t->type);
+        hash_i32(&h, t->x);
+        hash_i32(&h, t->y);
+        hash_u32(&h, t->angle);
+        hash_u32(&h, t->state);
+        hash_u32(&h, t->flags);
+        hash_i32(&h, t->tics);
+        hash_i32(&h, t->health);
+        hash_u32(&h, t->target);
+    }
+    hash_i32(&h, gs->things.kills);
+    hash_i32(&h, gs->things.kill_total);
     return h.value;
 }

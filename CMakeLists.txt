@@ -126,7 +126,7 @@ add_test(NAME smoke COMMAND test_smoke)
 target_compile_options(test_smoke PRIVATE -UNDEBUG)
 
 # Core maths tests (fixed, angle, rng, hash).
-foreach(t fixed angle rng hash player_move)
+foreach(t fixed angle rng hash player_move weapon)
   add_executable(test_${t} tests/test_${t}.c)
   target_link_libraries(test_${t} PRIVATE engine)
   target_compile_options(test_${t} PRIVATE -UNDEBUG)

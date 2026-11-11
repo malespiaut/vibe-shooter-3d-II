@@ -11,6 +11,8 @@
 #include "engine/angle.h"
 #include "engine/fixed.h"
 #include "engine/rng.h"
+#include "game/thinker.h"
+#include "game/weapon.h"
 
 #define TICRATE 35
 
@@ -29,7 +31,7 @@ enum {
     BT_RUN = 1 << 2,
 };
 /* Weapon slot select 1..7 in bits 3..5 (0 = no change); demos write it as
- * a digit in the buttons field. No weapons exist yet, game_tic ignores it. */
+ * a digit in the buttons field. */
 #define BT_WEAPON_SHIFT 3
 #define BT_WEAPON_MASK (7 << BT_WEAPON_SHIFT)
 
@@ -51,26 +53,32 @@ typedef struct {
     fix_t momx, momy; /* velocity per tic */
     int32_t health;
     int32_t armour;
+    weapons_t weapons;
 } player_t;
 
-typedef struct {
+typedef struct game_state {
     uint32_t tic;
     rng_t rng;               /* the gameplay RNG (tech.md Simulation) */
     const bast_map *map;     /* not owned, never hashed (static data) */
     player_t player;
+    thinkers_t things; /* every thinker, creation order */
 } game_state;
 
 /* Resets the state for `map` (borrowed, must outlive the state): tic 0, RNG
  * seeded for (level, demo_seed), player at the map's PLAYER_START (centre of
- * the map, angle 0, if none), health 100, armour 0, at rest. */
-void game_init(game_state *gs, const bast_map *map, int level, uint32_t demo_seed);
+ * the map, angle 0, if none), health 100, armour 0, at rest, Claws and
+ * pistol with 50 charges; every enemy entity flagged for `skill` (1..3)
+ * spawned as a thinker. */
+void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32_t demo_seed);
 
 /* Advances the simulation by one tic. */
 void game_tic(game_state *gs, const ticcmd *cmd);
 
 /* 64-bit FNV-1a over the canonical serialisation (tech.md State hash):
- * tic, RNG state, player (x, y, angle, momx, momy, health, armour). New
- * fields are appended as the systems that own them land. */
+ * tic, RNG state, player (x, y, angle, momx, momy, health, armour, weapon
+ * state, ammo), every thinker in creation order (type, x, y, angle, state,
+ * flags, tics, health, target id), kills and kill total. New fields are
+ * appended as the systems that own them land. */
 uint64_t game_hash(const game_state *gs);
 
 /* True when tile (tx, ty) blocks the player: outside the map, SOLID,
