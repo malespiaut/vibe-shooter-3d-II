@@ -101,6 +101,10 @@ foreach(n 01 02 03 04 05 06 07 08)
   list(APPEND TESTPATTERN_TEX ${ASSETS_GEN}/test/test${n}.tex)
 endforeach()
 list(APPEND TESTPATTERN_TEX ${ASSETS_GEN}/test/testsky.tex)
+# Test-pattern sprite (TEST_SPRITE entity, issue #15): 8 directions.
+foreach(d 0 1 2 3 4 5 6 7)
+  list(APPEND TESTPATTERN_TEX ${ASSETS_GEN}/test/testspr_idle_d${d}_f0.tex)
+endforeach()
 add_custom_command(
   OUTPUT ${TESTPATTERN_TEX}
   COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
@@ -127,7 +131,7 @@ add_test(NAME smoke COMMAND test_smoke)
 target_compile_options(test_smoke PRIVATE -UNDEBUG)
 
 # Core maths tests (fixed, angle, rng, hash).
-foreach(t fixed angle rng hash player_move weapon)
+foreach(t fixed angle rng hash player_move weapon sprite_dir)
   add_executable(test_${t} tests/test_${t}.c)
   target_link_libraries(test_${t} PRIVATE engine)
   target_compile_options(test_${t} PRIVATE -UNDEBUG)
@@ -308,6 +312,7 @@ function(add_demo_determinism name)
 endfunction()
 add_demo_determinism(m1-walk)
 add_demo_determinism(door-test)
+add_demo_determinism(m1-sprites)
 
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)
@@ -379,3 +384,9 @@ target_link_libraries(test_door PRIVATE engine)
 target_compile_options(test_door PRIVATE -UNDEBUG)
 add_test(NAME door COMMAND test_door ${CMAKE_SOURCE_DIR}/maps/doortest.vmap
   ${CMAKE_SOURCE_DIR}/demos/door-test.demo)
+# Renderer: billboard sprites, occlusion, size, shading (issue #15).
+add_executable(test_render_sprites tests/test_render_sprites.c)
+target_link_libraries(test_render_sprites PRIVATE engine m)
+target_compile_options(test_render_sprites PRIVATE -UNDEBUG)
+add_dependencies(test_render_sprites colormap testpattern)
+add_test(NAME render_sprites COMMAND test_render_sprites ${ASSETS_GEN})

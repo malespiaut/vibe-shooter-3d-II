@@ -101,7 +101,7 @@ the same tag: closed ones open, `START_OPEN` ones close. This is how layouts cha
 Special entity types fire or react to tags: `KILL_TRIGGER` (fires its `param` tag when every
 enemy carrying its `tag` is dead), `PICKUP_TRIGGER` flag on a pickup (fires its tag when taken),
 `LIGHTS` (when its tag fires, every cell switches from `dark` to `dark_alt`), `WAYPOINT` (named,
-demo navigation only), `PLAYER_START`, `BOSS_POD`, `RESPAWN_ITEM` (L8 only). Entity names are an
+demo navigation only), `PLAYER_START`, `BOSS_POD`, `RESPAWN_ITEM` (L8 only), `TEST_SPRITE` (type 15, renderer test fixture drawing the `testspr` test-pattern sprite; never in a level). Entity names are an
 optional trailing table: uint16 count, then (uint16 entity index, char[16] name).
 
 Maps are authored in the editor (M2). Before the editor exists, maps are produced by

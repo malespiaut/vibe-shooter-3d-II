@@ -22,6 +22,18 @@ gradient down the indigo ramp, a white tick line every 32 px with the
 tick number 0..9 beside it, near the top (so a sky offset can be read off a frame), and a
 full-height steel line at column 0 marking the wrap seam.
 
+Test sprite (issue #15), also a fixture: testspr_idle_d<D>_f0.tex for
+D = 0..7, the TEST_SPRITE entity's 8 direction frames (tech.md Sprite
+naming). 64x64, origin bottom-centre (32, 64), HAS_TRANSPARENCY:
+- a transparent border on the left, right and top (the bottom row stands
+  on the floor), and a transparent notch in the top edge;
+- a panel in ramp D with a 1 px darkest-shade outline;
+- the direction number D in large white digits, black-shadowed;
+- a white "nose" block low on the panel at the side the thing faces as
+  seen from the camera (centre in d0, screen left in d2, screen right in
+  d6, absent in d3..d5 where it faces away), so walking around it reads
+  as rotation as well as numbers.
+
 Usage: python3 tools/testpattern.py [-o assets/gen/test] [--count 8]
 (libbast.so from $BAST_LIB or build/libbast.so)
 """
@@ -90,21 +102,57 @@ def pattern(n):
             img[y][x] = WHITE
 
     # Texture number, two digits, top left, black-shadowed for contrast.
-    text = "%02d" % n
+    draw_digits(img, "%02d" % n, 3, 3, DIGIT_SCALE)
+    return img
+
+
+TRANSPARENT = 255
+SPRITE_BORDER = 6
+# sin(d * 45 deg) * 2 rounded: nose offset in units of 9 px; None = facing away.
+NOSE = {0: 0, 1: -1, 2: -2, 6: 2, 7: 1}
+
+
+def draw_digits(img, text, ox, oy, scale):
     for k, ch in enumerate(text):
-        ox = 3 + k * (3 + 1) * DIGIT_SCALE
-        oy = 3
+        x0 = ox + k * (3 + 1) * scale
         for gy, row in enumerate(DIGITS[ch]):
             for gx, c in enumerate(row):
                 if c != "#":
                     continue
-                for sy in range(DIGIT_SCALE):
-                    for sx in range(DIGIT_SCALE):
-                        x = ox + gx * DIGIT_SCALE + sx
-                        y = oy + gy * DIGIT_SCALE + sy
+                for sy in range(scale):
+                    for sx in range(scale):
+                        x = x0 + gx * scale + sx
+                        y = oy + gy * scale + sy
                         if x + 1 < SIZE and y + 1 < SIZE and img[y + 1][x + 1] != WHITE:
                             img[y + 1][x + 1] = BLACK
                         img[y][x] = WHITE
+
+
+def sprite_pattern(d):
+    """SIZE x SIZE row-major palette indices for test sprite direction d."""
+    first, length = RAMPS[d % len(RAMPS)]
+    bg, edge = first + length // 2 + 1, first
+    b = SPRITE_BORDER
+    img = [[TRANSPARENT] * SIZE for _ in range(SIZE)]
+    for y in range(b, SIZE):
+        for x in range(b, SIZE - b):
+            outline = x in (b, SIZE - b - 1) or y in (b, SIZE - 1)
+            img[y][x] = edge if outline else bg
+    # Notch in the top edge: transparency inside the outline.
+    for y in range(b, b + 6):
+        for x in range(28, 36):
+            img[y][x] = TRANSPARENT
+    for x in range(27, 37):
+        img[b + 6][x] = edge
+    for y in range(b, b + 7):
+        img[y][27] = img[y][36] = edge
+    # Direction digit, 3x5 glyph at scale 5: 15x25 px, centred.
+    draw_digits(img, str(d), (SIZE - 15) // 2, 16, 5)
+    if d in NOSE:
+        cx = 32 + NOSE[d] * 9
+        for y in range(48, 58):
+            for x in range(cx - 5, cx + 5):
+                img[y][x] = WHITE
     return img
 
 
@@ -136,13 +184,13 @@ def sky_pattern():
     return img
 
 
-def to_tex(img):
+def to_tex(img, origin=(0, 0), flags=0):
     h, w = len(img), len(img[0])
     px = bytearray(w * h)
     for x in range(w):
         for y in range(h):
             px[x * h + y] = img[y][x]  # TEX is column-major
-    return bast.Tex(w, h, px)
+    return bast.Tex(w, h, px, origin, flags)
 
 
 def main(argv=None):
@@ -159,11 +207,15 @@ def main(argv=None):
         for n in range(1, args.count + 1):
             to_tex(pattern(n)).save(os.path.join(args.out, "test%02d.tex" % n))
         to_tex(sky_pattern()).save(os.path.join(args.out, "testsky.tex"))
+        for d in range(8):
+            to_tex(sprite_pattern(d), (SIZE // 2, SIZE), bast.TEX_HAS_TRANSPARENCY).save(
+                os.path.join(args.out, "testspr_idle_d%d_f0.tex" % d))
     except bast.BastError as e:
         print("testpattern: %s" % e, file=sys.stderr)
         return 1
     if not args.quiet:
-        print("testpattern: %d textures + testsky in %s" % (args.count, args.out))
+        print("testpattern: %d textures, testsky and 8 sprite frames in %s"
+              % (args.count, args.out))
     return 0
 
 

@@ -169,6 +169,7 @@ enum bast_entity_type {
     BAST_ENT_LIGHTS = 4,
     BAST_ENT_BOSS_POD = 5,
     BAST_ENT_RESPAWN_ITEM = 6,
+    BAST_ENT_TEST_SPRITE = 15, /* renderer test fixture (test-pattern sprite), never in a level */
 
     BAST_ENT_MUTT_TROOPER = 16,
     BAST_ENT_CHIHUAHUA_CHOMPER = 17,
