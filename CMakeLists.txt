@@ -134,8 +134,10 @@ add_test(NAME mkmap_py
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_mkmap.py)
 add_test(NAME quantize
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_quantize.py)
+add_test(NAME editor_roundtrip
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/editor_roundtrip.py)
 # Python tests load the libbast.so built here, not a stale one.
-set_tests_properties(palcheck bast_py sfx_determinism mkmap_py quantize PROPERTIES
+set_tests_properties(palcheck bast_py sfx_determinism mkmap_py quantize editor_roundtrip PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 add_executable(test_colormap tests/test_colormap.c)
