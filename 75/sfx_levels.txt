@@ -1,0 +1,78 @@
+effect           mix group                     target     rms    peak
+barrel_explode   Explosions                     -16.0   -16.0    -1.4
+baton_hit        Enemy attacks                  -18.0   -18.0    -5.6
+bone_explode     Explosions                     -16.0   -16.0    -2.1
+bone_fire        Enemy attacks                  -18.0   -18.0    -5.9
+chomp_bite       Enemy attacks                  -18.0   -18.0    -3.9
+chomp_death      Enemy voices and telegraphs    -19.0   -19.0    -9.9
+chomp_pain       Enemy voices and telegraphs    -19.0   -19.0    -9.1
+chomp_sight      Enemy voices and telegraphs    -19.0   -19.0    -7.8
+chomp_windup     Enemy voices and telegraphs    -19.0   -19.0    -5.5
+claw_hit         Player weapons                 -17.0   -17.0    -2.3
+claw_swish       Player body and handling       -19.0   -19.0    -6.2
+dach_death       Enemy voices and telegraphs    -19.0   -19.0   -10.3
+dach_pain        Enemy voices and telegraphs    -19.0   -19.1    -9.1
+dach_sight       Enemy voices and telegraphs    -19.0   -19.0    -7.8
+door_close       World mechanics                -21.0   -21.0   -10.8
+door_locked      World mechanics                -21.0   -21.0   -16.1
+door_open        World mechanics                -21.0   -21.0   -10.1
+exit_switch      World mechanics                -21.0   -21.0   -11.8
+fan_fire         Enemy attacks                  -18.0   -18.0    -8.2
+gib_splat        Gore                           -19.0   -19.0    -5.6
+howler_roar      Player weapons                 -17.0   -17.0    -7.0
+item_pickup      Pickups and rewards            -21.0   -21.0   -16.6
+key_pickup       Pickups and rewards            -21.0   -21.0   -10.8
+lance_charge     Player body and handling       -19.0   -19.0    -8.3
+lance_fire       Player weapons                 -17.0   -17.0    -2.1
+lid_blast        Explosions                     -16.0   -17.2    -1.2  peak-limited
+mastiff_death    Enemy voices and telegraphs    -19.0   -19.0    -7.0
+mastiff_pain     Enemy voices and telegraphs    -19.0   -19.0    -6.9
+mastiff_sight    Enemy voices and telegraphs    -19.0   -19.0    -8.2
+mastiff_step     Enemy voices and telegraphs    -19.0   -19.0   -10.8
+mastiff_windup   Enemy voices and telegraphs    -19.0   -19.0    -4.0
+menu_move        UI                             -27.0   -27.0   -25.2
+menu_select      UI                             -27.0   -27.0   -22.1
+mortar_land      Explosions                     -16.0   -16.0    -2.0
+mortar_launch    Enemy attacks                  -18.0   -18.0    -4.6
+mutt_death       Enemy voices and telegraphs    -19.0   -19.0   -10.1
+mutt_fire        Enemy attacks                  -18.0   -18.0    -4.1
+mutt_pain        Enemy voices and telegraphs    -19.0   -19.0    -9.1
+mutt_sight       Enemy voices and telegraphs    -19.0   -19.0    -7.0
+mutt_windup      Enemy voices and telegraphs    -19.0   -19.0   -13.5
+ninth_life       Pickups and rewards            -21.0   -21.0   -13.8
+noway            Player body and handling       -19.0   -19.0   -11.5
+pistol_fire      Player weapons                 -17.0   -17.0    -5.9
+plasma_fire      Enemy attacks                  -18.0   -18.0    -7.7
+plasma_hit       Enemy attacks                  -18.0   -18.0    -2.9
+player_death     Player body and handling       -19.0   -19.0    -9.5
+player_land      Player body and handling       -19.0   -19.0    -8.0
+player_pain      Player body and handling       -19.0   -19.0    -7.5
+pod_open         Enemy voices and telegraphs    -19.0   -19.0    -6.4
+pom_death        Enemy voices and telegraphs    -19.0   -19.0    -9.5
+pom_pain         Enemy voices and telegraphs    -19.0   -19.0    -9.1
+pom_sight        Enemy voices and telegraphs    -19.0   -19.1    -8.5
+pom_windup       Enemy voices and telegraphs    -19.0   -19.0    -8.2
+powerup_pickup   Pickups and rewards            -21.0   -21.0   -13.8
+pushwall_grind   World mechanics                -21.0   -21.0    -9.9
+repeater_fire    Player weapons                 -17.0   -17.0    -3.9
+reticle_beep     Enemy voices and telegraphs    -19.0   -19.0   -12.9
+scarab_explode   Explosions                     -16.0   -16.0    -1.2
+scarab_launch    Player weapons                 -17.0   -17.0    -4.6
+scatter_fire     Player weapons                 -17.0   -17.0    -4.4
+scatter_pump     Player body and handling       -19.0   -19.0    -4.6
+secret_found     Pickups and rewards            -21.0   -21.0   -13.2
+shep_death       Enemy voices and telegraphs    -19.0   -19.0    -7.8
+shep_pain        Enemy voices and telegraphs    -19.0   -19.0    -8.2
+shep_sight       Enemy voices and telegraphs    -19.0   -19.0    -6.6
+shep_windup      Enemy voices and telegraphs    -19.0   -19.0    -7.7
+shield_block     Enemy attacks                  -18.0   -18.0    -3.1
+sludge_sizzle    World mechanics                -21.0   -21.0    -8.0
+switch_click     World mechanics                -21.0   -21.0    -6.2
+tally_done       UI                             -27.0   -27.0   -12.0
+tally_tick       UI                             -27.0   -27.1   -23.1
+weapon_pickup    Pickups and rewards            -21.0   -20.9    -9.7
+weapon_switch    Player body and handling       -19.0   -19.0    -6.0
+woofu_death      Enemy voices and telegraphs    -19.0   -19.0    -8.3
+woofu_pain       Enemy voices and telegraphs    -19.0   -19.0    -9.9
+woofu_sight      Enemy voices and telegraphs    -19.0   -19.0    -6.9
+sfx_levels: ok (76 effects, 11.1 dB spread, windups within 0.1 dB, barrel_explode -16.0 vs loudest other World -20.9, menu_move -27.0 / tally_tick -27.1 vs item_pickup -21.0)
