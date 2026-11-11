@@ -393,6 +393,10 @@ uint64_t game_hash(const game_state *gs)
         hash_u32(&h, t->goal_tx);
         hash_u32(&h, t->goal_ty);
         hash_i32(&h, t->movecount);
+        /* Only a dead enemy's death tic means anything (its corpse
+         * animation); hashing it then keeps kill-free demos unchanged. */
+        if (t->state == TH_STATE_DEAD)
+            hash_u32(&h, t->died_tic);
     }
     for (int i = 0; i < gs->things.count; i++)
         hash_u32(&h, gs->things.list[i].howler_hit);

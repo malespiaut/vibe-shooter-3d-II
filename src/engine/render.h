@@ -76,6 +76,8 @@ typedef struct {
     uint16_t type;
     fix_t x, y;    /* floor position: the TEX origin (bottom centre) sits here */
     angle_t angle; /* facing, for 8-direction sprites */
+    uint8_t anim;  /* enemy sprites: SPR_* animation (engine/sprite.h) */
+    uint8_t frame; /* enemy sprites: frame within `anim`; items ignore both */
 } render_thing;
 
 /* Loads the TEX of every wall texture `map` uses, from
@@ -85,8 +87,11 @@ typedef struct {
 int render_init(const bast_map *map, const char *assets_dir);
 /* render_init() also loads the sprite frames of every map entity type that
  * has a sprite (sprite_def_for_entity()): <name>_idle_d<0..7>_f<0..frames-1>
- * .tex from `assets_dir`/sprites, else `assets_dir`/test. d0 of every frame
- * is required; a missing d1..d7 falls back to d0 (things without facing). */
+ * .tex from `assets_dir`/sprites, else `assets_dir`/test (or /gibs). d0 of
+ * every frame is required; a missing d1..d7 falls back to d0 (things without
+ * facing). Enemy sprites load every animation (<name>_<anim>_d<d>_f<f>,
+ * sprite_enemy_frames()); an enemy set missing any d0 frame is skipped with
+ * one warning per name on stderr and not drawn, which is not an error. */
 void render_shutdown(void);
 const char *render_error(void);
 

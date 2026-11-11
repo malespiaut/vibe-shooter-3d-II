@@ -18,9 +18,11 @@
 
 static bast_tex *textures[RENDER_MAX_TEXTURES];
 static bast_tex *sky;
-/* Sprite frames per entity type, direction and idle frame; d1..d7 may
- * alias d0 of the same frame. */
-static bast_tex *sprite_frames[BAST_ENT_TYPE_LIMIT][SPRITE_MAX_FRAMES][SPRITE_DIRS];
+/* Sprite frames per entity type, animation (SPR_*; items: SPR_IDLE only),
+ * frame and direction; d1..d7 may alias d0 of the same frame. */
+static bast_tex *sprite_frames[BAST_ENT_TYPE_LIMIT][SPR_ANIMS][SPRITE_MAX_FRAMES][SPRITE_DIRS];
+/* Enemy sprite sets already reported missing (one warning per name). */
+static unsigned char sprite_warned[BAST_ENT_TYPE_LIMIT];
 static render_column columns[VIEW_W];
 static float depth[VIEW_W];
 /* Camera of the last render_view(), for render_draw_sprites(). */
@@ -42,17 +44,11 @@ const char *render_error(void)
     return err_buf;
 }
 
-void render_shutdown(void)
+static void free_sprite_set(int type)
 {
-    for (int i = 0; i < RENDER_MAX_TEXTURES; i++) {
-        bast_tex_free(textures[i]);
-        textures[i] = NULL;
-    }
-    bast_tex_free(sky);
-    sky = NULL;
-    for (int t = 0; t < BAST_ENT_TYPE_LIMIT; t++) {
+    for (int a = 0; a < SPR_ANIMS; a++) {
         for (int f = 0; f < SPRITE_MAX_FRAMES; f++) {
-            bast_tex **fr = sprite_frames[t][f];
+            bast_tex **fr = sprite_frames[type][a][f];
             for (int d = SPRITE_DIRS - 1; d >= 0; d--) {
                 if (d == 0 || fr[d] != fr[0])
                     bast_tex_free(fr[d]);
@@ -62,12 +58,24 @@ void render_shutdown(void)
     }
 }
 
+void render_shutdown(void)
+{
+    for (int i = 0; i < RENDER_MAX_TEXTURES; i++) {
+        bast_tex_free(textures[i]);
+        textures[i] = NULL;
+    }
+    bast_tex_free(sky);
+    sky = NULL;
+    for (int t = 0; t < BAST_ENT_TYPE_LIMIT; t++)
+        free_sprite_set(t);
+}
+
 /* Sprite frame `path` from files.c ("sprites/..." or "test/..."): the TEX, or
  * NULL with *found = 0 if absent, or NULL with *found = 1 and err_buf set if
  * it is broken. */
 static bast_tex *load_sprite_frame(const char *dir, const char *name, int *found)
 {
-    static const char *const sub[] = { "sprites", "test" };
+    static const char *const sub[] = { "sprites", "test", "gibs" };
     char path[256];
     *found = 0;
     for (size_t i = 0; i < sizeof sub / sizeof sub[0]; i++) {
@@ -86,28 +94,63 @@ static bast_tex *load_sprite_frame(const char *dir, const char *name, int *found
     return NULL;
 }
 
+/* Loads frames 0..frames-1 of animation `anim` of sprite `def` into
+ * sprite_frames[type][anim]. Returns 1 when loaded, 0 when broken (err_buf
+ * set), -1 when a d0 frame is missing (`missing` names it). */
+static int load_anim(const char *dir, int type, const sprite_def *def, int anim, int frames,
+                     char *missing, size_t missing_size)
+{
+    for (int f = 0; f < frames; f++) {
+        bast_tex **fr = sprite_frames[type][anim][f];
+        for (int d = 0; d < SPRITE_DIRS; d++) {
+            char name[128];
+            int found;
+            snprintf(name, sizeof name, "%s_%s_d%d_f%d", def->name, sprite_anim_name(anim), d, f);
+            bast_tex *t = load_sprite_frame(dir, name, &found);
+            if (!t && found)
+                return 0;
+            if (!t && d == 0) {
+                snprintf(missing, missing_size, "%s", name);
+                return -1;
+            }
+            fr[d] = t ? t : fr[0];
+        }
+    }
+    return 1;
+}
+
 static int load_sprites(const bast_map *map, const char *dir)
 {
     for (int i = 0; i < map->entity_count; i++) {
         const int type = map->entities[i].type;
         const sprite_def *def = sprite_def_for_entity(type);
-        if (!def || sprite_frames[type][0][0])
+        if (!def || sprite_frames[type][SPR_IDLE][0][0])
             continue;
-        for (int f = 0; f < def->frames; f++) {
-            bast_tex **fr = sprite_frames[type][f];
-            for (int d = 0; d < SPRITE_DIRS; d++) {
-                char name[128];
-                int found;
-                snprintf(name, sizeof name, "%s_idle_d%d_f%d", def->name, d, f);
-                bast_tex *t = load_sprite_frame(dir, name, &found);
-                if (!t && found)
-                    return 0;
-                if (!t && d == 0) {
-                    snprintf(err_buf, sizeof err_buf,
-                             "sprite '%s' not found in %s/sprites or %s/test", name, dir, dir);
-                    return 0;
-                }
-                fr[d] = t ? t : fr[0];
+        char missing[128];
+        if (!def->enemy) {
+            const int r = load_anim(dir, type, def, SPR_IDLE, def->frames, missing, sizeof missing);
+            if (r < 0)
+                snprintf(err_buf, sizeof err_buf, "sprite '%s' not found in %s/sprites or %s/test",
+                         missing, dir, dir);
+            if (r <= 0)
+                return 0;
+            continue;
+        }
+        /* Enemy: every animation (but `gib` for no_gib sets) or nothing. A
+         * set whose art is not built yet is skipped (the enemy is not
+         * drawn), never substituted. */
+        int r = 1;
+        for (int a = 0; a < SPR_ANIMS && r > 0; a++)
+            if (a != SPR_GIB || !def->no_gib)
+                r = load_anim(dir, type, def, a, sprite_enemy_frames(a), missing, sizeof missing);
+        if (r == 0)
+            return 0;
+        if (r < 0) {
+            free_sprite_set(type);
+            if (!sprite_warned[type]) {
+                sprite_warned[type] = 1;
+                fprintf(stderr, "render: warning: sprite set '%s' incomplete (no %s), not drawn\n",
+                        def->name, missing);
             }
         }
     }
@@ -593,17 +636,25 @@ int render_draw_sprites(const render_sprite *s, int n, uint8_t *fb)
     return k;
 }
 
-/* Frame of `type` seen from (vx, vy) for a thing at (x, y) facing `angle`,
- * at render tic `tic`; NULL if the type has no loaded sprite. */
-static const bast_tex *thing_frame(int type, fix_t x, fix_t y, angle_t angle, fix_t vx,
-                                   fix_t vy, uint32_t tic)
+/* Frame of `type` seen from (vx, vy) for a thing at (x, y) facing `angle`:
+ * enemies show (`anim`, `frame`), other sprites their idle frame at render
+ * tic `tic`. NULL if the type has no loaded sprite. */
+static const bast_tex *thing_frame(int type, fix_t x, fix_t y, angle_t angle, int anim,
+                                   int frame, fix_t vx, fix_t vy, uint32_t tic)
 {
     const sprite_def *def = sprite_def_for_entity(type);
-    if (!def || !sprite_frames[type][0][0])
+    if (!def || !sprite_frames[type][SPR_IDLE][0][0])
         return NULL;
+    if (!def->enemy) {
+        anim = SPR_IDLE;
+        frame = sprite_anim_frame(tic, def->frames);
+    } else if (anim < 0 || anim >= SPR_ANIMS || frame < 0 ||
+               frame >= sprite_enemy_frames(anim)) {
+        return NULL;
+    }
     /* Angle of the vector thing -> viewer picks the facing frame. */
     const int dir = sprite_dir(angle_of(vx - x, vy - y), angle);
-    return sprite_frames[type][sprite_anim_frame(tic, def->frames)][dir];
+    return sprite_frames[type][anim][frame][dir];
 }
 
 /* Static sprites of the map's entities (non-live types, e.g. TEST_SPRITE)
@@ -619,7 +670,7 @@ static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
         const sprite_def *def = sprite_def_for_entity(e->type);
         if (!def || def->live)
             continue;
-        const bast_tex *t = thing_frame(e->type, e->x, e->y, e->angle, vx, vy, tic);
+        const bast_tex *t = thing_frame(e->type, e->x, e->y, e->angle, 0, 0, vx, vy, tic);
         if (!t)
             continue;
         const bast_map_cell *c = cell(map, e->x >> 16, e->y >> 16);
@@ -628,7 +679,8 @@ static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
     }
     for (int i = 0; i < n_things && n < RENDER_MAX_SPRITES; i++) {
         const render_thing *th = &things[i];
-        const bast_tex *t = thing_frame(th->type, th->x, th->y, th->angle, vx, vy, tic);
+        const bast_tex *t = thing_frame(th->type, th->x, th->y, th->angle, th->anim, th->frame, vx, vy,
+                                         tic);
         if (!t)
             continue;
         const bast_map_cell *c = cell(map, th->x >> 16, th->y >> 16);

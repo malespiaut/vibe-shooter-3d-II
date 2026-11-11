@@ -212,6 +212,7 @@ int ai_damage_pain(game_state *gs, thinker_t *t, int32_t damage, int32_t pain_ti
     if (!thinker_alive(t))
         return 0;
     if (thinker_damage(&gs->things, t, damage)) {
+        t->died_tic = gs->tic;
         if (info)
             spawn_drop(gs, t, info);
         return 1;
@@ -583,4 +584,18 @@ void ai_tic(game_state *gs)
         if (info)
             think(gs, t, info, dist, &have_dist);
     }
+}
+
+int ai_render_things(const game_state *gs, render_thing *out, int max)
+{
+    int n = 0;
+    for (int i = 0; i < gs->things.count && n < max; i++) {
+        const thinker_t *t = &gs->things.list[i];
+        if (!enemy_info(t->type) || (t->flags & TH_FLAG_PICKUP))
+            continue;
+        int anim, frame;
+        thinker_anim(t, gs->tic, &anim, &frame);
+        out[n++] = (render_thing){ t->type, t->x, t->y, t->angle, (uint8_t)anim, (uint8_t)frame };
+    }
+    return n;
 }
