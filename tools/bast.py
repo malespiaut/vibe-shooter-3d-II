@@ -1,5 +1,5 @@
 """ctypes wrapper over libbast.so, the single implementation of the shared
-formats (palette, Oklab nearest colour, TEX, SND). No format or colour maths here:
+formats (palette, Oklab nearest colour, TEX, SND, .vmap). No format or colour maths here:
 everything goes through the C library.
 
 Library lookup: $BAST_LIB if set, else <repo>/build/libbast.so.
@@ -11,6 +11,7 @@ Palette lookup: $BAST_PALETTE if set, else <repo>/assets/gen/palette.bin
     bast.nearest((255, 255, 255))            # -> 1
     t = bast.Tex.from_image(Image.open("a.png"))
     t.save("a.tex"); bast.Tex.load("a.tex").to_image().save("b.png")
+    m = bast.Map.load("maps/m1test.vmap"); m.get_cell(3, 4)["dark"]
 """
 import ctypes
 import os
@@ -52,6 +53,31 @@ class _Tex(ctypes.Structure):
                 ("pixels", ctypes.POINTER(ctypes.c_uint8))]
 
 
+class _MapCell(ctypes.Structure):
+    _fields_ = [("wall", ctypes.c_uint8), ("floor", ctypes.c_uint8),
+                ("ceil", ctypes.c_uint8), ("dark", ctypes.c_uint8),
+                ("dark_alt", ctypes.c_uint8), ("flags", ctypes.c_uint16),
+                ("tag", ctypes.c_uint8), ("param", ctypes.c_uint8)]
+
+
+class _MapEntity(ctypes.Structure):
+    _fields_ = [("type", ctypes.c_uint16), ("x", ctypes.c_int32), ("y", ctypes.c_int32),
+                ("angle", ctypes.c_uint16), ("flags", ctypes.c_uint16),
+                ("tag", ctypes.c_uint8), ("param", ctypes.c_uint8),
+                ("name", ctypes.c_char * 17)]
+
+
+class _Map(ctypes.Structure):
+    _fields_ = [("width", ctypes.c_uint8), ("height", ctypes.c_uint8),
+                ("name", ctypes.c_char * 33),
+                ("sky_tex", ctypes.c_uint8), ("music", ctypes.c_uint8),
+                ("par_seconds", ctypes.c_uint16), ("texture_count", ctypes.c_uint16),
+                ("textures", (ctypes.c_char * 17) * 256),
+                ("cells", ctypes.POINTER(_MapCell)),
+                ("entity_count", ctypes.c_uint16), ("entity_capacity", ctypes.c_uint16),
+                ("entities", ctypes.POINTER(_MapEntity))]
+
+
 _lib = None
 
 
@@ -65,6 +91,7 @@ def lib():
         raise BastError("%s not found: run `cmake --build build` or set BAST_LIB" % path)
     L = ctypes.CDLL(os.path.abspath(path))
     P, T, S = ctypes.POINTER(_Palette), ctypes.POINTER(_Tex), ctypes.POINTER(_Snd)
+    M = ctypes.POINTER(_Map)
     u8, c_int = ctypes.c_uint8, ctypes.c_int
     sig = {
         "bast_error": (ctypes.c_char_p, []),
@@ -83,6 +110,18 @@ def lib():
         "bast_snd_load": (S, [ctypes.c_char_p]),
         "bast_snd_save": (c_int, [S, ctypes.c_char_p]),
         "bast_snd_free": (None, [S]),
+        "bast_map_new": (M, [c_int, c_int]),
+        "bast_map_load": (M, [ctypes.c_char_p]),
+        "bast_map_save": (c_int, [M, ctypes.c_char_p]),
+        "bast_map_free": (None, [M]),
+        "bast_map_cell_at": (ctypes.POINTER(_MapCell), [M, c_int, c_int]),
+        "bast_map_add_entity": (c_int, [M]),
+        "bast_map_remove_entity": (c_int, [M, c_int]),
+        "bast_map_texture_index": (c_int, [M, ctypes.c_char_p]),
+        "bast_entity_type_name": (ctypes.c_char_p, [c_int]),
+        "bast_entity_type_from_name": (c_int, [ctypes.c_char_p]),
+        "bast_cell_flag_name": (ctypes.c_char_p, [c_int]),
+        "bast_entity_flag_name": (ctypes.c_char_p, [c_int]),
     }
     for name, (res, args) in sig.items():
         fn = getattr(L, name)
@@ -304,3 +343,182 @@ class Snd:
                 raise BastError(_err())
         finally:
             L.bast_snd_free(s)
+
+
+# ---- map (.vmap) ---------------------------------------------------------
+
+CELL_FIELDS = ("wall", "floor", "ceil", "dark", "dark_alt", "flags", "tag", "param")
+ENTITY_FIELDS = ("type", "x", "y", "angle", "flags", "tag", "param", "name")
+
+
+def entity_type_name(t):
+    """'PLAYER_START' etc. for a type number, None if unknown."""
+    n = lib().bast_entity_type_name(t)
+    return n.decode() if n else None
+
+
+def entity_type(name_or_number):
+    """Type number from a name ('WAYPOINT') or a number; BastError if unknown."""
+    if isinstance(name_or_number, int):
+        return name_or_number
+    t = lib().bast_entity_type_from_name(name_or_number.encode())
+    if not t:
+        raise BastError("unknown entity type %r" % name_or_number)
+    return t
+
+
+def _flag_table(fn):
+    out = {}
+    for bit in range(16):
+        n = fn(bit)
+        if n:
+            out[n.decode()] = 1 << bit
+    return out
+
+
+def cell_flags():
+    """{'SOLID': 0x0001, ...} as defined by libbast."""
+    return _flag_table(lib().bast_cell_flag_name)
+
+
+def entity_flags():
+    """{'SKILL1': 0x0001, ..., 'PICKUP_TRIGGER': 0x0020} as defined by libbast."""
+    return _flag_table(lib().bast_entity_flag_name)
+
+
+class Map:
+    """A .vmap held by libbast (owns the C struct). Cells are (x, y) with y
+    growing north, (0, 0) south-west. Cell and entity values are plain dicts
+    with the keys in CELL_FIELDS / ENTITY_FIELDS; entity x, y are 16.16."""
+
+    def __init__(self, width=None, height=None, _ptr=None):
+        if _ptr is None:
+            _ptr = lib().bast_map_new(width, height)
+            if not _ptr:
+                raise BastError(_err())
+        self._m = _ptr
+
+    def __del__(self):
+        if getattr(self, "_m", None) and _lib is not None:
+            _lib.bast_map_free(self._m)
+            self._m = None
+
+    @classmethod
+    def load(cls, path):
+        m = lib().bast_map_load(os.fsencode(path))
+        if not m:
+            raise BastError(_err())
+        return cls(_ptr=m)
+
+    def save(self, path):
+        if lib().bast_map_save(self._m, os.fsencode(path)) != 0:
+            raise BastError(_err())
+
+    @property
+    def _c(self):
+        return self._m.contents
+
+    width = property(lambda self: self._c.width)
+    height = property(lambda self: self._c.height)
+
+    def _hdr(field, encoded=False):  # noqa: N805 (descriptor factory)
+        def get(self):
+            v = getattr(self._c, field)
+            return v.decode() if encoded else v
+
+        def put(self, v):
+            if encoded:
+                v = v.encode()
+                if len(v) > 32:
+                    raise BastError("map name %r longer than 32" % v)
+            setattr(self._c, field, v)
+        return property(get, put)
+
+    name = _hdr("name", encoded=True)
+    sky_tex = _hdr("sky_tex")
+    music = _hdr("music")
+    par_seconds = _hdr("par_seconds")
+    del _hdr
+
+    @property
+    def textures(self):
+        """Texture name table; entry 0 is '' (none / sky)."""
+        c = self._c
+        return [c.textures[i].value.decode() for i in range(c.texture_count)]
+
+    def texture_index(self, name):
+        """Index of `name` in the table, appending it if new ('' -> 0)."""
+        i = lib().bast_map_texture_index(self._m, name.encode())
+        if i < 0:
+            raise BastError(_err())
+        return i
+
+    def _cell(self, x, y):
+        p = lib().bast_map_cell_at(self._m, x, y)
+        if not p:
+            raise BastError("cell (%d, %d) outside %dx%d map" % (x, y, self.width, self.height))
+        return p.contents
+
+    def get_cell(self, x, y):
+        c = self._cell(x, y)
+        return {f: getattr(c, f) for f in CELL_FIELDS}
+
+    def set_cell(self, x, y, **fields):
+        c = self._cell(x, y)
+        for f, v in fields.items():
+            if f not in CELL_FIELDS:
+                raise BastError("unknown cell field %r" % f)
+            setattr(c, f, v)
+
+    @property
+    def entity_count(self):
+        return self._c.entity_count
+
+    def _ent(self, i):
+        if not 0 <= i < self._c.entity_count:
+            raise BastError("no entity %d" % i)
+        return self._c.entities[i]
+
+    def get_entity(self, i):
+        e = self._ent(i)
+        d = {f: getattr(e, f) for f in ENTITY_FIELDS}
+        d["name"] = d["name"].decode()
+        return d
+
+    def set_entity(self, i, **fields):
+        e = self._ent(i)
+        for f, v in fields.items():
+            if f not in ENTITY_FIELDS:
+                raise BastError("unknown entity field %r" % f)
+            if f == "type":
+                v = entity_type(v)
+            if f == "name":
+                v = v.encode()
+                if len(v) > 16:
+                    raise BastError("entity name %r longer than 16" % v)
+            setattr(e, f, v)
+
+    @property
+    def entities(self):
+        return [self.get_entity(i) for i in range(self.entity_count)]
+
+    def add_entity(self, type, x=0, y=0, angle=0, flags=0x7, tag=0, param=0, name=""):
+        """Append an entity (type is a name or number), return its index.
+        Flags default to all three skills."""
+        i = lib().bast_map_add_entity(self._m)
+        if i < 0:
+            raise BastError(_err())
+        self.set_entity(i, type=type, x=x, y=y, angle=angle, flags=flags, tag=tag,
+                        param=param, name=name)
+        return i
+
+    def remove_entity(self, i):
+        if lib().bast_map_remove_entity(self._m, i) != 0:
+            raise BastError(_err())
+
+    def find_entity(self, name):
+        """Index of the entity called `name`, or None."""
+        for i in range(self.entity_count):
+            if self._c.entities[i].name.decode() == name:
+                return i
+        return None
