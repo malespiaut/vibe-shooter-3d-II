@@ -25,8 +25,8 @@ Fonts are TEX files, one glyph per cell in a 16-column sheet, hand-drawn, with a
   letterform 11x15, shadow fills the cell's last column and row; ramp `gold` (2-11), shadow `gold_00`.
 - Tiny digits: `assets/gen/fonts/tinydigits.tex` (64x6), glyphs `0123456789` in that order;
   letterform 3x5, shadow fills the cell's last column and row; ramp `gray` (13-15), shadow `gray_00`.
-  It exists because the ammo table has 7 px per row: the small font (7 px glyph + 1 px shadow)
-  stacks rows with no gap and the last row runs over the panel's bottom trim.
+  It exists because the ammo table recess is 26 px tall for 4 rows: the small font (7 px glyph +
+  1 px shadow) cannot fit, its rows overlap and the last one runs over the panel's bottom trim.
 
 Glyph data is hand-drawn in `assets/src/fonts/<font>.txt`; `tools/fontsheet.py` shades it and
 exports the indexed PNGs next to it; `tools/build.d/50-fonts.sh` converts them with `png2tex.py`.
@@ -67,7 +67,7 @@ Hand-drawn sandstone cartouche panel with gold inlay, steel rivets bolted over i
 | Weapon | (112,210)-(175,237) | current weapon icon 48x20 at (120,210), slot row `1234567` in small font at (122,231): owned slots bright, missing dark, current in gold |
 | Current ammo | (180,210)-(227,225) | big digits right-aligned to x=227; blank for Claws |
 | Keys | (232,212)-(275,235) | three ankh slots 12x16 at x=232, 248, 264 (green, blue, violet), empty slot drawn as a dark socket |
-| Ammo table | (280,210)-(318,236) | 4 rows at y=210,217,224,231: type icon 6x6 at x=280 + current count in tiny digits, right-aligned so the shadow column is x=318 (x=319 is the panel's bevel and y=237-238 its trim: never drawn over). Each row is 5 px glyph + 1 px shadow + 1 px gap |
+| Ammo table | (281,211)-(318,236) | 4 rows at y=212,218,224,230 (6 px pitch, 1 px free at y=211 and y=236): type icon 6x6 (5x5 + 1 px shadow) at x=281 + current count in tiny digits, right-aligned so the shadow column is x=318. Each row is 5 px glyph + 1 px shadow; the shadow row is the separator. The recess interior is (281,211)-(318,236): x=280 / y=210 are its dark bevel (index 50, the shadow colour), x=319 / y=237 its light bevel, y=238 the gold trim; never drawn over |
 
 Fullscreen (no bar) is not offered. The 3D view is always 320x208.
 
