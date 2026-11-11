@@ -1,0 +1,18 @@
+# Items test (issue #64): run east down the itemstest corridor over 20
+# pickups, one per tile. Start: 100 health, 0 armour, 50 charges.
+# Linen Wrap -> armour 100, Bandage Scrap -> 102, Scarab Plate -> 200,
+# Golden Sardine -> health 200; ammo, Litter Satchel, Scattergun, three
+# keys, Catnip, Cat's Eye, Ninth Life (PICKUP_TRIGGER tag 3).
+# The skill-3 Scarab Plate in the alcove does not spawn at skill 2.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map itemstest
+wait 5
+in 130 127 0 0 R
+wait 10
+# Final STATS: health=200 armor=200 items=20/20.
+expect health=200
+expect armor=200
+expect items=20

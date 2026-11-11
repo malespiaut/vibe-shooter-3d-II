@@ -3,11 +3,13 @@
 #include <string.h>
 
 #include "engine/hash.h"
+#include "game/items.h"
 
 void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32_t demo_seed)
 {
     memset(gs, 0, sizeof *gs);
     gs->map = map;
+    gs->skill = skill < 1 ? 1 : skill > 3 ? 3 : skill;
     rng_seed_level(&gs->rng, level, demo_seed);
 
     player_t *p = &gs->player;
@@ -22,11 +24,11 @@ void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32
             break;
         }
     }
-    p->health = PLAYER_START_HEALTH;
-    p->armour = 0;
     weapons_init(&p->weapons);
-    thinkers_spawn_map(&gs->things, map, skill);
+    player_start_inventory(p);
+    thinkers_spawn_map(&gs->things, map, gs->skill);
     doors_init(gs);
+    items_spawn(gs);
 }
 
 void game_give_keys(game_state *gs, uint32_t keys)
@@ -152,6 +154,7 @@ void game_tic(game_state *gs, const ticcmd *cmd)
 {
     player_t *p = &gs->player;
 
+    items_tic(gs);
     p->angle = (angle_t)(p->angle + (uint16_t)cmd->turn);
 
     /* Use acts on the rising edge, along the view after this tic's turn. */
@@ -173,6 +176,7 @@ void game_tic(game_state *gs, const ticcmd *cmd)
     if (move_axis(gs, &p->x, &p->y, p->momy, 1))
         p->momy = 0;
 
+    items_touch(gs);
     weapon_tic(gs, (cmd->buttons & BT_WEAPON_MASK) >> BT_WEAPON_SHIFT, cmd->buttons & BT_FIRE);
 
     gs->tic++;
@@ -230,5 +234,18 @@ uint64_t game_hash(const game_state *gs)
         hash_i32(&h, d->pos);
         hash_i32(&h, d->timer);
     }
+
+    hash_i32(&h, p->armour_class);
+    hash_i32(&h, p->satchel);
+    hash_i32(&h, p->catnip_tics);
+    hash_i32(&h, p->catseye_tics);
+    hash_i32(&h, p->ninth_life);
+    hash_i32(&h, p->invuln_tics);
+    hash_i32(&h, p->dead);
+    hash_i32(&h, gs->skill);
+    hash_i32(&h, gs->pickup_count);
+    for (int i = 0; i < gs->pickup_count; i++)
+        hash_u32(&h, gs->pickups[i].taken);
+    hash_i32(&h, gs->items_got);
     return h.value;
 }

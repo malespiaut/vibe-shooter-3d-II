@@ -27,6 +27,7 @@ enum {
     TH_FLAG_GIB = 1 << 1,       /* died at HP <= -(max HP / 2) */
     TH_FLAG_SHOOTABLE = 1 << 2, /* hitscan and melee can hit it (enemies) */
     TH_FLAG_PICKUP = 1 << 3,    /* touched by the player (weapon pickups) */
+    TH_FLAG_TRIGGER = 1 << 4,   /* pickup with PICKUP_TRIGGER: fires `tag` */
 };
 
 typedef struct {
@@ -40,6 +41,7 @@ typedef struct {
     int32_t max_health;
     fix_t radius;   /* half the width in enemies.md */
     uint16_t target; /* thinker id, 0 = none */
+    uint8_t tag;     /* entity tag (static map data, not hashed) */
 } thinker_t;
 
 typedef struct {
@@ -52,9 +54,14 @@ typedef struct {
  * not an enemy. */
 int thinker_enemy_info(uint16_t type, int32_t *hp, fix_t *radius);
 
+/* 1 when entity `e` is placed at `skill` (1..3): its SKILLn flag is set.
+ * The one skill-placement test, for thinkers and pickups (game/items.c). */
+int entity_on_skill(const bast_map_entity *e, int skill);
+
 /* Empties the list and spawns every enemy and weapon-pickup entity of `map`
- * flagged for `skill` (1..3), in entity order. Other item types are added
- * by the pickups issue (#64). */
+ * flagged for `skill` (1..3), in entity order. Weapon pickups keep the
+ * entity's tag and PICKUP_TRIGGER (TH_FLAG_TRIGGER). Other item types live
+ * in game_state.pickups (game/items.c). */
 void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill);
 
 /* Appends an enemy; returns its id, or 0 when the list is full or `type`

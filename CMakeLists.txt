@@ -135,6 +135,14 @@ foreach(t fixed angle rng hash player_move weapon)
 endforeach()
 target_link_libraries(test_angle PRIVATE m)
 
+# Pickups, inventory, player damage (items.md): one ctest per table group.
+add_executable(test_items tests/test_items.c)
+target_link_libraries(test_items PRIVATE engine)
+target_compile_options(test_items PRIVATE -UNDEBUG)
+foreach(g health armour ammo weapons keys powerups damage ninth_life spawn touch)
+  add_test(NAME items_${g} COMMAND test_items ${g})
+endforeach()
+
 add_executable(test_platform_audio tests/test_platform_audio.c)
 target_link_libraries(test_platform_audio PRIVATE platform)
 target_compile_options(test_platform_audio PRIVATE -UNDEBUG)
@@ -263,6 +271,10 @@ add_test(NAME demo_parse COMMAND test_demo_parse ${CMAKE_BINARY_DIR}/demo_parse_
 add_test(NAME headless_smoke
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_headless.py
           $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/headless)
+
+add_test(NAME items_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_items_demo.py
+          $<TARGET_FILE:game> ${CMAKE_SOURCE_DIR})
 
 # Sprite pre-render pipeline (tools/blender_render.py). Exits 77 = skipped
 # when `blender` is not installed.

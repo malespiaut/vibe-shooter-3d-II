@@ -81,17 +81,31 @@ int weapon_auto_pick(const weapons_t *w);
 /* Ammo cap without the Litter Satchel (weapons.md Ammo types). */
 extern const int32_t ammo_max[AM_TYPES];
 
+/* Ammo cap of type `a`: ammo_max[a], doubled with the Litter Satchel
+ * (`satchel` != 0). */
+int32_t ammo_cap(int a, int satchel);
+
+/* The one ammo-giving rule, for ammo, weapon and Satchel pickups: adds `n`
+ * of type `a` (x1.5 rounded down when `kitten`, tech.md Skill), capped by
+ * ammo_cap(a, satchel). Returns 1 when the player was below the cap (the
+ * pickup is used), 0 when full (it stays). */
+int weapon_add_ammo(weapons_t *w, int a, int32_t n, int kitten, int satchel);
+
 /* Weapon pickup (weapons.md Behaviour notes): owns slot `wp` and adds its
- * pickup ammo, capped; a weapon already owned gives only the ammo. The
- * weapon in hand does not change. Returns 1 when anything was taken (a
- * weapon owned with full ammo stays on the floor). */
+ * pickup ammo through weapon_add_ammo; a weapon already owned gives only
+ * the ammo. The weapon in hand does not change. Returns 1 when anything
+ * was taken (a weapon owned with full ammo stays on the floor). */
+int weapon_give_ex(weapons_t *w, int wp, int kitten, int satchel);
+
+/* weapon_give_ex at skill 2 without the Satchel. */
 int weapon_give(weapons_t *w, int wp);
 
 /* Starts switching to `wp` (no-op if not owned or already in hand). */
 void weapon_select(weapons_t *w, int wp);
 
 /* One tic of the weapon: switch progress, timers, bob, and firing when
- * `fire` is held. Called by game_tic after the player moved. */
+ * `fire` is held. Called by game_tic after the player moved and after
+ * items_touch took the pickups (weapon pickups included). */
 void weapon_tic(struct game_state *gs, int select_slot, int fire);
 
 /* Traces one ray from (x, y) at angle `a` up to `range`: returns the id of

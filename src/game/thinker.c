@@ -64,16 +64,26 @@ uint16_t thinker_spawn_pickup(thinkers_t *th, uint16_t type, fix_t x, fix_t y)
     return (uint16_t)th->count;
 }
 
+int entity_on_skill(const bast_map_entity *e, int skill)
+{
+    return (e->flags & (uint16_t)(BAST_ENT_SKILL1 << (skill - 1))) != 0;
+}
+
 void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill)
 {
     memset(th, 0, sizeof *th);
-    const uint16_t skill_bit = (uint16_t)(BAST_ENT_SKILL1 << (skill - 1));
     for (int i = 0; i < map->entity_count; i++) {
         const bast_map_entity *e = &map->entities[i];
-        if (!(e->flags & skill_bit))
+        if (!entity_on_skill(e, skill))
             continue;
-        if (!thinker_spawn(th, e->type, e->x, e->y, e->angle))
-            thinker_spawn_pickup(th, e->type, e->x, e->y);
+        if (thinker_spawn(th, e->type, e->x, e->y, e->angle))
+            continue;
+        thinker_t *t = thinker_get(th, thinker_spawn_pickup(th, e->type, e->x, e->y));
+        if (t) {
+            t->tag = e->tag;
+            if (e->flags & BAST_ENT_PICKUP_TRIGGER)
+                t->flags |= TH_FLAG_TRIGGER;
+        }
     }
 }
 
