@@ -30,3 +30,9 @@ def texture_rgb(index, sky=False):
         return SKY_RGB if sky else NONE_RGB
     cols = _usable()
     return cols[(index * 47 + 11) % len(cols)]
+
+
+def dark_grey(dark):
+    """Grey level for the light view: cell darkness 0 (bright) .. 31 (black),
+    linear like the colormap rows."""
+    return 255 - dark * 255 // 31
