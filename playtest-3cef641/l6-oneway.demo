@@ -1,0 +1,29 @@
+vsdemo 1
+level 6
+skill 2
+seed 0
+# Playtester: after the first one-way drop, try to go back west.
+goto 10 4
+goto 4 9
+face 90
+use
+wait 32
+goto 4 12
+goto 9 17
+goto 3 21
+goto 9 26
+goto 3 30
+goto 9 33
+goto 3 37
+goto 9 41
+goto 10 44
+face 0
+use
+wait 32
+goto 13 44
+face 180
+use
+wait 40
+in 70 127 0 0 R
+expect tile!=10,44
+expect tile!=9,44

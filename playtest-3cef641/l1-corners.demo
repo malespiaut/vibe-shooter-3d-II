@@ -1,0 +1,33 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+# Playtester: grind into walls, corners and door edges with raw input.
+weapon 2
+fire nearest
+# Run diagonally into the plaza's SW corner
+face 225
+in 70 127 0 0 R
+# strafe along the south wall
+face 270
+in 70 0 127 0 R
+in 70 0 -127 0 R
+# Hug the door frame at (6,8): approach offset half a tile, run into the edge
+goto 5 7
+face 90
+in 20 127 40 0 R
+use
+wait 32
+in 40 127 -60 0 R
+in 40 127 60 0 R
+expect health>=1
+goto 6 9
+clear
+goto 6 10
+face 90
+use
+wait 10
+# stand in the closing door's path: walk through at the last moment
+wait 60
+in 30 127 0 0 R
+wait 100

@@ -1,0 +1,53 @@
+vsdemo 1
+level 1
+skill 3
+seed 0
+# Playtester: Sabretooth, rush for the key, try the green door first, point-blank fights.
+weapon 2
+goto 6 6               # walk right up to the Welcome Mat Mutt (point blank)
+fire nearest
+clear 8
+goto 6 7
+face 90
+use
+wait 32
+goto 6 9
+clear
+goto 6 10
+face 90
+use
+wait 32
+goto 6 12
+clear 12
+wait 35
+clear 12
+# green door before the key: must stay shut
+goto 12 12
+face 0
+use
+wait 40
+in 35 127 0 0 R
+expect tile=12,12
+clear 14
+goto 21 17             # key
+wait 35
+goto 17 17
+clear 12
+wait 35
+clear 12
+goto 12 12
+face 0
+use
+wait 32
+goto 14 10
+clear 12
+goto 14 9
+clear 12
+goto 15 5
+clear 12
+goto 19 5
+clear 12
+goto 22 5
+face 0
+use
+expect exit=1
