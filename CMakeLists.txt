@@ -523,3 +523,33 @@ add_test(NAME sound_events
           $<TARGET_FILE:game> $<TARGET_FILE:test_sound> ${CMAKE_SOURCE_DIR}
           ${CMAKE_BINARY_DIR}/test_tmp/sound_events)
 add_demo_determinism(door-locked)
+
+# Front-end flow (issue #101, hud.md Flow): the title art the menus draw,
+# built as tools/build.d/55-ui.sh does, so a plain build can run `build/game`
+# (title screen) and the flow demo. HUD icons (menu_ankh) come from hud_tex.
+file(GLOB UI_SRC CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/ui/*)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/ui/title.tex
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          BAST_PALETTE=${ASSETS_GEN}/palette.bin
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/title.py
+          --src ${CMAKE_SOURCE_DIR}/assets/src/ui -o ${ASSETS_GEN}/ui
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${UI_SRC} ${CMAKE_SOURCE_DIR}/tools/title.py
+          ${CMAKE_SOURCE_DIR}/tools/bast.py
+  COMMENT "Building title screen")
+add_custom_target(ui_art ALL DEPENDS ${ASSETS_GEN}/ui/title.tex)
+add_dependencies(ui_art palette)
+add_dependencies(game ui_art hud_tex fonts_tex)
+target_compile_definitions(game PRIVATE VS3D_MUSIC_DIR="${CMAKE_SOURCE_DIR}/assets/src/music")
+
+add_executable(test_flow tests/test_flow.c)
+target_link_libraries(test_flow PRIVATE engine)
+target_compile_options(test_flow PRIVATE -UNDEBUG)
+foreach(c blink wrap pause_freeze restart quit_title skill)
+  add_test(NAME flow_${c} COMMAND test_flow ${CMAKE_SOURCE_DIR}/maps/m1test.vmap ${c})
+endforeach()
+
+# demos/flow.demo (start title): title -> level 1 -> pause -> Quit to Title.
+add_test(NAME flow_demo
+  COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/flow.demo)
+add_demo_determinism(flow)
