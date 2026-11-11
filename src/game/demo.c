@@ -282,9 +282,11 @@ static int cmd_clear(demo_t *d, line_ctx *c)
  * gs->items_got (issue #64). Counters
  * whose systems do not exist yet read 0, exactly as the STATS line prints
  * them (main.c print_stats); they move here when their systems land.
- * level and god are run options, not game state, and are not offered. */
+ * level is a run option and is not offered; god (--god) is a run option the
+ * caller copies into demo_t.god, so a demo can assert it ran without it.
+ * kills=N/M also checks the kill total M (issue #104). */
 static const char *const STATS[] = { "tic", "health", "armor", "kills",
-                                     "items", "secrets", "exit", "tile" };
+                                     "items", "secrets", "exit", "tile", "god" };
 
 static int32_t stat_value(const game_state *gs, const char *name)
 {
@@ -324,7 +326,7 @@ static int cmd_expect(demo_t *d, line_ctx *c)
         known |= strcmp(stat, STATS[i]) == 0;
     if (!known)
         return fail(c, "expect: unknown stat '%s' (tic health armor kills items secrets exit "
-                       "tile)", stat);
+                       "tile god)", stat);
 
     static const struct {
         const char *text;
@@ -364,7 +366,28 @@ static int cmd_expect(demo_t *d, line_ctx *c)
         tmp.tx = (int32_t)v[0];
         tmp.ty = (int32_t)v[1];
         tmp.has_tile = 1;
+    } else if (strcmp(stat, "god") == 0) {
+        long v;
+        if (!parse_int(c, p, 0, 1, "god", &v))
+            return 0;
+        tmp.value = (int32_t)v;
     } else {
+        char buf[32];
+        const char *slash = strcmp(stat, "kills") == 0 ? strchr(p, '/') : NULL;
+        if (slash) {
+            if (op != DEMO_OP_EQ)
+                return fail(c, "expect kills=N/M: only = applies");
+            if ((size_t)(slash - p) >= sizeof buf)
+                return fail(c, "expect kills=N/M: count too long");
+            long t;
+            if (!parse_int(c, slash + 1, 0, 1000000000L, "total", &t))
+                return 0;
+            tmp.has_total = 1;
+            tmp.total = (int32_t)t;
+            memcpy(buf, p, (size_t)(slash - p));
+            buf[slash - p] = '\0';
+            p = buf;
+        }
         long v;
         if (!parse_int(c, p, -1000000000L, 1000000000L, "value", &v))
             return 0;
@@ -588,7 +611,8 @@ static int run_fail(char *err, size_t errlen, const demo_cmd *c, const char *fmt
 }
 
 /* 1 when the expect holds; else writes the failure. */
-static int check_expect(const demo_cmd *c, const game_state *gs, char *err, size_t errlen)
+static int check_expect(const demo_t *d, const demo_cmd *c, const game_state *gs, char *err,
+                        size_t errlen)
 {
     if (c->has_tile) {
         int32_t px = fix_to_int(gs->player.x), py = fix_to_int(gs->player.y);
@@ -599,7 +623,15 @@ static int check_expect(const demo_cmd *c, const game_state *gs, char *err, size
                  OP_TEXT[c->op], (int)c->tx, (int)c->ty, (int)px, (int)py, (unsigned)gs->tic);
         return 0;
     }
-    int32_t v = stat_value(gs, c->name);
+    if (c->has_total) {
+        if (gs->things.kills == c->value && gs->things.kill_total == c->total)
+            return 1;
+        run_fail(err, errlen, c, "expect kills=%d/%d failed: kills is %d/%d at tic %u",
+                 (int)c->value, (int)c->total, (int)gs->things.kills,
+                 (int)gs->things.kill_total, (unsigned)gs->tic);
+        return 0;
+    }
+    int32_t v = strcmp(c->name, "god") == 0 ? d->god : stat_value(gs, c->name);
     if (compare(v, c->op, c->value))
         return 1;
     run_fail(err, errlen, c, "expect %s%s%d failed: %s is %d at tic %u", c->name, OP_TEXT[c->op],
@@ -698,7 +730,7 @@ int demo_next(demo_t *d, const game_state *gs, ticcmd *out, char *err, size_t er
         memset(out, 0, sizeof *out);
         switch (c->kind) {
         case DEMO_CMD_EXPECT:
-            if (!check_expect(c, gs, err, errlen))
+            if (!check_expect(d, c, gs, err, errlen))
                 return DEMO_FAIL;
             break; /* no tic */
         case DEMO_CMD_GOTO: {

@@ -111,6 +111,10 @@ static void test_errors(void)
     expect_error("vsdemo 1\nexpect tile=3\n", "line 2: expect tile: want X,Y");
     expect_error("vsdemo 1\nexpect tile=3,x\n", "line 2: tile y: 'x' is not");
     expect_error("vsdemo 1\nexpect health >=3\n", "line 2: 'expect' takes one");
+    expect_error("vsdemo 1\nexpect health=3/4\n", "line 2: value: '3/4' is not");
+    expect_error("vsdemo 1\nexpect kills<3/4\n", "line 2: expect kills=N/M: only =");
+    expect_error("vsdemo 1\nexpect kills=3/x\n", "line 2: total: 'x' is not");
+    expect_error("vsdemo 1\nexpect god=2\n", "line 2: god: 2 out of range");
 }
 
 /* High-level commands that need no map: parsing, then playback against a
@@ -220,11 +224,41 @@ static void test_recorder(const char *path)
     demo_free(d);
 }
 
+/* expect kills=N/M checks the count and the total; expect god=V reads
+ * demo_t.god, which main.c copies from --god (issue #104). */
+static void test_expect_total_god(void)
+{
+    char err[256];
+    static game_state gs;
+    ticcmd c;
+    const char *text = "vsdemo 1\nexpect kills=2/3\nexpect god=0\n";
+    demo_t *d = demo_parse(text, err, sizeof err);
+    assert(d && d->count == 2 && d->cmds[0].has_total && d->cmds[0].total == 3);
+    gs.things.kills = 2;
+    gs.things.kill_total = 3;
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_END);
+    demo_free(d);
+
+    gs.things.kill_total = 4; /* one enemy left alive somewhere */
+    d = demo_parse(text, err, sizeof err);
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_FAIL);
+    assert(strstr(err, "line 2: expect kills=2/3 failed: kills is 2/4"));
+    demo_free(d);
+
+    gs.things.kill_total = 3;
+    d = demo_parse(text, err, sizeof err);
+    d->god = 1;
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_FAIL);
+    assert(strstr(err, "line 3: expect god=0 failed: god is 1"));
+    demo_free(d);
+}
+
 int main(int argc, char **argv)
 {
     test_good();
     test_errors();
     test_high_level();
+    test_expect_total_god();
     test_recorder(argc > 1 ? argv[1] : "demo_parse_rec.demo");
     printf("demo_parse: OK\n");
     return 0;
