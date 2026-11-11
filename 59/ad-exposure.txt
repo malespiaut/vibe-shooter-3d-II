@@ -1,0 +1,9 @@
+[art-director] PR 59 exposure probe, Blender 5.2.3 LTS, Cycles, diffuse plane base colour 0.5 linear (sRGB 188),
+sun perpendicular to plane, roughness 1, black world. Script: ad-exposure-probe.py
+
+Linear (EXR) output:
+  sun strength 1   -> 0.185   (~1/pi of base: claim in PR confirmed)
+  sun strength pi  -> 0.526   (~= base 0.5: rule correct)
+8-bit PNG output at strength pi:
+  view transform Standard -> 192/255  (base colour 188, OK)
+  view transform AgX      -> 172/255  (darker and desaturated; AgX is the Blender 5.2 factory default)
