@@ -1,0 +1,95 @@
+# Shared character -> palette entry legend for assets/src/viewmodels/*.pix
+# (same format as assets/src/hud/legend.txt, read by tools/hud.py load_legend).
+# Ramps run dark -> light; light comes from the top-left (art-bible.md).
+.  transparent
+# steel (Dominion metal): A = steel_01 .. O = steel_15
+A steel_01
+B steel_02
+C steel_03
+D steel_04
+E steel_05
+F steel_06
+G steel_07
+H steel_08
+I steel_09
+J steel_10
+K steel_11
+L steel_12
+M steel_13
+N steel_14
+O steel_15
+# fur (Mau's ginger paws): a = fur_01 .. k = fur_11
+a fur_01
+b fur_02
+c fur_03
+d fur_04
+e fur_05
+f fur_06
+g fur_07
+h fur_08
+i fur_09
+j fur_10
+k fur_11
+# brown (wood grips, stocks): l = brown_02 .. w = brown_13
+l brown_02
+m brown_03
+n brown_04
+o brown_05
+p brown_06
+q brown_07
+r brown_08
+s brown_09
+t brown_10
+u brown_11
+v brown_12
+w brown_13
+# gold (inlay, ankh, sistrum): 0 = gold_02 .. 9 = gold_11
+0 gold_02
+1 gold_03
+2 gold_04
+3 gold_05
+4 gold_06
+5 gold_07
+6 gold_08
+7 gold_09
+8 gold_10
+9 gold_11
+# beige (claws): P = beige_05 .. Z = beige_15
+P beige_05
+Q beige_06
+R beige_07
+S beige_08
+T beige_09
+U beige_10
+V beige_11
+W beige_12
+X beige_13
+Y beige_14
+Z beige_15
+# red (yarn drum)
+x red_03
+y red_05
+z red_07
+( red_09
+) red_11
+[ red_13
+# pink (paw pads)
+< pink_03
+> pink_05
+^ pink_07
+~ pink_09
+# cyan (charge glass)
+% cyan_03
+& cyan_05
+* cyan_07
++ cyan_09
+? cyan_11
+# fullbright: muzzle flashes and charge glow only (art-bible.md)
+; fb_white
+: fb_yellow
+/ fb_orange
+\ fb_fire
+| fb_cyan
+- fb_cyan_dim
+_ fb_sun
+, fb_amber

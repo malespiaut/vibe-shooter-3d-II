@@ -1,0 +1,71 @@
+# View model 3, Hairball Scattergun (weapons.md): steel barrel and receiver, wooden pump and stock,
+# red yarn drum. Matches HUD icon weapon_3. Composed, then pixel-corrected by hand.
+# pump0: pump pulled half back.
+name vm3_pump0
+size 112 64
+shadow steel_00
+grid
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.......................................................MMMMMM
+......................................................MMMBBMMM
+.....................................................MMBBBBBBGG
+.....................................................KMMGBBGGGF
+.....................................................LLMGGGGGFF
+.....................................................LLLLKJIGFF
+.....................................................LLLLKJIHFF
+.....................................................LLLLKJIHFF
+.....................................................LLLLKJIHFF
+.....................................................LLLLKJIHFF
+.....................................................LLLLKJIHFF
+.....................................................LLLLKJIHFF
+.....................................................LLLLKJIHFF
+....................................................JLLLLKJIHGFF
+......................................ihY......sttuuKLLLLKJIHGFFqpppp
+....................................jjjYV.....ZtttuuKLLLLKJIHGFFqpppp
+....................................jjihVd.igYSttuuuLLLLLKJIHGFFqqppp
+...................................ijihgejjiYV.ttuuuLLLLLKJIHGFFqqppp
+..................................jhihgfjjjihSdttuuuLLLLLKJIHGFFqqppp
+................................jjjggfedjjihgedttuYWLLLLLKJIHGFFqqpppp
+...............................jjkkjedddiihgedjjYYSuLLLLLKJIHGFFqqpppp
+..............................jjkikjjhjiggfedkjiVVduLLLLKKJIHGFFqqpppp........)))))(((
+..............................jjjkjjjhjiieddjjiigeduLLLLKKJIHGFFqqpppp......))))))))(((z
+..............................jjjjjjjhgiihhgiihgfdduLLLLKKJIHGFFqqpppp....)[)))(((((((((zy
+..............................jjjjjjjjgiihhghhgfejihYYWLKKJIHGFFqqqppppMM)[)[[[))))))yy(zzy
+.............................hijjjjjiigghhhggfedkjiYVSttttssssrrqqqppppK)[[[)))()((((((zzzzy
+.............................hiiiiiiiiiffhggffdjjjigSdttttssssrrrqqppppH[[[[[[))()))((((yyzy
+............................jhhiiiiiiihhheggffejiihfddttttssssrrrqqpppp)[[[[[)))))))((((zzzyy
+...........................jjhhhiiiihhhhggeddeehhgfedtttttssssrrrqqpppp))))[)))))))((((zzzxxy
+..........................jjjhghhhhhhhhgggfdccbgffeddHHHHHHHHHHHHHHHHH)))))()(((((zzzz(zzyyyyy
+.........................hjjjhjgghhhgggggfffeedddddd666666666666666666)))))(z()))(((((yxyyyyyy
+.......................ijhjjjhjfgggggggfffeeeddddd33333333333333333333))))()))((zz(zzyyzyyyyyy
+......................ijjhjjjhjieffffffffeeeddddddHHHHHHHHHHHHHHHHHHHH()(()))))(((z(zzzzyxxyyy
+.....................ijjjhjjjhgiieefffeeeeddddddddHHHHHHHHHHHHHHHHHHHH(())))(((((((zzzzyyyyyyy
+....................ijjjjhjjjggihhdeeeeeddddddddddHHHHHHHHHHHHHHHHHHHH((((zz((((((zzzzyyyyyxxy
+...................jjhjjjhjjiigfhhgddddddddddddddHHHHHHHHHHHHHHHHHHHHHH(((((z(zzyyyyyxxyyyxyy
+..................jjjhjjjhjiiigffggffdddddddddddDDDDDDDDDDDDDDDDDDDDDDDz((((zyyzzzzzyyyxxxyyy
+.................jjjhhjjjhiiiihfeegffeddddddddDDDDDDDDDDDDDDDDDDDDDDDDDDzzzyzzzyyyxyxxxxyxyy
+................jjjjhhjjjggiihhheeddccbbbbbb..stttttttttttssssrrqqqppp..yzyzzzWzyyyxYSyyyyyy
+...............jjjjjhhjjiggihhhggffccbbbddd...ttttttttttttssssrrqqqppp...yyyyYVfdyyyVSeyyyy
+..............jjjjjjhhjjiigfhhggffeedddddd....ttttttttttttssssrrrqqppp.W..yyyYVSedyYVVSddy
+.............jjjhjjjjhjiiifffggffeeddddddd....ttttttttttttssssrrrqqppp.YSe..jYihfddYihfed
+............jjjjhjjjjhiiihhfeegffeedddddd....sttttttttttttssssrrrqqppppYVSedkjihfedjihgedd
+...........jjjjjhjjjjggihhhggeddccbbbbbb.....sttttttttttttssssrrrqqpppjYVhfddjihfedjihgedd
+..........jjjjjjhjjjiggihhhggffecbbddddd.....sttttttttttttssssrrrqqpppkjihfedjihfddjihfedd
+.........jjjjjjjhhjiiigfhhggffeeddddddd......tttttttttttttssssrrrqVSfdkjihgeddhgfddihgfddd
+.......ijjjjhjjjhhiiiifffggfffeedddddd.......tttttttttttttssssrrrqYVSSdjihfeddhfeddhgfedddd
+......ijjjjjhjjjjgiiihhfeegffeeddddbdd.......tttttttttttttssssrrrjYihfedigfddifedgedfeddbddd
+.....ijjjjjjhjjjigiihhhggeddccbbbbbdd.......stttttttttttttssssrrrkjihgeddgeddihhfeeffeedbdddd
+....ijjjjjjjhjjiigghhhgggffecbdddddd........stttttttttttttssssrrrkjihgeddeddiifffegffeebbdddd
