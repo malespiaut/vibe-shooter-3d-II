@@ -288,12 +288,14 @@ make_action("ChompIdle", [
     {"root": {"loc": up(-1)}, **legs(4, 4, -4, -4), **ears(6),
      "head": {"rot": (4, 0, 0)}, "tail": {"rot": (8, 0, 0)}},
 ])
-# Walk: diagonal pairs (trot), body bobs on the passing frames.
+# Walk: diagonal pairs (trot).
+# Contact frames drop a pixel (angled legs reach less far down), so the
+# paws stay on the floor in every frame.
 make_action("ChompWalk", [
-    {**legs(-28, 22, 22, -28), **ears(3), "head": {"rot": (-3, 0, 0)}},
-    {"root": {"loc": up(1)}, **legs(0, 0, 0, 0), **ears(-3), "tail": {"rot": (-20, 0, 0)}},
-    {**legs(22, -28, -28, 22), **ears(3), "head": {"rot": (-3, 0, 0)}},
-    {"root": {"loc": up(1)}, **legs(0, 0, 0, 0), **ears(-3), "tail": {"rot": (15, 0, 0)}},
+    {"root": {"loc": up(-1)}, **legs(-28, 22, 22, -28), **ears(3), "head": {"rot": (-3, 0, 0)}},
+    {**legs(6, -6, -6, 6), **ears(-3), "tail": {"rot": (-20, 0, 0)}},
+    {"root": {"loc": up(-1)}, **legs(22, -28, -28, 22), **ears(3), "head": {"rot": (-3, 0, 0)}},
+    {**legs(-6, 6, 6, -6), **ears(-3), "tail": {"rot": (15, 0, 0)}},
 ])
 # Wind-up: crouch, head up, jaws thrown wide open (single pose held).
 make_action("ChompWindup", [

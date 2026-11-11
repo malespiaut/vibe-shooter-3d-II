@@ -265,6 +265,14 @@ add_test(NAME blender_render
 set_tests_properties(blender_render PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# Chihuahua Chomper sprite set (enemies.md, art-bible.md): renders the model
+# into a temp dir and checks frames, size, ramps and outline. 77 = skipped
+# without blender.
+add_test(NAME sprite_chomp
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprite_chomp.py)
+set_tests_properties(sprite_chomp PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
 # Music sequencer (docs/design/audio.md, "Music"): parser and render tests,
 # and build/vmus_render <song.vmus> <out.wav> [seconds] for listening/evidence.
 add_executable(vmus_render tools/vmus_render.c)
