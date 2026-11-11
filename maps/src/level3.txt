@@ -11,11 +11,12 @@
 # (36,11) for 8 s (param 8 = 280 tics); the switch can be pressed again,
 # and U (38,9) is the same switch from inside -> Pump House (x 29-37,
 # y 2-10, 2 Chompers) -> door H (28,8), catwalk (26-27,8), door (25,8) ->
-# Lighthouse of Paw-ros (x 15-25, y 1-11): the outer ring (blocked at
+# Lighthouse of Paw-ros (x 15-25, y 1-11): the outer ring (shut at
 # (24,7), doors d at (20,10), (16,6), (20,2)) runs all the way round the
 # central pillar to door (23,5), then the inner ring (blocked at (22,6))
-# runs round to the green key at the top, (22,7) -> back through the pump
-# house (switch U) -> green door G (33,21) -> exit yard (x 31-36, y 22-29)
+# runs round to the green key at the top, (22,7). Taking it (PICKUP_TRIGGER
+# tag 3) opens the shortcut door K (24,7) back to the entrance -> back
+# through the pump house (switch U) -> green door G (33,21) -> exit yard (x 31-36, y 22-29)
 # -> barge gate EXIT E (34,30), used from (34,29).
 #
 # Barge Gate: the TRIGGER cell t (33,22) right behind the green door fires
@@ -76,6 +77,7 @@ legend l wall=eg_sand_blocks2 flags=SOLID
 legend i wall=eg_glyph_band flags=SOLID
 legend o floor=eg_floor_tiles ceil=eg_planks dark=8
 legend O floor=eg_tomb_floor ceil=eg_planks dark=10
+legend K wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=8 flags=DOOR mode=switch tag=3
 legend d wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=8 flags=DOOR
 legend e floor=dt_concrete ceil=sky dark=6
 legend t floor=dt_concrete ceil=sky dark=6 flags=TRIGGER tag=2
@@ -109,7 +111,7 @@ layout
 #~~===~~~~~~~~~loooodooool##mpppppppppm#
 #~~===~~~~~~~~~lolllllllol##mpppppppppU#
 #~~===~~~~~~~~~lolOOOOOloD==Hpppppppppm#
-#~~===~~~~~~~~~lolOiiiOlll##mpprpprpppm#
+#~~===~~~~~~~~~lolOiiiOlKl##mpprpprpppm#
 #~~=====~~~~~~~ldlOiiillol##mpppppppppm#
 #~~=====~~~~~~~lolOiiiOdol##mpppppppppm#
 #~~=====~~~~~~~lolOOOOOlolnnFpprpprpppm#
@@ -177,7 +179,7 @@ entity MUTT_TROOPER 38 24 180 flags=SKILL3
 # Keys and the Repeater.
 entity BLUE_ANKH 3 21 0
 entity SISTRUM_REPEATER 12 15 0
-entity GREEN_ANKH 22 7 0
+entity GREEN_ANKH 22 7 0 flags=SKILL1|SKILL2|SKILL3|PICKUP_TRIGGER tag=3
 
 # Critical-path items: 6 Fish Snacks, 3 Tuna Tins, 1 Linen Wrap, 6 Charge
 # Vials, 2 Charge Jars, 4 Yarn Bundles, 1 Yarn Basket.

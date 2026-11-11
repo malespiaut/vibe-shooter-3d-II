@@ -1,0 +1,247 @@
+# Level 3 "Nile Catwalks" completion (maps/level3.vmap, layout and
+# coordinates in maps/src/level3.txt), skill 2. High-level commands only.
+# goto does not path through a closed door, so each door is opened by hand
+# (goto the tile in front, face, use, wait 32).
+vsdemo 1
+level 3
+skill 2
+seed 0
+
+weapon 2
+# Pier 1: two Mutts ahead.
+goto 4 4
+clear 12
+goto 7 6               # Fish Snack
+goto 3 10              # Charge Vial
+clear 12
+expect kills=2
+# Customs House.
+goto 4 11
+face 90
+use
+wait 32
+goto 4 13
+clear 12
+goto 2 13              # Fish Snack
+goto 12 13             # Charge Vial
+clear 12
+# West office: blue key.
+goto 7 16
+face 90
+use
+wait 32
+goto 7 18
+clear 12
+goto 3 21              # blue key
+goto 2 22              # Tuna Tin
+goto 7 22              # Charge Jar
+# East office.
+goto 7 20
+face 0
+use
+wait 32
+goto 9 20
+clear 12
+goto 12 22             # Linen Wrap
+expect kills=8
+# Secret 2: the cracked block in the north wall, the lit annex seen from
+# the west office window.
+goto 10 22
+face 90
+use
+wait 70
+goto 9 25
+goto 7 26              # Scarab
+goto 6 25              # Scarab
+goto 5 26              # Scarab Launcher
+goto 4 26
+expect secrets=1
+goto 3 26              # Scarab
+goto 3 25              # Scarab
+# Back to the hall: the Repeater by the blue door.
+goto 9 20
+face 180
+use
+wait 32
+goto 7 18
+face 270
+use
+wait 32
+goto 12 15             # Sistrum Repeater
+weapon 4
+face 0
+use
+wait 32
+# Barge Crossing: three Poms at the far end of the catwalk.
+goto 13 15             # in the blue doorway, the crates hide the far end
+fire 8                 # the noise brings the Poms down the catwalk
+wait 35
+clear 16
+goto 16 14
+clear 16
+goto 19 14
+clear 16
+goto 20 16
+clear 16
+goto 23 16
+clear 16
+expect kills=14
+goto 16 14             # Yarn Bundle
+goto 15 17             # Fish Snack
+goto 20 14             # Charge Vial
+# Secret 1: the gap in the crate stack, the dead-end pier, the boathouse.
+goto 21 24
+face 90
+use
+wait 70
+goto 23 26
+expect secrets=2
+goto 23 27             # Litter Satchel
+goto 21 16
+goto 25 17             # Yarn Bundle
+# Pump yard.
+goto 29 15
+clear 14
+goto 31 16             # Yarn Bundle
+goto 29 20             # Tuna Tin
+goto 38 20             # Fish Snack
+goto 38 12             # Charge Vial
+clear 14
+expect kills=14
+# Pump House Sprint: the switch opens the door for 8 s.
+goto 30 12
+face 270
+use
+wait 32
+goto 36 12
+goto 36 10
+clear 10
+goto 35 8
+clear 10
+expect kills=16
+goto 37 2              # Fish Snack
+goto 29 2              # Charge Jar
+# Secret 3: the fish mural on the west wall.
+goto 29 4
+face 180
+use
+wait 70
+goto 27 3
+expect secrets=3
+goto 26 2              # Golden Sardine
+# Lighthouse of Paw-ros.
+goto 29 8
+face 180
+use
+wait 32
+clear 16
+goto 26 8
+face 180
+use
+wait 32
+clear 16
+goto 24 8
+clear 16
+goto 24 10
+clear 16
+goto 24 9              # Charge Vial
+goto 21 10
+face 180
+use
+wait 32
+clear 16
+goto 19 10
+clear 16
+goto 16 10             # Charge Vial
+clear 16
+goto 16 7
+face 270
+use
+wait 32
+clear 16
+goto 16 5
+clear 16
+goto 16 2              # Fish Snack
+clear 16
+goto 19 2
+face 0
+use
+wait 32
+clear 16
+goto 21 2
+clear 16
+goto 24 2              # Yarn Bundle
+goto 24 5
+clear 16
+face 180
+use
+wait 32
+clear 16
+goto 22 5
+clear 16
+goto 22 4
+clear 16
+goto 21 4
+clear 16
+goto 20 4
+clear 16
+goto 19 4
+clear 16
+goto 18 4              # Tuna Tin
+clear 16
+goto 18 5
+clear 16
+goto 18 6
+clear 16
+goto 18 7
+clear 16
+goto 18 8              # Yarn Basket
+clear 16
+goto 19 8
+clear 16
+goto 20 8
+clear 16
+goto 21 8
+clear 16
+goto 22 8
+clear 16
+goto 22 7              # green key at the top
+expect kills=26
+# The key opened the shortcut door (24,7) back to the lighthouse entrance.
+goto 22 5
+face 0
+use
+wait 32
+goto 24 8
+face 0
+use
+wait 32
+goto 27 8
+face 0
+use
+wait 32
+# Switch U from inside the Pump House reopens the timed door.
+goto 37 9
+face 0
+use
+wait 32
+goto 36 12
+# Barge Gate: the green door; the trigger behind it opens the closets.
+goto 33 20
+face 90
+use
+wait 32
+goto 33 22
+wait 35                # the closet doors take 32 tics
+clear 16
+wait 35
+clear 16
+goto 33 24
+clear 16
+goto 33 27
+clear 16
+expect kills=34
+goto 34 29
+face 90
+use
+expect exit=1
