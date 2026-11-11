@@ -1,0 +1,6 @@
+start 2.500 2.500 24x24
+overlaps=0 stuck=0 maxspeed=7.000 u/s visited=321/321 open tiles
+start 2.500 2.500 24x24
+overlaps=0 stuck=0 maxspeed=7.000 u/s visited=321/321 open tiles
+start 2.500 2.500 24x24
+overlaps=0 stuck=0 maxspeed=7.000 u/s visited=321/321 open tiles
