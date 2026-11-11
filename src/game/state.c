@@ -5,6 +5,7 @@
 #include "engine/hash.h"
 #include "game/ai.h"
 #include "game/items.h"
+#include "game/projectile.h"
 
 void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32_t demo_seed)
 {
@@ -78,8 +79,8 @@ int game_circle_blocked(const game_state *gs, fix_t x, fix_t y, fix_t r)
     return 0;
 }
 
-/* A live enemy the player circle at (x, y) overlaps, unless it already
- * overlapped it at (x0, y0) (so an overlap can always be walked out of). */
+/* A live enemy or barrel (thinker_alive) the player circle at (x, y)
+ * overlaps, unless it already overlapped it at (x0, y0) (so an overlap can always be walked out of). */
 static int player_hits_enemy(const game_state *gs, fix_t x0, fix_t y0, fix_t x, fix_t y)
 {
     for (int i = 0; i < gs->things.count; i++) {
@@ -208,6 +209,9 @@ void game_tic(game_state *gs, const ticcmd *cmd)
     tags_player_cell(gs);
 
     const uint32_t shots = p->weapons.shots;
+    /* Fuses, projectile moves and effects, before the player fires and
+     * before enemies think (see projectile.h). */
+    projectiles_tic(gs);
     weapon_tic(gs, (cmd->buttons & BT_WEAPON_MASK) >> BT_WEAPON_SHIFT, cmd->buttons & BT_FIRE);
     if (p->weapons.shots != shots && p->weapons.ready != WP_CLAWS)
         ai_noise(gs); /* gunfire wakes the area; Claws are silent */
@@ -257,6 +261,9 @@ uint64_t game_hash(const game_state *gs)
         hash_i32(&h, t->tics);
         hash_i32(&h, t->health);
         hash_u32(&h, t->target);
+        hash_i32(&h, t->momx);
+        hash_i32(&h, t->momy);
+        hash_u32(&h, t->owner);
     }
     hash_i32(&h, gs->things.kills);
     hash_i32(&h, gs->things.kill_total);

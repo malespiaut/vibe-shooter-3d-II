@@ -54,7 +54,8 @@ void topdown_draw(const game_state *gs, uint8_t *framebuffer)
 
     for (int i = 0; i < gs->things.count; i++) {
         const thinker_t *t = &gs->things.list[i];
-        if (t->flags & TH_FLAG_PICKUP)
+        /* Not pickups, projectiles, effects or their FREE slots. */
+        if ((t->flags & TH_FLAG_PICKUP) || t->type >= TH_TYPE_SCARAB_PROJ)
             continue;
         const int ex = ox + (int)(((int64_t)t->x * scale) >> FIX_SHIFT);
         const int ey = oy + m->height * scale - 1 - (int)(((int64_t)t->y * scale) >> FIX_SHIFT);

@@ -25,6 +25,7 @@
 #define PLAYER_TURN_SPEED 1872          /* angle units per tic, 180 deg/s */
 #define PLAYER_ACCEL_TICS 4             /* to max speed, and to stop */
 #define PLAYER_START_HEALTH 100
+#define PLAYER_EYE_Z ((fix_t)32768)     /* eye height 0.5 units (render.h) */
 
 /* ticcmd buttons. */
 enum {
@@ -142,7 +143,7 @@ void game_tic(game_state *gs, const ticcmd *cmd);
 /* 64-bit FNV-1a over the canonical serialisation (tech.md State hash):
  * tic, RNG state, player (x, y, angle, momx, momy, health, armour, weapon
  * state, ammo), every thinker in creation order (type, x, y, angle, state,
- * flags, tics, health, target id), kills and kill total, then player keys,
+ * flags, tics, health, target id, momx, momy, owner), kills and kill total, then player keys,
  * previous buttons, door count and every door (state, pos, timer), then
  * armour class, satchel, powerup timers, Ninth Life, invulnerability, dead, skill,
  * pickups (count, then each taken flag in spawn order), items taken, then

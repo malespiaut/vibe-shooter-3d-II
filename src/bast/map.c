@@ -55,6 +55,7 @@ static const struct {
     {BAST_ENT_CATNIP_FRENZY, "CATNIP_FRENZY"},
     {BAST_ENT_CATS_EYE_AMULET, "CATS_EYE_AMULET"},
     {BAST_ENT_NINTH_LIFE, "NINTH_LIFE"},
+    {BAST_ENT_KIBBLE_BARREL, "KIBBLE_BARREL"},
 };
 
 #define COUNT(a) ((int)(sizeof(a) / sizeof((a)[0])))

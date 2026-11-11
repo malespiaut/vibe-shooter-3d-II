@@ -46,7 +46,8 @@ TYPES = (
     (65, "VIOLET_ANKH", "item", "Violet Ankh"),
     (66, "CATNIP_FRENZY", "item", "Catnip Frenzy"),
     (67, "CATS_EYE_AMULET", "item", "Cat's Eye Amulet"),
-    (68, "NINTH_LIFE", "item", "Ninth Life"),)
+    (68, "NINTH_LIFE", "item", "Ninth Life"),
+    (96, "KIBBLE_BARREL", "decoration", "Kibble Barrel"),)
 
 CATEGORIES = ("special", "enemy", "weapon", "item", "decoration")
 

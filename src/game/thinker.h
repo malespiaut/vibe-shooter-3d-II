@@ -23,10 +23,30 @@ enum {
     TH_STATE_WINDUP = 4, /* telegraph: stopped, facing the player */
     TH_STATE_ATTACK = 5, /* attack resolved, recovering */
     TH_STATE_PAIN = 6,   /* flinch */
+    TH_STATE_DYING = 7,  /* killed barrel: explodes when `tics` runs out */
+    TH_STATE_FREE = 8,   /* spent projectile or effect: slot reusable */
 };
 
 /* thinker_t.movedir: 8 compass directions, counter-clockwise from east. */
 enum { DI_EAST, DI_NE, DI_NORTH, DI_NW, DI_WEST, DI_SW, DI_SOUTH, DI_SE, DI_NONE };
+
+/* Thinker types that are not map entities (projectiles and effects,
+ * game/projectile.h). Above every bast entity type number. */
+enum {
+    TH_TYPE_SCARAB_PROJ = 256,
+    TH_TYPE_EXPLOSION_SMALL = 257,
+    TH_TYPE_EXPLOSION_BIG = 258,
+};
+
+/* Owner id of projectiles the player fired (thinker ids are 1..MAX_THINKERS). */
+#define TH_ID_PLAYER 0xFFFFu
+
+/* Kibble barrel (items.md Decorations): solid, 0.25 u radius, 20 HP. It
+ * blocks the player like an enemy while thinker_alive, so it stops
+ * blocking as soon as it is DYING, BARREL_FUSE_TICS before it explodes. */
+#define BARREL_HP 20
+#define BARREL_RADIUS ((fix_t)16384)
+#define BARREL_FUSE_TICS 4 /* from the killing hit to the explosion */
 
 /* thinker_t.flags */
 enum {
@@ -53,6 +73,9 @@ typedef struct {
     uint8_t movedir; /* DI_*: compass direction of the step being walked */
     uint8_t goal_tx, goal_ty; /* tile whose centre the step walks to */
     int32_t movecount; /* tics to the next chase decision (every 8) */
+    fix_t momx, momy; /* velocity per tic (projectiles) */
+    fix_t z;          /* height above the floor; render-only, not hashed */
+    uint16_t owner;   /* projectile: thinker id that fired it, or TH_ID_PLAYER */
 } thinker_t;
 
 typedef struct {
@@ -61,16 +84,18 @@ typedef struct {
     int32_t kills, kill_total;
 } thinkers_t;
 
-/* 1 for a live enemy (any state but DEAD; never a pickup). */
+/* 1 for a live enemy or barrel: any state but DEAD, TAKEN, DYING and FREE;
+ * never a pickup, projectile or effect (type >= TH_TYPE_SCARAB_PROJ). Doors,
+ * pushwalls, player collision, hitscan, splash and AI use it. */
 int thinker_alive(const thinker_t *t);
 
 /* 1 when entity `e` is placed at `skill` (1..3): its SKILLn flag is set.
  * The one skill-placement test, for thinkers and pickups (game/items.c). */
 int entity_on_skill(const bast_map_entity *e, int skill);
 
-/* Empties the list and spawns every enemy and weapon-pickup entity of `map`
- * flagged for `skill` (1..3), in entity order. Enemies keep AMBUSH
- * (TH_FLAG_AMBUSH). Weapon pickups keep the
+/* Empties the list and spawns every enemy, weapon-pickup and kibble-barrel
+ * entity of `map` flagged for `skill` (1..3), in entity order. Enemies keep
+ * AMBUSH (TH_FLAG_AMBUSH). Weapon pickups keep the
  * entity's tag and PICKUP_TRIGGER (TH_FLAG_TRIGGER). Other item types live
  * in game_state.pickups (game/items.c). */
 void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill);
@@ -83,12 +108,23 @@ uint16_t thinker_spawn(thinkers_t *th, uint16_t type, fix_t x, fix_t y, angle_t 
  * its id, or 0 when full or `type` is not a weapon. */
 uint16_t thinker_spawn_pickup(thinkers_t *th, uint16_t type, fix_t x, fix_t y);
 
+/* Appends a kibble barrel (shootable, solid, not a kill); returns its id,
+ * or 0 when full. */
+uint16_t thinker_spawn_barrel(thinkers_t *th, fix_t x, fix_t y);
+
+/* A zeroed thinker for a projectile or effect: the first TH_STATE_FREE
+ * slot, else a new one at the end. Returns its id, 0 when full. Only
+ * transient thinkers ever become FREE, so ids that other thinkers keep
+ * (targets, owners of live projectiles) stay valid. */
+uint16_t thinker_alloc(thinkers_t *th);
+
 /* NULL for id 0 or an id that does not exist. */
 thinker_t *thinker_get(thinkers_t *th, uint16_t id);
 
 /* Applies `damage` to a live thinker: at HP <= 0 it becomes dead (counted
- * as a kill when it counts) and gibs at HP <= -(max HP / 2). Returns 1
- * when this hit killed it. */
+ * as a kill when it counts) and gibs at HP <= -(max HP / 2). A barrel
+ * instead becomes TH_STATE_DYING with BARREL_FUSE_TICS on its fuse
+ * (projectiles_tic explodes it). Returns 1 when this hit killed it. */
 int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage);
 
 #endif

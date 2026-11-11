@@ -2,8 +2,9 @@
 #define GAME_WEAPON_H
 
 /* Player weapons (weapons.md Stats, Behaviour notes). Slots 1..7; this
- * module fires 1-4 (Claws, Ankh Pistol, Hairball Scattergun, Sistrum
- * Repeater). Hitscan: DDA ray against blocking tiles (game_tile_blocks with
+ * module fires 1-5 (Claws, Ankh Pistol, Hairball Scattergun, Sistrum
+ * Repeater, and the Scarab Launcher, which spawns a projectile:
+ * game/projectile.h). Hitscan: DDA ray against blocking tiles (game_tile_blocks with
  * live door state: a door that is not fully open blocks, an open one lets
  * shots through), then the nearest live thinker whose radius the ray
  * crosses. All maths is fixed point; spread and damage come from the
@@ -81,7 +82,7 @@ int weapon_auto_pick(const weapons_t *w);
 /* Ammo cap without the Litter Satchel (weapons.md Ammo types). */
 extern const int32_t ammo_max[AM_TYPES];
 
-/* Ammo cap of type `a`: ammo_max[a], doubled with the Litter Satchel
+/* Ammo cap of type `a`: ammo_max[a], times two with the Litter Satchel
  * (`satchel` != 0). */
 int32_t ammo_cap(int a, int satchel);
 

@@ -1,0 +1,40 @@
+# Launcher test map: 20x11, built by tools/mkmap.py into
+# maps/launchertest.vmap. Test fixture for demos/launcher-test.demo
+# (issue #93: projectiles, splash, Scarab Launcher, kibble barrels), not a
+# game level. One open room: a Scarab Launcher pickup, three Mutt Troopers
+# standing in a north-south line 1 u apart, and a kibble barrel with a
+# fourth Mutt 1 u north of it. Textures are the renderer test patterns.
+# The Mutts are AMBUSH (deaf to gunfire) and face east, away from the
+# player, so the AI (#117) leaves them standing where the demo aims; awake
+# enemies under fire are covered by the proj_awake ctest.
+
+name Launcher Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+
+layout
+####################
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+####################
+end
+
+# ty counts from the south: the last layout row is ty = 0.
+entity PLAYER_START 2 5 0
+entity SCARAB_LAUNCHER 4 5 0
+entity MUTT_TROOPER 12 4 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 12 5 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 12 6 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity KIBBLE_BARREL 15 8 0
+entity MUTT_TROOPER 15 9 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH

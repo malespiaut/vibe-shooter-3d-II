@@ -172,6 +172,16 @@ target_compile_options(test_ai PRIVATE -UNDEBUG)
 foreach(g sight ambush windup chomper pillar drop block pushwall)
   add_test(NAME ai_${g} COMMAND test_ai ${g})
 endforeach()
+# Projectiles, splash, Scarab Launcher, kibble barrels (issue #93).
+add_executable(test_projectile tests/test_projectile.c)
+target_link_libraries(test_projectile PRIVATE engine)
+target_compile_options(test_projectile PRIVATE -UNDEBUG)
+foreach(g travel wall splash splash_wall self direct barrel_chain barrel_solid awake alive)
+  add_test(NAME proj_${g} COMMAND test_projectile ${g})
+endforeach()
+# Gameplay code is fixed point only (CLAUDE.md): no float/double in src/game.
+add_test(NAME proj_no_floats
+  COMMAND sh -c "! grep -rnE 'float|double' ${CMAKE_SOURCE_DIR}/src/game")
 
 add_executable(test_platform_audio tests/test_platform_audio.c)
 target_link_libraries(test_platform_audio PRIVATE platform)
@@ -435,6 +445,14 @@ add_test(NAME weapon_demo
           $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/weapon_demo)
 set_tests_properties(weapon_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
+# Launcher test map and demo (issue #93): scarab splash and barrel kills.
+add_test(NAME launcher_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_launcher_demo.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/launcher_demo)
+set_tests_properties(launcher_demo PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+add_demo_determinism(launcher-test)
 
 # Renderer: floors, ceilings and sky on maps/m1test.vmap (issue #14).
 add_executable(test_render_floor tests/test_render_floor.c)
