@@ -1,0 +1,56 @@
+{
+  "desc": "Acid hiss with bubbling pops: stepping in toxic sludge.",
+  "seed": 17,
+  "voices": [
+    {
+      "wave": "noise",
+      "attack": 0.01,
+      "hold": 0.3,
+      "release": 0.25,
+      "lowpass": 6000,
+      "lowpass_end": 2500,
+      "tremolo": [
+        23,
+        0.6
+      ],
+      "gain": 0.8
+    },
+    {
+      "wave": "triangle",
+      "freq": 300,
+      "freq_end": 500,
+      "vibrato": [
+        17,
+        7
+      ],
+      "attack": 0.01,
+      "hold": 0.25,
+      "release": 0.2,
+      "tremolo": [
+        11,
+        0.9
+      ],
+      "gain": 0.5
+    },
+    {
+      "wave": "square",
+      "start": 0.12,
+      "freq": 700,
+      "freq_end": 1300,
+      "attack": 0.001,
+      "release": 0.03,
+      "lowpass": 1500,
+      "gain": 0.4
+    },
+    {
+      "wave": "square",
+      "start": 0.31,
+      "freq": 600,
+      "freq_end": 1100,
+      "attack": 0.001,
+      "release": 0.03,
+      "lowpass": 1500,
+      "gain": 0.35
+    }
+  ]
+}

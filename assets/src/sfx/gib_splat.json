@@ -1,0 +1,53 @@
+{
+  "desc": "Wet squelchy splat with a meaty low thud and a smaller second slap.",
+  "seed": 41,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 7000,
+      "freq_end": 700,
+      "attack": 0.001,
+      "decay": 0.06,
+      "sustain": 0.3,
+      "release": 0.12,
+      "lowpass": 3000,
+      "lowpass_end": 500,
+      "gain": 1.0
+    },
+    {
+      "wave": "triangle",
+      "freq": 140,
+      "freq_end": 45,
+      "attack": 0.001,
+      "release": 0.14,
+      "gain": 0.9
+    },
+    {
+      "wave": "noise",
+      "start": 0.07,
+      "freq": 4000,
+      "freq_end": 600,
+      "attack": 0.001,
+      "decay": 0.04,
+      "sustain": 0.25,
+      "release": 0.08,
+      "lowpass": 1800,
+      "lowpass_end": 400,
+      "gain": 0.6
+    },
+    {
+      "wave": "square",
+      "start": 0.02,
+      "freq": 300,
+      "freq_end": 90,
+      "vibrato": [
+        40,
+        3
+      ],
+      "attack": 0.001,
+      "release": 0.06,
+      "lowpass": 900,
+      "gain": 0.4
+    }
+  ]
+}

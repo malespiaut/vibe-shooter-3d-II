@@ -1,0 +1,38 @@
+{
+  "desc": "Crisp double mechanical click of a lever.",
+  "seed": 15,
+  "voices": [
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "release": 0.012,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 1900,
+      "freq_end": 1200,
+      "attack": 0.0005,
+      "release": 0.015,
+      "gain": 0.5
+    },
+    {
+      "wave": "noise",
+      "start": 0.045,
+      "freq": 12000,
+      "attack": 0.0005,
+      "release": 0.02,
+      "lowpass": 5000,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "start": 0.045,
+      "freq": 900,
+      "freq_end": 600,
+      "attack": 0.0005,
+      "release": 0.025,
+      "gain": 0.5
+    }
+  ]
+}

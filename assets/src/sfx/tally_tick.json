@@ -1,0 +1,22 @@
+{
+  "desc": "Very short high counter tick, fine when repeated every tic.",
+  "seed": 33,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 1320,
+      "duty": 0.5,
+      "attack": 0.0005,
+      "hold": 0.008,
+      "release": 0.01,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "release": 0.006,
+      "lowpass": 8000,
+      "gain": 0.3
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "desc": "Glassy bell arpeggio, unmistakably 'you got a key'.",
+  "seed": 21,
+  "voices": [
+    {
+      "wave": "triangle",
+      "freq": 1047,
+      "arp": [
+        0,
+        4,
+        7,
+        12,
+        16
+      ],
+      "arp_step": 0.04,
+      "attack": 0.002,
+      "hold": 0.18,
+      "release": 0.28,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 2094,
+      "duty": 0.125,
+      "arp": [
+        0,
+        4,
+        7,
+        12,
+        16
+      ],
+      "arp_step": 0.04,
+      "attack": 0.002,
+      "hold": 0.18,
+      "release": 0.15,
+      "lowpass": 4000,
+      "gain": 0.3
+    },
+    {
+      "wave": "triangle",
+      "start": 0.04,
+      "freq": 523,
+      "arp": [
+        0,
+        4,
+        7,
+        12
+      ],
+      "arp_step": 0.04,
+      "attack": 0.002,
+      "hold": 0.12,
+      "release": 0.25,
+      "gain": 0.4
+    }
+  ]
+}

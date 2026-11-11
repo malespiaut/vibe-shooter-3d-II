@@ -1,5 +1,5 @@
 """ctypes wrapper over libbast.so, the single implementation of the shared
-formats (palette, Oklab nearest colour, TEX). No format or colour maths here:
+formats (palette, Oklab nearest colour, TEX, SND). No format or colour maths here:
 everything goes through the C library.
 
 Library lookup: $BAST_LIB if set, else <repo>/build/libbast.so.
@@ -27,6 +27,7 @@ ALLOW_TRANSPARENT = 0x02
 TEX_HAS_TRANSPARENCY = 0x01
 TEX_FULLBRIGHT = 0x02
 TRANSPARENT = 255
+SND_RATE = 22050
 
 
 class BastError(Exception):
@@ -37,6 +38,11 @@ class _Palette(ctypes.Structure):
     _fields_ = [("rgb", (ctypes.c_uint8 * 3) * 256),
                 ("flags", ctypes.c_uint8 * 256),
                 ("lab", (ctypes.c_double * 3) * 256)]
+
+
+class _Snd(ctypes.Structure):
+    _fields_ = [("rate", ctypes.c_uint32), ("count", ctypes.c_uint32),
+                ("samples", ctypes.POINTER(ctypes.c_int8))]
 
 
 class _Tex(ctypes.Structure):
@@ -58,7 +64,7 @@ def lib():
     if not os.path.exists(path):
         raise BastError("%s not found: run `cmake --build build` or set BAST_LIB" % path)
     L = ctypes.CDLL(os.path.abspath(path))
-    P, T = ctypes.POINTER(_Palette), ctypes.POINTER(_Tex)
+    P, T, S = ctypes.POINTER(_Palette), ctypes.POINTER(_Tex), ctypes.POINTER(_Snd)
     u8, c_int = ctypes.c_uint8, ctypes.c_int
     sig = {
         "bast_error": (ctypes.c_char_p, []),
@@ -73,6 +79,10 @@ def lib():
         "bast_tex_save": (c_int, [T, ctypes.c_char_p]),
         "bast_tex_free": (None, [T]),
         "bast_tex_from_rgba": (T, [P, ctypes.c_char_p, c_int, c_int]),
+        "bast_snd_new": (S, [ctypes.c_int64]),
+        "bast_snd_load": (S, [ctypes.c_char_p]),
+        "bast_snd_save": (c_int, [S, ctypes.c_char_p]),
+        "bast_snd_free": (None, [S]),
     }
     for name, (res, args) in sig.items():
         fn = getattr(L, name)
@@ -256,3 +266,41 @@ class Tex:
         img.putpalette([c for rgb in pal.colors for c in rgb])
         img.info["transparency"] = TRANSPARENT
         return img
+
+
+class Snd:
+    """A SND1 sound effect: 22050 Hz signed 8-bit mono. `samples` is a bytes
+    object holding the raw int8 PCM (two's complement)."""
+
+    def __init__(self, samples=b"", rate=SND_RATE):
+        if rate != SND_RATE:
+            raise BastError("SND rate must be %d" % SND_RATE)
+        self.rate = rate
+        self.samples = bytes(samples)
+
+    def __len__(self):
+        return len(self.samples)
+
+    @classmethod
+    def load(cls, path):
+        L = lib()
+        s = L.bast_snd_load(os.fsencode(path))
+        if not s:
+            raise BastError(_err())
+        try:
+            c = s.contents
+            return cls(ctypes.string_at(c.samples, c.count), c.rate)
+        finally:
+            L.bast_snd_free(s)
+
+    def save(self, path):
+        L = lib()
+        s = L.bast_snd_new(len(self.samples))
+        if not s:
+            raise BastError(_err())
+        try:
+            ctypes.memmove(s.contents.samples, self.samples, len(self.samples))
+            if L.bast_snd_save(s, os.fsencode(path)) != 0:
+                raise BastError(_err())
+        finally:
+            L.bast_snd_free(s)

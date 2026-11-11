@@ -1,0 +1,46 @@
+{
+  "desc": "Long stone-on-stone scrape: rough rumbling noise that judders, fades out.",
+  "seed": 14,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 2200,
+      "attack": 0.08,
+      "hold": 0.9,
+      "release": 0.3,
+      "lowpass": 900,
+      "tremolo": [
+        19,
+        0.7
+      ],
+      "gain": 1.0
+    },
+    {
+      "wave": "saw",
+      "freq": 41,
+      "freq_end": 38,
+      "attack": 0.08,
+      "hold": 0.9,
+      "release": 0.3,
+      "lowpass": 220,
+      "tremolo": [
+        7,
+        0.4
+      ],
+      "gain": 0.9
+    },
+    {
+      "wave": "noise",
+      "freq": 9000,
+      "attack": 0.1,
+      "hold": 0.85,
+      "release": 0.3,
+      "lowpass": 3000,
+      "tremolo": [
+        31,
+        0.9
+      ],
+      "gain": 0.25
+    }
+  ]
+}

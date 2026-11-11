@@ -1,0 +1,44 @@
+{
+  "desc": "Big crunchy blast: sharp crack, roaring falling noise and a deep thump with a long rumble tail.",
+  "seed": 18,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 11000,
+      "freq_end": 400,
+      "attack": 0.001,
+      "decay": 0.25,
+      "sustain": 0.35,
+      "release": 0.65,
+      "lowpass": 5000,
+      "lowpass_end": 250,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 90,
+      "freq_end": 28,
+      "attack": 0.001,
+      "release": 0.45,
+      "lowpass": 300,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "release": 0.03,
+      "gain": 0.8
+    },
+    {
+      "wave": "noise",
+      "start": 0.08,
+      "freq": 900,
+      "freq_end": 120,
+      "attack": 0.05,
+      "release": 0.8,
+      "lowpass": 400,
+      "gain": 0.6
+    }
+  ]
+}

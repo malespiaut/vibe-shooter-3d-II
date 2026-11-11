@@ -1,0 +1,50 @@
+{
+  "desc": "Heavy sandstone slab sliding open: rising low grind with hiss, ends on a soft clunk.",
+  "seed": 11,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 55,
+      "freq_end": 75,
+      "attack": 0.04,
+      "hold": 0.42,
+      "release": 0.12,
+      "lowpass": 350,
+      "lowpass_end": 700,
+      "gain": 0.9
+    },
+    {
+      "wave": "noise",
+      "freq": 4000,
+      "attack": 0.05,
+      "hold": 0.4,
+      "release": 0.12,
+      "lowpass": 700,
+      "lowpass_end": 1800,
+      "tremolo": [
+        14,
+        0.5
+      ],
+      "gain": 0.7
+    },
+    {
+      "wave": "square",
+      "start": 0.5,
+      "freq": 70,
+      "freq_end": 40,
+      "attack": 0.001,
+      "release": 0.12,
+      "lowpass": 500,
+      "gain": 0.9
+    },
+    {
+      "wave": "noise",
+      "start": 0.5,
+      "freq": 3000,
+      "attack": 0.001,
+      "release": 0.05,
+      "lowpass": 1200,
+      "gain": 0.6
+    }
+  ]
+}

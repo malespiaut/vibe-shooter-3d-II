@@ -90,4 +90,26 @@ void bast_tex_free(bast_tex *tex);
  * bast_palette_nearest(). No dithering. Origin is (0, 0). */
 bast_tex *bast_tex_from_rgba(const bast_palette *pal, const uint8_t *rgba, int w, int h);
 
+/* ---- SND ------------------------------------------------------------- */
+
+/* Sound effect: magic "SND1", uint32 rate, uint32 sample count, then
+ * `count` signed 8-bit mono PCM samples. docs/design/tech.md, "Audio files". */
+#define BAST_SND_HEADER_SIZE 12
+#define BAST_SND_RATE        22050u
+#define BAST_SND_MAX_SAMPLES (BAST_SND_RATE * 30u) /* 30 s: sanity bound */
+
+typedef struct bast_snd {
+    uint32_t rate;    /* always BAST_SND_RATE */
+    uint32_t count;   /* number of samples, 0..BAST_SND_MAX_SAMPLES */
+    int8_t *samples;  /* `count` samples (non-NULL even when count == 0) */
+} bast_snd;
+
+/* New silent sound of `count` samples at 22050 Hz. NULL on bad count/OOM. */
+bast_snd *bast_snd_new(int64_t count);
+bast_snd *bast_snd_load(const char *path);
+bast_snd *bast_snd_from_memory(const uint8_t *data, int64_t size);
+/* Returns 0 on success, -1 on error (see bast_error()). */
+int bast_snd_save(const bast_snd *snd, const char *path);
+void bast_snd_free(bast_snd *snd);
+
 #endif
