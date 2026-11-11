@@ -1,0 +1,20 @@
+# playtester: locked green door without key, then stand in an auto-closing doorway
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+goto 4 3
+face 90
+use
+wait 40
+in 35 127 0 0 -
+expect tile=4,3
+goto 2 3
+face 90
+use
+wait 32
+in 9 127 0 0 -
+wait 300
+in 35 127 0 0 -
+expect tile=2,6
