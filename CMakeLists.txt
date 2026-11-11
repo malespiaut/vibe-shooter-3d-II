@@ -136,6 +136,27 @@ add_custom_command(
 add_custom_target(hud_tex ALL DEPENDS ${ASSETS_GEN}/hud/.stamp)
 add_dependencies(hud_tex palette)
 
+# Pickup sprites (items.md): assets/src/sprites/items/*.pix ->
+# assets/gen/sprites/items/ (same as tools/build.d/47-items.sh), so the game
+# and test_world_sprites_items have them after a plain build (#182). A stamp
+# stands for the outputs; tools/build.d/45-sprites.sh wipes assets/gen/sprites,
+# which removes the stamp too, so the next build regenerates them.
+file(GLOB ITEM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/sprites/items/*.pix)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/sprites/items/.stamp
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          BAST_PALETTE=${ASSETS_GEN}/palette.bin
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/items.py
+          --src ${CMAKE_SOURCE_DIR}/assets/src/sprites/items
+          -o ${ASSETS_GEN}/sprites/items --clean
+  COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/sprites/items/.stamp
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${ITEM_SOURCES} ${CMAKE_SOURCE_DIR}/tools/items.py
+          ${CMAKE_SOURCE_DIR}/tools/hud.py ${CMAKE_SOURCE_DIR}/tools/bast.py
+          ${CMAKE_SOURCE_DIR}/tools/palette.py
+  COMMENT "Building pickup sprites")
+add_custom_target(items_tex ALL DEPENDS ${ASSETS_GEN}/sprites/items/.stamp)
+add_dependencies(items_tex palette)
+
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
 target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}"
@@ -688,11 +709,11 @@ target_compile_options(test_render_sprites PRIVATE -UNDEBUG)
 add_dependencies(test_render_sprites colormap testpattern)
 add_test(NAME render_sprites COMMAND test_render_sprites ${ASSETS_GEN})
 # Pickups as world sprites from live state (issue #120). Needs the item
-# sprites from tools/build_assets.sh (tools/build.d/47-items.sh).
+# sprites (items_tex, same step as tools/build.d/47-items.sh).
 add_executable(test_world_sprites_items tests/test_world_sprites_items.c)
 target_link_libraries(test_world_sprites_items PRIVATE engine m)
 target_compile_options(test_world_sprites_items PRIVATE -UNDEBUG)
-add_dependencies(test_world_sprites_items colormap testpattern)
+add_dependencies(test_world_sprites_items colormap testpattern items_tex)
 add_test(NAME world_sprites_items COMMAND test_world_sprites_items ${ASSETS_GEN})
 # Enemies as animated world sprites from live AI state (issue #146). The
 # Chomper part needs its sprite set from tools/build_assets.sh (60-sprites.sh).
