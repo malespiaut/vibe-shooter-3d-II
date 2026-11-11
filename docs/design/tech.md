@@ -136,8 +136,11 @@ produces, so they are deterministic and survive balance changes better than raw 
 
 ### Archives (M2)
 
-`assets/gen/game.pak`: magic "VPAK", uint32 count, then directory of (char name[32], uint32 offset,
-uint32 size), then data. Built by `tools/pak.py` via libbast. Until it exists the engine loads loose
+`assets/gen/game.pak`: magic "VPAK", uint32 count, then directory of (char name[56], uint32 offset,
+uint32 size), 64 bytes per entry, then data. Names are paths relative to `assets/gen/` with `/`
+(`sfx/door_open.snd`), 1..55 chars, NUL-padded, unique; offsets count from the start of the file.
+The field was 32 bytes until #25 widened it: generated names such as
+`fx/teleport_sparkle_loop_d0_f0.tex` (34 chars) did not fit. Built by `tools/pak.py` via libbast. Until it exists the engine loads loose
 files from `assets/gen/`.
 
 ### Audio files

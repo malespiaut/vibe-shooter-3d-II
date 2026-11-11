@@ -1,5 +1,5 @@
 """ctypes wrapper over libbast.so, the single implementation of the shared
-formats (palette, Oklab nearest colour, TEX, SND, .vmap). No format or colour maths here:
+formats (palette, Oklab nearest colour, TEX, SND, .vmap, VPAK). No format or colour maths here:
 everything goes through the C library.
 
 Library lookup: $BAST_LIB if set, else <repo>/build/libbast.so.
@@ -122,6 +122,15 @@ def lib():
         "bast_entity_type_from_name": (c_int, [ctypes.c_char_p]),
         "bast_cell_flag_name": (ctypes.c_char_p, [c_int]),
         "bast_entity_flag_name": (ctypes.c_char_p, [c_int]),
+        "bast_pak_write": (c_int, [ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p),
+                                   ctypes.POINTER(ctypes.c_char_p),
+                                   ctypes.POINTER(ctypes.c_uint32), c_int]),
+        "bast_pak_open": (ctypes.c_void_p, [ctypes.c_char_p]),
+        "bast_pak_close": (None, [ctypes.c_void_p]),
+        "bast_pak_count": (c_int, [ctypes.c_void_p]),
+        "bast_pak_name": (ctypes.c_char_p, [ctypes.c_void_p, c_int]),
+        "bast_pak_find": (ctypes.POINTER(ctypes.c_uint8),
+                          [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32)]),
     }
     for name, (res, args) in sig.items():
         fn = getattr(L, name)
@@ -522,3 +531,36 @@ class Map:
             if self._c.entities[i].name.decode() == name:
                 return i
         return None
+
+
+PAK_NAME_MAX = 55
+
+
+def pak_write(path, entries):
+    """Write a VPAK archive. `entries` is a list of (name, bytes) written in
+    the given order; names are 1..55 ASCII chars and unique."""
+    n = len(entries)
+    names = (ctypes.c_char_p * max(n, 1))(*[e[0].encode() for e in entries])
+    blobs = [bytes(e[1]) for e in entries]
+    datas = (ctypes.c_char_p * max(n, 1))(*blobs)
+    sizes = (ctypes.c_uint32 * max(n, 1))(*[len(b) for b in blobs])
+    if lib().bast_pak_write(os.fsencode(path), names, datas, sizes, n) != 0:
+        raise BastError(_err())
+
+
+def pak_read(path):
+    """Read a VPAK archive into a list of (name, bytes) in directory order."""
+    L = lib()
+    pak = L.bast_pak_open(os.fsencode(path))
+    if not pak:
+        raise BastError(_err())
+    try:
+        out = []
+        for i in range(L.bast_pak_count(pak)):
+            name = L.bast_pak_name(pak, i)
+            size = ctypes.c_uint32()
+            p = L.bast_pak_find(pak, name, ctypes.byref(size))
+            out.append((name.decode(), ctypes.string_at(p, size.value) if size.value else b""))
+        return out
+    finally:
+        L.bast_pak_close(pak)

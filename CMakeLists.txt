@@ -141,6 +141,17 @@ target_link_libraries(test_map_roundtrip PRIVATE bast_static)
 target_compile_options(test_map_roundtrip PRIVATE -UNDEBUG)
 add_test(NAME map_roundtrip COMMAND test_map_roundtrip)
 
+add_executable(test_pak_roundtrip tests/test_pak_roundtrip.c)
+target_link_libraries(test_pak_roundtrip PRIVATE bast_static)
+target_compile_options(test_pak_roundtrip PRIVATE -UNDEBUG)
+add_test(NAME pak_roundtrip COMMAND test_pak_roundtrip ${CMAKE_BINARY_DIR})
+
+add_executable(test_files tests/test_files.c)
+target_link_libraries(test_files PRIVATE engine)
+target_compile_options(test_files PRIVATE -UNDEBUG)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/test_tmp/files)
+add_test(NAME files COMMAND test_files ${CMAKE_BINARY_DIR}/test_tmp/files)
+
 add_test(NAME palcheck
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_palette.py)
 add_test(NAME bast_py
@@ -163,9 +174,11 @@ add_test(NAME gibs_pixels
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_gibs.py pixels)
 add_test(NAME fonts
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_fonts.py)
+add_test(NAME pak_py
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_pak.py)
 # Python tests load the libbast.so built here, not a stale one.
 set_tests_properties(palcheck bast_py sfx_determinism mkmap_py quantize editor_roundtrip
-  texgen_tile editor_entities gibs_determinism gibs_pixels fonts PROPERTIES
+  texgen_tile editor_entities gibs_determinism gibs_pixels fonts pak_py PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 add_executable(test_colormap tests/test_colormap.c)

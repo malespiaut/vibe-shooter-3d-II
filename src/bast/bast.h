@@ -275,4 +275,36 @@ int bast_map_remove_entity(bast_map *map, int index);
  * table is full or the name is too long. */
 int bast_map_texture_index(bast_map *map, const char *name);
 
+/* ---- VPAK archive ----------------------------------------------------- */
+/* docs/design/tech.md, "Archives": magic "VPAK", uint32 count, then count x
+ * (char name[56], uint32 offset, uint32 size), then data. Names are 1..55
+ * chars, NUL-terminated and NUL-padded, unique; offsets are from file start.
+ * Engine asset names are paths relative to assets/gen with '/' ("sfx/x.snd"). */
+
+#define BAST_PAK_HEADER_SIZE 8
+#define BAST_PAK_NAME_SIZE   56
+#define BAST_PAK_ENTRY_SIZE  64
+#define BAST_PAK_NAME_MAX    (BAST_PAK_NAME_SIZE - 1)
+#define BAST_PAK_MAX_ENTRIES 65536u
+
+typedef struct bast_pak bast_pak;
+
+/* Write `n` entries in the given order (data follows the directory in the
+ * same order). Rejects empty/over-long names and duplicates.
+ * 0 on success, -1 on error (see bast_error()). */
+int bast_pak_write(const char *path, const char *const *names, const uint8_t *const *datas,
+                   const uint32_t *sizes, int n);
+/* Read the whole archive into memory and validate the directory (bounds,
+ * names, duplicates). NULL on error. */
+bast_pak *bast_pak_open(const char *path);
+/* Same over a malloc'd buffer; on success the pak owns `data` (freed by
+ * bast_pak_close), on failure the caller still owns it. */
+bast_pak *bast_pak_from_memory(uint8_t *data, int64_t size);
+void bast_pak_close(bast_pak *pak);
+int bast_pak_count(const bast_pak *pak);
+/* Name of entry i (0..count-1), NULL when out of range. */
+const char *bast_pak_name(const bast_pak *pak, int i);
+/* Entry data (valid until bast_pak_close) and its size, or NULL when absent. */
+const uint8_t *bast_pak_find(const bast_pak *pak, const char *name, uint32_t *size);
+
 #endif

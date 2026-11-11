@@ -316,7 +316,7 @@ static void run_window(run_t *r)
     if (startup)
         mixer_start(startup, MIXER_SOURCE_NONE, MIXER_VOL_MAX, MIXER_PAN_CENTER);
     else
-        fprintf(stderr, "game: %s\n", bast_error());
+        fprintf(stderr, "game: %s\n", mixer_error());
     if (!platform_audio_open(audio_fill, NULL))
         fprintf(stderr, "game: audio disabled: %s\n", platform_error());
     platform_set_relative_mouse(true);
