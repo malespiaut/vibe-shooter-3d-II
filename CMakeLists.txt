@@ -12,6 +12,19 @@ endif()
 add_compile_options(-Wall -Wextra -Werror)
 
 find_package(SDL3 REQUIRED CONFIG)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+# Palette build step: catlantis.gpl -> assets/gen/palette.bin + palette_flags.bin.
+set(PALETTE_GPL ${CMAKE_SOURCE_DIR}/assets/src/palette/catlantis.gpl)
+set(ASSETS_GEN ${CMAKE_SOURCE_DIR}/assets/gen)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/palette.bin ${ASSETS_GEN}/palette_flags.bin
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/palette.py
+          --gpl ${PALETTE_GPL} --out-dir ${ASSETS_GEN}
+  DEPENDS ${PALETTE_GPL} ${CMAKE_SOURCE_DIR}/tools/palette.py
+  COMMENT "Building palette.bin from catlantis.gpl")
+add_custom_target(palette ALL
+  DEPENDS ${ASSETS_GEN}/palette.bin ${ASSETS_GEN}/palette_flags.bin)
 
 # Host tool: generates the trig tables (floats allowed here only).
 # Output lives in the build tree and is never committed.
@@ -59,3 +72,6 @@ target_link_libraries(test_platform_audio PRIVATE platform)
 target_compile_options(test_platform_audio PRIVATE -UNDEBUG)
 add_test(NAME platform_audio COMMAND test_platform_audio)
 set_tests_properties(platform_audio PROPERTIES ENVIRONMENT "SDL_AUDIODRIVER=dummy")
+
+add_test(NAME palcheck
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_palette.py)
