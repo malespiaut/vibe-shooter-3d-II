@@ -345,6 +345,12 @@ add_test(NAME sprite_mutt
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprite_mutt.py)
 set_tests_properties(sprite_mutt PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+# Woofu boss sprite sets (assets/src/sprites/woofu, woofu2 = lidless phase 2):
+# renders both and checks frame sets and art-bible pixel rules. 77 = skipped.
+add_test(NAME sprite_woofu
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprite_woofu.py)
+set_tests_properties(sprite_woofu PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 # Chihuahua Chomper sprite set (enemies.md, art-bible.md): renders the model
 # into a temp dir and checks frames, size, ramps and outline. 77 = skipped
