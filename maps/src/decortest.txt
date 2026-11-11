@@ -1,0 +1,40 @@
+# Decoration test map: 14x9, built by tools/mkmap.py into
+# maps/decortest.vmap. Test fixture for demos/decor-test.demo (issue #131:
+# decorations), not a game level. One open room with every decoration type
+# (items.md Decorations): the Egyptian props along the north row, the
+# dog-tech props along the south row, a papyrus pot on the player's line of
+# fire and the hanging dog banner further along it. Textures are the
+# renderer test patterns.
+
+name Decoration Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+
+layout
+##############
+#............#
+#............#
+#............#
+#............#
+#............#
+#............#
+#............#
+##############
+end
+
+# ty counts from the south: the last layout row is ty = 0.
+entity PLAYER_START 2 4 0
+entity PAPYRUS_POT 4 4 0
+entity DOG_BANNER 9 4 0
+entity OBELISK_STUB 5 6 0
+entity PILLAR_SAND 7 6 0
+entity BRAZIER 9 6 0
+entity CAT_STATUE 11 6 0
+entity KIBBLE_BARREL 5 2 0
+entity CRATE 7 2 0
+entity FLOODLIGHT 9 2 0
+entity SERVER_RACK 11 2 0
