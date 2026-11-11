@@ -1,0 +1,17 @@
+# playtester: skip the Scattergun, charge into the hall with the pistol
+vsdemo 1
+level 1
+skill 2
+seed 0
+map aitest
+goto 15 4
+face 0
+fire 140
+goto 18 4 300
+face 180
+fire 140
+face 90
+fire 70
+face 270
+fire 70
+wait 70

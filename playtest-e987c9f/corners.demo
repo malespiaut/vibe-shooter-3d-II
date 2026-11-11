@@ -1,0 +1,14 @@
+# playtester: grind into room corners and the corridor mouth, strafe-run along walls
+vsdemo 1
+level 1
+skill 2
+seed 0
+map aitest
+face 135
+in 70 127 0 0 R
+in 70 0 127 0 R
+in 70 -127 0 0 R
+face 0
+in 35 127 60 0 R
+in 35 127 -60 0 R
+in 140 127 0 0 R
