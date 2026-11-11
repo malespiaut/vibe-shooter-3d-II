@@ -44,7 +44,7 @@ agents/roles/*.md                     role prompts (changeable through PRs)
 - The PR body has three parts: what changed, how it was verified (commands plus real output), and screenshots for anything visible.
 - Keep changes small and focused. Do not refactor unrelated code.
 - Commit messages are short and imperative. End each with the trailer `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Name your role in the PR body, for example `[developer]`.
-- Never touch `agents/orchestrate.sh` or `agents/Containerfile`. The Reviewer rejects any PR that does.
+- Never touch `agents/orchestrate.sh`, `agents/Containerfile`, `agents/entrypoint.sh` or `agents/install.sh`. The orchestrator closes any PR that does, and the Reviewer rejects it.
 - Do not commit generated assets that can be rebuilt from source (`assets/gen/` is ignored). Keep sources, scripts and parameters.
 
 ## Evidence

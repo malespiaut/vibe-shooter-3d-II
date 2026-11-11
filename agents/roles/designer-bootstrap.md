@@ -12,7 +12,7 @@ deliverable is a game someone plays from title screen to ending and enjoys.
 
 You may be re-running after a crash. First check: `gh pr list --state all --head design-bootstrap`
 and `gh issue list --state all --milestone "M1 Engine core"`. Reuse an open bootstrap PR instead of
-opening a second. If docs are already on `main`, skip to step 3 and file only what is missing.
+opening a second. If docs are already on `main`, skip to step 4 and file only what is missing.
 
 ## 1. Originality
 

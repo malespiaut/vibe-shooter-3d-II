@@ -10,8 +10,12 @@ case $1 in
     for ((i = 1; i < ${#args[@]}; i++)); do
       case ${args[i]} in
         -v | --volume | --mount) mounts+=("${args[i+1]}") ;;
-        -v=* | --volume=* | --mount=* | --privileged* | --pid* | --network=host | --net=host | --ipc* | --device*) mounts+=("${args[i]}") ;;
+        -v=* | --volume=* | --mount=* | --privileged* | --pid | --pid=* | --network=host | --net=host | --ipc* | --device*) mounts+=("${args[i]}") ;;
       esac
+    done
+    # --init (signals reach the agent), a conmon-side --timeout, and resource limits
+    for want in --init --timeout --memory=12g --pids-limit=4096 --cpus=8; do
+      [[ " ${args[*]} " == *" $want "* ]] || echo "missing $want" >> "$FIXTURES/violations"
     done
     for m in "${mounts[@]}"; do
       if [[ $m == "$STATE"/runs/*:/work && -z $work ]]; then work=${m%:/work}

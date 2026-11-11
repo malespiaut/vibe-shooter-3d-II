@@ -5,7 +5,8 @@
 : "${LOGS:=$HOME/vibe-agents/logs}" "${STATE:=$HOME/vibe-agents/state}"
 : "${REPO:=malespiaut/vibe-shooter-3d-II}" "${OWNER:=malespiaut}" "${IMAGE:=vibe-agents}"
 : "${MAX_DEVS:=4}" "${AGENT_TIMEOUT:=90m}" "${POLL:=60}" "${PLAYTEST_EVERY:=5}" "${STALE_SECS:=7200}"
-: "${DESIGNER_COOLDOWN:=1800}" "${MAX_FIX_CYCLES:=5}" "${ACCEPT_EVERY:=7200}"
+: "${DESIGNER_COOLDOWN:=1800}" "${MAX_FIX_CYCLES:=5}" "${ACCEPT_EVERY:=7200}" "${MAX_REVIEWS:=2}"
+: "${AGENT_MEMORY:=12g}" "${AGENT_PIDS:=4096}" "${AGENT_CPUS:=8}" "${AUTH_HOLD:=1800}" "${GH_CHECK_EVERY:=600}"
 RC_INFRA=69  # setup/infrastructure error: not the issue's fault, never counted as a failure
 : "${MIRROR:=$STATE/mirror}"  # host-private: never mounted, so agents can't plant hooks or config in it
 RUNS=$STATE/runs PROMPTS=$STATE/prompts
@@ -16,18 +17,25 @@ log() { mkdir -p "$LOGS"; printf '%s %s\n' "$(date -Is)" "$*" | tee -a "$LOGS/or
 # Security: $STATE is never mounted. Each container mounts only its own run dir ($RUNS/<name>.XXXXXX,
 # rw) and its own prompt file (ro). The host runs git in a run dir only in mkrun, before any container
 # sees it; after the container exits it only does rm -rf -- on it.
-mirror() { git -C "$MIRROR" "$@"; }
+# host git ignores global/system config: nothing outside the repo (helpers, hooksPath, aliases) applies
+hgit() { GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git "$@"; }
+mirror() { hgit -C "$MIRROR" "$@"; }
 running_names() { podman ps --filter label=vibe=1 --format '{{.Names}}'; }
 # podman down: answer "running" so nothing is started or cleaned up on top of a live container
 running() { local n; n=$(running_names) || return 0; grep -qx -- "$1" <<<"$n"; }
 
 # ---- GitHub queries ----
 
-ready_issues() { # one API call: open issues carry both candidates and the set of open dependencies
-  local all open n body
-  all=$(gh issue list --repo "$REPO" --state open --limit 1000 --json number,state,author,labels,body) || return
+open_issues() { gh issue list --repo "$REPO" --state open --limit 1000 --json number,title,state,author,labels,body; }
+
+# ready_issues [open-issues-json]: one API call (or none, given the list); open issues carry both
+# candidates and the set of open dependencies
+ready_issues() {
+  local all=${1:-} open n body
+  [[ -n $all ]] || all=$(open_issues) || return
   open=$(jq -r '.[] | select(.state == "OPEN") | .number' <<<"$all")
   jq -r '.[] | select(.state == "OPEN" and .author.login == "'"$OWNER"'"
+      and .title != "Team status" and .title != "Final acceptance"
       and any(.labels[]; .name == "ready")
       and all(.labels[]; .name != "in-progress" and .name != "stuck" and .name != "blocked")) | .number' <<<"$all" |
     sort -n | while read -r n; do
@@ -77,6 +85,7 @@ prs_needing_review() {
     [[ $labels == *,stuck,* ]] && continue
     [[ $(cat "$STATE/reviewed/$n" 2>/dev/null) == "$sha" ]] && continue
     cooling "review-$n" && continue
+    running "vibe-review-$n" || running "vibe-art-$n" && continue
     running "vibe-fix-$n" && continue                                  # fixer still pushing
     [[ $br == issue-* ]] && running "vibe-dev-${br#issue-}" && continue  # dev still pushing
     echo "$n"
@@ -102,28 +111,43 @@ close_protected() { # OWNER's PRs only; a clean result is cached per head SHA
     [[ $(cat "$STATE/protected/$n" 2>/dev/null) == "$sha" ]] && continue
     if protected_pr "$n"; then
       gh pr close "$n" --repo "$REPO" --comment "[orchestrator] closed: touches protected path" >/dev/null &&
-        log "closed protected PR #$n"
+        log "closed protected PR #$n" && reready_closed_issues "$n"
     else
       echo "$sha" > "$STATE/protected/$n"
     fi
   done
 }
 
+# a PR closed unmerged would leave its issue with no state label: hand it back to the queue
+reready_closed_issues() {
+  local k
+  for k in $(gh pr view "$1" --repo "$REPO" --json body --jq .body | grep -ioE 'closes #[0-9]+' | grep -oE '[0-9]+' | sort -u); do
+    gh issue edit "$k" --repo "$REPO" --add-label ready --remove-label in-progress >/dev/null && log "#$k back to ready"
+  done
+}
+
+# pinned host or image files: the same list as CLAUDE.md and agents/roles/common.md
 protected_pr() {
   gh pr view "$1" --repo "$REPO" --json files --jq '.files[].path' |
-    grep -qxE 'agents/(orchestrate\.sh|Containerfile)'
+    grep -qxE 'agents/(orchestrate\.sh|Containerfile|entrypoint\.sh|install\.sh)'
 }
 
-# Only the tail's error lines (is_error results, error events, non-JSON stderr), so game talk
-# about a "fire rate limit" or a duration_ms of 14290 never reads as a usage limit.
+# The tail's top-level "type":"result" lines and non-JSON lines (stderr) only, so game talk in tool
+# output about a "fire rate limit" or a duration_ms of 14290 never reads as a usage limit.
+tail_errors() {
+  tail -n 20 "$1" 2>/dev/null | jq -Rr '. as $l | (try fromjson catch null) as $j |
+    if ($j | type) != "object" then $l elif $j.type == "result" then $l else empty end'
+}
 is_usage_limit() {
-  tail -n 20 "$1" 2>/dev/null | grep -E '"is_error": ?true|"type": ?"error"|^[^{]' |
+  tail_errors "$1" |
     grep -qiE 'usage limit|hit your limit|limit reached|limit.{1,5}resets|resets [0-9]|rate[ _-]?limit|overloaded_error|error:? 429\b|\b429 too many'
 }
+is_auth_error() { tail_errors "$1" | grep -qiE 'authentication_error|invalid x-api-key|OAuth token has expired|\b401\b'; }
 
-episode_done() {
+episode_done() { # at least one OWNER "Final acceptance" closed, none open, Episode 1 closed
   [[ $(gh issue list --repo "$REPO" --state all --search '"Final acceptance" in:title' --json title,state,author \
-        --jq '.[] | select(.title == "Final acceptance" and .author.login == "'"$OWNER"'") | .state') == CLOSED ]] &&
+        --jq '[.[] | select(.title == "Final acceptance" and .author.login == "'"$OWNER"'") | .state]
+          | any(. == "CLOSED") and all(. != "OPEN")') == true ]] &&
   [[ $(gh api "repos/$REPO/milestones?state=all" --jq '.[] | select(.title == "Episode 1") | .state') == closed ]]
 }
 
@@ -154,21 +178,32 @@ run_agent() {
   [[ -n ${ANTHROPIC_API_KEY:-} ]] && key=(-e ANTHROPIC_API_KEY)
   podman rm "vibe-$name" >/dev/null 2>&1  # a stopped leftover would block --name; never -f
   log "start vibe-$name ($role) in $wd, log $logf"
+  # --init: the entrypoint's exec'd xvfb-run is PID 1 and would drop SIGTERM. --timeout: conmon kills
+  # the container even if this orchestrator dies. 9>&-: containers must not inherit the run lock.
   GH_TOKEN=$(<"$GH_TOKEN_FILE") CLAUDE_CODE_OAUTH_TOKEN=$(<"$CLAUDE_TOKEN_FILE") \
   GIT_AUTHOR_NAME=$(git config user.name) GIT_AUTHOR_EMAIL=$(git config user.email) \
-    timeout -k 60 "$AGENT_TIMEOUT" podman run --rm --name "vibe-$name" --label vibe=1 --userns=keep-id \
+    timeout -k 60 "$AGENT_TIMEOUT" podman run --rm --init --timeout "$(($(secs "$AGENT_TIMEOUT") + 120))" \
+      --name "vibe-$name" --label vibe=1 --userns=keep-id \
+      --memory="$AGENT_MEMORY" --pids-limit="$AGENT_PIDS" --cpus="$AGENT_CPUS" \
       -v "$wd:/work" -v "$prompt:/prompt.md:ro" -e HOME=/tmp/agent-home -e GH_TOKEN -e CLAUDE_CODE_OAUTH_TOKEN "${key[@]}" \
-      -e GIT_AUTHOR_NAME -e GIT_AUTHOR_EMAIL "$IMAGE" /work /prompt.md </dev/null >>"$logf" 2>&1
+      -e GIT_AUTHOR_NAME -e GIT_AUTHOR_EMAIL "$IMAGE" /work /prompt.md </dev/null >>"$logf" 2>&1 9>&-
   rc=$?
   rm -f -- "$prompt"
   case $rc in
     125 | 126 | 127) rc=$RC_INFRA ;;  # podman itself failed (no image, name clash): no agent ran
     0) ;;
-    *) is_usage_limit "$logf" && rc=75 ;;
+    124 | 137)  # timeout killed only the podman client: make sure the container is gone too
+      podman kill "vibe-$name" >/dev/null 2>&1; podman rm "vibe-$name" >/dev/null 2>&1 ;;
+    *) if is_auth_error "$logf"; then
+         rc=$RC_INFRA; echo $(($(date +%s) + AUTH_HOLD)) > "$STATE/backoff-until"
+         log "auth error in vibe-$name: holding all launches ${AUTH_HOLD}s"
+       elif is_usage_limit "$logf"; then rc=75; fi ;;
   esac
   log "end vibe-$name rc=$rc"
   return "$rc"
 }
+
+secs() { case $1 in *h) echo $((${1%h} * 3600)) ;; *m) echo $((${1%m} * 60)) ;; *) echo "${1%s}" ;; esac; }
 
 backoff() { # usage limit: hold all launches; 5 min doubling to 4 h
   local b
@@ -213,11 +248,21 @@ finish_pr() { # finish_pr <pr> <key> <rc>
   return 0
 }
 
+# open PRs by OWNER from branch $1
+pr_from() {
+  gh pr list --repo "$REPO" --state open --head "$1" --json number,author,headRefName \
+    --jq '.[] | select(.author.login == "'"$OWNER"'" and .headRefName == "'"$1"'") | .number'
+}
+
 finish_dev() {
   local n=$1 rc=$2
   finish_run "$rc" >/dev/null
   case $rc in
-    0) ;;
+    0) # exit 0 without a PR did nothing, unless the developer closed or blocked the issue on purpose
+      if [[ -z $(pr_from "issue-$n") ]] && gh issue view "$n" --repo "$REPO" --json state,labels \
+           --jq '.state == "OPEN" and all(.labels[]; .name != "blocked")' | grep -qx true; then
+        release "$n" "no PR opened"
+      fi ;;
     75 | "$RC_INFRA") gh issue edit "$n" --repo "$REPO" --remove-label in-progress >/dev/null ;;
     *) release "$n" "exit $rc" ;;
   esac
@@ -229,9 +274,9 @@ finish_dev() {
 mkrun() {
   local name=$1 d; shift
   mkdir -p "$RUNS" && d=$(mktemp -d "$RUNS/$name.XXXXXX") || return 1
-  if ! { git clone -q -n --no-hardlinks "$MIRROR" "$d" >/dev/null 2>&1 &&
-          git -C "$d" remote set-url origin "https://github.com/$REPO.git" &&
-          git -C "$d" checkout -q "$@" >/dev/null 2>&1; }; then
+  if ! { hgit clone -q -n --no-hardlinks "$MIRROR" "$d" >/dev/null 2>&1 &&
+          hgit -C "$d" remote set-url origin "https://github.com/$REPO.git" &&
+          hgit -C "$d" checkout -q "$@" >/dev/null 2>&1; }; then
     rm -rf -- "$d"; return 1
   fi
   echo "$d"
@@ -311,6 +356,11 @@ dispatch_review() {
     fi
     run_agent reviewer "review-$n" "$wt" "$ctx"
     rc=$?; rmrun "$wt" "review-$n"
+    # a verdict is a merge or the changes-requested label; exit 0 with neither means nothing was judged
+    if ((rc == 0)) && ! gh pr view "$n" --repo "$REPO" --json state,labels \
+         --jq '.state == "MERGED" or any(.labels[]; .name == "review:changes-requested")' | grep -qx true; then
+      log "review #$n exited 0 without a verdict"; rc=1
+    fi
     ((rc == 0)) && { mkdir -p "$STATE/reviewed"; echo "$sha" > "$STATE/reviewed/$n"; }
     finish_pr "$n" "review-$n" "$rc"
   ) &
@@ -327,6 +377,38 @@ dispatch_main() { # dispatch_main <role> <name> <context> [on-success-cmd...]
 }
 
 mark_playtested() { echo "$1" > "$STATE/last-playtest-sha"; }
+
+# planning_needed <open-issues-json> <main-sha>: main moved since the last planning run, or something
+# waits on the designer (stuck/blocked issues, untriaged bug/polish, stuck PRs)
+planning_needed() {
+  local sha
+  read -r _ sha 2>/dev/null < "$STATE/designer-at"
+  [[ $sha != "$2" ]] && return 0
+  [[ $(jq '[.[] | select(.author.login == "'"$OWNER"'") | [.labels[].name] |
+      select(index("stuck") or index("blocked") or ((index("bug") or index("polish")) and (index("ready") | not)))]
+      | length' <<<"$1") != 0 ]] && return 0
+  [[ -n $(owner_prs stuck) ]]
+}
+
+# playtest_merges <main-sha>: merges since the last playtest; a last sha that is no longer an
+# ancestor (history rewritten) re-inits the counter and forces a playtest
+playtest_merges() {
+  [[ -s $STATE/last-playtest-sha ]] || echo "$1" > "$STATE/last-playtest-sha"
+  mirror rev-list --count "$(<"$STATE/last-playtest-sha")..main" 2>/dev/null && return
+  echo "$1" > "$STATE/last-playtest-sha"; echo "$PLAYTEST_EVERY"
+}
+
+# preflight: the scoped token can push to REPO; a result is cached for GH_CHECK_EVERY seconds
+gh_push_ok() {
+  local at ok now
+  now=$(date +%s)
+  read -r at ok 2>/dev/null < "$STATE/gh-ok"
+  if ((now - ${at:-0} >= GH_CHECK_EVERY)); then
+    ok=$(GH_TOKEN=$(<"$GH_TOKEN_FILE") gh api "repos/$REPO" --jq .permissions.push 2>/dev/null)
+    echo "$now ${ok:-error}" > "$STATE/gh-ok"
+  fi
+  [[ $ok == true ]]
+}
 
 sync_roles() {
   local tmp
@@ -359,7 +441,7 @@ reap_stale() { # in-progress, no container, no open PR, untouched for STALE_SECS
 # ---- main loop ----
 
 loop_once() {
-  local now hold names devs n merges last head ready
+  local now hold names devs n merges last head ready all reviews
   now=$(date +%s); hold=$(cat "$STATE/backoff-until" 2>/dev/null || echo 0)
   if ((hold > now)); then log "backoff: sleeping $((hold - now))s"; sleep $((hold - now)); fi
 
@@ -369,6 +451,7 @@ loop_once() {
   if ! [[ -r $GH_TOKEN_FILE && -r $CLAUDE_TOKEN_FILE && -r $STATE/roles/common.md ]] || ! podman image exists "$IMAGE"; then
     log "preflight failed (token files, $STATE/roles/common.md or image $IMAGE): skipping dispatch"; return
   fi
+  gh_push_ok || { log "preflight failed: the gh token cannot push to $REPO: skipping dispatch"; return; }
 
   if [[ -z $(mirror ls-tree main docs/design) ]]; then
     grep -qx vibe-designer <<<"$names" || dispatch_main designer-bootstrap designer "Mode: bootstrap."
@@ -376,7 +459,8 @@ loop_once() {
   fi
 
   close_protected
-  ready=$(ready_issues)
+  all=$(open_issues) || { log "issue list failed"; return; }
+  ready=$(ready_issues "$all")
 
   devs=$(grep -cE '^vibe-(dev|fix)-' <<<"$names")
   for n in $(prs_needing_fix); do
@@ -389,25 +473,25 @@ loop_once() {
     dispatch_dev "$n"; devs=$((devs + 1))
   done
 
-  if ! grep -qE '^vibe-(review|art)-' <<<"$names"; then
-    n=$(prs_needing_review | head -n1)
-    [[ -n $n ]] && dispatch_review "$n"
-  fi
+  # up to MAX_REVIEWS pipelines (art + review of one PR count once), oldest PR first
+  reviews=$(grep -oE '^vibe-(review|art)-[0-9]+$' <<<"$names" | sed 's/.*-//' | sort -u | grep -c .)
+  for n in $(prs_needing_review | sort -n); do
+    ((reviews < MAX_REVIEWS)) || break
+    dispatch_review "$n"; reviews=$((reviews + 1))
+  done
 
   head=$(mirror rev-parse main)
-  [[ -s $STATE/last-playtest-sha ]] || echo "$head" > "$STATE/last-playtest-sha"
-  last=$(<"$STATE/last-playtest-sha")
-  merges=$(mirror rev-list --count "$last..main" 2>/dev/null || echo 0)
+  merges=$(playtest_merges "$head")
   # also playtest when the team is idle, so the last few merges still get an acceptance pass
   if ! grep -qx vibe-playtester <<<"$names" &&
      { ((merges >= PLAYTEST_EVERY)) || { ((merges > 0)) && [[ -z $names ]]; } || acceptance_due "$now"; }; then
     dispatch_main playtester playtester "Playtest main at $head." mark_playtested "$head"
   fi
 
-  last=$(cat "$STATE/designer-at" 2>/dev/null || echo 0)
+  read -r last _ 2>/dev/null < "$STATE/designer-at"
   if (($(grep -c . <<<"$ready") < 2 * MAX_DEVS)) && ! grep -qx vibe-designer <<<"$names" &&
-     ((now - last >= DESIGNER_COOLDOWN)); then
-    echo "$now" > "$STATE/designer-at"
+     ((now - ${last:-0} >= DESIGNER_COOLDOWN)) && planning_needed "$all" "$head"; then
+    echo "$now $head" > "$STATE/designer-at"
     dispatch_main designer-plan designer "Mode: planning. The ready queue is low."
   fi
 
@@ -418,6 +502,9 @@ loop_once() {
 
 main_loop() {
   mkdir -p "$LOGS" "$STATE/reviewed" "$STATE/fixed"
+  exec 9>"$STATE/lock"; flock -n 9 || { log "another orchestrator is running"; exit 1; }
+  # the host's own gh calls use the scoped token, never the broad host login
+  [[ -r $GH_TOKEN_FILE ]] && { GH_TOKEN=$(<"$GH_TOKEN_FILE"); export GH_TOKEN; }
   log "orchestrator start (MAX_DEVS=$MAX_DEVS)"
   clean_orphans
   while :; do

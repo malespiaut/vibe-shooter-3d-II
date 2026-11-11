@@ -82,8 +82,8 @@ test_usage_limit_not_failure() {
 
 test_protected_paths_pr_closed() {
   echo '[{"number": 8, "files": [{"path": "src/a.c"}, {"path": "agents/orchestrate.sh"}]},
-         {"number": 9, "files": [{"path": "src/a.c"}]}]' > "$FIXTURES/prs.json"
-  protected_pr 8 && ! protected_pr 9
+         {"number": 9, "files": [{"path": "src/a.c"}]}, {"number": 10, "files": [{"path": "agents/install.sh"}]}]' > "$FIXTURES/prs.json"
+  protected_pr 8 && ! protected_pr 9 && protected_pr 10
 }
 
 test_review_skips_seen_sha() {
@@ -207,6 +207,7 @@ mkrepo() {
   git -C "$src" add -A && git -C "$src" -c user.name=t -c user.email=t@t commit -qm init && git -C "$src" branch issue-1
   git clone -q --bare "$src" "$FIXTURES/origin.git" && git clone -q --mirror "$FIXTURES/origin.git" "$STATE/mirror"
   echo '[]' > "$FIXTURES/prs.json"
+  mkdir -p "$FIXTURES/api"; echo '{"permissions": {"push": true}}' > "$FIXTURES/api/$(printf '%s' "repos/$REPO" | tr -c 'A-Za-z0-9' _).json"
 }
 loop() { loop_once; wait; }
 
@@ -385,6 +386,138 @@ test_acceptance_ignores_stranger() {
   acceptance_fixture stranger 3
   loop
   ! playtested
+}
+
+# ---- final fix wave ----
+test_timeout_kills_container() {
+  issue 5 OPEN malespiaut ready,in-progress | issues
+  echo 124 > "$FIXTURES/run-exit"
+  echo '{"type":"result","is_error":true,"result":"rate limit"}' > "$FIXTURES/run-output.txt"
+  run_agent developer dev-5 "$(rundir dev-5)" "issue 5"
+  local rc=$?
+  [[ $rc == 124 ]] && grep -q '^podman kill vibe-dev-5$' "$FIXTURES/calls.log" &&
+    grep -q 'podman run .*--timeout 5520 ' "$FIXTURES/calls.log"
+}
+
+test_usage_limit_only_result_lines() {
+  issue 5 OPEN malespiaut ready,in-progress | issues
+  echo 1 > "$FIXTURES/run-exit"
+  jq -cn '{type: "user", message: {content: [{type: "tool_result", content: "API rate limit exceeded, usage limit reached"}]}}' > "$FIXTURES/run-output.txt"
+  run_agent developer dev-5 "$(rundir dev-5)" "issue 5"
+  [[ $? == 1 ]]
+}
+
+test_auth_error_holds_without_counting() {
+  issue 5 OPEN malespiaut ready,in-progress | issues
+  echo 1 > "$FIXTURES/run-exit"
+  echo 'API Error: 401 {"type":"error","error":{"type":"authentication_error","message":"OAuth token has expired"}}' > "$FIXTURES/run-output.txt"
+  run_agent developer dev-5 "$(rundir dev-5)" "issue 5"
+  local rc=$?
+  finish_dev 5 $rc
+  [[ $rc == "$RC_INFRA" ]] && (($(<"$STATE/backoff-until") > $(date +%s) + 1700)) && ! grep -q 'run failed' "$FIXTURES/calls.log"
+}
+
+test_gh_token_preflight_cached() {
+  mkrepo
+  issue 1 OPEN malespiaut ready | issues
+  echo '{"permissions": {"push": false}}' > "$FIXTURES/api/$(printf '%s' "repos/$REPO" | tr -c 'A-Za-z0-9' _).json"
+  loop; loop
+  ! grep -q 'podman run' "$FIXTURES/calls.log" && [[ $(grep -c "^api repos/$REPO " "$FIXTURES/calls.log") == 1 ]]
+}
+
+designer_ran() { grep -q 'podman run .*--name vibe-designer ' "$FIXTURES/calls.log"; }
+test_planning_only_when_something_changed() {
+  mkrepo
+  issues </dev/null
+  echo "0 $(mirror rev-parse main)" > "$STATE/designer-at"
+  loop
+  ! designer_ran || { echo "planned with nothing changed"; return 1; }
+  issue 3 OPEN malespiaut stuck | issues
+  loop
+  designer_ran || { echo "stuck issue did not trigger planning"; return 1; }
+  [[ $(<"$STATE/designer-at") == *" $(mirror rev-parse main)" ]] || return 1
+  : > "$FIXTURES/calls.log"; issues </dev/null; echo "0 oldsha" > "$STATE/designer-at"
+  loop
+  designer_ran
+}
+
+test_review_without_verdict_counts_failure() {
+  mkrepo; sync_roles
+  prs 7:malespiaut:
+  dispatch_review 7; wait
+  [[ ! -e $STATE/reviewed/7 && -e $STATE/fail/review-7 ]] || { echo "no-verdict review accepted"; return 1; }
+  jq 'map(.state = "MERGED")' "$FIXTURES/prs.json" > "$FIXTURES/p" && mv "$FIXTURES/p" "$FIXTURES/prs.json"
+  dispatch_review 7; wait
+  [[ $(<"$STATE/reviewed/7") == sha7 && ! -e $STATE/fail/review-7 ]]
+}
+
+test_dev_exit0_without_pr_releases() {
+  issue 5 OPEN malespiaut in-progress | issues
+  prs 9:malespiaut:   # from issue-1, not issue-5
+  finish_dev 5 0
+  grep -q 'run failed: no PR opened' "$FIXTURES/calls.log" || return 1
+  : > "$FIXTURES/calls.log"
+  jq 'map(.headRefName = "issue-5")' "$FIXTURES/prs.json" > "$FIXTURES/p" && mv "$FIXTURES/p" "$FIXTURES/prs.json"
+  finish_dev 5 0
+  ! grep -q 'run failed' "$FIXTURES/calls.log" || return 1
+  echo '[]' > "$FIXTURES/prs.json"; issue 5 OPEN malespiaut blocked | issues
+  finish_dev 5 0
+  ! grep -q 'run failed' "$FIXTURES/calls.log"
+}
+
+test_protected_close_rereadies_issue() {
+  prs 8:malespiaut:
+  jq 'map(.files = [{path: "agents/entrypoint.sh"}] | .body = "Does things.\nCloses #12")' "$FIXTURES/prs.json" > "$FIXTURES/p" &&
+    mv "$FIXTURES/p" "$FIXTURES/prs.json"
+  close_protected
+  grep -q 'pr close 8' "$FIXTURES/calls.log" && grep -q 'issue edit 12 .*--add-label ready --remove-label in-progress' "$FIXTURES/calls.log"
+}
+
+test_review_oldest_first_and_concurrency() {
+  mkrepo
+  prs 9:malespiaut: 7:malespiaut: 8:malespiaut:
+  MAX_REVIEWS=1 loop
+  grep -q 'podman run .*--name vibe-review-7 ' "$FIXTURES/calls.log" && ! grep -qE 'vibe-review-(8|9) ' "$FIXTURES/calls.log" || return 1
+  : > "$FIXTURES/calls.log"; rm -rf "$STATE/reviewed" "$STATE/fail"; echo vibe-art-7 > "$FIXTURES/ps.txt"
+  loop  # MAX_REVIEWS=2, one pipeline (art-7) running: only the next oldest, 8
+  grep -q 'podman run .*--name vibe-review-8 ' "$FIXTURES/calls.log" && ! grep -qE 'vibe-review-(7|9) ' "$FIXTURES/calls.log"
+}
+
+test_run_lock() {
+  exec 8>"$STATE/lock"; flock 8
+  (ORCH_ONCE=1 main_loop); local rc=$?
+  [[ $rc == 1 ]] && grep -q 'another orchestrator is running' "$LOGS/orchestrator.log"
+}
+
+test_episode_done_several_acceptance_issues() {
+  { issue 98 CLOSED malespiaut ""; issue 99 OPEN malespiaut ""; } | jq '.title = "Final acceptance"' | issues
+  mkdir -p "$FIXTURES/api"
+  echo '[{"title": "Episode 1", "state": "closed"}]' > "$FIXTURES/api/$(printf '%s' "repos/$REPO/milestones?state=all" | tr -c 'A-Za-z0-9' _).json"
+  ! episode_done || return 1
+  { issue 98 CLOSED malespiaut ""; issue 99 CLOSED malespiaut ""; } | jq '.title = "Final acceptance"' | issues
+  episode_done
+}
+
+test_ready_excludes_status_issues() {
+  { issue 1 OPEN malespiaut ready; issue 2 OPEN malespiaut ready | jq '.title = "Team status"'
+    issue 3 OPEN malespiaut ready | jq '.title = "Final acceptance"'; } | issues
+  [[ $(ready_issues) == 1 ]]
+}
+
+test_playtest_counter_reinit_on_rewrite() {
+  mkrepo
+  local head; head=$(mirror rev-parse main)
+  echo 0123456789abcdef0123456789abcdef01234567 > "$STATE/last-playtest-sha"
+  [[ $(playtest_merges "$head") == "$PLAYTEST_EVERY" && $(<"$STATE/last-playtest-sha") == "$head" ]] || return 1
+  [[ $(playtest_merges "$head") == 0 ]]
+}
+
+test_host_git_ignores_global_config() {
+  mkrepo
+  printf '[core]\n\tfsmonitor = touch %s\n' "$FIXTURES/pwned" > "$FIXTURES/gitconfig"
+  local d
+  d=$(GIT_CONFIG_GLOBAL=$FIXTURES/gitconfig mkrun dev-1 --detach origin/main) || return 1
+  [[ -d $d/.git && ! -e $FIXTURES/pwned ]]
 }
 
 for f in $(declare -F | awk '$3 ~ /^test_/ {print $3}'); do t "$f"; done
