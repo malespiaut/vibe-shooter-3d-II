@@ -59,11 +59,18 @@ void topdown_draw(const game_state *gs, uint8_t *framebuffer)
     for (int i = 0; i < gs->things.count; i++) {
         const thinker_t *t = &gs->things.list[i];
         if (t->state == TH_STATE_STAND &&
-            (t->type == TH_TYPE_RETICLE || t->type == TH_TYPE_PLASMA_BOLT)) {
+            (t->type == TH_TYPE_RETICLE || t->type == TH_TYPE_PLASMA_BOLT ||
+             t->type == TH_TYPE_BONE_PROJ)) {
             const int ex = ox + (int)(((int64_t)t->x * scale) >> FIX_SHIFT);
             const int ey = oy + m->height * scale - 1 - (int)(((int64_t)t->y * scale) >> FIX_SHIFT);
             if (t->type == TH_TYPE_PLASMA_BOLT) {
                 put(framebuffer, ex, ey, PAL_FB_CYAN);
+                continue;
+            }
+            if (t->type == TH_TYPE_BONE_PROJ) { /* slow and big: a 2x2 dot */
+                for (int y = 0; y <= 1; y++)
+                    for (int x = 0; x <= 1; x++)
+                        put(framebuffer, ex + x, ey + y, PAL_FB_YELLOW);
                 continue;
             }
             for (int y = -1; y <= 1; y++)
