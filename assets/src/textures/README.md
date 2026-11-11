@@ -15,7 +15,8 @@ in `glyphs/`.
 1. Source maps from `layers`: heightmap, region map (which material a texel uses), per-block tone.
 2. Normals from the heightmap; Lambert from the one key light (top-left, 45 degrees, in front of
    the viewer, art bible); heightfield shadows cast toward the bottom-right.
-3. Tileable value noise (`noise`) and a grime map (`grime`: cavity + noise).
+3. Tileable value noise (`noise`) and a grime map (`grime`: cavity + faces turned away from the
+   light + noise).
 4. Each region's ramp gives the colour; where grime passes `base2.threshold` the second base
    colour's ramp is used instead.
 5. Brightmap texels keep their fullbright entry.
@@ -39,9 +40,9 @@ All coordinates are texels from the top-left; anything may cross the tile edge (
 | `layers` | list of primitives, applied in order (below) |
 | `noise` | `cells` (lattice cells per tile, divides size, default 16), `octaves` (3), `height` (grain added to the heightmap before lighting, 0), `amount` (grain added to the shade, 0.15), `blotch_cells` (4), `blotch` (low-frequency shade variation, 0.1) |
 | `light` | `relief` (heightmap gradient scale, 1), `contrast` (how far bevels move along the ramp, 0.6), `shadow` (darkening of cast shadow, 0.25), `shadow_steps` (ray length in texels, 3), `shadow_slope` (height drop per texel of the light ray, 0.35) |
-| `grime` | `radius` (blur radius for cavities, 2), `cavity` (0.6), `noise` (blotch weight, 0.4), `grain` (0.2), `darken` (shade loss at full grime, 0.15) |
-| `materials` | region name -> `{ramp, lo, hi, level, base2, dither}`: entries `<ramp>_<lo>`..`<ramp>_<hi>`, `level` = ramp position (0..1) of a flat, lit, clean texel, `base2: false` keeps this region out of the second base colour, `dither: true` allows the 2x2 checker between two adjacent entries where the shade falls between them |
-| `base2` | second base colour: `{ramp, lo, hi, threshold}` used where grime > threshold |
+| `grime` | `radius` (blur radius for cavities, 2), `cavity` (0.6), `shade` (weight of faces turned away from the key light and texels in cast shadow, so dirt collects on bottom-right edges and never on lit top-left ones, 0), `noise` (blotch weight, 0.4), `grain` (0.2), `darken` (shade loss at full grime, 0.15) |
+| `materials` | region name -> `{ramp, lo, hi, level, base2, dither}`: entries `<ramp>_<lo>`..`<ramp>_<hi>`, `level` = ramp position (0..1) of a flat, lit, clean texel, `base2: false` keeps this region out of the second base colour, `base2: <number>` gives this region its own threshold, `dither: true` allows the 2x2 checker between two adjacent entries where the shade falls between them |
+| `base2` | second base colour: `{ramp, lo, hi, threshold, max_light}` used where grime > threshold and the Lambert term is at most `max_light` (1.0 = flat ground, so faces turned toward the key light stay clean; default 1.0) |
 | `brightmap` | list of `{rect: [x, y, w, h], entry: "fb_*"}` or `{glyph: "x.png", x, y, entry}` |
 
 Layer primitives (`type`):

@@ -15,6 +15,10 @@ assets/src/textures/*.json.
    texture is checked across both seams (rows instead of columns for y).
    Negative control: a texture that does not tile (a left-to-right ramp)
    must fail the same metric, so the check can catch a seam.
+4. Second base colour: every texture whose params define `base2` has at
+   least one texel from the base2 ramp (`<ramp>_<lo>`..`<ramp>_<hi>`), so a
+   threshold that silently disables it fails here. Negative control: the
+   same params with an unreachable threshold must fail the check.
 Plain asserts. Run after `cmake --build build`.
 """
 import glob
@@ -30,6 +34,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS = os.path.join(ROOT, "tools")
 sys.path.insert(0, TOOLS)
 import bast  # noqa: E402
+import palette as gpl  # noqa: E402
+import texgen  # noqa: E402
 
 SOURCES = sorted(glob.glob(os.path.join(ROOT, "assets", "src", "textures", "*.json")))
 
@@ -39,6 +45,14 @@ def seam_ok(Y):
     d = np.abs(np.diff(Y, axis=1)).mean(axis=0)
     seam = np.abs(Y[:, -1] - Y[:, 0]).mean()
     return seam, d.max(), seam <= d.max()
+
+
+def base2_count(idx, params, names):
+    """Texels of `idx` that come from the params' base2 ramp."""
+    b2 = params["base2"]
+    want = {"%s_%02d" % (b2["ramp"], n) for n in range(int(b2["lo"]), int(b2["hi"]) + 1)}
+    ramp = [i for i, nm in enumerate(names) if nm in want]
+    return int(np.isin(idx, ramp).sum())
 
 
 def run_texgen(outdir):
@@ -53,6 +67,7 @@ def main():
     colors = np.array(pal.colors, dtype=float)
     flags = pal.flags
     Ylut = colors @ np.array([0.299, 0.587, 0.114])
+    names = [nm for _, nm in gpl.load_gpl()]
 
     with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
         run_texgen(a)
@@ -75,6 +90,12 @@ def main():
             fbr = {i for i in used if flags[i] & bast.PAL_FULLBRIGHT}
             assert len(fbr) <= len(params.get("brightmap", [])), (stem, fbr)
 
+            if "base2" in params:
+                n2 = base2_count(idx, params, names)
+                print("base2 %s: %d %s texels (%.1f%%)"
+                      % (stem, n2, params["base2"]["ramp"], 100.0 * n2 / idx.size))
+                assert n2 > 0, "%s: base2 %s never used" % (stem, params["base2"]["ramp"])
+
             Y = Ylut[idx]
             seams = [("x", Y), ("y", Y.T)]
             for axis, img in seams:
@@ -88,6 +109,20 @@ def main():
     s, m, ok = seam_ok(ramp)
     print("control ramp: seam D %.2f, max interior D %.2f -> %s" % (s, m, "ok" if ok else "SEAM"))
     assert not ok, "seam metric failed to detect a non-tiling texture"
+    # Negative control: an unreachable threshold disables base2 and the
+    # check above must see zero texels.
+    tp = texgen.Pal(pal)
+    for src in SOURCES:
+        params = json.load(open(src))
+        if "base2" in params:
+            params["base2"]["threshold"] = 2.0
+            for m in params["materials"].values():
+                if m.get("base2", True) is not False:
+                    m["base2"] = 2.0   # per-region overrides too
+            idx, _ = texgen.generate(params, tp)
+            assert base2_count(idx, params, names) == 0, src
+            print("control base2 off %s: 0 texels -> caught"
+                  % os.path.splitext(os.path.basename(src))[0])
     print("texgen_tile: OK (%d textures)" % len(SOURCES))
 
 

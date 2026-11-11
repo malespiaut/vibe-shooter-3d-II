@@ -287,7 +287,11 @@ def generate(params, pal):
     gr = params.get("grime", {})
     cavity = np.clip(box_blur(h, int(gr.get("radius", 2))) - h, 0, None)
     cavity = cavity / (cavity.max() or 1.0)
+    # Dirt also settles on the faces turned away from the key light (the
+    # bottom-right bevels and the texels in cast shadow), never on lit ones.
+    away = np.clip(1.0 - lambert, 0, 1) + shadow
     grime = np.clip(cavity * float(gr.get("cavity", 0.6))
+                    + away * float(gr.get("shade", 0.0))
                     + (blotch - 0.5) * float(gr.get("noise", 0.4))
                     + (grain - 0.5) * float(gr.get("grain", 0.2)), 0, 1)
 
@@ -309,8 +313,12 @@ def generate(params, pal):
         mask = s.region == reg
         val = np.clip(float(m.get("level", 0.5)) + v, 0, 1)
         use2 = np.zeros_like(mask)
-        if base2 and m.get("base2", True):
-            use2 = mask & (grime > float(base2.get("threshold", 0.6)))
+        b2 = m.get("base2", True)
+        if base2 and b2 is not False:
+            # `base2: <number>` overrides the threshold for this region.
+            thr = float(base2.get("threshold", 0.6)) if b2 is True else float(b2)
+            # Never on faces lit harder than flat ground (top-left bevels).
+            use2 = mask & (grime > thr) & (lambert <= float(base2.get("max_light", 1.0)))
         specs = [(pal.ramp(m["ramp"], int(m["lo"]), int(m["hi"])), mask & ~use2, m.get("dither"))]
         if use2.any():
             specs.append((pal.ramp(base2["ramp"], int(base2["lo"]), int(base2["hi"])), use2, False))
