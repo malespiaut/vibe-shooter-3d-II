@@ -49,6 +49,7 @@
 #include "game/hud.h"
 #include "game/flow.h"
 #include "game/fx.h"
+#include "game/input.h"
 #include "game/items.h"
 #include "game/jukebox.h"
 #include "game/sound.h"
@@ -69,7 +70,6 @@
 /* Music master gain, audio.md "Music level": 32/64 = -6 dB. */
 #define MUSIC_GAME_VOLUME 32
 
-#define MOUSE_TURN 40 /* angle units per pixel of mouse X motion */
 #define MAX_CATCHUP_TICS 10
 
 enum { EXIT_OK = 0, EXIT_ERROR = 1, EXIT_EXPECT = 2 };
@@ -98,11 +98,6 @@ static void audio_fill(int16_t *out, int frames, void *user)
 {
     (void)user;
     mixer_render(out, frames);
-}
-
-static int clamp127(int v)
-{
-    return v > TICCMD_MAX ? TICCMD_MAX : v < -TICCMD_MAX ? -TICCMD_MAX : v;
 }
 
 static void usage(void)
@@ -611,7 +606,7 @@ static void run_window(run_t *r)
     int mouse_fire = 0;
     int mouse_dx = 0;
     int keyq[KEY_QUEUE], keyq_len = 0; /* menu keys, one consumed per tic */
-    int weapon_key = 0;                /* 1-7 pressed since the last tic */
+    int weapon_slot = 0;               /* 1-7 pressed since the last tic */
     uint64_t start = platform_ticks_ms();
     uint32_t tics_done = 0; /* tics run since `start` */
 
@@ -629,8 +624,10 @@ static void run_window(run_t *r)
                     /* Auto-repeat only scrolls menus. */
                     if ((!ev.repeat || mk == FKEY_UP || mk == FKEY_DOWN) && keyq_len < KEY_QUEUE)
                         keyq[keyq_len++] = mk;
-                    if (ev.key >= '1' && ev.key <= '7')
-                        weapon_key = ev.key - '0';
+                    /* A weapon key press selects for exactly one tic, like
+                     * the demo `weapon <n>` command; auto-repeat is ignored. */
+                    if (!ev.repeat && input_weapon_key(ev.key))
+                        weapon_slot = input_weapon_key(ev.key);
                 }
             } else if (ev.type == PEV_MOUSE_DOWN || ev.type == PEV_MOUSE_UP) {
                 if (ev.button == PMOUSE_LEFT)
@@ -667,37 +664,22 @@ static void run_window(run_t *r)
                     keyq_len--;
                     memmove(keyq, keyq + 1, (size_t)keyq_len * sizeof keyq[0]);
                 }
-                int fwd = 0, side = 0, turn = 0;
-                if (held['w'] || held[PKEY_UP])
-                    fwd += TICCMD_MAX;
-                if (held['s'] || held[PKEY_DOWN])
-                    fwd -= TICCMD_MAX;
-                if (held['d'])
-                    side += TICCMD_MAX;
-                if (held['a'])
-                    side -= TICCMD_MAX;
-                if (held[PKEY_LEFT])
-                    turn += PLAYER_TURN_SPEED;
-                if (held[PKEY_RIGHT])
-                    turn -= PLAYER_TURN_SPEED;
-                turn -= mouse_dx * MOUSE_TURN; /* mouse right = clockwise */
+                input_state in = {
+                    .forward = held['w'] || held[PKEY_UP],
+                    .back = held['s'] || held[PKEY_DOWN],
+                    .strafe_left = held['a'],
+                    .strafe_right = held['d'],
+                    .turn_left = held[PKEY_LEFT],
+                    .turn_right = held[PKEY_RIGHT],
+                    .run = held[PKEY_LSHIFT] || held[PKEY_RSHIFT],
+                    .use = held['e'] || held[PKEY_SPACE],
+                    .fire = mouse_fire || held[PKEY_LCTRL] || held[PKEY_RCTRL],
+                    .mouse_dx = mouse_dx,
+                    .weapon_slot = weapon_slot,
+                };
                 mouse_dx = 0;
-                if (turn > INT16_MAX)
-                    turn = INT16_MAX;
-                if (turn < INT16_MIN)
-                    turn = INT16_MIN;
-                cmd.fwd = (int8_t)clamp127(fwd);
-                cmd.side = (int8_t)clamp127(side);
-                cmd.turn = (int16_t)turn;
-                if (held[PKEY_LSHIFT] || held[PKEY_RSHIFT])
-                    cmd.buttons |= BT_RUN;
-                if (mouse_fire || held[PKEY_LCTRL] || held[PKEY_RCTRL])
-                    cmd.buttons |= BT_FIRE;
-                if (held['e'] || held[PKEY_SPACE])
-                    cmd.buttons |= BT_USE; /* opens doors; dead, restarts */
-                if (weapon_key)
-                    cmd.buttons |= (uint8_t)(weapon_key << BT_WEAPON_SHIFT);
-                weapon_key = 0;
+                weapon_slot = 0;
+                input_build_ticcmd(&in, &cmd);
             }
             if (!step(r, key, &cmd)) {
                 r->status = EXIT_ERROR;
