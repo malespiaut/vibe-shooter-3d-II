@@ -1,0 +1,16 @@
+# goto around things (#161), the playtester's repro on
+# maps/launchertest.vmap. The straight path from the start (2,5) to (14,8)
+# runs through the middle AMBUSH Mutt Trooper at (12,5); goto plans around
+# tiles holding a live thing (enemy, barrel) and arrives. Then the pistol
+# shoots the kibble barrel at (15,8) next to the goal; its blast kills the
+# Mutt at (15,9) and hurts the player standing 1 u away.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map launchertest
+goto 14 8
+expect tile=14,8
+face 15 8
+fire 40
+wait 20

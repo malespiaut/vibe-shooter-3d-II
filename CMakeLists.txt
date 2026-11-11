@@ -489,6 +489,18 @@ foreach(c goto timeout expect)
     ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 endforeach()
 
+# goto around things (#161): unit groups and the goto-around demo.
+add_executable(test_demo_nav tests/test_demo_nav.c)
+target_link_libraries(test_demo_nav PRIVATE engine)
+target_compile_options(test_demo_nav PRIVATE -UNDEBUG)
+foreach(g around fallback stall)
+  add_test(NAME demo_nav_${g} COMMAND test_demo_nav ${g})
+endforeach()
+add_test(NAME goto_around
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_goto_around.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/goto_around)
+add_demo_determinism(goto-around)
+
 # Combat demo commands (#98): face/fire nearest, clear.
 add_executable(test_demo_combat tests/test_demo_combat.c)
 target_link_libraries(test_demo_combat PRIVATE engine)
