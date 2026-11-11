@@ -183,6 +183,14 @@ endforeach()
 add_test(NAME proj_no_floats
   COMMAND sh -c "! grep -rnE 'float|double' ${CMAKE_SOURCE_DIR}/src/game")
 
+# Weapons 6-7: Eye of Ra Lance and Sphinx Howler.
+add_executable(test_weapon67 tests/test_weapon67.c)
+target_link_libraries(test_weapon67 PRIVATE engine)
+target_compile_options(test_weapon67 PRIVATE -UNDEBUG)
+foreach(g pierce wall cone knockback pain self barrel_lance barrel_howler sound)
+  add_test(NAME weapon67_${g} COMMAND test_weapon67 ${g})
+endforeach()
+
 add_executable(test_platform_audio tests/test_platform_audio.c)
 target_link_libraries(test_platform_audio PRIVATE platform)
 target_compile_options(test_platform_audio PRIVATE -UNDEBUG)
@@ -388,6 +396,7 @@ add_demo_determinism(m1-sprites)
 add_demo_determinism(tags-test)
 add_demo_determinism(ai-test)
 add_demo_determinism(combat-test)
+add_demo_determinism(lance-howler-test)
 
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)
@@ -488,6 +497,13 @@ add_test(NAME launcher_demo
 set_tests_properties(launcher_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 add_demo_determinism(launcher-test)
+
+# Weapons 6-7: the Lance / Howler test demo, run twice.
+add_test(NAME lance_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_lance_demo.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/lance_demo)
+set_tests_properties(lance_demo PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 # Renderer: floors, ceilings and sky on maps/m1test.vmap (issue #14).
 add_executable(test_render_floor tests/test_render_floor.c)

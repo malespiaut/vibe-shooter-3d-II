@@ -4,7 +4,9 @@
 /* Player weapons (weapons.md Stats, Behaviour notes). Slots 1..7; this
  * module fires 1-5 (Claws, Ankh Pistol, Hairball Scattergun, Sistrum
  * Repeater, and the Scarab Launcher, which spawns a projectile:
- * game/projectile.h). Hitscan: DDA ray against blocking tiles (game_tile_blocks with
+ * game/projectile.h), 6 (Eye of Ra Lance: one beam damaging the 4 nearest
+ * thinkers it crosses) and 7 (Sphinx Howler: cone, knockback, forced pain).
+ * Hitscan: DDA ray against blocking tiles (game_tile_blocks with
  * live door state: a door that is not fully open blocks, an open one lets
  * shots through), then the nearest live thinker whose radius the ray
  * crosses. All maths is fixed point; spread and damage come from the
@@ -41,6 +43,11 @@ enum {
 #define HITSCAN_RANGE ((fix_t)(32 * 65536))
 #define CLAW_REACH ((fix_t)49152) /* 0.75 units */
 #define PLAYER_START_CHARGES 50
+#define WEAPON_PIERCE_MAX 4    /* Lance: targets per beam */
+#define HOWLER_RANGE ((fix_t)(5 * 65536))
+#define HOWLER_HALF_CONE ((angle_t)5461) /* 30 degrees: a 60-degree cone */
+#define HOWLER_KNOCKBACK ((fix_t)65536)   /* 1 u */
+#define HOWLER_PAIN_TICS 35
 #define PICKUP_RADIUS ((fix_t)32768) /* 0.5 u from the player centre */
 
 typedef struct {
@@ -124,5 +131,19 @@ fix_t game_trace_wall(const struct game_state *gs, fix_t x, fix_t y, fix_t dx, f
  * (`edge` = 0). */
 uint16_t weapon_trace(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t range, int edge,
                       fix_t *wall_dist);
+
+/* weapon_trace for several targets: writes to ids[] the ids of up to
+ * `max` (<= WEAPON_PIERCE_MAX) live thinkers the ray crosses before the
+ * first blocking tile, nearest first (ties: creation order), and returns
+ * how many. The Lance uses it with max 4. */
+int weapon_trace_multi(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t range, int edge,
+                       uint16_t *ids, int max, fix_t *wall_dist);
+
+/* Sphinx Howler targets: every live shootable thinker whose centre is
+ * within HOWLER_RANGE of the player (fix_dist, inclusive), within
+ * +-HOWLER_HALF_CONE of the view angle, with an unobstructed line from the
+ * player (live doors). Writes up to `max` ids in creation order; returns
+ * the count. */
+int weapon_howler_targets(struct game_state *gs, uint16_t *ids, int max);
 
 #endif

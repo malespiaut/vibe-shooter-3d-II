@@ -1,0 +1,49 @@
+# Lance / Howler test map: 26x11, built by tools/mkmap.py into
+# maps/lancetest.vmap. Test fixture for demos/lance-howler-test.demo (#94),
+# not a game level. An east corridor (ty=5) holds the player, the Lance, the
+# Howler and a Sun Orb, and a line of 5 Mutt Troopers facing away; a
+# stay-open door at (10,5) seals off (for noise) the west room, where 8
+# Chihuahua Chompers stand in a ring of radius 2 around (5,5).
+# Textures are the renderer test patterns, as m1test.
+
+name Lance Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+legend D wall=test02 floor=test04 ceil=test05 flags=DOOR mode=stay
+
+layout
+##########################
+#.........################
+#.........################
+#.........################
+#.........################
+#.........D..............#
+#.........################
+#.........################
+#.........################
+#.........################
+##########################
+end
+
+# ty counts from the south: the last layout row is ty = 0.
+entity PLAYER_START 11 5 0
+entity EYE_OF_RA_LANCE 12 5 0
+entity SPHINX_HOWLER 13 5 0
+entity SUN_ORB 14 5 0
+entity MUTT_TROOPER 17 5 0
+entity MUTT_TROOPER 18 5 0
+entity MUTT_TROOPER 19 5 0
+entity MUTT_TROOPER 20 5 0
+entity MUTT_TROOPER 21 5 0
+entity CHIHUAHUA_CHOMPER 7 5 0
+entity CHIHUAHUA_CHOMPER 7 7 45
+entity CHIHUAHUA_CHOMPER 5 7 90
+entity CHIHUAHUA_CHOMPER 3 7 135
+entity CHIHUAHUA_CHOMPER 3 5 180
+entity CHIHUAHUA_CHOMPER 3 3 225
+entity CHIHUAHUA_CHOMPER 5 3 270
+entity CHIHUAHUA_CHOMPER 7 3 315

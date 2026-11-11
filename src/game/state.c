@@ -298,6 +298,8 @@ uint64_t game_hash(const game_state *gs)
         hash_u32(&h, t->goal_ty);
         hash_i32(&h, t->movecount);
     }
+    for (int i = 0; i < gs->things.count; i++)
+        hash_u32(&h, gs->things.list[i].howler_hit);
     return h.value;
 }
 

@@ -151,7 +151,8 @@ void game_tic(game_state *gs, const ticcmd *cmd);
  * pickups (count, then each taken flag in spawn order), items taken, then
  * the map logic (tags_hash: exit, lights, secrets, tags fired, pushwalls,
  * one-shot cell states), then
- * per thinker its AI fields (movedir, goal tile, movecount). New
+ * per thinker its AI fields (movedir, goal tile, movecount), then per
+ * thinker its howler_hit flag. New
  * fields are appended as the systems that own them land. */
 uint64_t game_hash(const game_state *gs);
 

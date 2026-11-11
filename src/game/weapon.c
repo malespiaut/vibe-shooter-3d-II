@@ -2,18 +2,22 @@
 #include <stddef.h>
 
 #include "game/ai.h"
+#include "game/enemy_info.h"
 #include "game/projectile.h"
 #include "game/sound.h"
 #include "game/state.h"
 
 /* Fire sound per slot (audio.md Player); Claws: claw_swish on a miss,
- * claw_hit when they connect. Slots 6-7 fire in later issues. */
+ * claw_hit when they connect. The Lance also plays lance_charge on the
+ * fire tic, before lance_fire (audio.md names no other trigger). */
 static const int FIRE_SFX[WP_SLOTS] = {
     [WP_CLAWS] = SFX_claw_swish,
     [WP_PISTOL] = SFX_pistol_fire,
     [WP_SCATTERGUN] = SFX_scatter_fire,
     [WP_REPEATER] = SFX_repeater_fire,
     [WP_LAUNCHER] = SFX_scarab_launch,
+    [WP_LANCE] = SFX_lance_fire,
+    [WP_HOWLER] = SFX_howler_roar,
 };
 
 /* weapons.md Stats. Damage base..base+spread; spread in angle units. */
@@ -22,7 +26,8 @@ const weapon_info_t weapon_info[WP_SLOTS] = {
     [WP_PISTOL] = { AM_CHARGES, 1, 12, 1, 9, 5, 255, 1 },
     [WP_SCATTERGUN] = { AM_SHELLS, 1, 32, 7, 5, 4, 1019, 1 },
     [WP_REPEATER] = { AM_CHARGES, 1, 4, 1, 9, 5, 510, 1 },
-    /* 5-7 are owned by later issues; listed for ammo and auto-switch. */
+    /* 5 spawns a scarab; 6 and 7 fire through fire_lance / fire_howler
+     * (pellets unused). */
     [WP_LAUNCHER] = { AM_SCARABS, 1, 20, 0, 30, 20, 0, 0 },
     [WP_LANCE] = { AM_CELLS, 5, 40, 0, 100, 40, 0, 1 },
     [WP_HOWLER] = { AM_CELLS, 25, 50, 0, 80, 0, 0, 0 },
@@ -150,16 +155,19 @@ fix_t game_trace_wall(const struct game_state *gs, fix_t x, fix_t y, fix_t dx, f
     }
 }
 
-uint16_t weapon_trace(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t range, int edge,
-                      fix_t *wall_dist)
+int weapon_trace_multi(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t range, int edge,
+                       uint16_t *ids, int max, fix_t *wall_dist)
 {
     const fix_t dx = fine_cos(a), dy = fine_sin(a);
     const fix_t wall = game_trace_wall(gs, x, y, dx, dy, HITSCAN_RANGE);
     if (wall_dist)
         *wall_dist = wall < range ? wall : range;
 
-    uint16_t best = 0;
-    int64_t best_t = 0;
+    /* ids[0..n) sorted by distance; equal distances keep creation order. */
+    int64_t along_of[WEAPON_PIERCE_MAX];
+    int n = 0;
+    if (max > WEAPON_PIERCE_MAX)
+        max = WEAPON_PIERCE_MAX;
     for (int i = 0; i < gs->things.count; i++) {
         const thinker_t *t = &gs->things.list[i];
         if (!thinker_alive(t) || !(t->flags & TH_FLAG_SHOOTABLE))
@@ -175,12 +183,92 @@ uint16_t weapon_trace(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t 
             perp = -perp;
         if (perp >= t->radius)
             continue;
-        if (!best || along < best_t) {
-            best = (uint16_t)(i + 1);
-            best_t = along;
+        int k = n;
+        while (k > 0 && along < along_of[k - 1])
+            k--;
+        if (k >= max)
+            continue;
+        if (n < max)
+            n++;
+        for (int j = n - 1; j > k; j--) {
+            ids[j] = ids[j - 1];
+            along_of[j] = along_of[j - 1];
         }
+        ids[k] = (uint16_t)(i + 1);
+        along_of[k] = along;
     }
-    return best;
+    return n;
+}
+
+uint16_t weapon_trace(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t range, int edge,
+                      fix_t *wall_dist)
+{
+    uint16_t id = 0;
+    weapon_trace_multi(gs, x, y, a, range, edge, &id, 1, wall_dist);
+    return id;
+}
+
+int weapon_howler_targets(struct game_state *gs, uint16_t *ids, int max)
+{
+    const player_t *p = &gs->player;
+    int n = 0;
+    for (int i = 0; i < gs->things.count && n < max; i++) {
+        const thinker_t *t = &gs->things.list[i];
+        if (!thinker_alive(t) || !(t->flags & TH_FLAG_SHOOTABLE))
+            continue;
+        const fix_t ox = t->x - p->x, oy = t->y - p->y;
+        const fix_t d = fix_dist(ox, oy);
+        if (d > HOWLER_RANGE)
+            continue;
+        if (d > 0) { /* a thinker on the player's centre is always in the cone */
+            const angle_t a = angle_of(ox, oy);
+            const int16_t off = (int16_t)(a - p->angle);
+            if (off > (int32_t)HOWLER_HALF_CONE || off < -(int32_t)HOWLER_HALF_CONE)
+                continue;
+            if (game_trace_wall(gs, p->x, p->y, fine_cos(a), fine_sin(a), d) < d)
+                continue;
+        }
+        ids[n++] = (uint16_t)(i + 1);
+    }
+    return n;
+}
+
+static int32_t roll_damage(game_state *gs, const weapon_info_t *wi)
+{
+    return wi->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)wi->dmg_spread + 1);
+}
+
+/* Eye of Ra Lance: one beam, the WEAPON_PIERCE_MAX nearest thinkers it
+ * crosses before the first wall, nearest first, one damage roll each. */
+static void fire_lance(game_state *gs, const weapon_info_t *wi)
+{
+    const player_t *p = &gs->player;
+    uint16_t ids[WEAPON_PIERCE_MAX];
+    const int n = weapon_trace_multi(gs, p->x, p->y, p->angle, HITSCAN_RANGE, 0, ids,
+                                     WEAPON_PIERCE_MAX, NULL);
+    for (int i = 0; i < n; i++)
+        ai_damage(gs, thinker_get(&gs->things, ids[i]), roll_damage(gs, wi));
+}
+
+/* Sphinx Howler: every target of weapon_howler_targets, in creation order:
+ * damage, then (if it lives) knockback 1 u straight away from the player
+ * and a forced flinch. Only enemies flinch or move: a kibble barrel (no
+ * enemy_info) just takes the damage, and 80 always lights its fuse
+ * (BARREL_HP 20). Never touches the player. */
+static void fire_howler(game_state *gs, const weapon_info_t *wi)
+{
+    const player_t *p = &gs->player;
+    uint16_t ids[MAX_THINKERS];
+    const int n = weapon_howler_targets(gs, ids, MAX_THINKERS);
+    for (int i = 0; i < n; i++) {
+        thinker_t *t = thinker_get(&gs->things, ids[i]);
+        t->howler_hit = 1;
+        if (ai_damage_pain(gs, t, roll_damage(gs, wi), HOWLER_PAIN_TICS) || !enemy_info(t->type))
+            continue;
+        const fix_t ox = t->x - p->x, oy = t->y - p->y;
+        const angle_t a = (ox || oy) ? angle_of(ox, oy) : p->angle;
+        ai_push(gs, t, fix_mul(fine_cos(a), HOWLER_KNOCKBACK), fix_mul(fine_sin(a), HOWLER_KNOCKBACK));
+    }
 }
 
 /* Horizontal offset in -spread..spread from the gameplay RNG. */
@@ -203,6 +291,17 @@ static void fire_weapon(game_state *gs)
     if (wi->flash)
         w->flash_tics = WEAPON_FLASH_TICS;
 
+    if (wp == WP_LANCE) {
+        game_sound_local(gs, SFX_lance_charge);
+        game_sound_local(gs, FIRE_SFX[wp]);
+        fire_lance(gs, wi);
+        return;
+    }
+    if (wp == WP_HOWLER) {
+        game_sound_local(gs, FIRE_SFX[wp]);
+        fire_howler(gs, wi);
+        return;
+    }
     const player_t *p = &gs->player;
     if (wp == WP_LAUNCHER) { /* one scarab from the eye */
         projectile_spawn(gs, TH_TYPE_SCARAB_PROJ, TH_ID_PLAYER, p->x, p->y, PLAYER_EYE_Z, p->angle);
@@ -216,8 +315,7 @@ static void fire_weapon(game_state *gs)
         uint16_t id = weapon_trace(gs, p->x, p->y, a, range, wp == WP_CLAWS, NULL);
         thinker_t *t = thinker_get(&gs->things, id);
         if (t) {
-            int32_t dmg = wi->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)wi->dmg_spread + 1);
-            ai_damage(gs, t, dmg);
+            ai_damage(gs, t, roll_damage(gs, wi));
             hit = 1;
         }
     }

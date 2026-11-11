@@ -201,6 +201,11 @@ static void spawn_drop(game_state *gs, const thinker_t *t, const enemy_info_t *i
 
 int ai_damage(game_state *gs, thinker_t *t, int32_t damage)
 {
+    return ai_damage_pain(gs, t, damage, 0);
+}
+
+int ai_damage_pain(game_state *gs, thinker_t *t, int32_t damage, int32_t pain_tics)
+{
     const enemy_info_t *info = enemy_info(t->type);
     if (!thinker_alive(t))
         return 0;
@@ -212,6 +217,12 @@ int ai_damage(game_state *gs, thinker_t *t, int32_t damage)
     if (!info || damage <= 0)
         return 0;
     wake(t);
+    if (pain_tics > 0) { /* forced: no pain roll */
+        t->state = TH_STATE_PAIN;
+        t->tics = pain_tics;
+        t->movedir = DI_NONE;
+        return 0;
+    }
     const int32_t pain = pain_chance(gs, info);
     if (pain > 0 && (int32_t)rng_range(&gs->rng, 256) < pain) {
         t->state = TH_STATE_PAIN;
@@ -304,6 +315,34 @@ static void move_axis(const game_state *gs, thinker_t *t, fix_t delta, int axis_
             return;
     }
     *pos = start;
+}
+
+/* Moves `t` by `delta` along one axis: the largest part of it (halving)
+ * that does not overlap a tile enemies may not stand in. */
+static void push_axis(const game_state *gs, thinker_t *t, fix_t delta, int axis_y)
+{
+    fix_t *pos = axis_y ? &t->y : &t->x;
+    const fix_t start = *pos;
+    for (; delta != 0; delta /= 2) {
+        *pos = start + delta;
+        if (!ai_circle_blocked(gs, t->x, t->y, t->radius))
+            return;
+    }
+    *pos = start;
+}
+
+void ai_push(game_state *gs, thinker_t *t, fix_t dx, fix_t dy)
+{
+    /* Quarter steps so no step is longer than a tile edge can stop. */
+    for (int i = 0; i < 4; i++) {
+        const fix_t ox = t->x, oy = t->y;
+        const fix_t sx = (fix_t)(((int64_t)dx * (i + 1)) / 4 - ((int64_t)dx * i) / 4);
+        const fix_t sy = (fix_t)(((int64_t)dy * (i + 1)) / 4 - ((int64_t)dy * i) / 4);
+        push_axis(gs, t, sx, 0);
+        push_axis(gs, t, sy, 1);
+        if (t->x == ox && t->y == oy)
+            return; /* pinned against a wall */
+    }
 }
 
 static void chase_move(game_state *gs, thinker_t *t, const enemy_info_t *info)

@@ -76,6 +76,9 @@ typedef struct {
     fix_t momx, momy; /* velocity per tic (projectiles) */
     fix_t z;          /* height above the floor; render-only, not hashed */
     uint16_t owner;   /* projectile: thinker id that fired it, or TH_ID_PLAYER */
+    uint8_t howler_hit; /* set to 1 by every Sphinx Howler hit (game/weapon.c);
+                         * the Shieldbearer's 70-tic shield drop reads and
+                         * clears it. */
 } thinker_t;
 
 typedef struct {
