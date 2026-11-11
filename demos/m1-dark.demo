@@ -1,0 +1,17 @@
+# M1 dark: from the start room (2,2) up the west corridor (dark 8) into the
+# NW dark room (dark 16) of maps/m1test.vmap, then look around (renderer
+# evidence for per-cell darkness, issue #13).
+vsdemo 1
+level 1
+skill 2
+seed 0
+map m1test
+
+wait 5
+in 19 0 127 0 -        # strafe east to the corridor column (x ~ 4.5)
+wait 5
+in 140 127 0 0 -       # walk north through the corridor into the dark room
+wait 10
+in 16 0 0 2048 -       # turn left 180 degrees: face south, back at the corridor
+in 8 0 0 2048 -        # face east
+wait 10

@@ -1,5 +1,6 @@
 /* Vibe Shooter 3D II entry point. M1: runs the 35 Hz simulation on a map and
- * shows it in the dev top-down view until the 3D renderer exists.
+ * shows it in the 3D view (engine/render.h), or the dev top-down view with
+ * --topdown.
  *
  *   game [--map <file.vmap>] [--warp N] [--skill N] [--god] [--topdown]
  *        [--demo <file.demo>] [--record <file.demo>] [--max-tics N]
@@ -20,6 +21,7 @@
 #include "engine/colormap.h"
 #include "engine/mixer.h"
 #include "engine/png.h"
+#include "engine/render.h"
 #include "engine/video.h"
 #include "game/demo.h"
 #include "game/state.h"
@@ -99,7 +101,7 @@ static int parse_args(int argc, char **argv, options *o)
         } else if (strcmp(a, "--god") == 0) {
             o->god = 1;
         } else if (strcmp(a, "--topdown") == 0) {
-            o->topdown = 1; /* the only view until the 3D renderer exists */
+            o->topdown = 1; /* dev top-down view instead of the 3D view */
         } else if (!v) {
             fprintf(stderr, "game: unknown flag or missing value: %s\n", a);
             return 0;
@@ -234,6 +236,12 @@ static int setup(run_t *r)
         fprintf(stderr, "game: %s: %s\n", map_path, bast_error());
         return 0;
     }
+    /* Wall textures, only needed when the 3D view draws: in a window, or
+     * headless with --frames-out. A headless run without frames never draws. */
+    if (!o->topdown && (!o->headless || o->frames_dir) && !render_init(r->map, VS3D_ASSETS_DIR)) {
+        fprintf(stderr, "game: %s\n", render_error());
+        return 0;
+    }
     if (o->hash_log) {
         r->hash_log = fopen(o->hash_log, "w");
         if (!r->hash_log) {
@@ -250,6 +258,15 @@ static int setup(run_t *r)
     return 1;
 }
 
+/* Draws the current view into the framebuffer. Reads game state only. */
+static void draw(const run_t *r)
+{
+    if (r->opt.topdown)
+        topdown_draw(&r->gs, framebuffer);
+    else
+        render_view(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle, framebuffer);
+}
+
 /* Runs one tic with `cmd`; logs the hash, records, dumps a frame. */
 static int step(run_t *r, const ticcmd *cmd)
 {
@@ -263,7 +280,7 @@ static int step(run_t *r, const ticcmd *cmd)
     if (r->opt.frames_dir && r->gs.tic % (uint32_t)r->opt.frame_every == 0) {
         char path[1024];
         snprintf(path, sizeof path, "%s/frame_%06" PRIu32 ".png", r->opt.frames_dir, r->gs.tic);
-        topdown_draw(&r->gs, framebuffer);
+        draw(r);
         if (!png_write_indexed(path, framebuffer, SCREEN_W, SCREEN_H, colormap_palette())) {
             fprintf(stderr, "game: %s: cannot write\n", path);
             return 0;
@@ -392,7 +409,7 @@ static void run_window(run_t *r)
             tics_done++;
         }
 
-        topdown_draw(&r->gs, framebuffer);
+        draw(r);
         platform_present(framebuffer, colormap_palette());
         platform_sleep_ms(5);
     }
@@ -444,6 +461,7 @@ int main(int argc, char **argv)
     }
     demo_rec_free(&r.rec);
     demo_free(r.demo);
+    render_shutdown();
     bast_map_free(r.map);
     return r.status;
 }

@@ -94,11 +94,29 @@ add_custom_command(
   COMMENT "Building sound effects")
 add_custom_target(sfx ALL DEPENDS ${SFX_OUTPUTS})
 
+# Renderer test-pattern textures (test fixture, never shipped):
+# tools/testpattern.py -> assets/gen/test/testNN.tex through libbast.so.
+set(TESTPATTERN_TEX)
+foreach(n 01 02 03 04 05 06 07 08)
+  list(APPEND TESTPATTERN_TEX ${ASSETS_GEN}/test/test${n}.tex)
+endforeach()
+add_custom_command(
+  OUTPUT ${TESTPATTERN_TEX}
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          BAST_PALETTE=${ASSETS_GEN}/palette.bin
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/testpattern.py -q
+          --count 8 -o ${ASSETS_GEN}/test
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${CMAKE_SOURCE_DIR}/tools/testpattern.py
+          ${CMAKE_SOURCE_DIR}/tools/bast.py
+  COMMENT "Building renderer test-pattern textures")
+add_custom_target(testpattern ALL DEPENDS ${TESTPATTERN_TEX})
+add_dependencies(testpattern palette)
+
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
 target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}"
   VS3D_MAPS_DIR="${CMAKE_SOURCE_DIR}/maps")
-add_dependencies(game colormap sfx)
+add_dependencies(game colormap sfx testpattern)
 
 enable_testing()
 add_executable(test_smoke tests/test_smoke.c)
@@ -275,3 +293,11 @@ foreach(c goto timeout expect)
   set_tests_properties(demo_${c} PROPERTIES
     ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 endforeach()
+
+# Renderer: walls on maps/m1test.vmap from a fixed pose (issue #13).
+add_executable(test_render_walls tests/test_render_walls.c)
+target_link_libraries(test_render_walls PRIVATE engine m)
+target_compile_options(test_render_walls PRIVATE -UNDEBUG)
+add_dependencies(test_render_walls colormap testpattern)
+add_test(NAME render_walls
+  COMMAND test_render_walls ${CMAKE_SOURCE_DIR}/maps/m1test.vmap ${ASSETS_GEN})
