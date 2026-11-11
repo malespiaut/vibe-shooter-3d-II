@@ -6,7 +6,8 @@
 # Rooms: SW start room (dark 0, two pairs of pillars), east corridor to the
 # SE hall (dark 0, pillars), north corridor (dark 8) to the NE sky courtyard
 # (ceil = sky, pillars under open sky), west corridor (dark 8) to the NW
-# dark room (dark 16), which links back south to the start room.
+# dark room (dark 16), which links back south to the start room. Two
+# TEST_SPRITE entities in the start room (issue #15).
 
 name M1 Test
 sky testsky
@@ -52,3 +53,8 @@ end
 entity PLAYER_START 2 2 90
 entity WAYPOINT 16 6 0 hall
 entity WAYPOINT 19 18 0 courtyard
+# Test-pattern sprites (issue #15, renderer fixture): A stands between the
+# start room's pillars facing south, so from the start it is partly behind
+# the pillar at (3, 6); B stands in the open facing west.
+entity TEST_SPRITE 4 7 270 spriteA
+entity TEST_SPRITE 6 3 180 spriteB

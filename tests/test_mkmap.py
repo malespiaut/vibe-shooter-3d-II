@@ -56,7 +56,7 @@ def test_m1test(tmp):
     assert {c["dark"] for c in floors} == {0, 8, 16}
     assert sum(1 for c in floors if c["ceil"] == 0) >= 20
     # Entities.
-    assert m.entity_count == 3
+    assert m.entity_count == 5
     ents = m.entities
     start = ents[0]
     assert start["type"] == bast.entity_type("PLAYER_START")
@@ -64,6 +64,9 @@ def test_m1test(tmp):
                                                         16384)
     wps = [e for e in ents if e["type"] == bast.entity_type("WAYPOINT")]
     assert sorted(e["name"] for e in wps) == ["courtyard", "hall"]
+    spr = [e for e in ents if e["type"] == bast.entity_type("TEST_SPRITE")]
+    assert sorted((e["x"] >> 16, e["y"] >> 16, e["angle"]) for e in spr) == [
+        (4, 7, 49152), (6, 3, 32768)]
     hall = ents[m.find_entity("hall")]
     assert (hall["x"] >> 16, hall["y"] >> 16) == (16, 6)
     for e in ents:  # nobody stands in a wall

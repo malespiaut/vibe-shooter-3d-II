@@ -1,0 +1,40 @@
+# M1 sprites: walk around the two TEST_SPRITE entities in the start room of
+# maps/m1test.vmap (renderer evidence, issue #15). A (4,7) faces south and
+# starts partly hidden behind the pillar at (3,6); B (6,3) faces west.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map m1test
+
+wait 10                # from the start, facing north: A peeks past the pillar
+goto 2 6
+face 4 7               # A faces south, we are south-west of it: d7
+wait 5
+goto 2 10
+face 4 7
+wait 5
+goto 4 9               # north of A: its back, d4
+face 4 7
+wait 5
+goto 6 10
+face 4 7
+wait 5
+goto 6 7
+face 4 7
+wait 5
+face 6 3               # B faces west, we are north of it: d6
+wait 5
+goto 7 5
+face 6 3
+wait 5
+goto 7 2
+face 6 3
+wait 5
+goto 4 2               # west of B: it faces us, d0
+face 6 3
+wait 5
+goto 2 2
+face 90
+wait 10
+expect tile=2,2

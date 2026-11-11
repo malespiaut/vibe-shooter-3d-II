@@ -12,6 +12,7 @@ TYPES = (
     (4, "LIGHTS", "special", "Lights"),
     (5, "BOSS_POD", "special", "Boss Pod"),
     (6, "RESPAWN_ITEM", "special", "Respawn Item"),
+    (15, "TEST_SPRITE", "special", "Test Sprite (renderer fixture)"),
     (16, "MUTT_TROOPER", "enemy", "Mutt Trooper"),
     (17, "CHIHUAHUA_CHOMPER", "enemy", "Chihuahua Chomper"),
     (18, "POMERANIAN_PLASMAGUNNER", "enemy", "Pomeranian Plasmagunner"),

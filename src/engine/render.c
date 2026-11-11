@@ -7,6 +7,7 @@
 
 #include "engine/colormap.h"
 #include "engine/files.h"
+#include "engine/sprite.h"
 #include "engine/video.h"
 
 /* Floats here are projection maths only (tech.md Simulation: Gameplay
@@ -17,8 +18,12 @@
 
 static bast_tex *textures[RENDER_MAX_TEXTURES];
 static bast_tex *sky;
+/* Sprite frames per entity type and direction; d1..d7 may alias d0. */
+static bast_tex *sprite_frames[BAST_ENT_TYPE_LIMIT][SPRITE_DIRS];
 static render_column columns[VIEW_W];
 static float depth[VIEW_W];
+/* Camera of the last render_view(), for render_draw_sprites(). */
+static double cam_x, cam_y, cam_dx, cam_dy;
 static char err_buf[2048];
 
 const char *render_error(void)
@@ -34,6 +39,62 @@ void render_shutdown(void)
     }
     bast_tex_free(sky);
     sky = NULL;
+    for (int t = 0; t < BAST_ENT_TYPE_LIMIT; t++) {
+        for (int d = SPRITE_DIRS - 1; d >= 0; d--) {
+            if (d == 0 || sprite_frames[t][d] != sprite_frames[t][0])
+                bast_tex_free(sprite_frames[t][d]);
+            sprite_frames[t][d] = NULL;
+        }
+    }
+}
+
+/* Sprite frame `path` from files.c ("sprites/..." or "test/..."): the TEX, or
+ * NULL with *found = 0 if absent, or NULL with *found = 1 and err_buf set if
+ * it is broken. */
+static bast_tex *load_sprite_frame(const char *dir, const char *name, int *found)
+{
+    static const char *const sub[] = { "sprites", "test" };
+    char path[256];
+    *found = 0;
+    for (size_t i = 0; i < sizeof sub / sizeof sub[0]; i++) {
+        snprintf(path, sizeof path, "%s/%s.tex", sub[i], name);
+        int64_t n = 0;
+        uint8_t *data = files_read(path, &n);
+        if (!data)
+            continue;
+        *found = 1;
+        bast_tex *t = bast_tex_from_memory(data, n);
+        free(data);
+        if (!t)
+            snprintf(err_buf, sizeof err_buf, "%s/%s: %s", dir, path, bast_error());
+        return t;
+    }
+    return NULL;
+}
+
+static int load_sprites(const bast_map *map, const char *dir)
+{
+    for (int i = 0; i < map->entity_count; i++) {
+        const int type = map->entities[i].type;
+        const char *base = sprite_name_for_entity(type);
+        if (!base || type >= BAST_ENT_TYPE_LIMIT || sprite_frames[type][0])
+            continue;
+        for (int d = 0; d < SPRITE_DIRS; d++) {
+            char name[128];
+            int found;
+            snprintf(name, sizeof name, "%s_idle_d%d_f0", base, d);
+            bast_tex *t = load_sprite_frame(dir, name, &found);
+            if (!t && found)
+                return 0;
+            if (!t && d == 0) {
+                snprintf(err_buf, sizeof err_buf, "sprite '%s' not found in %s/sprites or %s/test",
+                         name, dir, dir);
+                return 0;
+            }
+            sprite_frames[type][d] = t ? t : sprite_frames[type][0];
+        }
+    }
+    return 1;
 }
 
 int render_cell_is_wall(const bast_map_cell *c)
@@ -110,6 +171,10 @@ int render_init(const bast_map *map, const char *assets_dir)
             render_shutdown();
             return 0;
         }
+    }
+    if (!load_sprites(map, assets_dir)) {
+        render_shutdown();
+        return 0;
     }
     err_buf[0] = '\0';
     return 1;
@@ -292,6 +357,120 @@ static void draw_planes(const bast_map *map, double px, double py, double dx, do
     }
 }
 
+typedef struct {
+    double z, lat; /* perpendicular distance, lateral offset (view right) */
+    int index;     /* position in the caller's list: tie-break */
+} sprite_key;
+
+static int cmp_far_first(const void *a, const void *b)
+{
+    const sprite_key *p = a, *q = b;
+    if (p->z != q->z)
+        return p->z > q->z ? -1 : 1;
+    return p->index - q->index;
+}
+
+/* Nearer than this a sprite is skipped (its projection would explode). */
+#define SPRITE_NEAR 0.0625
+
+static void draw_one(const render_sprite *s, double z, double lat, uint8_t *fb)
+{
+    const bast_tex *t = s->tex;
+    /* px per texel: VIEW_PROJ px per unit at dist 1, 64 texels per unit. */
+    const double scale = VIEW_PROJ / (z * TEX_SIZE);
+    const double cx = VIEW_W / 2.0 + lat * VIEW_PROJ / z;
+    /* Eye at 0.5 units: the floor under the anchor is 0.5 units below it. */
+    const double anchor_y = VIEW_H / 2.0 + (0.5 - s->height / 65536.0) * VIEW_PROJ / z;
+    const double left = cx - t->origin_x * scale;
+    const double top = anchor_y - t->origin_y * scale;
+    const double w = t->width * scale, h = t->height * scale;
+    /* Pixel (x, y) is covered when its centre is in [left, left + w) etc. */
+    double fx0 = ceil(left - 0.5), fx1 = ceil(left + w - 0.5);
+    double fy0 = ceil(top - 0.5), fy1 = ceil(top + h - 0.5);
+    int x0 = fx0 < 0 ? 0 : fx0 > VIEW_W ? VIEW_W : (int)fx0;
+    int x1 = fx1 < 0 ? 0 : fx1 > VIEW_W ? VIEW_W : (int)fx1;
+    int y0 = fy0 < 0 ? 0 : fy0 > VIEW_H ? VIEW_H : (int)fy0;
+    int y1 = fy1 < 0 ? 0 : fy1 > VIEW_H ? VIEW_H : (int)fy1;
+    if (x0 >= x1 || y0 >= y1)
+        return;
+
+    int row = (int)(32.0 * z / VIEW_DIST) + s->dark;
+    row = row < 0 ? 0 : row > COLORMAP_ROWS - 1 ? COLORMAP_ROWS - 1 : row;
+    const uint8_t *cm = colormap_row((t->flags & BAST_TEX_FULLBRIGHT) ? 0 : row);
+
+    /* Texel steps in 16.16, like the wall columns. */
+    const double inv = 1.0 / scale;
+    const int64_t step = (int64_t)(inv * 65536.0);
+    const int64_t v0 = (int64_t)((y0 + 0.5 - top) * inv * 65536.0);
+    for (int sx = x0; sx < x1; sx++) {
+        if (depth[sx] <= z)
+            continue; /* a wall is in front in this column */
+        int u = (int)((sx + 0.5 - left) * inv);
+        if (u < 0)
+            u = 0;
+        if (u > t->width - 1)
+            u = t->width - 1;
+        const uint8_t *src = t->pixels + (size_t)u * t->height;
+        uint8_t *p = fb + sx;
+        int64_t v = v0;
+        for (int yy = y0; yy < y1; yy++, v += step) {
+            int ty = (int)(v >> 16);
+            if (ty > t->height - 1)
+                ty = t->height - 1;
+            if (ty < 0)
+                ty = 0;
+            const uint8_t c = src[ty];
+            if (c != BAST_INDEX_TRANSPARENT)
+                p[yy * SCREEN_W] = cm[c];
+        }
+    }
+}
+
+int render_draw_sprites(const render_sprite *s, int n, uint8_t *fb)
+{
+    static sprite_key keys[RENDER_MAX_SPRITES];
+    int k = 0;
+    for (int i = 0; i < n && k < RENDER_MAX_SPRITES; i++) {
+        if (!s[i].tex)
+            continue;
+        const double rx = s[i].x / 65536.0 - cam_x, ry = s[i].y / 65536.0 - cam_y;
+        const double z = rx * cam_dx + ry * cam_dy;
+        if (z < SPRITE_NEAR)
+            continue;
+        /* View right is (dy, -dx). */
+        keys[k].z = z;
+        keys[k].lat = rx * cam_dy - ry * cam_dx;
+        keys[k].index = i;
+        k++;
+    }
+    qsort(keys, (size_t)k, sizeof keys[0], cmp_far_first);
+    for (int i = 0; i < k; i++)
+        draw_one(&s[keys[i].index], keys[i].z, keys[i].lat, fb);
+    return k;
+}
+
+/* Sprites of the map's entities until things exist (issue #15). */
+static void draw_map_sprites(const bast_map *map, fix_t vx, fix_t vy, uint8_t *fb)
+{
+    static render_sprite list[RENDER_MAX_SPRITES];
+    int n = 0;
+    for (int i = 0; i < map->entity_count && n < RENDER_MAX_SPRITES; i++) {
+        const bast_map_entity *e = &map->entities[i];
+        if (e->type >= BAST_ENT_TYPE_LIMIT || !sprite_frames[e->type][0])
+            continue;
+        /* Angle of the vector thing -> viewer picks the facing frame. */
+        const int dir = sprite_dir(angle_of(vx - e->x, vy - e->y), e->angle);
+        const bast_map_cell *c = cell(map, e->x >> 16, e->y >> 16);
+        list[n].x = e->x;
+        list[n].y = e->y;
+        list[n].height = 0;
+        list[n].tex = sprite_frames[e->type][dir];
+        list[n].dark = c ? c->dark : 0;
+        n++;
+    }
+    render_draw_sprites(list, n, fb);
+}
+
 void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *fb)
 {
     const double px = x / 65536.0, py = y / 65536.0;
@@ -300,6 +479,10 @@ void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *
      * VIEW_PROJ px, which is the 90 degree FOV. */
     const double rx = dy, ry = -dx;
     const double half = VIEW_H / 2.0;
+    cam_x = px;
+    cam_y = py;
+    cam_dx = dx;
+    cam_dy = dy;
 
     for (int sx = 0; sx < VIEW_W; sx++) {
         const double cam = (double)(sx - VIEW_W / 2) / (VIEW_W / 2);
@@ -360,4 +543,6 @@ void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *
     }
     draw_planes(map, px, py, dx, dy, rx, ry, angle, fb);
     memset(fb + VIEW_H * SCREEN_W, 0, (size_t)(SCREEN_H - VIEW_H) * SCREEN_W);
+
+    draw_map_sprites(map, x, y, fb);
 }
