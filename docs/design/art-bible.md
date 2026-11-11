@@ -82,6 +82,12 @@ All ramps except `fb_*` and `transparent` are warm-shifted by this rule. Accepta
   silhouette edges facing away from the light (right and bottom) use the darkest entry of the
   local ramp; on lit edges no outline. Never pure black outlines, never outlines on wall or floor
   textures. HUD art and fonts use a 1 px dark shadow bottom-right instead.
+  Fullbright pixels: a fullbright accent set into a solid object (gem, LED, key shimmer, lamp
+  lens) takes the outline of that object's ramp, so the object keeps one silhouette. A fullbright
+  shape that *is* the light (flame, spark, ember, plasma, glow) gets **no outline**: its edge meets
+  transparency directly, and its edge pixels are the darker fullbright entries (`fb_fire`,
+  `fb_red_dim`, `fb_cyan_dim`). A dark rim around a light reads as a halo, and a 1 px spark plus
+  its outline reads as a dark speck.
 - **Dithering rule**: no error diffusion anywhere; the quantizer is pure Oklab nearest. Hand
   dithering is allowed only as a 2x2 checker between two **adjacent** entries of the same ramp, on
   textures and HUD panels, never on sprites, never on small (<16 px) detail.
