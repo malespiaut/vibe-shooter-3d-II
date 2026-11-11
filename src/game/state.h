@@ -15,6 +15,7 @@
 #include "game/weapon.h"
 #include "game/door.h"
 #include "game/tags.h"
+#include "game/sound.h"
 
 #define TICRATE 35
 
@@ -122,6 +123,7 @@ typedef struct game_state {
     uint8_t lights_alt;  /* a LIGHTS entity fired: cells use dark_alt */
     uint8_t exit;        /* an EXIT cell was used: the level run ends */
     int32_t last_tag;    /* last non-zero tag fired (tests); not hashed */
+    sound_queue sounds;  /* this tic's sound events (game/sound.h); not hashed */
 
     /* HUD events (not hashed): events[(seq-1) % GAME_EVENT_RING] is the
      * newest, event_seq counts every event since game_init. */

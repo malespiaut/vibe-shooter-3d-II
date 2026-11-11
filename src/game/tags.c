@@ -1,6 +1,7 @@
 #include "game/tags.h"
 #include "game/items.h"
 
+#include "game/sound.h"
 #include "game/state.h"
 
 static const bast_map_cell *cell_at(const game_state *gs, int tx, int ty)
@@ -90,6 +91,8 @@ static int pushwall_start(game_state *gs, int idx, int sx, int sy)
     }
     pw->state = PUSHWALL_MOVING;
     pw->pos = 0;
+    game_sound(gs, SFX_pushwall_grind, fix_from_int(pw->tx) + FIX_ONE / 2,
+               fix_from_int(pw->ty) + FIX_ONE / 2);
     return 1;
 }
 
@@ -148,19 +151,30 @@ void game_use(game_state *gs)
     }
     const int pw = pushwall_at(gs, tx, ty);
     if (pw >= 0) {
-        pushwall_start(gs, pw, sx, sy);
+        if (!pushwall_start(gs, pw, sx, sy))
+            game_sound_local(gs, SFX_noway);
         return;
     }
     const bast_map_cell *c = cell_at(gs, tx, ty);
-    if (!c)
-        return;
-    uint8_t *fired = &gs->cell_fired[ty * gs->map->width + tx];
-    if ((c->flags & BAST_CELL_SWITCH) && !(*fired & FIRED_SWITCH)) {
-        *fired |= FIRED_SWITCH;
-        fire_tag(gs, c->tag, (int32_t)c->param * TICRATE);
+    const fix_t cx = fix_from_int(tx) + FIX_ONE / 2, cy = fix_from_int(ty) + FIX_ONE / 2;
+    int used = 0;
+    if (c) {
+        uint8_t *fired = &gs->cell_fired[ty * gs->map->width + tx];
+        if ((c->flags & BAST_CELL_SWITCH) && !(*fired & FIRED_SWITCH)) {
+            *fired |= FIRED_SWITCH;
+            if (!(c->flags & BAST_CELL_EXIT))
+                game_sound(gs, SFX_switch_click, cx, cy);
+            fire_tag(gs, c->tag, (int32_t)c->param * TICRATE);
+            used = 1;
+        }
+        if (c->flags & BAST_CELL_EXIT) {
+            game_sound(gs, SFX_exit_switch, cx, cy);
+            gs->exit = 1;
+            used = 1;
+        }
     }
-    if (c->flags & BAST_CELL_EXIT)
-        gs->exit = 1;
+    if (!used) /* a plain wall, or a switch already on */
+        game_sound_local(gs, SFX_noway);
 }
 
 void pushwalls_tic(game_state *gs)
@@ -196,6 +210,7 @@ void tags_player_cell(game_state *gs)
     if ((c->flags & BAST_CELL_SECRET) && !(*fired & FIRED_SECRET)) {
         *fired |= FIRED_SECRET;
         gs->secrets++;
+        game_sound_local(gs, SFX_secret_found);
     }
     /* Through the shared damage path: skill, armour, Ninth Life, death. */
     if ((c->flags & BAST_CELL_DAMAGE) && c->param > 0 && gs->tic % DAMAGE_PERIOD == 0)

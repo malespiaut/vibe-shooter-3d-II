@@ -2,6 +2,13 @@
 
 #include "engine/angle.h"
 #include "game/state.h"
+#include "game/sound.h"
+
+/* Door sounds come from the door cell's centre. */
+static void door_sound(game_state *gs, const door_t *d, int sfx)
+{
+    game_sound(gs, sfx, fix_from_int(d->tx) + FIX_ONE / 2, fix_from_int(d->ty) + FIX_ONE / 2);
+}
 
 void doors_init(game_state *gs)
 {
@@ -65,13 +72,20 @@ int door_use(game_state *gs, int idx)
     if (d->state != DOOR_CLOSED && d->state != DOOR_CLOSING)
         return 0;
     const int mode = DOOR_MODE(d->param);
-    if (mode == DOOR_MODE_SWITCH || mode == DOOR_MODE_TIMED)
+    if (mode == DOOR_MODE_SWITCH || mode == DOOR_MODE_TIMED) {
+        game_sound_local(gs, SFX_noway); /* opened elsewhere */
         return 0;
+    }
     const int key = DOOR_KEY(d->param);
-    if (key && !(p->keys & (1u << (key - 1))))
+    if (key && !(p->keys & (1u << (key - 1)))) {
+        door_sound(gs, d, SFX_door_locked);
         return 0;
-    if ((d->flags & BAST_CELL_ONEWAY) && !on_side(d, p))
+    }
+    if ((d->flags & BAST_CELL_ONEWAY) && !on_side(d, p)) {
+        game_sound_local(gs, SFX_noway);
         return 0;
+    }
+    door_sound(gs, d, SFX_door_open); /* also when it reverses while closing */
     d->state = DOOR_OPENING;
     return 1;
 }
@@ -101,10 +115,12 @@ void door_activate_timed(game_state *gs, int idx, int32_t close_tics)
         d->timer = close_tics;
     if (d->state == DOOR_OPEN || d->state == DOOR_OPENING) {
         if (d->flags & BAST_CELL_START_OPEN) {
+            door_sound(gs, d, SFX_door_close);
             d->state = DOOR_CLOSING;
             d->flags &= (uint16_t)~BAST_CELL_START_OPEN; /* a tag closes it once */
         }
     } else {
+        door_sound(gs, d, SFX_door_open);
         d->state = DOOR_OPENING;
     }
 }
@@ -151,6 +167,7 @@ void doors_tic(game_state *gs)
             if (DOOR_MODE(d->param) == DOOR_MODE_TIMED) {
                 timed_count(d);
                 if (d->timer == DOOR_TIMER_DUE && !player_in(gs, d)) {
+                    door_sound(gs, d, SFX_door_close);
                     d->timer = 0;
                     d->state = DOOR_CLOSING;
                     d->pos -= DOOR_SPEED;
@@ -164,12 +181,14 @@ void doors_tic(game_state *gs)
                 d->timer--;
             /* Never start closing on the player: wait until the cell is clear. */
             if (d->timer == 0 && !player_in(gs, d)) {
+                door_sound(gs, d, SFX_door_close);
                 d->state = DOOR_CLOSING; /* and moves this tic: blocks at once */
                 d->pos -= DOOR_SPEED;
             }
             break;
         case DOOR_CLOSING:
             if (player_in(gs, d)) {
+                door_sound(gs, d, SFX_door_open);
                 d->state = DOOR_OPENING; /* re-open on the player */
                 if (DOOR_MODE(d->param) == DOOR_MODE_TIMED)
                     d->timer = DOOR_TIMER_DUE; /* and close again once clear */
