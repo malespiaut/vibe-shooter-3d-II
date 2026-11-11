@@ -77,11 +77,28 @@ add_custom_command(
 add_custom_target(colormap ALL DEPENDS ${ASSETS_GEN}/colormap.bin)
 add_dependencies(colormap palette)
 
+# Sound effects build step: assets/src/sfx/*.json -> assets/gen/sfx/*.snd
+# (tools/sfx.py through libbast.so).
+file(GLOB SFX_PARAMS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/sfx/*.json)
+set(SFX_OUTPUTS)
+foreach(p ${SFX_PARAMS})
+  get_filename_component(n ${p} NAME_WE)
+  list(APPEND SFX_OUTPUTS ${ASSETS_GEN}/sfx/${n}.snd)
+endforeach()
+add_custom_command(
+  OUTPUT ${SFX_OUTPUTS}
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/sfx.py -q
+          ${SFX_PARAMS} -o ${ASSETS_GEN}/sfx
+  DEPENDS bast ${SFX_PARAMS} ${CMAKE_SOURCE_DIR}/tools/sfx.py ${CMAKE_SOURCE_DIR}/tools/bast.py
+  COMMENT "Building sound effects")
+add_custom_target(sfx ALL DEPENDS ${SFX_OUTPUTS})
+
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
 target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}"
   VS3D_MAPS_DIR="${CMAKE_SOURCE_DIR}/maps")
-add_dependencies(game colormap)
+add_dependencies(game colormap sfx)
 
 enable_testing()
 add_executable(test_smoke tests/test_smoke.c)
@@ -155,3 +172,16 @@ add_test(NAME fx_shapes
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_fx.py shapes)
 set_tests_properties(fx_loop fx_determinism fx_shapes PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
+# Mixer: unit tests on synthetic sounds, and a scripted mix of real effects
+# into build/mixer_wav.wav (evidence).
+add_executable(test_mixer tests/test_mixer.c)
+target_link_libraries(test_mixer PRIVATE engine)
+target_compile_options(test_mixer PRIVATE -UNDEBUG)
+add_test(NAME mixer COMMAND test_mixer)
+
+add_executable(test_mixer_wav tests/test_mixer_wav.c)
+target_link_libraries(test_mixer_wav PRIVATE engine)
+target_compile_options(test_mixer_wav PRIVATE -UNDEBUG)
+add_dependencies(test_mixer_wav sfx)
+add_test(NAME mixer_wav COMMAND test_mixer_wav ${ASSETS_GEN} ${CMAKE_BINARY_DIR}/mixer_wav.wav)

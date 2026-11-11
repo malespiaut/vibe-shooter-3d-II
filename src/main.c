@@ -9,6 +9,7 @@
 
 #include "bast.h"
 #include "engine/colormap.h"
+#include "engine/mixer.h"
 #include "engine/video.h"
 #include "game/state.h"
 #include "platform/platform.h"
@@ -33,11 +34,11 @@ enum {
 
 static uint8_t framebuffer[SCREEN_W * SCREEN_H];
 
-/* Audio: no mixer yet, so the engine answers every request with silence. */
+/* Audio thread: the platform pulls frames straight from the mixer. */
 static void audio_fill(int16_t *out, int frames, void *user)
 {
     (void)user;
-    memset(out, 0, (size_t)frames * PLAT_AUDIO_CHANNELS * sizeof(int16_t));
+    mixer_render(out, frames);
 }
 
 static void put(int x, int y, uint8_t c)
@@ -124,6 +125,14 @@ int main(int argc, char **argv)
         bast_map_free(map);
         return 1;
     }
+    /* Mixer before the device opens; menu_select once so the wiring is
+     * audible. A missing sound is not fatal. */
+    mixer_init(VS3D_ASSETS_DIR);
+    mixer_sound *startup = mixer_load_snd("menu_select");
+    if (startup)
+        mixer_start(startup, MIXER_SOURCE_NONE, MIXER_VOL_MAX, MIXER_PAN_CENTER);
+    else
+        fprintf(stderr, "game: %s\n", bast_error());
     if (!platform_audio_open(audio_fill, NULL))
         fprintf(stderr, "game: audio disabled: %s\n", platform_error());
     platform_set_relative_mouse(true);
@@ -191,5 +200,6 @@ int main(int argc, char **argv)
 
     platform_shutdown();
     bast_map_free(map);
+    mixer_shutdown();
     return 0;
 }
