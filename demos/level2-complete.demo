@@ -45,21 +45,31 @@ goto 13 25 70           # through it (fails if still shut)
 face 0
 use
 wait 32
-# Gift Shop Brawl: hold the vestibule, the doorway lets one Mutt in at a time.
-weapon 2
+# Gift Shop Brawl: hold the vestibule with the Scattergun; the doorway lets
+# the Mutts in one at a time.
 fire 1                  # wake the shop
-wait 40
+goto 12 25
+face 0
 clear 10
-wait 40
+wait 30
 clear 10
-wait 40
-clear 10
+goto 13 25
 face 0
 use                     # the door auto-closed meanwhile
 wait 32
+fire 1
+goto 12 25
+clear 10
+wait 30
+clear 10
+goto 13 25
+use
+wait 34
+use                     # in case it was open and shut meanwhile
+wait 32
 goto 15 25
 clear 10
-goto 17 27
+goto 18 27
 clear 10
 goto 15 30              # Charge Jar
 goto 20 30              # Fish Snack
@@ -77,6 +87,13 @@ clear 14
 goto 15 18              # Charge Vial
 goto 20 18              # Linen Wrap
 clear 14
+# Secret: the wrong-way statue (14,16) slides south onto the Scarab Plate.
+goto 14 17
+face 270
+use
+wait 64
+goto 14 15              # Scarab Plate
+expect secrets=1
 goto 24 18              # TRIGGER column: the side closets open behind
 wait 30
 weapon 3
@@ -86,6 +103,10 @@ wait 30
 clear 12
 goto 27 18              # Fish Snack
 weapon 2
+clear 14
+goto 29 18
+clear 14
+goto 13 18
 clear 14
 expect kills=23
 # Curator's Office.
@@ -100,7 +121,18 @@ goto 30 8               # Yarn Basket
 goto 29 9               # blue key
 clear 10
 expect kills=25
-# Blue door to the loading dock.
+# Secret: the cracked display wall (21,11) slides west onto 2 Tuna Tins.
+goto 22 11
+face 180
+use
+wait 64
+goto 20 11              # 2 Tuna Tins
+expect secrets=2
+# Blue door to the loading dock, back through the office door.
+goto 26 14
+face 90
+use
+wait 32
 goto 27 20
 face 90
 use
