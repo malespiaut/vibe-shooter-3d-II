@@ -1,5 +1,5 @@
 {
-  "desc": "Loose sand: soft rippled dunes, fine grain, checker-dithered between adjacent ramp entries",
+  "desc": "Loose sand: soft wind ripples, fine grain, checker-dithered between adjacent ramp entries",
   "tile": "floor",
   "size": 64,
   "seed": 1202,
@@ -68,11 +68,5 @@
       "level": 0.62,
       "dither": true
     }
-  },
-  "base2": {
-    "ramp": "beige",
-    "lo": 6,
-    "hi": 12,
-    "threshold": 0.35
   }
 }
