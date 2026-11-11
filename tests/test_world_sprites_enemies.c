@@ -9,15 +9,19 @@
  *    set (on main) has every animation of enemies.md.
  * 3. Live state, on a synthetic map (camera (2.5, 3.5) facing east): a
  *    Chomper at (5.5, 3.5) is drawn by render_view_things from
- *    ai_render_things, its corpse after a killing hit too; a Pomeranian
- *    (no art yet) is skipped without failing render_init; rendering leaves
- *    game_hash() unchanged.
+ *    ai_render_things, its corpse after a killing hit too, and a Pomeranian
+ *    at (7.5, 5.5) is drawn as well; rendering leaves game_hash() unchanged.
+ * 4. Incomplete set: on a symlinked copy of the assets (loose files, no
+ *    game.pak) without pom_idle_d0_f0.tex, render_init still succeeds, the Pomeranian is
+ *    skipped (not drawn, never substituted) and the Chomper still draws.
  *
  *   test_world_sprites_enemies <assets/gen dir> */
+#define _XOPEN_SOURCE 700 /* realpath, mkdtemp */
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "bast.h"
 #include "engine/colormap.h"
@@ -151,7 +155,7 @@ static void view(const game_state *gs, uint8_t *out)
                        out);
 }
 
-static void check_live(const char *assets)
+static bast_map *make_map(void)
 {
     bast_map *m = bast_map_new(16, 8);
     assert(m);
@@ -165,10 +169,16 @@ static void check_live(const char *assets)
             }
     add(m, BAST_ENT_PLAYER_START, 2.5, 3.5);
     add(m, BAST_ENT_CHIHUAHUA_CHOMPER, 5.5, 3.5);         /* dead ahead, dist 3 */
-    add(m, BAST_ENT_POMERANIAN_PLASMAGUNNER, 7.5, 5.5);   /* no art on main yet */
+    add(m, BAST_ENT_POMERANIAN_PLASMAGUNNER, 7.5, 5.5);   /* left of the Chomper */
+    return m;
+}
+
+static void check_live(const char *assets)
+{
+    bast_map *m = make_map();
     if (!render_init(m, assets))
         fprintf(stderr, "%s\n", render_error());
-    assert(render_init(m, assets)); /* missing Pom set: warning, not an error */
+    assert(render_init(m, assets));
 
     static game_state gs;
     game_init(&gs, m, 1, 2, 0);
@@ -181,9 +191,9 @@ static void check_live(const char *assets)
     assert(game_hash(&gs) == h0);
     const int chomp = diff_count(base, fb, 140, 180);
     const int pom = diff_count(base, fb, 0, 140);
-    printf("chomper idle: %d px drawn; pomeranian (no art): %d px\n", chomp, pom);
+    printf("chomper idle: %d px drawn; pomeranian idle: %d px\n", chomp, pom);
     assert(chomp > 40);
-    assert(pom == 0);
+    assert(pom > 40);
 
     /* Kill it with a plain hit: death frames, then the corpse stays. */
     thinker_t *t = &gs.things.list[0];
@@ -207,6 +217,41 @@ static void check_live(const char *assets)
     bast_map_free(m);
 }
 
+/* Incomplete set: a symlinked copy of the assets without the Pomeranian's
+ * idle d0 frame. render_init warns but succeeds; the Pom is not drawn. */
+static void check_incomplete(const char *assets)
+{
+    char abs[4096], tmpl[] = "/tmp/wse-XXXXXX", cmd[9000];
+    assert(realpath(assets, abs));
+    assert(mkdtemp(tmpl));
+    snprintf(cmd, sizeof cmd,
+             "cp -rs '%s' '%s/a' && rm -f '%s/a/game.pak'"
+             " && rm '%s/a/sprites/pom_idle_d0_f0.tex'",
+             abs, tmpl, tmpl, tmpl);
+    assert(system(cmd) == 0);
+    char dir[4200];
+    snprintf(dir, sizeof dir, "%s/a", tmpl);
+
+    bast_map *m = make_map();
+    if (!render_init(m, dir))
+        fprintf(stderr, "%s\n", render_error());
+    assert(render_init(m, dir)); /* missing Pom set: warning, not an error */
+    static game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    render_view(m, gs.player.x, gs.player.y, gs.player.angle, base);
+    view(&gs, fb);
+    const int chomp = diff_count(base, fb, 140, 180);
+    const int pom = diff_count(base, fb, 0, 140);
+    printf("incomplete pom set: chomper %d px, pomeranian %d px\n", chomp, pom);
+    assert(chomp > 40);
+    assert(pom == 0);
+    render_shutdown();
+    bast_map_free(m);
+
+    snprintf(cmd, sizeof cmd, "rm -rf '%s'", tmpl);
+    assert(system(cmd) == 0);
+}
+
 int main(int argc, char **argv)
 {
     assert(argc == 2);
@@ -217,6 +262,7 @@ int main(int argc, char **argv)
     assert(colormap_load(argv[1]));
     assert(files_init(argv[1]));
     check_live(argv[1]);
+    check_incomplete(argv[1]);
     puts("world_sprites_enemies: ok");
     return 0;
 }
