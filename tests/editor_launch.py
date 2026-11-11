@@ -9,7 +9,7 @@
   without touching the model's path or dirty flag, reports a failed launch
   with its stderr, and refuses to launch an invalid map.
 - Texture library (editor/textures.py) converts a TEX to RGB through the
-  palette, nearest neighbour.
+  palette, nearest neighbour, and reads game.pak before the loose files.
 Plain asserts. BAST_LIB overrides the libbast.so path."""
 import os
 import sys
@@ -226,7 +226,7 @@ def test_textures(tmp):
     # 2x3 TEX, column-major, one transparent pixel.
     t = bast.Tex(2, 3, bytes([1, 2, 3, 4, 5, bast.TRANSPARENT]))
     t.save(os.path.join(d, "mytex.tex"))
-    lib = T.TextureLibrary([os.path.join(tmp, "nope"), d])
+    lib = T.TextureLibrary([os.path.join(tmp, "nope"), d], pak=None)
     assert lib.find("mytex") is not None and lib.find("absent") is None
     assert lib.find("") is None
     assert "mytex" in lib.available()
@@ -245,6 +245,32 @@ def test_textures(tmp):
     assert (w2, h2) == (4, 6) and tuple(big[0:3]) == col[1]
     assert tuple(big[(5 * 4 + 3) * 3:(5 * 4 + 3) * 3 + 3]) == T.TRANSPARENT_RGB
     assert tuple(big[(1 * 4 + 1) * 3:(1 * 4 + 1) * 3 + 3]) == col[1]
+    # game.pak: a texture in the pak loads to the same RGB as the loose
+    # file, the pak wins over a loose file of the same name, available()
+    # lists the pak's TEX entries (any of the three prefixes) but not other
+    # files, and a missing pak falls back to the loose dirs.
+    with open(os.path.join(d, "mytex.tex"), "rb") as f:
+        mytex = f.read()
+    other = bast.Tex(1, 1, bytes([7]))
+    other.save(os.path.join(tmp, "other.tex"))
+    with open(os.path.join(tmp, "other.tex"), "rb") as f:
+        other_b = f.read()
+    pak = os.path.join(tmp, "game.pak")
+    bast.pak_write(pak, [("textures/mytex.tex", mytex), ("test/shadow.tex", other_b),
+                         ("flat.tex", other_b), ("sfx/x.snd", b"abc"),
+                         ("fx/deep/no.tex", other_b)])
+    plib = T.TextureLibrary([os.path.join(tmp, "nope")], pak=pak)
+    assert plib.rgb("mytex") == (w, h, rgb)
+    assert plib.find("shadow").pixels == bytearray([7]) and plib.find("flat")
+    assert plib.find("x") is None and plib.find("no") is None
+    assert plib.available() == ["flat", "mytex", "shadow"], plib.available()
+    loose_shadow = bast.Tex(1, 1, bytes([9]))
+    loose_shadow.save(os.path.join(d, "shadow.tex"))
+    both = T.TextureLibrary([d], pak=pak)
+    assert both.find("shadow").pixels == bytearray([7])  # pak first
+    assert both.available() == ["flat", "mytex", "shadow"]
+    assert T.TextureLibrary([d], pak=os.path.join(tmp, "none.pak")).find("shadow").pixels \
+        == bytearray([9])
     # Default search path finds the generated textures, if built.
     real = T.TextureLibrary()
     gen = os.path.join(ROOT, "assets", "gen", "textures")
