@@ -1,0 +1,16 @@
+claw_swish      0.180s pk112 rms 25.7 crest12.8dB dc-0.78 first+0 last+0 jumps>100:   0 centroid  2703Hz silenttail0.007
+claw_hit        0.181s pk112 rms 20.7 crest14.6dB dc-0.84 first+0 last+0 jumps>100:   0 centroid  2042Hz silenttail0.018
+pistol_fire     0.221s pk112 rms 31.0 crest11.1dB dc-13.45 first+0 last+0 jumps>100:  15 centroid  2469Hz silenttail0.021
+scatter_fire    0.470s pk112 rms 26.2 crest12.6dB dc-0.03 first+0 last+0 jumps>100:   1 centroid  1599Hz silenttail0.059
+scatter_pump    0.211s pk112 rms 21.4 crest14.4dB dc-4.51 first+0 last+0 jumps>100:   0 centroid  2447Hz silenttail0.005
+repeater_fire   0.086s pk112 rms 24.7 crest13.1dB dc-4.94 first+0 last+0 jumps>100:   9 centroid  4015Hz silenttail0.011
+scarab_launch   0.390s pk112 rms 27.1 crest12.3dB dc-0.14 first+0 last+0 jumps>100:   0 centroid  1907Hz silenttail0.038
+scarab_explode  0.560s pk112 rms 20.5 crest14.7dB dc+0.29 first+0 last+0 jumps>100:   0 centroid  1940Hz silenttail0.147
+lance_charge    0.440s pk112 rms 32.9 crest10.7dB dc-6.91 first+0 last+0 jumps>100:  31 centroid  2853Hz silenttail0.003
+lance_fire      0.501s pk112 rms 20.3 crest14.9dB dc-4.67 first+0 last+0 jumps>100:   5 centroid  2584Hz silenttail0.097
+howler_roar     1.180s pk112 rms 35.4 crest10.0dB dc-8.62 first+0 last+0 jumps>100:   0 centroid  1024Hz silenttail0.046
+weapon_switch   0.176s pk112 rms 25.2 crest12.9dB dc-6.41 first+0 last+0 jumps>100:  31 centroid  3905Hz silenttail0.002
+player_pain     0.370s pk112 rms 29.6 crest11.6dB dc-6.36 first+0 last+0 jumps>100:  13 centroid  4835Hz silenttail0.027
+player_death    1.460s pk112 rms 37.3 crest 9.5dB dc-13.38 first+0 last+0 jumps>100:   0 centroid  2158Hz silenttail0.064
+player_land     0.101s pk112 rms 31.3 crest11.1dB dc-1.29 first+0 last+0 jumps>100:   0 centroid   973Hz silenttail0.011
+noway           0.150s pk112 rms 47.9 crest 7.4dB dc-13.83 first+0 last+0 jumps>100:   0 centroid  1019Hz silenttail0.004
