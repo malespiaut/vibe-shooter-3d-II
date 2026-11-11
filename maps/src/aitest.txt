@@ -1,0 +1,35 @@
+# AI test map: 24x9, built by tools/mkmap.py into maps/aitest.vmap.
+# Test fixture for demos/ai-test.demo (#67), not a game level. A small west
+# room (player, Scattergun, shells), a 1-wide corridor at ty=4, and an east
+# hall (pillar at 19,4) holding 3 Chihuahua Chompers and 2 Mutt Troopers.
+# Textures are the renderer test patterns, as m1test.
+
+name AI Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+
+layout
+########################
+#.....##########.......#
+#.....##########.......#
+#.....##########.......#
+#..................#...#
+#.....##########.......#
+#.....##########.......#
+#.....##########.......#
+########################
+end
+
+# ty counts from the south: the last layout row is ty = 0.
+entity PLAYER_START 2 4 0
+entity HAIRBALL_SCATTERGUN 3 4 0
+entity YARN_BUNDLE 3 5 0
+entity CHIHUAHUA_CHOMPER 17 5 180
+entity CHIHUAHUA_CHOMPER 18 3 180
+entity CHIHUAHUA_CHOMPER 17 2 180
+entity MUTT_TROOPER 22 6 180
+entity MUTT_TROOPER 22 2 180
