@@ -49,8 +49,4 @@ void items_tic(game_state *gs);
  * or dead. */
 void player_damage(game_state *gs, int32_t amount);
 
-/* Tag hook. Stub until the tags issue implements tag firing: it records the
- * tag in gs->tags_fired / gs->last_tag and does nothing else. */
-void game_fire_tag(game_state *gs, int tag);
-
 #endif

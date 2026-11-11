@@ -14,6 +14,7 @@
 #include "game/thinker.h"
 #include "game/weapon.h"
 #include "game/door.h"
+#include "game/tags.h"
 
 #define TICRATE 35
 
@@ -97,10 +98,14 @@ typedef struct game_state {
     int32_t items_got;       /* level counter: pickups taken, weapons too */
     int32_t items_total;     /* pickups + weapon pickups spawned */
 
-    /* Tag hook stub (game_fire_tag): counts fired tags until the tags
-     * system replaces it. Not hashed. */
-    int32_t tags_fired;
-    int32_t last_tag;
+    int pushwall_count;
+    pushwall_t pushwalls[MAX_PUSHWALLS]; /* row-major order of PUSHWALL cells */
+    uint8_t cell_fired[64 * 64]; /* cell y*width+x -> FIRED_* bits (tags.h) */
+    int32_t secrets, secret_total; /* SECRET cells entered / in the map */
+    uint32_t tags_fired; /* tags fired so far (every non-zero fire) */
+    uint8_t lights_alt;  /* a LIGHTS entity fired: cells use dark_alt */
+    uint8_t exit;        /* an EXIT cell was used: the level run ends */
+    int32_t last_tag;    /* last non-zero tag fired (tests); not hashed */
 } game_state;
 
 /* Resets the state for `map` (borrowed, must outlive the state): tic 0, RNG
@@ -120,12 +125,14 @@ void game_tic(game_state *gs, const ticcmd *cmd);
  * flags, tics, health, target id), kills and kill total, then player keys,
  * previous buttons, door count and every door (state, pos, timer), then
  * armour class, satchel, powerup timers, Ninth Life, invulnerability, dead, skill,
- * pickups (count, then each taken flag in spawn order), items taken. New
- * fields are appended as the systems that own them land. */
+ * pickups (count, then each taken flag in spawn order), items taken, then
+ * the map logic (tags_hash: exit, lights, secrets, tags fired, pushwalls,
+ * one-shot cell states). New fields are appended as the systems that own them land. */
 uint64_t game_hash(const game_state *gs);
 
 /* True when tile (tx, ty) blocks the player: outside the map, SOLID,
- * BLOCK_ALL, PUSHWALL, or a DOOR that is not fully open (live door state). */
+ * BLOCK_ALL, a DOOR that is not fully open (live door state), or a tile a
+ * pushwall occupies (live pushwall state; a PUSHWALL cell it left is free). */
 int game_tile_blocks(const game_state *gs, int tx, int ty);
 
 /* True when a circle of radius r at (x, y) overlaps a blocking tile

@@ -78,7 +78,14 @@ int door_use(game_state *gs, int idx)
 
 void door_activate(game_state *gs, int idx)
 {
+    door_activate_timed(gs, idx, 0);
+}
+
+void door_activate_timed(game_state *gs, int idx, int32_t close_tics)
+{
     door_t *d = &gs->doors[idx];
+    if (DOOR_MODE(d->param) == DOOR_MODE_TIMED && close_tics > 0)
+        d->timer = close_tics;
     if (d->state == DOOR_OPEN || d->state == DOOR_OPENING) {
         if (d->flags & BAST_CELL_START_OPEN) {
             d->state = DOOR_CLOSING;
@@ -95,20 +102,40 @@ static int player_in(const game_state *gs, const door_t *d)
     return game_circle_overlaps_tile(p->x, p->y, PLAYER_RADIUS, d->tx, d->ty);
 }
 
+/* Timed doors: timer > 0 counts down the switch delay; reaching zero marks
+ * the door due to close (DOOR_TIMER_DUE). 0 = no timer: stays open. */
+static void timed_count(door_t *d)
+{
+    if (d->timer > 0 && --d->timer == 0)
+        d->timer = DOOR_TIMER_DUE;
+}
+
 void doors_tic(game_state *gs)
 {
     for (int i = 0; i < gs->door_count; i++) {
         door_t *d = &gs->doors[i];
         switch (d->state) {
         case DOOR_OPENING:
+            if (DOOR_MODE(d->param) == DOOR_MODE_TIMED)
+                timed_count(d);
             d->pos += DOOR_SPEED;
             if (d->pos >= FIX_ONE) {
                 d->pos = FIX_ONE;
                 d->state = DOOR_OPEN;
-                d->timer = DOOR_WAIT_TICS;
+                if (DOOR_MODE(d->param) != DOOR_MODE_TIMED)
+                    d->timer = DOOR_WAIT_TICS;
             }
             break;
         case DOOR_OPEN:
+            if (DOOR_MODE(d->param) == DOOR_MODE_TIMED) {
+                timed_count(d);
+                if (d->timer == DOOR_TIMER_DUE && !player_in(gs, d)) {
+                    d->timer = 0;
+                    d->state = DOOR_CLOSING;
+                    d->pos -= DOOR_SPEED;
+                }
+                break;
+            }
             /* START_OPEN doors stay open until a tag closes them. */
             if (DOOR_MODE(d->param) != DOOR_MODE_AUTO || (d->flags & BAST_CELL_START_OPEN))
                 break;
@@ -123,6 +150,8 @@ void doors_tic(game_state *gs)
         case DOOR_CLOSING:
             if (player_in(gs, d)) {
                 d->state = DOOR_OPENING; /* re-open on the player */
+                if (DOOR_MODE(d->param) == DOOR_MODE_TIMED)
+                    d->timer = DOOR_TIMER_DUE; /* and close again once clear */
                 break;
             }
             d->pos -= DOOR_SPEED;
@@ -158,7 +187,7 @@ static void dda_axis(fix_t pos, fix_t dir, int *step, fix_t *tmax, fix_t *tdelta
     }
 }
 
-int door_use_target(const game_state *gs)
+int use_trace(const game_state *gs, int *htx, int *hty, int *hsx, int *hsy)
 {
     const player_t *p = &gs->player;
     int tx = fix_to_int(p->x), ty = fix_to_int(p->y);
@@ -168,21 +197,34 @@ int door_use_target(const game_state *gs)
     dda_axis(p->y, fine_sin(p->angle), &sy, &tmy, &tdy);
     for (;;) {
         fix_t t;
+        int stepx;
         if (tmx <= tmy) {
             t = tmx;
             tx += sx;
             tmx = tmx > NO_CROSS - tdx ? NO_CROSS : tmx + tdx;
+            stepx = 1;
         } else {
             t = tmy;
             ty += sy;
             tmy = tmy > NO_CROSS - tdy ? NO_CROSS : tmy + tdy;
+            stepx = 0;
         }
         if (t > DOOR_USE_RANGE)
-            return -1;
-        int d = door_at(gs, tx, ty);
-        if (d >= 0)
-            return d;
-        if (game_tile_blocks(gs, tx, ty))
-            return -1;
+            return 0;
+        if (door_at(gs, tx, ty) >= 0 || game_tile_blocks(gs, tx, ty)) {
+            *htx = tx;
+            *hty = ty;
+            *hsx = stepx ? sx : 0;
+            *hsy = stepx ? 0 : sy;
+            return 1;
+        }
     }
+}
+
+int door_use_target(const game_state *gs)
+{
+    int tx, ty, sx, sy;
+    if (!use_trace(gs, &tx, &ty, &sx, &sy))
+        return -1;
+    return door_at(gs, tx, ty);
 }

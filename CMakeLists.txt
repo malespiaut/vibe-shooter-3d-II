@@ -331,6 +331,7 @@ endfunction()
 add_demo_determinism(m1-walk)
 add_demo_determinism(door-test)
 add_demo_determinism(m1-sprites)
+add_demo_determinism(tags-test)
 
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)
@@ -408,3 +409,12 @@ target_link_libraries(test_render_sprites PRIVATE engine m)
 target_compile_options(test_render_sprites PRIVATE -UNDEBUG)
 add_dependencies(test_render_sprites colormap testpattern)
 add_test(NAME render_sprites COMMAND test_render_sprites ${ASSETS_GEN})
+
+# Map logic: tags, switches, exit, pushwalls, triggers, secrets, lights,
+# damage floors on maps/tagstest.vmap (issue #66), one ctest per case.
+add_executable(test_tags tests/test_tags.c)
+target_link_libraries(test_tags PRIVATE engine)
+target_compile_options(test_tags PRIVATE -UNDEBUG)
+foreach(c switch start_open timed pushwall trigger secret lights damage exit)
+  add_test(NAME tags_${c} COMMAND test_tags ${CMAKE_SOURCE_DIR}/maps/tagstest.vmap ${c})
+endforeach()

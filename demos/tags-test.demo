@@ -1,0 +1,26 @@
+# Tags test on maps/tagstest.vmap (layout in maps/src/tagstest.txt): use the
+# wall switch s (0,2) to open the tag-1 door at (6,4), walk through it into
+# the north hall, push the pushwall P (3,8) north, step on the secret (3,9),
+# then use the exit wall E (1,8). The run stops at the exit; STATS shows
+# exit=1 secrets=1/1.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+
+goto 1 2               # in front of the switch
+face 180               # west, toward s
+use                    # fires tag 1: door (6,4) opens, START_OPEN (10,4) closes
+expect exit=0
+wait 32                # the door takes 32 tics to open
+goto 6 5               # through the opened door into the north hall
+goto 3 7               # below the pushwall
+face 90                # north
+use                    # slides 2 tiles north at 1 tile per 32 tics
+wait 64
+goto 3 9               # the secret cell behind it
+expect secrets=1
+goto 1 7               # below the exit wall
+face 90
+use                    # exit: the run ends here
