@@ -9,6 +9,7 @@
 
 static uint8_t palette_rgb[768];
 static uint8_t table[COLORMAP_BYTES];
+static uint8_t lit[256]; /* see colormap_dim_remap() */
 static char error_msg[1200] = "colormap not loaded";
 
 const char *colormap_error(void)
@@ -31,6 +32,8 @@ int colormap_set(const uint8_t *rgb, const uint8_t *cmap, size_t size)
     }
     memcpy(palette_rgb, rgb, sizeof palette_rgb);
     memcpy(table, cmap, sizeof table);
+    for (int i = 0; i < 256; i++)
+        lit[i] = (uint8_t)i;
     return 1;
 }
 
@@ -68,6 +71,11 @@ int colormap_load(const char *dir)
         uint8_t prgb[768];
         memcpy(prgb, pal->rgb, sizeof prgb);
         ok = colormap_set(prgb, cmap, COLORMAP_BYTES);
+        /* Fullbright entries get a lit stand-in so menus can dim them. */
+        for (int i = 0; ok && i < 256; i++)
+            if (pal->flags[i] & BAST_PAL_FULLBRIGHT)
+                lit[i] = (uint8_t)bast_palette_nearest(pal, pal->rgb[i][0], pal->rgb[i][1],
+                                                       pal->rgb[i][2]);
     } else if (flags && !pal) {
         snprintf(error_msg, sizeof error_msg, "palette: %s", bast_error());
     }
@@ -90,4 +98,11 @@ const uint8_t *colormap_row(int r)
     if (r > COLORMAP_ROWS - 1)
         r = COLORMAP_ROWS - 1;
     return table + r * 256;
+}
+
+void colormap_dim_remap(int r, uint8_t out[256])
+{
+    const uint8_t *row = colormap_row(r);
+    for (int i = 0; i < 256; i++)
+        out[i] = row[lit[i]];
 }

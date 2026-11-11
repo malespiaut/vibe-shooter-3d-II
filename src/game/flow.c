@@ -165,6 +165,7 @@ int flow_tic(flow_t *f, int key, flow_world *w, const ticcmd *cmd)
 struct flow_gfx {
     bast_tex *title;
     bast_tex *ankh;
+    uint8_t dark[256]; /* colormap row DARK_ROW, fullbright dimmed too */
     font *menu;
     font *small;
 };
@@ -193,6 +194,7 @@ flow_gfx *flow_gfx_load(const char *dir)
         snprintf(g_err, sizeof g_err, "out of memory");
         return NULL;
     }
+    colormap_dim_remap(DARK_ROW, g->dark);
     g->title = load_tex(dir, "ui/title.tex");
     g->ankh = g->title ? load_tex(dir, "hud/menu_ankh.tex") : NULL;
     if (g->ankh) {
@@ -256,7 +258,7 @@ static const char *const CONTROLS[][2] = {
 
 void flow_draw(const flow_t *f, const flow_gfx *g, uint8_t *fb)
 {
-    const uint8_t *dark = colormap_row(DARK_ROW);
+    const uint8_t *dark = g->dark;
     switch (f->screen) {
     case FLOW_PLAY:
         return;
