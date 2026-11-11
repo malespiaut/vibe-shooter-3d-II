@@ -1,0 +1,10 @@
+# Ammo table: Yarn shell (red yarn ball, wound strands).
+name ammo_yarn
+size 6 6
+shadow sand_00
+grid
+.CDC.
+CDCBC
+DCBCA
+CBCAB
+.ABA.

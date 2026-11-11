@@ -1,0 +1,10 @@
+# Ammo table: Sun cell (orange crystal shard; not fullbright on the HUD).
+name ammo_sun
+size 6 6
+shadow sand_00
+grid
+..H..
+.HGF.
+HGGFE
+.GFE.
+..E..

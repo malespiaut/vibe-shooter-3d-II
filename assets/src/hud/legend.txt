@@ -1,0 +1,61 @@
+# Shared character -> palette entry legend for assets/src/hud/*.pix.
+# A .pix file may add or override characters with "= <char> <name>" lines.
+# Every ramp is used dark -> light; light comes from the top-left (art-bible.md).
+.  transparent
+# steel (Dominion metal)
+1  steel_03
+2  steel_05
+3  steel_08
+4  steel_11
+5  steel_14
+# gold (inlay, cat-tech)
+a  gold_02
+b  gold_04
+c  gold_06
+d  gold_08
+e  gold_10
+# brown (wood, grips)
+m  brown_04
+n  brown_07
+o  brown_10
+p  brown_13
+# fur (ginger paw)
+f  fur_03
+g  fur_05
+h  fur_08
+i  fur_10
+# lapis blue
+q  blue_02
+r  blue_04
+s  blue_06
+t  blue_08
+u  blue_10
+# beige (claws, bone)
+w  beige_07
+x  beige_10
+y  beige_13
+z  beige_15
+# cyan (charge glass)
+k  cyan_04
+l  cyan_07
+j  cyan_10
+# red (yarn)
+A  red_04
+B  red_07
+C  red_10
+D  red_13
+# orange (sun cells)
+E  orange_03
+F  orange_06
+G  orange_09
+H  orange_11
+# sand (recess, sockets)
+S  sand_01
+T  sand_03
+U  sand_06
+V  sand_09
+# pink (paw pads)
+P  pink_05
+Q  pink_07
+# near-black detail (eye pupils), never pure black
+K  steel_00

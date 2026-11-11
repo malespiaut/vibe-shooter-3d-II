@@ -1,0 +1,10 @@
+# Ammo table: Ankh charge (glass vial, steel stopper).
+name ammo_charge
+size 6 6
+shadow sand_00
+grid
+.453.
+.jlk.
+jjllk
+jllkk
+.lkk.

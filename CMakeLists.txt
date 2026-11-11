@@ -173,6 +173,12 @@ add_test(NAME fx_shapes
 set_tests_properties(fx_loop fx_determinism fx_shapes PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# HUD art (hud.md Status bar): build step output, exact sizes, palcheck.
+add_test(NAME hud_assets
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_hud.py)
+set_tests_properties(hud_assets PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
 # Mixer: unit tests on synthetic sounds, and a scripted mix of real effects
 # into build/mixer_wav.wav (evidence).
 add_executable(test_mixer tests/test_mixer.c)

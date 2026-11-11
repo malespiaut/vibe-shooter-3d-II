@@ -1,0 +1,10 @@
+# Ammo table: Scarab (gold beetle, seam down the middle).
+name ammo_scarab
+size 6 6
+shadow sand_00
+grid
+.ede.
+deccb
+dcabb
+dcaba
+.bab.
