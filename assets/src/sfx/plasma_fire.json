@@ -1,0 +1,38 @@
+{
+  "desc": "Plasma bolt launch: a bright 'pew' zap dropping in pitch over a fizzy electric burst.",
+  "seed": 123,
+  "crush": 5,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 2400,
+      "freq_end": 420,
+      "duty": 0.5,
+      "attack": 0.001,
+      "release": 0.18,
+      "gain": 0.9
+    },
+    {
+      "wave": "saw",
+      "freq": 1600,
+      "freq_end": 300,
+      "vibrato": [
+        50,
+        0.5
+      ],
+      "attack": 0.001,
+      "release": 0.2,
+      "lowpass": 6000,
+      "gain": 0.6
+    },
+    {
+      "wave": "noise",
+      "freq": 9000,
+      "attack": 0.001,
+      "release": 0.08,
+      "lowpass": 8000,
+      "lowpass_end": 2000,
+      "gain": 0.5
+    }
+  ]
+}

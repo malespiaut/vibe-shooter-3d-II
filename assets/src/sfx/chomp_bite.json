@@ -1,0 +1,52 @@
+{
+  "desc": "Chomper bite: a hard metal jaw clamp with a crunchy grind and a little growl.",
+  "seed": 113,
+  "crush": 5,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 12000,
+      "attack": 0.0005,
+      "release": 0.03,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 1900,
+      "freq_end": 700,
+      "duty": 0.4,
+      "crush": 3,
+      "attack": 0.0005,
+      "release": 0.05,
+      "gain": 0.7
+    },
+    {
+      "wave": "noise",
+      "start": 0.03,
+      "freq": 2500,
+      "tremolo": [
+        60,
+        0.9
+      ],
+      "attack": 0.002,
+      "release": 0.12,
+      "lowpass": 5000,
+      "lowpass_end": 1200,
+      "gain": 0.6
+    },
+    {
+      "wave": "saw",
+      "start": 0.03,
+      "freq": 600,
+      "freq_end": 500,
+      "vibrato": [
+        35,
+        1.0
+      ],
+      "attack": 0.01,
+      "release": 0.12,
+      "lowpass": 3000,
+      "gain": 0.45
+    }
+  ]
+}

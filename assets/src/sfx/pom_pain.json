@@ -1,0 +1,55 @@
+{
+  "desc": "Pomeranian hurt: an upper-mid indignant yelp, flipping through a crushed robot blip.",
+  "seed": 125,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 912.0,
+      "freq_end": 1444.0,
+      "vibrato": [
+        26,
+        0.8
+      ],
+      "attack": 0.003,
+      "hold": 0.05,
+      "release": 0.04,
+      "lowpass": 5320,
+      "gain": 1.0
+    },
+    {
+      "wave": "saw",
+      "start": 0.08,
+      "freq": 1444.0,
+      "freq_end": 684.0,
+      "vibrato": [
+        26,
+        0.8
+      ],
+      "attack": 0.003,
+      "release": 0.12,
+      "lowpass": 5320,
+      "lowpass_end": 1520,
+      "gain": 0.9
+    },
+    {
+      "wave": "square",
+      "freq": 456.0,
+      "freq_end": 684.0,
+      "duty": 0.3,
+      "arp": [
+        0,
+        12,
+        0,
+        7,
+        0
+      ],
+      "arp_step": 0.03,
+      "crush": 3,
+      "downsample": 4,
+      "attack": 0.002,
+      "release": 0.18,
+      "gain": 0.45
+    }
+  ]
+}

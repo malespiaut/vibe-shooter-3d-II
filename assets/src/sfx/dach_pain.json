@@ -1,0 +1,55 @@
+{
+  "desc": "Dachshund hurt: a low-mid gruff yelp, jumping and dropping through a crushed blip.",
+  "seed": 135,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 312.0,
+      "freq_end": 494.0,
+      "vibrato": [
+        26,
+        0.8
+      ],
+      "attack": 0.003,
+      "hold": 0.05,
+      "release": 0.04,
+      "lowpass": 1820,
+      "gain": 1.0
+    },
+    {
+      "wave": "saw",
+      "start": 0.08,
+      "freq": 494.0,
+      "freq_end": 234.0,
+      "vibrato": [
+        26,
+        0.8
+      ],
+      "attack": 0.003,
+      "release": 0.12,
+      "lowpass": 1820,
+      "lowpass_end": 520,
+      "gain": 0.9
+    },
+    {
+      "wave": "square",
+      "freq": 156.0,
+      "freq_end": 234.0,
+      "duty": 0.3,
+      "arp": [
+        0,
+        12,
+        0,
+        7,
+        0
+      ],
+      "arp_step": 0.03,
+      "crush": 3,
+      "downsample": 4,
+      "attack": 0.002,
+      "release": 0.18,
+      "gain": 0.45
+    }
+  ]
+}

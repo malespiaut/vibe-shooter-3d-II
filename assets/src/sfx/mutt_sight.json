@@ -1,0 +1,105 @@
+{
+  "desc": "Mutt Trooper alert: a gruff mid-pitched double bark 'ruff-ruff' over a crushed robotic buzz.",
+  "seed": 101,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "saw",
+      "start": 0.0,
+      "freq": 368.0,
+      "freq_end": 575.0,
+      "attack": 0.004,
+      "release": 0.025,
+      "lowpass": 1380,
+      "lowpass_end": 2760,
+      "gain": 0.8
+    },
+    {
+      "wave": "saw",
+      "start": 0.025,
+      "freq": 575.0,
+      "freq_end": 322.0,
+      "vibrato": [
+        30,
+        0.5
+      ],
+      "attack": 0.002,
+      "decay": 0.052,
+      "sustain": 0.5,
+      "release": 0.078,
+      "lowpass": 2760,
+      "lowpass_end": 920,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "start": 0.0,
+      "freq": 230.0,
+      "freq_end": 161.0,
+      "duty": 0.25,
+      "crush": 4,
+      "downsample": 3,
+      "attack": 0.002,
+      "release": 0.15,
+      "gain": 0.45
+    },
+    {
+      "wave": "noise",
+      "start": 0.0,
+      "freq": 3680,
+      "attack": 0.002,
+      "release": 0.06,
+      "lowpass": 3680,
+      "gain": 0.5
+    },
+    {
+      "wave": "saw",
+      "start": 0.17,
+      "freq": 345.92,
+      "freq_end": 540.5,
+      "attack": 0.004,
+      "release": 0.025,
+      "lowpass": 1297.2,
+      "lowpass_end": 2594.4,
+      "gain": 0.8
+    },
+    {
+      "wave": "saw",
+      "start": 0.195,
+      "freq": 540.5,
+      "freq_end": 302.68,
+      "vibrato": [
+        30,
+        0.5
+      ],
+      "attack": 0.002,
+      "decay": 0.06,
+      "sustain": 0.5,
+      "release": 0.09,
+      "lowpass": 2594.4,
+      "lowpass_end": 864.8,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "start": 0.17,
+      "freq": 216.2,
+      "freq_end": 151.34,
+      "duty": 0.25,
+      "crush": 4,
+      "downsample": 3,
+      "attack": 0.002,
+      "release": 0.17,
+      "gain": 0.45
+    },
+    {
+      "wave": "noise",
+      "start": 0.17,
+      "freq": 3459.2,
+      "attack": 0.002,
+      "release": 0.06,
+      "lowpass": 3459.2,
+      "gain": 0.5
+    }
+  ]
+}

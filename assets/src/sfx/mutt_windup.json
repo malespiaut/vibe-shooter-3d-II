@@ -1,0 +1,48 @@
+{
+  "desc": "Mutt raising its rifle: a rising servo whine with a gear chatter, ending on a short lock-on blip.",
+  "seed": 102,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 300,
+      "freq_end": 900,
+      "duty": 0.3,
+      "vibrato": [
+        40,
+        0.3
+      ],
+      "crush": 4,
+      "downsample": 2,
+      "attack": 0.02,
+      "hold": 0.36,
+      "release": 0.04,
+      "lowpass": 2500,
+      "gain": 0.8
+    },
+    {
+      "wave": "saw",
+      "freq": 150,
+      "freq_end": 450,
+      "tremolo": [
+        45,
+        0.7
+      ],
+      "attack": 0.02,
+      "hold": 0.36,
+      "release": 0.04,
+      "lowpass": 1200,
+      "gain": 0.6
+    },
+    {
+      "wave": "square",
+      "start": 0.43,
+      "freq": 1840,
+      "duty": 0.5,
+      "attack": 0.001,
+      "hold": 0.06,
+      "release": 0.02,
+      "gain": 0.45
+    }
+  ]
+}

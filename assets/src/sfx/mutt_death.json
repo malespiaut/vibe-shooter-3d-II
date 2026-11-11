@@ -1,0 +1,60 @@
+{
+  "desc": "Mutt dying: a sagging mid whimper while its robot core winds down and crackles out with a last clunk.",
+  "seed": 105,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 736.0,
+      "freq_end": 230.0,
+      "vibrato": [
+        9,
+        1.0
+      ],
+      "attack": 0.01,
+      "decay": 0.27,
+      "sustain": 0.6,
+      "release": 0.54,
+      "lowpass": 2760,
+      "lowpass_end": 552.0,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 368.0,
+      "freq_end": 55.2,
+      "duty": 0.3,
+      "crush": 3,
+      "downsample": 4,
+      "attack": 0.01,
+      "hold": 0.36,
+      "release": 0.45,
+      "gain": 0.55
+    },
+    {
+      "wave": "noise",
+      "start": 0.315,
+      "freq": 3000,
+      "tremolo": [
+        18,
+        0.9
+      ],
+      "attack": 0.02,
+      "release": 0.495,
+      "lowpass": 4000,
+      "lowpass_end": 600,
+      "gain": 0.45
+    },
+    {
+      "wave": "square",
+      "start": 0.765,
+      "freq": 115.0,
+      "freq_end": 46.0,
+      "duty": 0.5,
+      "crush": 2,
+      "attack": 0.001,
+      "release": 0.06,
+      "gain": 0.5
+    }
+  ]
+}
