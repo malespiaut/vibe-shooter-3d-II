@@ -1,0 +1,120 @@
+UpdateCTestConfiguration  from :/work/build/DartConfiguration.tcl
+Test project /work/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 19
+      Start 19: proj_travel
+
+19: Test command: /work/build/test_projectile "travel"
+19: Working Directory: /work/build
+19: Test timeout computed to be: 10000000
+19: proj_travel: 20 tics x 26214 = 524280, start 163840 end 688120
+ 1/11 Test #19: proj_travel ......................   Passed    0.00 sec
+test 20
+      Start 20: proj_wall
+
+20: Test command: /work/build/test_projectile "wall"
+20: Working Directory: /work/build
+20: Test timeout computed to be: 10000000
+20: proj_wall: exploded after 26 tics at x=2018498 (wall face 2031616, radius 8192)
+ 2/11 Test #20: proj_wall ........................   Passed    0.00 sec
+test 21
+      Start 21: proj_splash
+
+21: Test command: /work/build/test_projectile "splash"
+21: Working Directory: /work/build
+21: Test timeout computed to be: 10000000
+21: proj_splash: d=0 -> 96, d=0.75 -> 48, d=1.5 -> 0
+ 3/11 Test #21: proj_splash ......................   Passed    0.00 sec
+test 22
+      Start 22: proj_splash_wall
+
+22: Test command: /work/build/test_projectile "splash_wall"
+22: Working Directory: /work/build
+22: Test timeout computed to be: 10000000
+22: proj_splash_wall: d=1.4 open -> 6, behind a wall -> 0
+ 4/11 Test #22: proj_splash_wall .................   Passed    0.00 sec
+test 23
+      Start 23: proj_self
+
+23: Test command: /work/build/test_projectile "self"
+23: Working Directory: /work/build
+23: Test timeout computed to be: 10000000
+23: proj_self: point-blank scarab into a wall, health 100 -> 24
+ 5/11 Test #23: proj_self ........................   Passed    0.00 sec
+test 24
+      Start 24: proj_direct
+
+24: Test command: /work/build/test_projectile "direct"
+24: Working Directory: /work/build
+24: Test timeout computed to be: 10000000
+24: proj_direct: hit at d=52436, damage 89 (splash part 44)
+ 6/11 Test #24: proj_direct ......................   Passed    0.00 sec
+test 25
+      Start 25: proj_barrel_chain
+
+25: Test command: /work/build/test_projectile "barrel_chain"
+25: Working Directory: /work/build
+25: Test timeout computed to be: 10000000
+25: proj_barrel_chain: hit on tic 12, explosions on tics 16 20 24
+ 7/11 Test #25: proj_barrel_chain ................   Passed    0.00 sec
+test 26
+      Start 26: proj_barrel_solid
+
+26: Test command: /work/build/test_projectile "barrel_solid"
+26: Working Directory: /work/build
+26: Test timeout computed to be: 10000000
+26: proj_barrel_solid: player stopped at x=327680 (barrel 360448, radii 32768)
+ 8/11 Test #26: proj_barrel_solid ................   Passed    0.00 sec
+test 27
+      Start 27: proj_no_floats
+
+27: Test command: /usr/sbin/sh "-c" "! grep -rnE 'float|double' /work/src/game"
+27: Working Directory: /work/build
+27: Test timeout computed to be: 10000000
+ 9/11 Test #27: proj_no_floats ...................   Passed    0.00 sec
+test 73
+      Start 73: launcher_demo
+
+73: Test command: /usr/sbin/python3.14 "/work/tests/test_launcher_demo.py" "/work/build/game" "/work/build/test_tmp/launcher_demo"
+73: Working Directory: /work/build
+73: Environment variables: 
+73:  BAST_LIB=/work/build/libbast.so
+73:  BAST_PALETTE=/work/assets/gen/palette.bin
+73: Test timeout computed to be: 10000000
+73: STATS level=1 tic=116 hash=1f2ad24d3a219f28 health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
+73: launcher_demo: OK
+10/11 Test #73: launcher_demo ....................   Passed    0.04 sec
+test 74
+      Start 74: determinism_launcher-test
+
+74: Test command: /usr/sbin/cmake "-DGAME=/work/build/game" "-DDEMO=/work/demos/launcher-test.demo" "-DOUT=/work/build/test_tmp/determinism_launcher-test" "-P" "/work/tests/determinism.cmake"
+74: Working Directory: /work/build
+74: Test timeout computed to be: 10000000
+74: -- run a: STATS level=1 tic=116 hash=1f2ad24d3a219f28 health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
+74: -- run b: STATS level=1 tic=116 hash=1f2ad24d3a219f28 health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
+74: -- determinism: /work/demos/launcher-test.demo: 116 tics identical
+11/11 Test #74: determinism_launcher-test ........   Passed    0.01 sec
+
+The following tests passed:
+	proj_travel
+	proj_wall
+	proj_splash
+	proj_splash_wall
+	proj_self
+	proj_direct
+	proj_barrel_chain
+	proj_barrel_solid
+	proj_no_floats
+	launcher_demo
+	determinism_launcher-test
+
+100% tests passed out of 11
+
+Total Test time (real) =   0.07 sec
+STATS level=1 tic=116 hash=1f2ad24d3a219f28 health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
+STATS level=1 tic=116 hash=1f2ad24d3a219f28 health=100 armor=0 kills=4/4 items=1/1 secrets=0/0 exit=0 god=0
