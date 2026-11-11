@@ -136,11 +136,13 @@ static int load_sprites(const bast_map *map, const char *dir)
                 return 0;
             continue;
         }
-        /* Enemy: every animation or nothing. A set whose art is not built
-         * yet is skipped (the enemy is not drawn), never substituted. */
+        /* Enemy: every animation (but `gib` for no_gib sets) or nothing. A
+         * set whose art is not built yet is skipped (the enemy is not
+         * drawn), never substituted. */
         int r = 1;
         for (int a = 0; a < SPR_ANIMS && r > 0; a++)
-            r = load_anim(dir, type, def, a, sprite_enemy_frames(a), missing, sizeof missing);
+            if (a != SPR_GIB || !def->no_gib)
+                r = load_anim(dir, type, def, a, sprite_enemy_frames(a), missing, sizeof missing);
         if (r == 0)
             return 0;
         if (r < 0) {

@@ -51,12 +51,14 @@ int sprite_dir(angle_t viewer_angle, angle_t thing_angle);
  * one disappears), never from the static map entity list. `enemy` sprites
  * have every animation of sprite_enemy_frames(): `<name>_<anim>_d<d>_f<f>`
  * (gib frames under assets/gen/gibs/, d0 only), and the caller picks the
- * animation and frame (game/thinker.h thinker_anim()). */
+ * animation and frame (game/thinker.h thinker_anim()). `no_gib` enemies
+ * (the boss, enemies.md) have every animation but `gib`. */
 typedef struct {
     const char *name; /* may hold a subdirectory: "items/fish" */
     int frames;       /* idle frames, 1..SPRITE_MAX_FRAMES */
     int live;
     int enemy;
+    int no_gib;
 } sprite_def;
 
 /* Sprite of map entity `type`, or NULL if that type has no sprite yet.

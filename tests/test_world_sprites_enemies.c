@@ -11,7 +11,10 @@
  *    Chomper at (5.5, 3.5) is drawn by render_view_things from
  *    ai_render_things, its corpse after a killing hit too, and a Pomeranian
  *    at (7.5, 5.5) is drawn as well; rendering leaves game_hash() unchanged.
- * 4. Incomplete set: on a symlinked copy of the assets (loose files, no
+ * 4. All 7 enemy types on one map: render_init prints no "incomplete"
+ *    warning (stderr captured), and each type's idle frame draws at
+ *    distance 3: Shepherd ("shep") > 40 px, Woofu (no gib set) > 0 px.
+ * 5. Incomplete set: on a symlinked copy of the assets (loose files, no
  *    game.pak) without pom_idle_d0_f0.tex, render_init still succeeds, the Pomeranian is
  *    skipped (not drawn, never substituted) and the Chomper still draws.
  *
@@ -108,6 +111,13 @@ static void check_anim(void)
     expect(g, 4, SPR_GIB, 1);
     expect(g, 28, SPR_GIB, 7);
     expect(g, 100, SPR_GIB, 7);
+
+    /* The boss has no gib (enemies.md): overkill plays its death. */
+    thinker_t *b = thinker_get(&th, thinker_spawn(&th, BAST_ENT_WOOFU, 0, 0, 0));
+    assert(b && thinker_damage(&th, b, b->max_health * 2));
+    assert(!(b->flags & TH_FLAG_GIB));
+    b->died_tic = 0;
+    expect(b, 100, SPR_DEATH, 4);
     puts("thinker_anim: ok");
 }
 
@@ -124,6 +134,8 @@ static void check_table(void)
     }
     assert(strcmp(sprite_name_for_entity(BAST_ENT_CHIHUAHUA_CHOMPER), "chomp") == 0);
     assert(strcmp(sprite_name_for_entity(BAST_ENT_MUTT_TROOPER), "mutt") == 0);
+    assert(strcmp(sprite_name_for_entity(BAST_ENT_SHEPHERD_SHIELDBEARER), "shep") == 0);
+    assert(sprite_def_for_entity(BAST_ENT_WOOFU)->no_gib);
 }
 
 static int add(bast_map *m, int type, double x, double y)
@@ -217,6 +229,56 @@ static void check_live(const char *assets)
     bast_map_free(m);
 }
 
+/* All 7 enemy types on one map: no "incomplete" warning from render_init on
+ * main's assets, and every type's idle d0 frame draws in front of the
+ * camera. */
+static void check_all_types(const char *assets)
+{
+    bast_map *m = make_map();
+    for (int type = BAST_ENT_MUTT_TROOPER; type <= BAST_ENT_WOOFU; type++)
+        add(m, type, 1.5, 1.5); /* behind the camera: only loaded here */
+
+    char log[] = "/tmp/wse-log-XXXXXX";
+    const int fd = mkstemp(log);
+    assert(fd >= 0);
+    fflush(stderr);
+    const int saved = dup(2);
+    assert(saved >= 0 && dup2(fd, 2) == 2);
+    const int ok = render_init(m, assets);
+    fflush(stderr);
+    assert(dup2(saved, 2) == 2);
+    close(saved);
+    close(fd);
+    if (!ok)
+        fprintf(stderr, "%s\n", render_error());
+    assert(ok);
+    static char text[4096];
+    FILE *f = fopen(log, "r");
+    assert(f);
+    const size_t len = fread(text, 1, sizeof text - 1, f);
+    fclose(f);
+    text[len] = 0;
+    unlink(log);
+    printf("render_init, all 7 enemy types: stderr %zu bytes%s%s\n", len, len ? ": " : "", text);
+    assert(!strstr(text, "incomplete"));
+
+    static game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    render_view(m, gs.player.x, gs.player.y, gs.player.angle, base);
+    for (int type = BAST_ENT_MUTT_TROOPER; type <= BAST_ENT_WOOFU; type++) {
+        const render_thing one = { (uint16_t)type, (fix_t)(5.5 * 65536), (fix_t)(3.5 * 65536),
+                                   0, SPR_IDLE, 0 };
+        render_view_things(m, gs.player.x, gs.player.y, gs.player.angle, &one, 1, gs.tic, fb);
+        const int px = diff_count(base, fb, 100, 220);
+        printf("%s idle f0: %d px\n", sprite_name_for_entity(type), px);
+        assert(px > 0);
+        if (type == BAST_ENT_SHEPHERD_SHIELDBEARER)
+            assert(px > 40);
+    }
+    render_shutdown();
+    bast_map_free(m);
+}
+
 /* Incomplete set: a symlinked copy of the assets without the Pomeranian's
  * idle d0 frame. render_init warns but succeeds; the Pom is not drawn. */
 static void check_incomplete(const char *assets)
@@ -262,6 +324,7 @@ int main(int argc, char **argv)
     assert(colormap_load(argv[1]));
     assert(files_init(argv[1]));
     check_live(argv[1]);
+    check_all_types(argv[1]);
     check_incomplete(argv[1]);
     puts("world_sprites_enemies: ok");
     return 0;

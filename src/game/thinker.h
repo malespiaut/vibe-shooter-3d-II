@@ -55,7 +55,7 @@ enum {
 /* thinker_t.flags */
 enum {
     TH_FLAG_COUNTKILL = 1 << 0, /* counts toward kills total */
-    TH_FLAG_GIB = 1 << 1,       /* died at HP <= -(max HP / 2) */
+    TH_FLAG_GIB = 1 << 1,       /* died at HP <= -(max HP / 2); never the boss */
     TH_FLAG_SHOOTABLE = 1 << 2, /* hitscan and melee can hit it (enemies) */
     TH_FLAG_PICKUP = 1 << 3,    /* touched by the player (weapon pickups) */
     TH_FLAG_TRIGGER = 1 << 4,   /* pickup with PICKUP_TRIGGER: fires `tag` */

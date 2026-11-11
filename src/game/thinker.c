@@ -129,7 +129,8 @@ int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage)
     }
     t->state = TH_STATE_DEAD;
     t->tics = 0;
-    if (t->health <= -(t->max_health / 2))
+    /* enemies.md Animation list: the boss has no `gib`, its death plays. */
+    if (t->health <= -(t->max_health / 2) && t->type != BAST_ENT_WOOFU)
         t->flags |= TH_FLAG_GIB;
     if (t->flags & TH_FLAG_COUNTKILL)
         th->kills++;

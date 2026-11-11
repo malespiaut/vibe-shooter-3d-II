@@ -52,8 +52,9 @@ static const sprite_def defs[BAST_ENT_TYPE_LIMIT] = {
     [BAST_ENT_POMERANIAN_PLASMAGUNNER] = { "pom", 2, 1, 1 },
     [BAST_ENT_DACHSHUND_HOWITZER] = { "dach", 2, 1, 1 },
     [BAST_ENT_MASTIFF_JUGGERNAUT] = { "mastiff", 2, 1, 1 },
-    [BAST_ENT_SHEPHERD_SHIELDBEARER] = { "shield", 2, 1, 1 },
-    [BAST_ENT_WOOFU] = { "woofu", 2, 1, 1 },
+    [BAST_ENT_SHEPHERD_SHIELDBEARER] = { "shep", 2, 1, 1 },
+    /* enemies.md Animation list: the boss has no `gib`. */
+    [BAST_ENT_WOOFU] = { "woofu", 2, 1, 1, 1 },
 };
 
 static const char *const anim_names[SPR_ANIMS] = {
