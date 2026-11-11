@@ -20,6 +20,16 @@ assets/src/gibs/shep.json, then checks (enemies.md, art-bible.md):
 - 8 gib frames shep_gib_d0_f<0..7>.tex, none with an opaque pixel on row 0
   or in column 0 / 55, all chunks at rest by f7 (f6 == f7);
 - the death f4 corpse is at most 24 px tall in every direction;
+- the face clears the shield (idle/walk/pain d0, d1, d7): in the 8 rows
+  above the shield rim's top row the brown/beige face spans >= 8x5 px with
+  >= 12 beige (tan muzzle) pixels, and in d0/d1/d7 idle/walk no brown/beige
+  pixel lies between the rim's left and right edge on any shield row;
+- the shield face is shaded, not a flat slab (idle/walk d0): the pixels
+  between the rim edges use >= 4 `blue` entries holding >= 5% each, and no
+  single entry holds more than 50%;
+- the dropped shield is not a floor sliver (death f2-f4, every direction):
+  no run of more than 6 adjacent columns whose opaque pixels span at most
+  2 rows (the edge-on 1-2 px line);
 - palcheck passes on everything.
 Exit 77 (ctest SKIP) when `blender` is not installed.
 """
@@ -47,6 +57,30 @@ def run(cmd):
     p = subprocess.run(cmd, capture_output=True, text=True)
     assert p.returncode == 0, " ".join(cmd) + "\n" + p.stdout[-3000:] + p.stderr[-3000:]
     return p.stdout
+
+
+def rim_spans(px, rim):
+    """{row: (left, right)} of the fullbright shield rim, rows with >= 2."""
+    sp = {}
+    for y in range(H):
+        xs = [x for x in range(W) if px[y][x] == rim]
+        if len(xs) >= 2 and xs[-1] - xs[0] > 2:
+            sp[y] = (xs[0], xs[-1])
+    return sp
+
+
+def sliver_run(px):
+    """Longest run of adjacent columns whose opaque pixels span at most 2
+    rows (a shield seen edge-on on the floor: a 1-2 px line)."""
+    best = run = 0
+    for x in range(W):
+        col = [y for y in range(H) if px[y][x] != 255]
+        if col and max(col) - min(col) < 2:
+            run += 1
+            best = max(best, run)
+        else:
+            run = 0
+    return best
 
 
 def main():
@@ -77,6 +111,13 @@ def main():
         assert len(want) == 128 and got == want, (len(got), set(got) ^ set(want))
 
         bad_interior = bad_outline = 0
+        face_min = (99, 99, 99)
+        poke = 0
+        shield_ok = []
+        sliver_max = 0
+        fur = {i for i, (rp, _) in ramp_of.items() if rp in ("brown", "beige")}
+        tan = {i for i, (rp, _) in ramp_of.items() if rp == "beige"}
+        blue = {i for i, (rp, _) in ramp_of.items() if rp == "blue"}
         dom_min = 99
         white, rim = names.index("fb_white"), names.index("fb_blue")
         for fn in want:
@@ -120,6 +161,38 @@ def main():
                 bw, bh = max(xs) - min(xs) + 1, max(ys) - min(ys) + 1
                 print("idle d0 bounding box: %dx%d" % (bw, bh))
                 assert abs(bw - 40) <= 2 and abs(bh - 60) <= 2, (bw, bh)
+            dd = int(fn.rsplit("_d", 1)[1][0])
+            anim = fn.split("_")[1]
+            if anim in ("idle", "walk", "pain") and dd in (0, 1, 7):
+                spans = rim_spans(px, names.index("fb_blue"))
+                top = min(spans)
+                fx = [x for y in range(top - 8, top) for x in range(W) if px[y][x] in fur]
+                fy = [y for y in range(top - 8, top) for x in range(W) if px[y][x] in fur]
+                nt = sum(px[y][x] in tan for y in range(top - 8, top) for x in range(W))
+                fw = max(fx) - min(fx) + 1 if fx else 0
+                fh = max(fy) - min(fy) + 1 if fy else 0
+                face_min = tuple(min(a, b) for a, b in zip(face_min, (fw, fh, nt)))
+                assert fw >= 8 and fh >= 5 and nt >= 12, (fn, "face hidden", fw, fh, nt)
+                if anim != "pain":
+                    n = sum(px[y][x] in fur for y, (a, b) in spans.items()
+                            for x in range(a + 1, b))
+                    poke += n
+                    assert n == 0, (fn, "fur pixels inside the shield", n)
+                if anim != "pain" and dd == 0:
+                    hist = {}
+                    for y, (a, b) in spans.items():
+                        for x in range(a + 1, b):
+                            if px[y][x] in blue:
+                                hist[px[y][x]] = hist.get(px[y][x], 0) + 1
+                    tot = sum(hist.values())
+                    big = sum(c >= 0.05 * tot for c in hist.values())
+                    share = max(hist.values()) / tot
+                    shield_ok.append((fn, big, share))
+                    assert big >= 4 and share <= 0.5, (fn, "flat shield face", big, share)
+            if anim == "death" and fn[-6:] in ("f2.tex", "f3.tex", "f4.tex"):
+                sr = sliver_run(px)
+                sliver_max = max(sliver_max, sr)
+                assert sr <= 6, (fn, "dropped shield is a floor sliver", sr)
             sp = sum(row.count(white) for row in px)
             rm = sum(row.count(rim) for row in px)
             # Baton crackle: windup f1 (the telegraph glow) and attack f0.
@@ -137,6 +210,12 @@ def main():
         print("interior dark-end pixels: %d, non-_00 outline pixels: %d, "
               "dominant-ramp entries (min over standing frames): %d"
               % (bad_interior, bad_outline, dom_min))
+        print("face above the shield (min w, h, tan px): %d, %d, %d; fur pixels "
+              "inside the shield: %d" % (face_min + (poke,)))
+        for fn, big, share in shield_ok:
+            print("%s shield face: %d blue entries >= 5%%, largest %.0f%%"
+                  % (fn, big, share * 100))
+        print("dropped shield: longest floor-sliver run %d columns" % sliver_max)
         assert bad_interior == 0 and bad_outline == 0
         assert dom_min >= 8, dom_min
 

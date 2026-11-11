@@ -10,8 +10,10 @@ tools/blender_render.py).
 Look: an upright black-and-tan German shepherd (black saddle, mask and tall
 pointed ears in the dark end of `brown`; tan face, chest, forearms and paws
 in `beige`) in navy riot gear (`blue`: vest, pants, shin guards, helmet),
-holding a tall rectangular energy shield (light `blue` face, `fb_blue`
-rim) in front with the left arm and a shock baton in the right hand. The
+holding a tall curved riot shield (light `blue` face shaded across its
+curve and bevels, dark vision slot, paw emblem and emitter rib, `fb_blue`
+rim) in front with the left arm, its top below the muzzle so the
+black-and-tan face reads, and a shock baton in the right hand. The
 silhouette is the art-bible's: upright, two tall ears, a tall rectangle in
 front, plus a bushy tail behind in side views.
 
@@ -20,8 +22,8 @@ hinged at its outer edge, exposing the front, and the baton goes up over
 the right shoulder; on windup f1 the baton tip crackles (`fb_white`).
 Attack: the baton chops down with the crackle (f0), then recovers with the
 shield coming back (f1). Death: the shield drops and powers off (rim
-hidden from f2), the dog sinks to its knees and collapses forward over the
-shield lying flat on the floor (f4, the corpse).
+hidden from f2) and lands propped on its edge beside the body, the dog
+sinks to its knees and collapses forward (f4, the corpse).
 
 Rig: one armature "Shep" (gets the actions) and one mesh skinned rigidly to
 it: every part's vertices belong 100% to one bone (pixel art at 40x60 has no
@@ -229,19 +231,70 @@ for k in range(5):
          0.9, "ShepSpark", "spark", seg=4, r2=0.2)
 ball(tuple(TIP), (3.4, 3.4, 3.4), "ShepSpark", "spark", seg=8, ring=6)
 
-# Energy shield: a tall rectangle in front, 24 x 42 px, its face 1.8 px
-# thick at y -10.8, a fullbright rim around the edge, two dark struts
-# across the back where the left paw holds it.
-SH_C = Vector((6.0, -10.8, 27.0))
-SH_W, SH_H = 24.0, 42.0
-box(tuple(SH_C), (SH_W, 1.8, SH_H), "ShepShield", "shield")
-for z in (-11.0, 9.0):                                                # face bands
-    box(tuple(SH_C + Vector((0, -0.7, z))), (SH_W - 3.0, 0.8, 1.6), "ShepArmor", "shield")
-for dz in (-SH_H / 2, SH_H / 2):
-    box(tuple(SH_C + Vector((0, -0.4, dz))), (SH_W + 0.6, 2.8, 1.4), "ShepRim", "rim")
-for dx in (-SH_W / 2, SH_W / 2):
-    box(tuple(SH_C + Vector((dx, -0.4, 0))), (1.4, 2.8, SH_H + 0.6), "ShepRim", "rim")
-box(tuple(SH_C + Vector((2.0, 1.6, 4.0))), (2.0, 2.0, 24.0), "ShepArmorDark", "shield")  # strut
+# Energy shield: a tall riot plate in front, 24 x 38 px, curved around a
+# vertical axis (radius 24 px, bulging toward the viewer) and bevelled back
+# at the top and bottom, 1.8 px thick, so the key light shades it from the
+# upper-left strip to the lower-right one. Its top (z 40) sits below the
+# muzzle so the black mask and tan face read over it. Modelled dog-tech
+# detail: a dark vision slot, a raised paw emblem and an emitter rib; a
+# fullbright rim follows the curved edge; a dark strut across the back
+# where the left paw holds it.
+SH_C = Vector((6.0, -10.8, 21.0))
+SH_W, SH_H, SH_R, SH_T = 24.0, 38.0, 24.0, 1.8
+SH_NU = 7                                                  # 6 vertical strips
+SH_Z = ((-SH_H / 2, 2.0), (-SH_H / 2 + 4.0, 0.0),          # (z, set back y)
+        (SH_H / 2 - 5.0, 0.0), (SH_H / 2, 3.0))
+
+
+def shield_pt(u, z, back=0.0, lift=0.0):
+    """Point on the shield's front surface (px, world, rest): u along the
+    arc from its centre (-W/2..W/2), z from its centre; `lift` moves it out
+    of the surface toward the viewer, `back` is the set-back of a bevel."""
+    a = u / SH_R
+    return SH_C + Vector((SH_R * math.sin(a) - lift * math.sin(a),
+                          SH_R * (1 - math.cos(a)) + back - lift * math.cos(a), z))
+
+
+def shield_plate():
+    bm = bmesh.new()
+    us = [-SH_W / 2 + SH_W * i / (SH_NU - 1) for i in range(SH_NU)]
+    fr = [[bm.verts.new(tuple(shield_pt(u, z, b) * PX)) for z, b in SH_Z] for u in us]
+    bk = [[bm.verts.new(tuple((shield_pt(u, z, b) + Vector((0, SH_T, 0))) * PX))
+           for z, b in SH_Z] for u in us]
+    nz = len(SH_Z)
+    for i in range(SH_NU - 1):
+        for j in range(nz - 1):
+            bm.faces.new((fr[i][j], fr[i + 1][j], fr[i + 1][j + 1], fr[i][j + 1]))
+            bm.faces.new((bk[i][j], bk[i][j + 1], bk[i + 1][j + 1], bk[i + 1][j]))
+    ring = ([(i, 0) for i in range(SH_NU)] + [(SH_NU - 1, j) for j in range(1, nz)]
+            + [(i, nz - 1) for i in range(SH_NU - 2, -1, -1)]
+            + [(0, j) for j in range(nz - 2, 0, -1)])
+    for k in range(len(ring)):
+        (i0, j0), (i1, j1) = ring[k], ring[(k + 1) % len(ring)]
+        bm.faces.new((fr[i0][j0], fr[i1][j1], bk[i1][j1], bk[i0][j0]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.verts.index_update()
+    add_bm(bm, "ShepShield", "shield", False)
+    # Rim along the front edge of the plate.
+    pts = [shield_pt(us[i], SH_Z[j][0], SH_Z[j][1], 0.3) for i, j in ring]
+    for k in range(len(pts)):
+        tube(tuple(pts[k]), tuple(pts[(k + 1) % len(pts)]), 0.8, "ShepRim", "rim",
+             seg=4, smooth=False)
+        ball(tuple(pts[k]), (1.8, 1.8, 1.8), "ShepRim", "rim", seg=6, ring=4)
+
+
+shield_plate()
+# Vision slot near the top.
+box(tuple(shield_pt(0, SH_H / 2 - 9.0, 0, 0.3)), (10.0, 1.6, 2.0), "ShepArmorDark", "shield")
+# Paw emblem: a main pad and four toes, raised off the face.
+ball(tuple(shield_pt(0, -3.0, 0, 0.2)), (7.0, 1.8, 5.6), "ShepArmorDark", "shield", seg=10, ring=6)
+for u, z in ((-4.4, 1.6), (-1.6, 3.4), (1.6, 3.4), (4.4, 1.6)):
+    ball(tuple(shield_pt(u, z, 0, 0.2)), (2.6, 1.6, 3.0), "ShepArmorDark", "shield", seg=6, ring=4)
+# Emitter rib across the lower face, following the curve.
+rib = [shield_pt(-SH_W / 2 + 2.0 + 20.0 * k / 6, -11.0, 0, 0.3) for k in range(7)]
+for a, b in zip(rib, rib[1:]):
+    tube(tuple(a), tuple(b), 0.8, "ShepArmor", "shield", seg=4, smooth=False)
+box(tuple(SH_C + Vector((2.0, 2.4, 4.0))), (2.0, 2.0, 22.0), "ShepArmorDark", "shield")  # strut
 
 mesh = bpy.data.meshes.new("ShepBody")
 mesh.from_pydata(verts, [], faces)
@@ -402,10 +455,17 @@ def walk(phase):
     return sp
 
 
-# The dropped shield: lying face down on the floor, top forward, centred
-# at (2, 2) under where the body falls (its 42 px length must fit the
-# 56 px canvas in every view).
-FLAT = {"rot": (90, 0, 0), "loc": (2 - SH_C.x, 2 - SH_C.y, 1.8 - SH_C.z)}
+# The dropped shield: lying on its long edge beside the body, face up and
+# propped 35 deg off the floor (so it shows face from every eye-height view
+# instead of a 1 px floor line), yawed 22.5 deg so no rendered direction
+# sees it exactly edge-on. Centred near the origin so its 38 px length fits
+# the 56 px canvas in every view.
+DROP_TILT, DROP_YAW, DROP_X, DROP_Y = 35.0, 22.5, 3.0, -4.0
+FLAT = {"q": (Quaternion((0, 0, 1), math.radians(DROP_YAW))
+              @ Quaternion((1, 0, 0), math.radians(DROP_TILT - 90.0))
+              @ Quaternion((0, 1, 0), math.radians(90.0))),
+        "loc": (DROP_X - SH_C.x, DROP_Y - SH_C.y,
+                SH_W / 2 * math.sin(math.radians(DROP_TILT)) + 1.6 - SH_C.z)}
 
 POSES = {
     "idle": [
@@ -469,8 +529,8 @@ POSES = {
          "uparm_L": {"rot": (40, 0, 0)},
          "shield": FLAT,
          "rim": {"scale": HIDE}, "baton": {"rot": (90, 0, 0)}},
-        # f4: corpse: collapsed forward onto the knees and chest over the
-        # shield lying flat on the floor, head turned to its left.
+        # f4: corpse: collapsed forward onto the knees and chest beside the
+        # propped shield, head turned to its left.
         {"root": {"rot": (80, 0, 0), "loc": (0, 36, 3)},
          "thigh_R": {"rot": (-84, 0, 0)}, "thigh_L": {"rot": (-80, 0, 0)},
          "shin_R": {"rot": (150, 0, 0)}, "shin_L": {"rot": (148, 0, 0)},
