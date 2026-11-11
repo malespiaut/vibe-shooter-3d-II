@@ -1,5 +1,7 @@
 #include "game/demo.h"
 
+#include "game/demo_nav.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -134,6 +136,207 @@ static int cmd_wait(demo_t *d, line_ctx *c)
     return 1;
 }
 
+/* Map coordinates: maps are at most 64x64. */
+static int parse_tile(line_ctx *c, int first, int32_t *tx, int32_t *ty)
+{
+    long x, y;
+    if (!parse_int(c, c->tok[first], 0, 63, "tile x", &x) ||
+        !parse_int(c, c->tok[first + 1], 0, 63, "tile y", &y))
+        return 0;
+    *tx = (int32_t)x;
+    *ty = (int32_t)y;
+    return 1;
+}
+
+/* goto <tx> <ty> [max] | goto @<name> [max] */
+static int cmd_goto(demo_t *d, line_ctx *c)
+{
+    int nargs = c->ntok - 1;
+    int named = nargs >= 1 && c->tok[1][0] == '@';
+    int need = named ? 1 : 2;
+    if (nargs != need && nargs != need + 1)
+        return fail(c, "'goto' takes <tx> <ty> [max] or @<name> [max]");
+    demo_cmd tmp = { 0 };
+    if (named) {
+        const char *nm = c->tok[1] + 1;
+        if (!*nm || strlen(nm) >= DEMO_NAME_MAX)
+            return fail(c, "goto: waypoint name must be 1-%d characters", DEMO_NAME_MAX - 1);
+        strcpy(tmp.name, nm);
+    } else if (!parse_tile(c, 1, &tmp.tx, &tmp.ty)) {
+        return 0;
+    }
+    long max = DEMO_GOTO_DEFAULT_MAX;
+    if (nargs == need + 1 && !parse_int(c, c->tok[need + 1], 1, 1000000, "max", &max))
+        return 0;
+    demo_cmd *cmd = push(d, c, DEMO_CMD_GOTO);
+    if (!cmd)
+        return 0;
+    tmp.kind = cmd->kind;
+    tmp.line = cmd->line;
+    tmp.n = (int32_t)max;
+    *cmd = tmp;
+    return 1;
+}
+
+/* face <angle_deg> | face <tx> <ty> */
+static int cmd_face(demo_t *d, line_ctx *c)
+{
+    demo_cmd tmp = { 0 };
+    if (c->ntok == 2) {
+        long deg;
+        if (!parse_int(c, c->tok[1], -360, 360, "angle", &deg))
+            return 0;
+        tmp.angle = nav_deg_to_angle((int32_t)deg);
+    } else if (c->ntok == 3) {
+        if (!parse_tile(c, 1, &tmp.tx, &tmp.ty))
+            return 0;
+        tmp.has_tile = 1;
+    } else {
+        return fail(c, "'face' takes <angle_deg> or <tx> <ty>");
+    }
+    demo_cmd *cmd = push(d, c, DEMO_CMD_FACE);
+    if (!cmd)
+        return 0;
+    tmp.kind = cmd->kind;
+    tmp.line = cmd->line;
+    *cmd = tmp;
+    return 1;
+}
+
+/* use: one tic of BT_USE. */
+static int cmd_use(demo_t *d, line_ctx *c)
+{
+    if (!want_args(c, 0))
+        return 0;
+    demo_cmd *cmd = push(d, c, DEMO_CMD_IN);
+    if (!cmd)
+        return 0;
+    cmd->n = 1;
+    cmd->cmd.buttons = BT_USE;
+    return 1;
+}
+
+/* weapon <n>: one tic selecting slot n. */
+static int cmd_weapon(demo_t *d, line_ctx *c)
+{
+    long n;
+    if (!want_args(c, 1) || !parse_int(c, c->tok[1], 1, 7, "weapon slot", &n))
+        return 0;
+    demo_cmd *cmd = push(d, c, DEMO_CMD_IN);
+    if (!cmd)
+        return 0;
+    cmd->n = 1;
+    cmd->cmd.buttons = (uint8_t)(n << BT_WEAPON_SHIFT);
+    return 1;
+}
+
+/* fire <n>: hold fire for n tics. */
+static int cmd_fire(demo_t *d, line_ctx *c)
+{
+    long n;
+    if (!want_args(c, 1) || !parse_int(c, c->tok[1], 1, 1000000, "tics", &n))
+        return 0;
+    demo_cmd *cmd = push(d, c, DEMO_CMD_IN);
+    if (!cmd)
+        return 0;
+    cmd->n = (int32_t)n;
+    cmd->cmd.buttons = BT_FIRE;
+    return 1;
+}
+
+/* Stats `expect` can read: the STATS line fields that live in game state.
+ * kills/items/secrets compare the first number of the X/Y pair. Counters
+ * whose systems do not exist yet read 0, exactly as the STATS line prints
+ * them (main.c print_stats); they move here when their systems land.
+ * level and god are run options, not game state, and are not offered. */
+static const char *const STATS[] = { "tic", "health", "armor", "kills",
+                                     "items", "secrets", "exit", "tile" };
+
+static int32_t stat_value(const game_state *gs, const char *name)
+{
+    if (strcmp(name, "tic") == 0)
+        return (int32_t)gs->tic;
+    if (strcmp(name, "health") == 0)
+        return gs->player.health;
+    if (strcmp(name, "armor") == 0)
+        return gs->player.armour;
+    return 0; /* kills, items, secrets, exit: no counters yet */
+}
+
+/* expect <stat><op><value>, or expect tile=X,Y / tile!=X,Y */
+static int cmd_expect(demo_t *d, line_ctx *c)
+{
+    if (c->ntok != 2)
+        return fail(c, "'expect' takes one <stat><op><value> field, e.g. health>=20");
+    const char *s = c->tok[1];
+    size_t k = strcspn(s, "=!<>");
+    if (k == 0 || s[k] == '\0')
+        return fail(c, "expect '%s': want <stat><op><value>", s);
+    char stat[DEMO_NAME_MAX];
+    if (k >= sizeof stat)
+        return fail(c, "expect: unknown stat '%.*s'", (int)k, s);
+    memcpy(stat, s, k);
+    stat[k] = '\0';
+    int known = 0;
+    for (int i = 0; i < (int)(sizeof STATS / sizeof STATS[0]); i++)
+        known |= strcmp(stat, STATS[i]) == 0;
+    if (!known)
+        return fail(c, "expect: unknown stat '%s' (tic health armor kills items secrets exit "
+                       "tile)", stat);
+
+    static const struct {
+        const char *text;
+        int op;
+    } ops[] = { { "<=", DEMO_OP_LE }, { ">=", DEMO_OP_GE }, { "!=", DEMO_OP_NE },
+                { "=", DEMO_OP_EQ },  { "<", DEMO_OP_LT },  { ">", DEMO_OP_GT } };
+    const char *p = s + k;
+    int op = -1;
+    for (int i = 0; i < 6; i++) {
+        size_t n = strlen(ops[i].text);
+        if (strncmp(p, ops[i].text, n) == 0) {
+            op = ops[i].op;
+            p += n;
+            break;
+        }
+    }
+    if (op < 0)
+        return fail(c, "expect '%s': unknown operator (= != < <= > >=)", s);
+
+    demo_cmd tmp = { 0 };
+    tmp.op = op;
+    strcpy(tmp.name, stat);
+    if (strcmp(stat, "tile") == 0) {
+        if (op != DEMO_OP_EQ && op != DEMO_OP_NE)
+            return fail(c, "expect tile: only = and != apply");
+        char buf[32];
+        if (strlen(p) >= sizeof buf || !strchr(p, ','))
+            return fail(c, "expect tile: want X,Y, got '%s'", p);
+        strcpy(buf, p);
+        char *comma = strchr(buf, ',');
+        *comma = '\0';
+        char *xy[2] = { buf, comma + 1 };
+        long v[2];
+        for (int i = 0; i < 2; i++)
+            if (!parse_int(c, xy[i], 0, 63, i ? "tile y" : "tile x", &v[i]))
+                return 0;
+        tmp.tx = (int32_t)v[0];
+        tmp.ty = (int32_t)v[1];
+        tmp.has_tile = 1;
+    } else {
+        long v;
+        if (!parse_int(c, p, -1000000000L, 1000000000L, "value", &v))
+            return 0;
+        tmp.value = (int32_t)v;
+    }
+    demo_cmd *cmd = push(d, c, DEMO_CMD_EXPECT);
+    if (!cmd)
+        return 0;
+    tmp.kind = cmd->kind;
+    tmp.line = cmd->line;
+    *cmd = tmp;
+    return 1;
+}
+
 /* Header lines, allowed only before the first body command. */
 static int hdr_level(demo_t *d, line_ctx *c)
 {
@@ -198,6 +401,12 @@ static const cmd_entry header_cmds[] = {
 static const cmd_entry body_cmds[] = {
     { "in", cmd_in },
     { "wait", cmd_wait },
+    { "goto", cmd_goto },
+    { "face", cmd_face },
+    { "use", cmd_use },
+    { "weapon", cmd_weapon },
+    { "fire", cmd_fire },
+    { "expect", cmd_expect },
 };
 
 #define COUNT(a) (int)(sizeof(a) / sizeof((a)[0]))
@@ -292,28 +501,113 @@ void demo_free(demo_t *d)
     free(d);
 }
 
+static const char *const OP_TEXT[] = { "=", "!=", "<", "<=", ">", ">=" };
+
+static int compare(int32_t a, int op, int32_t b)
+{
+    switch (op) {
+    case DEMO_OP_EQ: return a == b;
+    case DEMO_OP_NE: return a != b;
+    case DEMO_OP_LT: return a < b;
+    case DEMO_OP_LE: return a <= b;
+    case DEMO_OP_GT: return a > b;
+    default: return a >= b;
+    }
+}
+
+static int run_fail(char *err, size_t errlen, const demo_cmd *c, const char *fmt, ...)
+{
+    int k = snprintf(err, errlen, "line %d: ", c->line);
+    if (k >= 0 && (size_t)k < errlen) {
+        va_list ap;
+        va_start(ap, fmt);
+        vsnprintf(err + k, errlen - (size_t)k, fmt, ap);
+        va_end(ap);
+    }
+    return DEMO_FAIL;
+}
+
+/* 1 when the expect holds; else writes the failure. */
+static int check_expect(const demo_cmd *c, const game_state *gs, char *err, size_t errlen)
+{
+    if (c->has_tile) {
+        int32_t px = fix_to_int(gs->player.x), py = fix_to_int(gs->player.y);
+        int same = px == c->tx && py == c->ty;
+        if (same == (c->op == DEMO_OP_EQ))
+            return 1;
+        run_fail(err, errlen, c, "expect tile%s%d,%d failed: player tile is %d,%d at tic %u",
+                 OP_TEXT[c->op], (int)c->tx, (int)c->ty, (int)px, (int)py, (unsigned)gs->tic);
+        return 0;
+    }
+    int32_t v = stat_value(gs, c->name);
+    if (compare(v, c->op, c->value))
+        return 1;
+    run_fail(err, errlen, c, "expect %s%s%d failed: %s is %d at tic %u", c->name, OP_TEXT[c->op],
+             (int)c->value, c->name, (int)v, (unsigned)gs->tic);
+    return 0;
+}
+
+/* goto @name: the WAYPOINT entity of that name. */
+static int find_waypoint(const bast_map *map, const char *name, int32_t *tx, int32_t *ty)
+{
+    for (int i = 0; i < map->entity_count; i++) {
+        const bast_map_entity *e = &map->entities[i];
+        if (e->type == BAST_ENT_WAYPOINT && strcmp(e->name, name) == 0) {
+            *tx = fix_to_int(e->x);
+            *ty = fix_to_int(e->y);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int demo_next(demo_t *d, const game_state *gs, ticcmd *out, char *err, size_t errlen)
 {
-    (void)gs; /* read by the high-level commands */
-    (void)err;
-    (void)errlen;
     while (d->pc < d->count) {
         const demo_cmd *c = &d->cmds[d->pc];
-        if (d->done >= c->n) {
-            d->pc++;
-            d->done = 0;
-            continue;
-        }
-        d->done++;
+        memset(out, 0, sizeof *out);
         switch (c->kind) {
-        case DEMO_CMD_IN:
-            *out = c->cmd;
-            break;
-        default: /* DEMO_CMD_WAIT */
-            memset(out, 0, sizeof *out);
-            break;
+        case DEMO_CMD_EXPECT:
+            if (!check_expect(c, gs, err, errlen))
+                return DEMO_FAIL;
+            break; /* no tic */
+        case DEMO_CMD_GOTO: {
+            int32_t tx = c->tx, ty = c->ty;
+            if (c->name[0] && !find_waypoint(gs->map, c->name, &tx, &ty))
+                return run_fail(err, errlen, c, "goto: no WAYPOINT named '%s' in the map",
+                                c->name);
+            int s = nav_goto(gs, tx, ty, out);
+            if (s == NAV_ARRIVED)
+                break;
+            if (s == NAV_NO_PATH)
+                return run_fail(err, errlen, c, "goto %d,%d: no path from tile %d,%d at tic %u",
+                                (int)tx, (int)ty, (int)fix_to_int(gs->player.x),
+                                (int)fix_to_int(gs->player.y), (unsigned)gs->tic);
+            if (d->done >= c->n)
+                return run_fail(err, errlen, c,
+                                "goto %d,%d: timed out after %d tics at tile %d,%d", (int)tx,
+                                (int)ty, (int)c->n, (int)fix_to_int(gs->player.x),
+                                (int)fix_to_int(gs->player.y));
+            d->done++;
+            return DEMO_TIC;
         }
-        return DEMO_TIC;
+        case DEMO_CMD_FACE: {
+            angle_t target = c->has_tile ? nav_angle_to_tile(gs, c->tx, c->ty) : c->angle;
+            if (nav_face(gs, target, out))
+                break;
+            d->done++;
+            return DEMO_TIC;
+        }
+        default: /* DEMO_CMD_IN, DEMO_CMD_WAIT */
+            if (d->done >= c->n)
+                break;
+            d->done++;
+            if (c->kind == DEMO_CMD_IN)
+                *out = c->cmd;
+            return DEMO_TIC;
+        }
+        d->pc++;
+        d->done = 0;
     }
     return DEMO_END;
 }

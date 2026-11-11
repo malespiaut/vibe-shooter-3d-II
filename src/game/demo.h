@@ -15,15 +15,32 @@
 #include "game/state.h"
 
 enum {
-    DEMO_CMD_IN,   /* raw ticcmd held for n tics */
-    DEMO_CMD_WAIT, /* n tics of no input */
+    DEMO_CMD_IN,        /* raw ticcmd held for n tics */
+    DEMO_CMD_WAIT,      /* n tics of no input */
+    DEMO_CMD_GOTO,      /* to tile (tx, ty), or waypoint `name`; fails after n tics */
+    DEMO_CMD_FACE,      /* to angle `angle`, or to tile (tx, ty) when has_tile */
+    DEMO_CMD_EXPECT,    /* assert stat op value (no tic) */
+    /* use, weapon and fire are DEMO_CMD_IN with a fixed ticcmd. */
 };
+
+/* expect ops */
+enum { DEMO_OP_EQ, DEMO_OP_NE, DEMO_OP_LT, DEMO_OP_LE, DEMO_OP_GT, DEMO_OP_GE };
+
+#define DEMO_NAME_MAX 17 /* waypoint names: 16 chars + NUL (map entity names) */
+#define DEMO_GOTO_DEFAULT_MAX 1050
 
 typedef struct {
     int kind;
     int line; /* source line, for messages */
     int32_t n;
     ticcmd cmd;
+    /* goto / face / expect tile */
+    int32_t tx, ty;
+    int has_tile;
+    char name[DEMO_NAME_MAX]; /* goto @name; expect: the stat name */
+    uint16_t angle;           /* face <deg> */
+    int op;                   /* expect */
+    int32_t value;            /* expect */
 } demo_cmd;
 
 #define DEMO_MAP_NAME_MAX 64
@@ -54,7 +71,9 @@ enum {
 };
 
 /* Produces the input for the next tic from the demo and the current game
- * state (high-level commands read it). */
+ * state (high-level commands read it). Zero-tic commands (expect, a goto
+ * or face already satisfied) run before the tic they precede; at the end of
+ * the demo pending ones still run against the final state. */
 int demo_next(demo_t *d, const game_state *gs, ticcmd *out, char *err, size_t errlen);
 
 /* Formats the buttons field of an `in` line ("-" when none). buf >= 8. */

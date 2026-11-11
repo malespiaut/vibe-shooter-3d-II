@@ -1,7 +1,9 @@
-# M1 walk: raw-input tour of maps/m1test.vmap (determinism demo, roadmap.md).
-# Start room (2,2) facing north -> north, east through the corridor into the
-# SE hall, north up the corridor into the NE sky courtyard, across it
-# between the pillars to its north wall, then turn around.
+# M1 walk: tour of maps/m1test.vmap (determinism demo, roadmap.md), written
+# with high-level commands so it survives movement tuning.
+# Start room (2,2) -> east through the corridor into the SE hall (waypoint
+# `hall`) -> north up the corridor into the NE sky courtyard, between the
+# pillars (waypoint `courtyard`) -> its north wall -> back west through the
+# west corridor into the NW dark room -> south into the start room.
 vsdemo 1
 level 1
 skill 2
@@ -9,18 +11,17 @@ seed 0
 map m1test
 
 wait 10
-in 53 127 0 0 -        # walk north to the corridor row (y ~ 8.5)
-in 8 0 0 -2048 -       # turn right 90 degrees: face east
-in 50 127 0 0 R        # run east through the corridor into the hall
-in 8 0 0 2048 -        # face north
-in 27 127 0 0 -        # walk north to the hall's top row
-in 8 0 0 -2048 -       # face east
-in 35 127 0 0 -        # walk east to the north corridor (x ~ 16.5)
-in 8 0 0 2048 -        # face north
-in 25 127 0 0 R        # run north into the courtyard (y ~ 16.5)
-in 8 0 0 -2048 -       # face east
-in 26 127 0 0 -        # walk east between the pillars (x ~ 19.5)
-in 8 0 0 2048 -        # face north
-in 55 127 0 0 -        # walk to the courtyard's north wall
-in 16 0 0 2048 -       # turn around: face south
+goto @hall
+expect tile=16,6
+goto @courtyard
+expect tile=19,18
+goto 19 22             # courtyard north wall
+face 270               # turn around: face south
+wait 10
+goto 4 20              # NW dark room, via the west corridor
+expect tile=4,20
+goto 2 2               # back to the start, through the room's south door
+expect tile=2,2
+face 90
 wait 20
+expect health=100

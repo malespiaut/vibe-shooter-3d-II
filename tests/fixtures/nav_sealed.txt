@@ -1,0 +1,20 @@
+# Demo navigation fixture (tests/test_demo_cmds.py): a start room, a pocket
+# behind a closed door (no door motion yet, so it blocks goto's BFS), and a
+# pocket sealed by walls on every side.
+name Nav Sealed
+
+legend # wall=w flags=SOLID
+legend . floor=f ceil=c
+legend D wall=d flags=DOOR
+
+layout
+#########
+#...#...#
+#...D...#
+#...#####
+#...#...#
+#...#...#
+#########
+end
+
+entity PLAYER_START 2 2 0

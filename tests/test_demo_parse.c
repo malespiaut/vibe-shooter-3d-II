@@ -85,6 +85,96 @@ static void test_errors(void)
     expect_error("vsdemo 1\nwait abc\n", "line 2: tics: 'abc' is not an integer");
     expect_error("vsdemo 1\nmap ../etc\n", "line 2: map name");
     expect_error("vsdemo 1\nseed -1\n", "line 2: seed");
+    expect_error("vsdemo 1\ngoto 3\n", "line 2: 'goto' takes");
+    expect_error("vsdemo 1\ngoto 64 1\n", "line 2: tile x: 64 out of range");
+    expect_error("vsdemo 1\ngoto @ 5\n", "line 2: goto: waypoint name");
+    expect_error("vsdemo 1\ngoto @abcdefghijklmnopq\n", "line 2: goto: waypoint name");
+    expect_error("vsdemo 1\ngoto 1 1 0\n", "line 2: max: 0 out of range");
+    expect_error("vsdemo 1\nface\n", "line 2: 'face' takes");
+    expect_error("vsdemo 1\nface 400\n", "line 2: angle: 400 out of range");
+    expect_error("vsdemo 1\nuse 1\n", "line 2: 'use' takes 0 arguments");
+    expect_error("vsdemo 1\nweapon 8\n", "line 2: weapon slot: 8 out of range");
+    expect_error("vsdemo 1\nfire 0\n", "line 2: tics");
+    expect_error("vsdemo 1\nexpect health\n", "line 2: expect 'health': want");
+    expect_error("vsdemo 1\nexpect mana=3\n", "line 2: expect: unknown stat 'mana'");
+    expect_error("vsdemo 1\nexpect health=>3\n", "line 2: value: '>3' is not");
+    expect_error("vsdemo 1\nexpect health~3\n", "line 2: expect 'health~3': want");
+    expect_error("vsdemo 1\nexpect tile<3,4\n", "line 2: expect tile: only = and !=");
+    expect_error("vsdemo 1\nexpect tile=3\n", "line 2: expect tile: want X,Y");
+    expect_error("vsdemo 1\nexpect tile=3,x\n", "line 2: tile y: 'x' is not");
+    expect_error("vsdemo 1\nexpect health >=3\n", "line 2: 'expect' takes one");
+}
+
+/* High-level commands that need no map: parsing, then playback against a
+ * zeroed state (tic 0, health 0, angle 0). */
+static void test_high_level(void)
+{
+    char err[256] = "";
+    demo_t *d = demo_parse("vsdemo 1\n"
+                           "goto 5 7\n"
+                           "goto @hall 40\n"
+                           "face -90\n"
+                           "face 3 4\n"
+                           "use\n"
+                           "weapon 3\n"
+                           "fire 2\n"
+                           "expect health>=0\n"
+                           "expect tile!=1,2\n",
+                           err, sizeof err);
+    if (!d)
+        fprintf(stderr, "%s\n", err);
+    assert(d && d->count == 9);
+    assert(d->cmds[0].kind == DEMO_CMD_GOTO && d->cmds[0].tx == 5 && d->cmds[0].ty == 7);
+    assert(d->cmds[0].n == DEMO_GOTO_DEFAULT_MAX && d->cmds[0].name[0] == 0);
+    assert(d->cmds[1].kind == DEMO_CMD_GOTO && strcmp(d->cmds[1].name, "hall") == 0);
+    assert(d->cmds[1].n == 40);
+    assert(d->cmds[2].kind == DEMO_CMD_FACE && d->cmds[2].angle == ANG270 && !d->cmds[2].has_tile);
+    assert(d->cmds[3].kind == DEMO_CMD_FACE && d->cmds[3].has_tile && d->cmds[3].tx == 3);
+    assert(d->cmds[4].kind == DEMO_CMD_IN && d->cmds[4].n == 1 && d->cmds[4].cmd.buttons == BT_USE);
+    assert(d->cmds[5].cmd.buttons == (3 << BT_WEAPON_SHIFT) && d->cmds[5].n == 1);
+    assert(d->cmds[6].cmd.buttons == BT_FIRE && d->cmds[6].n == 2);
+    assert(d->cmds[7].kind == DEMO_CMD_EXPECT && d->cmds[7].op == DEMO_OP_GE);
+    assert(d->cmds[8].op == DEMO_OP_NE && d->cmds[8].tx == 1 && d->cmds[8].ty == 2);
+    demo_free(d);
+
+    /* face 90 from angle 0: full-speed turns, then the remainder exactly. */
+    d = demo_parse("vsdemo 1\nface 90\nuse\nweapon 2\nfire 2\nexpect tic=0\n"
+                   "expect health<1\nexpect tile=0,0\n",
+                   err, sizeof err);
+    assert(d);
+    static game_state gs;
+    ticcmd c;
+    int32_t turned = 0;
+    int tics = 0;
+    while (demo_next(d, &gs, &c, err, sizeof err) == DEMO_TIC && d->pc == 0) {
+        assert(c.fwd == 0 && c.side == 0 && c.buttons == 0);
+        assert(c.turn > 0 && c.turn <= PLAYER_TURN_SPEED);
+        turned += c.turn;
+        gs.player.angle = (angle_t)(gs.player.angle + c.turn);
+        tics++;
+    }
+    assert(gs.player.angle == ANG90 && turned == ANG90);
+    assert(tics == (ANG90 + PLAYER_TURN_SPEED - 1) / PLAYER_TURN_SPEED);
+    assert(c.buttons == BT_USE); /* the use tic, already fetched */
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_TIC && c.buttons == (2 << BT_WEAPON_SHIFT));
+    for (int i = 0; i < 2; i++)
+        assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_TIC && c.buttons == BT_FIRE);
+    /* The three expects hold against the zeroed state and use no tic. */
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_END);
+    demo_free(d);
+
+    /* A false expect fails, naming its line and the actual value. */
+    d = demo_parse("vsdemo 1\nwait 1\n\nexpect health>=20\n", err, sizeof err);
+    assert(d);
+    gs.player.health = 7;
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_TIC);
+    err[0] = 0;
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_FAIL);
+    if (!strstr(err, "line 4: expect health>=20 failed: health is 7")) {
+        fprintf(stderr, "got '%s'\n", err);
+        assert(0);
+    }
+    demo_free(d);
 }
 
 static void test_recorder(const char *path)
@@ -126,6 +216,7 @@ int main(int argc, char **argv)
 {
     test_good();
     test_errors();
+    test_high_level();
     test_recorder(argc > 1 ? argv[1] : "demo_parse_rec.demo");
     printf("demo_parse: OK\n");
     return 0;
