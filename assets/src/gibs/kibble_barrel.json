@@ -1,0 +1,23 @@
+{
+  "_comment": "Kibble barrel (items.md Decorations, issue #128): the drum bursts into torn steel plates and hazard-band shards; torn edges glow orange-hot. Plays with the explosion_big fx on top. Wide canvas: a barrel blast throws debris further than a gibbed body.",
+  "sprite": "kibble_barrel",
+  "source": "sprites/props/kibble_barrel_idle_d0_f0.tex",
+  "seed": 7,
+  "frames": 8,
+  "chunks": 12,
+  "substeps": 2,
+  "force": 3.4,
+  "lift": 1.6,
+  "jitter": 0.4,
+  "spread": 20.0,
+  "spin": 45.0,
+  "gravity": 0.55,
+  "drag": 0.02,
+  "bounce": 0.25,
+  "friction": 0.65,
+  "centre": [0.5, 0.75],
+  "wound_depth": 1,
+  "blood_ramp": "orange",
+  "wound_shade": 0.05,
+  "canvas": [96, 64]
+}

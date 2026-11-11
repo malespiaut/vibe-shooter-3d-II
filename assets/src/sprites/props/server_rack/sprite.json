@@ -1,0 +1,17 @@
+{
+  "_comment": "Server rack (items.md Decorations; issue #128; art-bible.md Sizes: props are pre-rendered for server racks). 0.75 x 1.0 u on a 48x64 canvas, d0 only (dirs 1). model.py builds server_rack.blend; tools/build.d/48-props.sh renders it into assets/gen/sprites/props/. Frame 1: LED set A lit, set B dark; frame 2 the reverse (blinking).",
+  "object": "RackRig",
+  "canvas": [48, 64],
+  "dirs": 1,
+  "ramps": {
+    "RackSteel": "steel",
+    "RackUnit": "gray",
+    "RackVent": "gray",
+    "RackSocket": "gray",
+    "LedGreen": "fb_green",
+    "LedCyan": "fb_cyan"
+  },
+  "actions": {
+    "RackIdle": {"anim": "idle", "frames": [1, 2]}
+  }
+}

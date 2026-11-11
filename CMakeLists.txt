@@ -290,6 +290,13 @@ add_test(NAME sprites_items
 set_tests_properties(sprites_items PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# Dog-tech decorations (items.md Decorations, #128): build step output, sizes,
+# frames, ramp budget, outline/fullbright rules, barrel gibs, palcheck.
+add_test(NAME sprites_props_dt
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprites_props_dt.py)
+set_tests_properties(sprites_props_dt PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 300
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
 # Status-bar cat faces, tiers 3-5 (hud.md Cat face): names, 32x32, damage build-up,
 # all 52 faces present, palcheck.
 add_test(NAME hud_faces_t345

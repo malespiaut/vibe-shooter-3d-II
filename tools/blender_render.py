@@ -19,12 +19,14 @@ Reads `sprite.json` next to the .blend. Schema (all keys but "actions" and
                                 # seen by the camera must be listed. At most 3
                                 # distinct ramps plus any number of `fb_*`
                                 # (art-bible.md, colour budget).
-     "actions": {"MuttWalk": {"anim": "walk", "frames": [1, 5, 9, 13]}}}
+     "actions": {"MuttWalk": {"anim": "walk", "frames": [1, 5, 9, 13]}},
                                 # Blender action -> anim name and the frames
                                 # rendered as f0, f1, ...
+     "dirs": 8}                 # 8 (default) or 1: a prop that looks the
+                                # same from every side renders d0 only
 
 and writes `<out>/<sprite>_<anim>_d<dir>_f<frame>.tex` for every action, all
-8 directions and every listed frame (f0 = first frame of the list), origin
+direction (8, or d0 only with "dirs": 1) and every listed frame (f0 = first frame of the list), origin
 bottom-centre (docs/design/tech.md, Sprite naming and TEX).
 
 Model convention: the thing faces -Y (Blender "front" view), stands on z = 0
@@ -441,6 +443,9 @@ def main():
     actions = cfg.get("actions") or {}
     if not actions:
         raise SystemExit("blender_render: sprite.json lists no actions")
+    dirs = cfg.get("dirs", DIRS)
+    if dirs not in (1, DIRS):
+        raise SystemExit("blender_render: sprite.json \"dirs\" must be 1 or %d" % DIRS)
 
     pal = bast.load_palette()
     try:
@@ -472,7 +477,7 @@ def main():
         assign_action(obj, action)
         for fi, frame in enumerate(frames):
             scene.frame_set(int(frame))
-            for d in range(DIRS):
+            for d in range(dirs):
                 rig.rotation_euler = (0.0, 0.0, math.radians(45 * d))
                 stem = "%s_%s_d%d_f%d" % (a.sprite, anim, d, fi)
                 rgba = render_rgba(bpy, scene, lamps, stem, tmp)
