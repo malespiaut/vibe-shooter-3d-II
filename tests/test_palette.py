@@ -47,8 +47,10 @@ def test_layout(e):
         lums = [lum(e[first + i][0]) for i in range(count)]
         assert lums == sorted(lums) and len(set(lums)) == count, "%s not dark->light" % ramp
     assert sum(c for _, _, c in RAMPS) == 214
-    for i in range(24):
+    for i in range(21):
         assert e[216 + i] == ((0, 0, 0), "reserved_%02d" % i)
+    for i, rgb in enumerate([(2, 2, 1), (4, 3, 2), (7, 5, 3)]):
+        assert e[237 + i] == (rgb, "shadow_%02d" % i)
     for i, (n, h) in enumerate(zip(FB, FB_HEX)):
         assert names[240 + i] == n
         assert "%02X%02X%02X" % e[240 + i][0] == h, n
@@ -69,7 +71,7 @@ def test_build():
     assert len(pal) == 768 and len(fl) == 256
     assert pal[:6] == bytes([0, 0, 0, 255, 255, 255]) and pal[765:] == bytes([255, 0, 255])
     for i in range(256):
-        want = (1 if 216 <= i <= 239 else 0) | (2 if 240 <= i <= 254 else 0) | (4 if i == 255 else 0)
+        want = (1 if 216 <= i <= 236 else 0) | (2 if 240 <= i <= 254 else 0) | (4 if i == 255 else 0)
         assert fl[i] == want, (i, fl[i])
 
 

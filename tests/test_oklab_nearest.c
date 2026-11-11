@@ -39,7 +39,7 @@ static void test_game_palette(const char *path)
             assert(def == i);
         checked++;
     }
-    assert(checked == 256 - 24);
+    assert(checked == 256 - 21); /* 216-236 reserved */
 
     /* #FF00FF maps to 255 only when transparency is allowed. */
     assert(bast_palette_nearest_ex(pal, 255, 0, 255, BAST_ALLOW_TRANSPARENT) == 255);
