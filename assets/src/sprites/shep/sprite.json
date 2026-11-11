@@ -1,0 +1,24 @@
+{
+  "_comment": "Shepherd Shieldbearer (enemies.md; art-bible.md Sizes: 40x60 on a 56x64 canvas). model.py builds shep.blend; tools/build.d/60-sprites.sh renders it. Materials -> brown (black saddle, dark end), beige (tan fur), blue (riot gear, energy shield) plus fb_blue (shield rim) and fb_white (shock-baton crackle).",
+  "object": "Shep",
+  "canvas": [56, 64],
+  "ramps": {
+    "ShepSaddle": "brown",
+    "ShepNose": "brown",
+    "ShepTan": "beige",
+    "ShepTanLight": "beige",
+    "ShepArmor": "blue",
+    "ShepArmorDark": "blue",
+    "ShepShield": "blue",
+    "ShepRim": "fb_blue",
+    "ShepSpark": "fb_white"
+  },
+  "actions": {
+    "ShepIdle": {"anim": "idle", "frames": [1, 2]},
+    "ShepWalk": {"anim": "walk", "frames": [1, 2, 3, 4]},
+    "ShepWindup": {"anim": "windup", "frames": [1, 2]},
+    "ShepAttack": {"anim": "attack", "frames": [1, 2]},
+    "ShepPain": {"anim": "pain", "frames": [1]},
+    "ShepDeath": {"anim": "death", "frames": [1, 2, 3, 4, 5]}
+  }
+}
