@@ -1,25 +1,27 @@
-# Weapon icon 7 (weapons.md). Sphinx Howler: flared horn striped gold and lapis like a headdress, steel housing.
-# Composed from rough shapes, then pixel-corrected by hand.
+# Weapon icon 7 (weapons.md). Sphinx Howler: steel housing with seam, rivets and sight; a sphinx head in a
+# striped nemes headdress whose open muzzle feeds a gold-and-lapis bell; elliptical bell mouth, dark inside.
+# Drawn by hand.
 name weapon_7
 size 48 20
 shadow sand_00
 grid
-..............................................t
-..........................................eeeet
-.....................................etttteeeer
-................................tteeeettttccccr
-............................eetttteeecrrrrccccr
-....4444444444444444...ttteeeettrrccccrrrrccccr
-....4444444444444444eetttteeccrrrrccccrrrrccccr
-....3333333333333333eetrrrccccrrrrccccrrrrccccr
-....3333333333333333ccrrrrccccrrrrccccrrrrccccr
-....3333333333333333ccrrrrccccrrrrccccrrrrccccr
-....2222222222222222ccrrrrccccrrrrccccrrrrccccr
-....2222222222222222bbqrrrccccrrrrccccrrrrccccr
-....1111111111111111bbqqqqbbccrrrrccccrrrrccccr
-....1111111111111111...qqqbbbbqqrrccccrrrrccccr
-........pppppp..............bbqqqqbbbcrrrrccccr
-........oooooo..................qqbbbbqqqqccccr
-........oooooo.......................bqqqqbbbbr
-........nnnnnn............................bbbbq
-........mmmmmm................................q
+.............................................ee
+............................................eee
+....................eeeeee.................eerqd
+...................ettttttee..............eeerqd
+...........4554...eeeeeeeeeed............eeterqd
+...........3..3...tttteeeeeedd.........eeettdqqd
+..444444444554444eeeeeUVVVVVd.........eettttdqqd
+..333333334543333tttteUVVVVVV.......eettttdddqqc
+..333533332433353eeeeeUVKKVVV.....eetttddddddqqc
+..333333332433333tttteUUVVVVVVVeddtdddddddssdqqc
+..222222221322222eeeeTUUUVVVVVVUccsssssssssscqqc
+..222522221322252tttttTUUUUUUSSbbbrcccccccsscqqc
+..111111111111111eeeeeTTUUUUS.....bbrrrccccccqqc
+.....oooooo.2222.tttttSTTTUUT.......bbrrrrcccqqb
+......nnnnnn2..2.ddddd.SSTTTS.........bbrrrrcqqb
+......nnnnnn.22..ccccc.................bbbrrbqqb
+.......nnnnnn............................bbrbqqb
+.......mmmmmm.............................bbbqqb
+........mmmm...............................bbbb
+.............................................bb

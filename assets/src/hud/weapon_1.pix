@@ -1,25 +1,27 @@
-# Weapon icon 1 (weapons.md). Claws: ginger paw from the side, three claws hooked forward.
-# Composed from rough shapes, then pixel-corrected by hand.
+# Weapon icon 1 (weapons.md). Claws: ginger paw from the side, three toes, three claws hooked forward.
+# The forearm ends in a fur cuff; the top claw catches the light, the lower ones sit in shade.
+# Drawn by hand.
 name weapon_1
 size 48 20
 shadow sand_00
 grid
 .
 .
-..............hiiiih
-...........hiiiiiiihhg
-iiiiiiiiiiiiiihhhhhhhg.hhhg
-hihhihhhihhhhhhhhhhhhhghhhhgyzzzzzyy
-hghhhghhhhghhhhhhhhhhhhhhhgxxxxxxxxxyy
-hhghhhhghhhhghhhhhhhhhhfggf.........wxy
-hhhghhhhhghhhhhghhhhhhhhhhg...........w
-ghhhhghhhhhghhhhhhhhhhhhhhhgyzzzzzyy
-gghhhhhghhhhhhhhhhhhhhghhhgxxxxxxxxxyy
-ggghhhhhhghhhhhhhhhhhggfggf.........wxy
-gggggghhhhhhhhhhhhhhhgghhhg...........w
-fgggggggggghhhhhhhhhhgghhhhgyzzzzzyy
-ffffggggggggggggggggggghhhgxxxxxxxxxyy
-........fffggggggggggggfggf.........wxy
-............ffffffffffff..............w
+.
+.....................iiiiiiiiiiih
+...................iiiihhhhhiihhhxyzzzz
+....i.i...........iiihhhhhhhhhhhhgwxxyzzy
+...iiiii...iiiiiiiihhhhhhhhhhgggf......xyz
+..iiihhiiiiihhhhiihhhhhhhhhfffff........wy
+...ihhhhhhhhhhhhihhhhhhhhhhhhiiih........w
+..ihhhghhhhhhhhhhhhhhhhhhhhhiihhhwxyyy
+...hhhgghhhhhhhhhhhhhhhhhhhhhhhhhgwwxxy
+..ihhggghhhhhhhhhhhhhhhhhhhhhgggf....wx
+...ggggggghhhhhhhhhhhhhhhhhfffff......w
+..g.gfg.ggggggggghhhhhhhhhhhhiiih
+.....f.......ggggghhhhhhhhhhiihhhwxxy
+................ggggggghhhhghhhhhgwwx
+.................gggggPQQPggggggf...w
+....................fffPPffff
 .
 .
