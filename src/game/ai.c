@@ -137,6 +137,14 @@ int ai_line_of_sight(const game_state *gs, const thinker_t *t)
     return game_trace_wall(gs, t->x, t->y, fine_cos(a), fine_sin(a), d) >= d;
 }
 
+int ai_hitscan_visible(const game_state *gs, const thinker_t *t)
+{
+    /* tech.md Lighting: sprite row = 32 * dist / 16 + cell_dark = 2 * dist
+     * + dark. In 16.16: 2 * d + dark * FIX_ONE <= HITSCAN_VIS_ROW * FIX_ONE. */
+    const int64_t dark = game_cell_dark(gs, t->x >> FIX_SHIFT, t->y >> FIX_SHIFT);
+    return 2 * (int64_t)player_dist(gs, t) + dark * FIX_ONE <= (int64_t)HITSCAN_VIS_ROW * FIX_ONE;
+}
+
 static int sees_player(const game_state *gs, const thinker_t *t)
 {
     const int16_t off = (int16_t)(angle_to_player(gs, t) - t->angle);
@@ -654,6 +662,7 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
         if ((info->attack == ATK_HITSCAN || info->attack == ATK_PLASMA ||
              info->attack == ATK_MISSILE) &&
             player_dist(gs, t) <= info->range && ai_line_of_sight(gs, t) &&
+            (info->attack != ATK_HITSCAN || ai_hitscan_visible(gs, t)) &&
             (int32_t)rng_range(&gs->rng, 256) < info->aggression) {
             start_windup(gs, t, info);
             return;
