@@ -400,6 +400,14 @@ add_dependencies(test_render_walls colormap testpattern)
 add_test(NAME render_walls
   COMMAND test_render_walls ${CMAKE_SOURCE_DIR}/maps/m1test.vmap ${ASSETS_GEN})
 
+# Renderer: doors drawn from live door state on maps/doortest.vmap (#116).
+add_executable(test_render_doors tests/test_render_doors.c)
+target_link_libraries(test_render_doors PRIVATE engine m)
+target_compile_options(test_render_doors PRIVATE -UNDEBUG)
+add_dependencies(test_render_doors colormap testpattern)
+add_test(NAME render_doors
+  COMMAND test_render_doors ${CMAKE_SOURCE_DIR}/maps/doortest.vmap ${ASSETS_GEN})
+
 # Fonts (docs/design/hud.md Fonts): the committed indexed sheets ->
 # assets/gen/fonts/*.tex (same conversion as tools/build.d/50-fonts.sh), so
 # the 2D drawing test and tools have them after a plain build.
