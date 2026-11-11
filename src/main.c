@@ -273,7 +273,7 @@ static void draw(const run_t *r)
     else {
         /* Live door state (game/door.h) as the per-cell table the renderer
          * reads: only DOOR cells are looked at, the rest may stay 0. Door
-         * cells past MAX_DOORS are not tracked by the game (door_init skips
+         * cells past MAX_DOORS are not tracked by the game (doors_init skips
          * them), so they keep 0 here and draw closed. */
         static fix_t door_open[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
         for (int i = 0; i < r->gs.door_count; i++) {
