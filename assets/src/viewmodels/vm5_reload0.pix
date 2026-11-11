@@ -1,0 +1,81 @@
+# View model 5, Scarab Launcher (weapons.md): 3/4 rear view of a heavy gold tube with steel band
+# rings and a flared steel muzzle collar, a lapis scarab seated in the bore, a wooden grip under
+# the right paw and the left paw cradling the tube. Matches HUD icon weapon_5.
+# Composed in tools/vmcompose/vm5.py, checked at 3x in game.
+# reload0.
+name vm5_reload0
+size 112 72
+shadow steel_00
+grid
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+...............................................kkcc
+..............................................kkckkjX.......8887
+..............................................jckkcck.X...98887776
+...............................................cjckkccc.X'===!!'''"
+.................................................cjckkjThc===!!''$$"!
+...........................................kkkkkjcicjihgfc===!!$$$$!L
+..........................................kkkkkjjiccihgfec'''!!$$$"!LK
+.........................................kkkkjjjiiihccccc'''$!!$""!B!JJJ
+.........................................kkkjjjiihhhggAAA$$$$!!""!AAAJIIB
+.........................................kjjggiihhhggfAAAAA""!!!!AAAAIHH0
+.........................................kjjiiifeeegffAAAAAAAAAAAAAAHHHG0
+........................................jjiiihhhgggffdLLLAAAAAAAAIHHHGG00
+.......................................jjjhihhhggfffedLKKKJJIIIHHHGGGF000
+......................................kjjiigggggfffddEEJJJIIIHHHGGG211100
+.....................................kjjiiihhh....4488888655544433222EDCC
+....................................kjjiiihhhgggcc4448888EEJJI44333221110
+...................................kjjiiihhhgggffcc4488886665544433222110
+..................................kdjjiihhhgggfffec55999976655GGFEEDCCB
+.................................kddddddhhgggfffedc5.IMMMMJIIHGGFEEDCCBB
+................................kjjddddddgggfffedd...IMMMMJJIHGGFFEDDCBB
+...............................kjjjiidddddgfffedd....IMMMMJJIHHGFFEDDCBB
+..............................kjjjiiihdddddffeddc...IIMMMMJJIHHGFFEEDCCBD
+.............................kjjjiiihhhgdddfeddc....IIMMMMJJDDDDDDDDDDD00
+............................kjjjiiihhhggddceddc.....DDDDDDD54433322111000
+...........................kjjjiiihhhgggfcccdc......3377775544333221110000
+..........................kjjjiiihhhgggfffcad.......3777775544433222110000
+.........................kjjjiiihhhgggfffead........3777775544433222110000
+........................kjjjiiihhhgggfffeddc........37777755444EEEEEEEEEEE
+.......................kjjjiiihhhgggfffeddc.........EEEEEEEEEEHHGGFFEDDCCBB
+......................kdddddddhhgggfffeddc.........IIMMMMMKJIIHHGG222110000
+.....................kddddddddddggfffeddc..........IIM777755544333222111000
+....................kjjjidddddddggfffedd...........3388888555444332221110000
+...................kjjjiiihddddddfffedd............4488888555444333222110000
+..................kjjjiiihhhdddddffeddc............4488888555444333222111000
+.................kjjjiiiihhhgdddcfeddc.............44888885554443332221110000
+................kjjjiiiihhhgggddceddc..............44888885554443332221110000
+...............kjjjiiiihhhgggffccbdc...............44888885554443333222111000
+...............jjjiiiihhhgggfffccac...............4488888865554443332221110000
+..............jjjiiiihhhgggffffcadc...............4488888865554443332221111000
+.............jjjiiiihhhgggffffeddc................4488888865554443332222111000
+............djjiiiihhhggggfffeddc.................44888888655544433332221110000
+...........ddddddihhhggggfffeddc..................4488888865554444333EEEEEEEEEE
+..........jjjjdddddhggggfffeddc...................44888888EEEEEEEEEEGFFEEDDDCCB..k
+.........jjjjiiiddddgggfffeddc....................EEEEEEMMKKJJIIHHHGGFFEEEDDC00.kjih
+........jjjjiiihhddddgfffeeddc....................IIMMMMMMKKJJIIH43333222111100XTihg
+.......jjjjiiihhhhdddffffeddc....................IIIM88888655554443333222111100cihge
+......jjjjiiihhhhggdddffeddc.....................44488888898776444433322221110cchgeckkkkjkjj
+.....jjjjiiihhhhgggfdcfeddc......................44488888===!''444433322221111XTcccckkjjjiiiig
+....jjjjiiihhhhggggffccddc.......................4448888!===!'$"!4433332221111cihgfckjjjiiihhg
+...jjjjiiiihhhggggfffcbdc........................44888888===!$$!4443333222211cchgfecjjiiiihhhgd
+..jjjjiiiihhhggggfffedadc........................44888888'''!$"!4444333222211Xkccccjjiiihhhgggeddd
+.jjjjiiiihhhggggfffeeddc.........................4488888!$'$!""5!444333322211cTihgcggfihhhgggffecbdd
+dddddddihhhggggffffeddc.........................4448888888""!!554444333322221cihgfciihhheedffffcceeddd
+jddddddddhggggffffeddc..........................4448888888665555444433332222cXcccccihhhgggfffdddcffeedadd
+jjiiddddddgggffffeddc...........................4448888888666555544433332222ckThgfchhgggfffeedddfffffccbddd
+jiiiihdddddgffffeddc............................44488888886665555444433332222chgfcgffggffddddddggfffccceeedad
+iiiihhhddddffffedddc............................44488888886665555444433332222ccccc00qqqpihhhdddggggdddcffeccbadd
