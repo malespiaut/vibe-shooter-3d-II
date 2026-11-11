@@ -1,0 +1,17 @@
+# Playtest: diagonal straferun into the 1-wide corridor mouth north of the start room,
+# then grind along the mouth edges, spin turns at high speed, and run back out.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map m1test
+wait 5
+in 4 0 0 -1024 -       # face north-east
+in 60 127 127 0 R      # straferun NE into the room's north wall
+in 4 0 0 1024 -        # face north
+in 40 0 -127 0 R       # strafe-run west along the north wall past the mouth
+in 40 0 127 0 R        # and back east, should slide past/catch the mouth
+in 60 127 0 0 R        # run north: into the corridor if aligned, else into the wall
+in 40 127 0 4096 R     # run while spinning hard
+in 80 -127 0 0 R       # back out south
+wait 10
