@@ -16,7 +16,7 @@ docs/design/enemies.md and art-bible.md:
 - dominant ramp `orange` spans 8+ entries in every frame and reaches the
   upper half (>= orange_09) in every idle/walk frame;
 - fb_cyan charge glow shows on windup f1 and on the attack shot (attack f0)
-  in the front and both side views, and nowhere else (idle, walk, windup
+  in every view that sees the cannon (d0, d1, d6, d7), and nowhere else (idle, walk, windup
   f0, attack f1, pain, death);
 - walk frames all differ;
 - gibs: tools/gibs.py on assets/src/gibs/pom.json writes 8 frames;
@@ -139,7 +139,7 @@ def main():
         fb = names.index(FB)
         glow = {k for k, t in tex.items() if any(i == fb for _, _, i in opaque(t))}
         for k in ("windup", "attack"):
-            for dd in (0, 2, 6):
+            for dd in (0, 1, 6, 7):  # the views that see the cannon (dog's right)
                 assert "%s_d%d_f%d" % (k, dd, 1 if k == "windup" else 0) in glow, (k, dd)
         stray = sorted(k for k in glow if not k.startswith(("windup", "attack"))
                        or k.endswith("_f1") and k.startswith("attack")
