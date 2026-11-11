@@ -64,7 +64,14 @@ static void test_good(void)
     /* Defaults. */
     d = demo_parse("vsdemo 1\n", err, sizeof err);
     assert(d && d->level == 1 && d->skill == 2 && d->seed == 0 && d->map[0] == 0);
+    assert(!d->on_death_restart);
     assert(d->count == 0);
+    demo_free(d);
+    d = demo_parse("vsdemo 1\non_death restart\n", err, sizeof err);
+    assert(d && d->on_death_restart);
+    demo_free(d);
+    d = demo_parse("vsdemo 1\non_death end\n", err, sizeof err);
+    assert(d && !d->on_death_restart);
     demo_free(d);
 }
 
@@ -85,6 +92,7 @@ static void test_errors(void)
     expect_error("vsdemo 1\nwait abc\n", "line 2: tics: 'abc' is not an integer");
     expect_error("vsdemo 1\nmap ../etc\n", "line 2: map name");
     expect_error("vsdemo 1\nseed -1\n", "line 2: seed");
+    expect_error("vsdemo 1\non_death later\n", "line 2: on_death");
     expect_error("vsdemo 1\ngoto 3\n", "line 2: 'goto' takes");
     expect_error("vsdemo 1\ngoto 64 1\n", "line 2: tile x: 64 out of range");
     expect_error("vsdemo 1\ngoto @ 5\n", "line 2: goto: waypoint name");

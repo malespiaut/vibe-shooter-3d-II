@@ -9,7 +9,7 @@
  *
  * Flags and exit codes: docs/design/roadmap.md (Verification tooling
  * contract). Window mode: WASD / arrows move (left/right arrows turn), Shift
- * runs, mouse X turns; quits on Esc or window close. The last stdout line of
+ * runs, E / Space uses (after a death: restarts), mouse X turns; quits on Esc or window close. The last stdout line of
  * every run is the STATS line.
  *
  * Sound: after every tic the game's sound events (game/sound.h) go to the
@@ -25,6 +25,7 @@
 
 #include "bast.h"
 #include "engine/colormap.h"
+#include "engine/draw2d.h"
 #include "engine/mixer.h"
 #include "engine/png.h"
 #include "engine/render.h"
@@ -66,6 +67,7 @@ typedef struct {
 } options;
 
 static uint8_t framebuffer[SCREEN_W * SCREEN_H];
+static font *menu_font; /* the death prompt (hud.md Flow) */
 
 /* Audio thread: the platform pulls frames straight from the mixer. */
 static void audio_fill(int16_t *out, int frames, void *user)
@@ -198,6 +200,7 @@ typedef struct {
     demo_rec rec;
     hud_state hud; /* render side: timers, face (game/hud.h) */
     int status;
+    uint32_t tics; /* tics run, over restarts: frame names, --max-tics */
 } run_t;
 
 /* Map choice: --map, else --warp N (maps/levelN.vmap), else the demo's
@@ -264,6 +267,11 @@ static int setup(run_t *r)
         fprintf(stderr, "game: %s\n", hud_error());
         return 0;
     }
+    if (!o->topdown && (!o->headless || o->frames_dir) &&
+        !(menu_font = font_load(VS3D_ASSETS_DIR, "menu"))) {
+        fprintf(stderr, "game: %s/fonts/menu.tex: cannot load\n", VS3D_ASSETS_DIR);
+        return 0;
+    }
     if (o->hash_log) {
         r->hash_log = fopen(o->hash_log, "w");
         if (!r->hash_log) {
@@ -288,7 +296,11 @@ static int setup(run_t *r)
     return 1;
 }
 
-/* Draws the current view into the framebuffer. Reads game state only. */
+#define DEATH_PROMPT "PRESS USE TO TRY AGAIN"
+
+/* Draws the current view into the framebuffer. Reads game state only. Dead,
+ * the eye drops with the death timer; once the death view is over the
+ * prompt shows, centred in the view in the menu font (hud.md Flow). */
 static void draw(const run_t *r)
 {
     static render_thing things[RENDER_MAX_SPRITES];
@@ -309,9 +321,14 @@ static void draw(const run_t *r)
     /* Pickups from live state: a taken one is gone the same tic. The tic is
      * only read (shimmer frame), so the state hash is unaffected. */
     const int n = items_render_things(&r->gs, things, RENDER_MAX_SPRITES);
-    render_view_things(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle, things, n,
-                       r->gs.tic, framebuffer);
+    render_view_things_eye(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle,
+                           game_eye_height(&r->gs), things, n, r->gs.tic, framebuffer);
     hud_draw(framebuffer, &r->hud, &r->gs);
+    if (game_restart_ready(&r->gs) && menu_font) {
+        const int x = (VIEW_W - text_width(menu_font, DEATH_PROMPT)) / 2;
+        const int y = (VIEW_H - menu_font->cell_h) / 2;
+        draw_text(framebuffer, menu_font, x, y, DEATH_PROMPT, NULL);
+    }
 }
 
 /* Writes a 16.16 value as decimal world units with 4 decimals (integer
@@ -364,7 +381,13 @@ static void drain_sounds(run_t *r)
 /* Runs one tic with `cmd`; logs the hash, records, dumps a frame. */
 static int step(run_t *r, const ticcmd *cmd)
 {
+    const uint32_t restarts = r->gs.restarts;
     game_tic(&r->gs, cmd);
+    r->tics++;
+    /* A restart rewinds the event ring (game_init): the HUD starts over too,
+     * with no stale messages, flashes or dead face. */
+    if (r->gs.restarts != restarts)
+        hud_state_init(&r->hud, &r->gs, r->opt.god);
     hud_tic(&r->hud, &r->gs);
     drain_sounds(r);
     if (r->hash_log)
@@ -373,9 +396,11 @@ static int step(run_t *r, const ticcmd *cmd)
         fprintf(stderr, "game: out of memory recording\n");
         return 0;
     }
-    if (r->opt.frames_dir && r->gs.tic % (uint32_t)r->opt.frame_every == 0) {
+    /* Frames are named by tics run, which keep counting across a restart
+     * (the level's own tic goes back to 0). */
+    if (r->opt.frames_dir && r->tics % (uint32_t)r->opt.frame_every == 0) {
         char path[1024];
-        snprintf(path, sizeof path, "%s/frame_%06" PRIu32 ".png", r->opt.frames_dir, r->gs.tic);
+        snprintf(path, sizeof path, "%s/frame_%06" PRIu32 ".png", r->opt.frames_dir, r->tics);
         draw(r);
         if (!png_write_indexed(path, framebuffer, SCREEN_W, SCREEN_H, colormap_palette())) {
             fprintf(stderr, "game: %s: cannot write\n", path);
@@ -399,7 +424,7 @@ static int demo_input(run_t *r, ticcmd *cmd)
 
 static int tic_limit_hit(const run_t *r)
 {
-    return r->opt.max_tics && (long)r->gs.tic >= r->opt.max_tics;
+    return r->opt.max_tics && (long)r->tics >= r->opt.max_tics;
 }
 
 static void run_headless(run_t *r)
@@ -414,8 +439,13 @@ static void run_headless(run_t *r)
         }
         if (r->gs.exit) /* an EXIT cell ends the level run */
             return;
-        if (r->gs.player.dead)
-            return; /* death ends the run; STATS shows health=0 */
+        if (r->gs.player.dead && !(r->demo && r->demo->on_death_restart)) {
+            /* Death ends the run (STATS shows health=0) and fails it, so
+             * a completion demo cannot pass with a death in it. */
+            fprintf(stderr, "game: the player died at tic %" PRIu32 "\n", r->gs.tic);
+            r->status = EXIT_EXPECT;
+            return;
+        }
     }
 }
 
@@ -502,6 +532,8 @@ static void run_window(run_t *r)
                 cmd.turn = (int16_t)turn;
                 if (held[PKEY_LSHIFT] || held[PKEY_RSHIFT])
                     cmd.buttons |= BT_RUN;
+                if (held['e'] || held[PKEY_SPACE])
+                    cmd.buttons |= BT_USE; /* opens doors; dead, restarts */
             }
             if (!step(r, &cmd)) {
                 r->status = EXIT_ERROR;
@@ -577,6 +609,7 @@ int main(int argc, char **argv)
     demo_free(r.demo);
     render_shutdown();
     hud_shutdown();
+    font_free(menu_font);
     bast_map_free(r.map);
     return r.status;
 }

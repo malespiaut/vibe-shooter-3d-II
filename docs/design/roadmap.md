@@ -77,7 +77,7 @@ These names are fixed. Every issue, PR, review and playtest uses them exactly.
 | Record a demo while playing | `build/game --record <file.demo> [--warp N] [--skill N]` |
 | Dev flags | `--warp <level>`, `--skill <1-3>`, `--god`, `--map <file.vmap>`, `--max-tics N`, `--topdown` (dev overhead view), `--hash-log <file>` (one hex hash per tic), `--sound-log <file>` (one line per sound event: `tic name x y`, `- -` for local player sounds) |
 | Stats line (stdout, last line of every headless run) | `STATS level=1 tic=5250 hash=0123456789abcdef health=87 armor=0 kills=12/14 items=5/9 secrets=1/2 exit=1 god=0` |
-| Exit codes | 0 run finished, 1 error (bad file/args), 2 an `expect` failed or a high-level command timed out |
+| Exit codes | 0 run finished, 1 error (bad file/args), 2 an `expect` failed, a high-level command timed out, or the player died (headless, unless the demo says `on_death restart`) |
 | Palette check | `python3 tools/palcheck.py <files or dirs>` (exit 1 on any off-palette pixel, non-indexed PNG, or TEX index that is reserved) |
 | Colormap | `python3 tools/colormap.py` -> `assets/gen/colormap.bin` (also built by CMake) |
 | Palette build | `python3 tools/palette.py` -> `assets/gen/palette.bin`, `palette_flags.bin` (also built by CMake) |
