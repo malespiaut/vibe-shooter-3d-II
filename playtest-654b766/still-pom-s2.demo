@@ -1,0 +1,12 @@
+# playtester: stand still on the start tile and 'clear' vs 2 Pomeranians + 1 Dachshund (no dodging), skill 2
+vsdemo 1
+level 1
+skill 2
+seed 0
+map pomdachtest
+goto 3 7
+goto 3 8
+weapon 4
+wait 10
+clear 20
+expect kills=3

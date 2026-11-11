@@ -1,0 +1,14 @@
+# playtester: launcher point blank. Walk up next to the 3 Mutts, fire a scarab into the middle one at ~0.6 u.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map launchertest
+goto 4 5
+weapon 5
+wait 10
+goto 11 5
+face 12 5
+fire 1
+wait 20
+expect health<100
