@@ -21,7 +21,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from oklab import hex_to_rgb, oklab_to_srgb, srgb_to_oklab  # noqa: E402
+from bast import oklab_to_srgb, srgb_to_oklab  # noqa: E402  (libbast, the only Oklab code)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_OUT = os.path.join(ROOT, "assets", "src", "palette", "catlantis.gpl")
@@ -60,6 +60,11 @@ FULLBRIGHT = [
     ("fb_green", "#40FF40"), ("fb_blue", "#4080FF"), ("fb_violet", "#C060FF"),
     ("fb_white", "#F0F0FF"), ("fb_amber", "#FFB040"), ("fb_pink", "#FF60A0"),
 ]
+
+
+def hex_to_rgb(h):
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
 def ramp(dark, light, count, boost):
