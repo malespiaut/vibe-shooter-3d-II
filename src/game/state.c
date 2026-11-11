@@ -314,6 +314,7 @@ void game_tic(game_state *gs, const ticcmd *cmd)
         ai_noise(gs); /* gunfire wakes the area; Claws are silent */
 
     ai_tic(gs);
+    kill_triggers_tic(gs);
 
     gs->tic++;
 }

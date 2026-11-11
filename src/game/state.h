@@ -142,6 +142,7 @@ typedef struct game_state {
     int32_t secrets, secret_total; /* SECRET cells entered / in the map */
     uint32_t tags_fired; /* tags fired so far (every non-zero fire) */
     uint8_t lights_alt;  /* a LIGHTS entity fired: cells use dark_alt */
+    uint32_t kill_fired; /* bit i: the i-th KILL_TRIGGER entity (map order) fired */
     uint8_t exit;        /* an EXIT cell was used: the level run ends */
     int32_t last_tag;    /* last non-zero tag fired (tests); not hashed */
     sound_queue sounds;  /* this tic's sound events (game/sound.h); not hashed */

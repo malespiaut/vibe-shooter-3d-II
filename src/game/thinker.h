@@ -74,7 +74,7 @@ typedef struct {
     int32_t max_health;
     fix_t radius;   /* half the width in enemies.md */
     uint16_t target; /* thinker id, 0 = none */
-    uint8_t tag;     /* entity tag (static map data, not hashed) */
+    uint8_t tag;     /* entity tag: pickup trigger, or enemy KILL_TRIGGER group (static, not hashed) */
     uint8_t movedir; /* DI_*: compass direction of the step being walked */
     uint8_t goal_tx, goal_ty; /* tile whose centre the step walks to */
     int32_t movecount; /* tics to the next chase decision (every 8) */

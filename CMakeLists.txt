@@ -480,6 +480,15 @@ add_demo_determinism(lance-howler-test)
 add_demo_determinism(death-test)
 add_demo_determinism(sky-turn)
 
+# Level 2 completion (issue #149): demos/level2-complete.demo reaches the exit
+# without god mode on maps/level2.vmap, and replays deterministically.
+add_test(NAME complete_level2
+  COMMAND game --headless --demo ${CMAKE_SOURCE_DIR}/demos/level2-complete.demo
+          --frames-out ${CMAKE_BINARY_DIR}/test_tmp/complete_level2 --frame-every 35)
+set_tests_properties(complete_level2 PROPERTIES
+  PASS_REGULAR_EXPRESSION "STATS level=2 .* exit=1 god=0")
+add_demo_determinism(level2-complete)
+
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)
   add_test(NAME demo_${c}
@@ -653,7 +662,7 @@ add_test(NAME world_sprites_enemies COMMAND test_world_sprites_enemies ${ASSETS_
 add_executable(test_tags tests/test_tags.c)
 target_link_libraries(test_tags PRIVATE engine)
 target_compile_options(test_tags PRIVATE -UNDEBUG)
-foreach(c switch start_open timed pushwall trigger secret lights damage exit)
+foreach(c switch start_open timed pushwall trigger secret lights damage exit kill_trigger)
   add_test(NAME tags_${c} COMMAND test_tags ${CMAKE_SOURCE_DIR}/maps/tagstest.vmap ${c})
 endforeach()
 

@@ -1,0 +1,177 @@
+# Level 2, The Mew-seum (docs/design/levels.md section 2). 32x32 EG interior,
+# built by tools/mkmap.py into maps/level2.vmap. Layout generated once by
+# hand-placed rectangles, then edited here; this file is the source.
+# Coordinates in comments are (x, ty) with ty counted from the south (the
+# last layout row is ty = 0), as `entity` lines and demo `goto` use.
+#
+# Critical path: lobby (SW) -> D (5,8) -> Hall of Mummified Mice -> O (5,21)
+# -> Scattergun gallery -> O (11,25) -> vestibule -> D (14,25) -> Gift
+# Shop (green key behind the counter) -> green door E (18,21) -> Hall of Pharaohs -> office door D
+# (26,15) -> Curator's Office (blue key) -> blue door B (27,21) -> loading
+# dock -> exit lever X (28,31).
+#
+# Tags:
+#   2  TRIGGER row t (3-7,15) in the middle of the Mice hall opens the two
+#      sarcophagus closets Z (2,15) and (8,15): 2 Chompers.
+#   3  taking the Scattergun (PICKUP_TRIGGER) closes the two START_OPEN
+#      gallery doors O and opens the 3 closets Q: 6 Chompers carrying tag 10.
+#      KILL_TRIGGER tag 10 param 3 fires tag 3 again when all of them are
+#      dead: the O doors (mode switch, so the player cannot open them
+#      earlier) reopen and stay open.
+#   4  TRIGGER column u (24,16-20) in the Hall of Pharaohs opens the side
+#      closets R (12,15) and (18,15): Chompers behind the player.
+# Secrets (3): wrong-way statue w (14,16, eg_glyph_band among the
+# eg_gold_pillar statues) -> Scarab Plate; Staff Only door f (21,28, an
+# eg_door that is a pushwall in the eg_museum_plaque gift shop) -> Catnip
+# Frenzy; cracked display wall k (21,11, eg_sand_cracked) -> 2 Tuna Tins.
+# The vestibule's closed door keeps the gift shop out of sight and earshot
+# of the gallery fight.
+# Ambush closets use eg_sand_blocks2 (x) so they read as different walls.
+# Light: lobby/gift shop 6, gallery/office 8, halls 10, closets/dock 12.
+
+name The Mew-seum
+music 0
+par 240
+
+legend # wall=eg_sand_blocks flags=SOLID
+legend A wall=eg_ashlar flags=SOLID
+legend M wall=eg_museum_plaque flags=SOLID
+legend Y wall=eg_papyrus flags=SOLID
+legend x wall=eg_sand_blocks2 flags=SOLID
+legend c wall=eg_mural flags=SOLID
+legend s wall=eg_gold_pillar flags=SOLID
+legend h wall=eg_planks flags=SOLID
+legend C wall=eg_glyph_band flags=SOLID
+legend , floor=eg_planks ceil=eg_floor_tiles dark=6
+legend . floor=eg_floor_tiles ceil=eg_planks dark=8
+legend : floor=eg_floor_tiles ceil=eg_floor_tiles dark=10
+legend ; floor=eg_floor_tiles ceil=eg_floor_tiles dark=12
+legend ! floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=SECRET
+legend t floor=eg_floor_tiles ceil=eg_floor_tiles dark=10 flags=TRIGGER tag=2
+legend u floor=eg_floor_tiles ceil=eg_floor_tiles dark=10 flags=TRIGGER tag=4
+legend w wall=eg_glyph_band floor=eg_floor_tiles ceil=eg_floor_tiles dark=10 flags=PUSHWALL
+legend f wall=eg_door floor=eg_planks ceil=eg_floor_tiles dark=6 flags=PUSHWALL
+legend k wall=eg_sand_cracked floor=eg_floor_tiles ceil=eg_planks dark=8 flags=PUSHWALL
+legend D wall=eg_door floor=eg_floor_tiles ceil=eg_floor_tiles dark=8 flags=DOOR
+legend Z wall=eg_sand_blocks2 floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=DOOR mode=switch tag=2
+legend Q wall=eg_sand_blocks2 floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=DOOR mode=switch tag=3
+legend R wall=eg_sand_blocks2 floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=DOOR mode=switch tag=4
+legend O wall=eg_door floor=eg_floor_tiles ceil=eg_floor_tiles dark=8 flags=DOOR|START_OPEN mode=switch tag=3
+legend E wall=eg_door_green floor=eg_floor_tiles ceil=eg_floor_tiles dark=8 flags=DOOR key=green
+legend B wall=eg_door_blue floor=eg_floor_tiles ceil=eg_floor_tiles dark=10 flags=DOOR key=blue
+legend X wall=eg_switch_off flags=SOLID|SWITCH|EXIT
+
+layout
+############MMMMMMMMMM######X###
+##x;;;x;;;x#MMM,,,,,,M###;;;;;;#
+##YxQxYxQxYYMMM,,,,,,M###;;;;;;#
+##Y........YMMM,,h,,,f!;#;;;;;;#
+#xY.c....c.YMMM,,h,,,M###;;;;;;#
+#;x........YMMM,,,,,,M###;;;;;;#
+#;Q........O..D,,,,,,M###;;;;;;#
+#;x........YMMM,h,CC,M###;;;;;;#
+#xY.c....c.YMMM,h,,,,M###;;;;;;#
+##Y........YMMM,,,,,,M###;;;;;;#
+##YYYOYYYYAAAAAAAAEAAAAAAAABAAAA
+##M:::::M#A::s::s:::::s:us:::s:A
+##M:::::M#A:::::::::::::u::::::A
+##M:c:c:M#A:::::::::::::u::::::A
+##M:c:c:M#A:::::::::::::u::::::A
+#xx:::::xxA:::w:s::s::s:u::::s:A
+#;ZtttttZ;xxRx!AAxRxAMMMMMDMMMMM
+#xx:::::xx#x;x;##x;x#M.........M
+##M:::::M###x#####x##M.........M
+##M:c:c:M############M..cc.....M
+##M:c:c:M##########;!k.........M
+##M:::::M############M..cc.....M
+##M:::::M############M.........M
+AAMMMDMMMA###########M.........M
+A,,,,,,,,A###########MMMMMMMMMMM
+A,,,,,,,,A######################
+A,,,,,,,,A######################
+A,,,,,,,,A######################
+A,,,,,,,,A######################
+A,,,,,,,,A######################
+A,,,,,,,,A######################
+AAAAAAAAAA######################
+end
+
+# Skill flags: default SKILL1|SKILL2|SKILL3. S23 = SKILL2|SKILL3 (cut on
+# Kitten), S3 = SKILL3 only (Sabretooth extras). Skill 2: 18 Mutts, 10
+# Chompers; skill 1: 21; skill 3: 34.
+entity PLAYER_START 4 2 90
+
+# Lobby: 2 Mutts with their backs turned.
+entity MUTT_TROOPER 2 6 90
+entity MUTT_TROOPER 7 6 90 flags=SKILL2|SKILL3
+entity FISH_SNACK 1 1 0
+entity CHARGE_VIAL 8 1 0
+
+# Hall of Mummified Mice: 2 Mutts at the north end, 2 Chompers in the
+# sarcophagus closets (tag 2).
+entity MUTT_TROOPER 3 19 270
+entity MUTT_TROOPER 7 19 270 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 1 15 0 flags=SKILL1|SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 9 15 180 flags=SKILL1|SKILL2|SKILL3
+entity CHARGE_VIAL 5 10 0
+entity FISH_SNACK 5 14 0
+
+# Do Not Touch The Exhibit: the Scattergun fires tag 3; 6 Chompers (tag 10)
+# in 3 closets; the kill trigger refires tag 3.
+entity HAIRBALL_SCATTERGUN 7 25 0 flags=SKILL1|SKILL2|SKILL3|PICKUP_TRIGGER tag=3
+entity CHIHUAHUA_CHOMPER 4 30 270 flags=SKILL1|SKILL2|SKILL3 tag=10
+entity CHIHUAHUA_CHOMPER 3 30 270 flags=SKILL1|SKILL2|SKILL3 tag=10
+entity CHIHUAHUA_CHOMPER 8 30 270 flags=SKILL1|SKILL2|SKILL3 tag=10
+entity CHIHUAHUA_CHOMPER 9 30 270 flags=SKILL1|SKILL2|SKILL3 tag=10
+entity CHIHUAHUA_CHOMPER 1 26 0 flags=SKILL1|SKILL2|SKILL3 tag=10
+entity CHIHUAHUA_CHOMPER 1 25 0 flags=SKILL1|SKILL2|SKILL3 tag=10
+entity CHIHUAHUA_CHOMPER 7 30 270 flags=SKILL3 tag=10
+entity KILL_TRIGGER 7 23 0 tag=10 param=3
+entity YARN_BUNDLE 3 22 0
+entity YARN_BUNDLE 10 28 0
+entity FISH_SNACK 10 22 0
+
+# Gift Shop Brawl: 5 Mutts among the shelves, green key behind the counter,
+# Staff Only secret.
+entity MUTT_TROOPER 15 29 270
+entity MUTT_TROOPER 17 29 270 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 20 26 180
+entity MUTT_TROOPER 17 23 180 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 20 22 180
+entity MUTT_TROOPER 16 26 180 flags=SKILL3
+entity GREEN_ANKH 19 23 0
+entity CHARGE_JAR 15 30 0
+entity FISH_SNACK 20 30 0
+entity CATNIP_FRENZY 22 28 0
+
+# Hall of Pharaohs: Mutts on both ends, Chompers from the side closets (tag 4).
+entity MUTT_TROOPER 11 19 0
+entity MUTT_TROOPER 11 17 0
+entity MUTT_TROOPER 30 19 180
+entity MUTT_TROOPER 30 17 180 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 30 18 180 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 12 14 90 flags=SKILL1|SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 18 14 90 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 18 14 90 flags=SKILL3
+entity LINEN_WRAP 20 18 0
+entity FISH_SNACK 27 18 0
+entity CHARGE_VIAL 15 18 0
+entity SCARAB_PLATE 14 15 0
+
+# Curator's Office: blue key, cracked display wall secret.
+entity MUTT_TROOPER 29 13 180
+entity MUTT_TROOPER 23 8 90
+entity MUTT_TROOPER 27 10 90 flags=SKILL3
+entity BLUE_ANKH 29 9 0
+entity YARN_BUNDLE 22 14 0
+entity YARN_BASKET 30 8 0
+entity TUNA_TIN 20 11 0
+entity TUNA_TIN 20 11 0
+
+# Loading dock: 3 Mutts guarding the exit lever.
+entity MUTT_TROOPER 25 29 270
+entity MUTT_TROOPER 30 29 270 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 28 26 270
+entity MUTT_TROOPER 26 26 270 flags=SKILL3
+entity FISH_SNACK 30 22 0
+entity CHARGE_VIAL 25 22 0

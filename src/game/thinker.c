@@ -95,6 +95,7 @@ void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill)
         if (en) {
             if (e->flags & BAST_ENT_AMBUSH)
                 en->flags |= TH_FLAG_AMBUSH;
+            en->tag = e->tag; /* for KILL_TRIGGER (game/tags.c) */
             continue;
         }
         if (e->type == BAST_ENT_KIBBLE_BARREL) {
