@@ -1,0 +1,104 @@
+# M3 exit demo (#104, roadmap.md M3): maps/m3arena.vmap (maps/src/m3arena.txt),
+# skill 2, no god mode. Every regular enemy type, every weapon 1-7 fired at an
+# enemy, the keyed door, the switch door, the pushwall secret and the exit.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map m3arena
+
+expect god=0
+expect kills=0/12
+# R1: three Mutts, backs turned. Ankh Pistol (2).
+weapon 2
+wait 10
+fire nearest
+clear 10
+expect kills=3
+goto 1 7                # Charge Vial
+goto 1 1                # Fish Snack
+# R2: the door wakes the lone Chomper; it runs into Claws (1) range.
+goto @r1door
+weapon 1
+face 0
+use
+wait 34
+fire nearest
+expect kills=4
+# The Scattergun (PICKUP_TRIGGER tag 2) opens the closet: three more.
+goto @scattergun
+weapon 3
+wait 34                 # the closet takes 32 tics to open
+fire 1                  # the blast wakes the closet
+wait 20
+clear 10
+expect kills=7
+goto 10 2               # Yarn Bundle
+goto 9 1                # Fish Snack
+goto 15 6               # Charge Jar
+goto 15 2               # Sistrum Repeater
+# R3: two Pomeranians. Sistrum Repeater (4) from the doorway (a clear's
+# strafe would step behind the door jamb).
+goto @r2door
+weapon 4
+face 0
+use
+wait 34
+fire nearest
+goto 18 4               # into the room for the other one
+clear 10
+expect kills=9
+goto 18 1               # Fish Snack
+# Secret: the cracked wall (20,8) slides north onto the Tuna Tin.
+goto @pushwall
+face 90
+use
+wait 64
+goto 20 9               # Tuna Tin
+expect secrets=1
+goto 23 6               # Scarab Crate
+goto 23 2               # Scarab Launcher
+# R4: the Dachshund. Scarab Launcher (5) from the doorway, 7 u away.
+goto @r3door
+weapon 5
+face 0
+use
+wait 34
+fire nearest
+expect kills=10
+goto 26 7               # Tuna Tin
+goto 31 7               # green key
+goto 29 1               # Sun Orb
+goto 31 1               # Sphinx Howler
+# R5: the keyed (green) door. The Shieldbearer sees the player and walks in
+# with its shield up, which the Sphinx Howler (7) ignores: two roars.
+goto @greendoor
+weapon 7
+face 0
+use
+wait 70                 # the door opens; the Shepherd walks to within 5 u
+fire nearest
+expect kills=11
+goto 34 1               # Fish Snack
+goto 39 6               # Sun Orb
+goto 39 2               # Eye of Ra Lance
+# The wall switch opens the switch door S (40,4).
+goto @switch
+face 270
+use
+wait 10
+# R6: the Mastiff, 14 u down the hall. Eye of Ra Lance (6) from the doorway.
+goto @r5door
+weapon 6
+face 0
+wait 30                 # S finishes opening
+fire nearest
+expect kills=12/12
+expect health>0
+goto 42 1               # Tuna Tin
+goto @exit
+face 0
+use                     # the exit switch
+expect exit=1
+expect kills=12/12
+expect god=0

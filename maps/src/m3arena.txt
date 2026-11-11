@@ -1,0 +1,107 @@
+# M3 arena (#104, roadmap.md M3 exit): 57x12, built by tools/mkmap.py into
+# maps/m3arena.vmap. Test map for demos/m3-arena.demo, not a game level: six
+# rooms in a row, west to east, one per regular enemy type, each holding the
+# weapon that counters the next room's enemy (enemies.md Counter column).
+# Coordinates are (x, ty) with ty counted from the south (the last layout row
+# is ty = 0), as `entity` lines and demo `goto` use.
+#
+#   R1 x 1-7   Mutt room: 3 Mutt Troopers, backs turned. Start, Claws + Pistol.
+#   R2 x 9-15  Chomper room: 1 Chomper faces the door; taking the Scattergun
+#              (PICKUP_TRIGGER tag 2) opens the closet Q (12,8): 3 more.
+#              Sistrum Repeater + Charge Jar by the east door.
+#   R3 x 17-23 Pomeranian room: 2 Plasmagunners. Scarab Launcher + Crate.
+#              Secret: pushwall P (20,8) slides north onto ! (20,9): Tuna Tin.
+#   R4 x 25-31 Dachshund room: 1 Howitzer, the green key, Sphinx Howler + Sun Orb.
+#   R5 x 33-39 Shieldbearer room behind the keyed (green) door G (32,4).
+#              Eye of Ra Lance + Sun Orb. Wall switch s (36,0), tag 1, opens
+#              the switch door S (40,4).
+#   R6 x 41-55 Mastiff hall: 1 Juggernaut 14 u from the switch door. Exit
+#              switch X (56,4), used from (55,4).
+# Doors D are mode stay: a closed door stops noise (ai_noise floods open
+# cells only), so each room wakes only when its door opens.
+# Skill 2 (and 1, 3): 12 enemies.
+
+name M3 Arena
+music 0
+par 300
+
+legend # wall=eg_sand_blocks flags=SOLID
+legend . floor=eg_floor_tiles ceil=eg_planks dark=6
+legend ; floor=eg_floor_tiles ceil=eg_floor_tiles dark=12
+legend ! floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=SECRET
+legend P wall=eg_sand_cracked floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=PUSHWALL
+legend D wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=6 flags=DOOR mode=stay
+legend Q wall=eg_sand_blocks2 floor=eg_floor_tiles ceil=eg_floor_tiles dark=12 flags=DOOR mode=switch tag=2
+legend G wall=eg_door_green floor=eg_floor_tiles ceil=eg_planks dark=6 flags=DOOR mode=stay key=green
+legend S wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=6 flags=DOOR mode=switch tag=1
+legend s wall=eg_switch_off flags=SOLID|SWITCH tag=1
+legend X wall=eg_switch_off flags=SOLID|SWITCH|EXIT
+
+layout
+#########################################################
+####################;####################################
+###########;;;######!####################################
+############Q#######P####################################
+#.......#.......#.......#.......#.......#...............#
+#.......#.......#.......#.......#.......#...............#
+#.......#.......#.......#.......#.......#...............#
+#.......D.......D.......D.......G.......S...............X
+#.......#.......#.......#.......#.......#...............#
+#.......#.......#.......#.......#.......#...............#
+#.......#.......#.......#.......#.......#...............#
+####################################s####################
+end
+
+entity PLAYER_START 1 4 0
+
+# R1: Mutts with their backs turned.
+entity MUTT_TROOPER 5 4 0
+entity MUTT_TROOPER 6 2 0
+entity MUTT_TROOPER 6 6 0
+entity FISH_SNACK 1 1 0
+entity CHARGE_VIAL 1 7 0
+entity WAYPOINT 7 4 0 r1door
+
+# R2: one Chomper facing the door, three in the closet (tag 2).
+entity CHIHUAHUA_CHOMPER 14 4 180
+entity CHIHUAHUA_CHOMPER 11 9 270
+entity CHIHUAHUA_CHOMPER 12 9 270
+entity CHIHUAHUA_CHOMPER 13 9 270
+entity HAIRBALL_SCATTERGUN 10 6 0 flags=SKILL1|SKILL2|SKILL3|PICKUP_TRIGGER tag=2
+entity YARN_BUNDLE 10 2 0
+entity FISH_SNACK 9 1 0
+entity SISTRUM_REPEATER 15 2 0
+entity CHARGE_JAR 15 6 0
+entity WAYPOINT 10 6 0 scattergun
+entity WAYPOINT 15 4 0 r2door
+
+# R3: two Pomeranians; the pushwall secret.
+entity POMERANIAN_PLASMAGUNNER 22 2 180
+entity POMERANIAN_PLASMAGUNNER 22 6 180
+entity SCARAB_LAUNCHER 23 2 0
+entity SCARAB_CRATE 23 6 0
+entity FISH_SNACK 18 1 0
+entity TUNA_TIN 20 9 0
+entity WAYPOINT 20 7 0 pushwall
+entity WAYPOINT 23 4 0 r3door
+
+# R4: the Dachshund, the green key, the Howler.
+entity DACHSHUND_HOWITZER 30 4 180
+entity GREEN_ANKH 31 7 0
+entity SPHINX_HOWLER 31 1 0
+entity SUN_ORB 29 1 0
+entity TUNA_TIN 26 7 0
+entity WAYPOINT 31 4 0 greendoor
+
+# R5: the Shieldbearer, the Lance, the switch for S.
+entity SHEPHERD_SHIELDBEARER 38 4 180
+entity EYE_OF_RA_LANCE 39 2 0
+entity SUN_ORB 39 6 0
+entity FISH_SNACK 34 1 0
+entity WAYPOINT 36 1 0 switch
+entity WAYPOINT 39 4 0 r5door
+
+# R6: the Mastiff, the exit.
+entity MASTIFF_JUGGERNAUT 54 4 180
+entity TUNA_TIN 42 1 0
+entity WAYPOINT 55 4 0 exit

@@ -713,6 +713,15 @@ add_executable(panel_mockup tools/panel_mockup.c)
 target_link_libraries(panel_mockup PRIVATE engine)
 add_dependencies(panel_mockup fonts_tex colormap)
 
+# M3 exit demo (issue #104, roadmap.md M3): demos/m3-arena.demo on
+# maps/m3arena.vmap fires weapons 1-7 at every regular enemy type and reaches
+# the exit without god mode, killing all 12; and replays deterministically.
+add_test(NAME m3_arena
+  COMMAND game --headless --demo ${CMAKE_SOURCE_DIR}/demos/m3-arena.demo)
+set_tests_properties(m3_arena PROPERTIES
+  PASS_REGULAR_EXPRESSION "STATS level=1 .* kills=12/12 .* exit=1 god=0")
+add_demo_determinism(m3-arena)
+
 # Level completion demos (roadmap.md M4): each levelN-complete demo must reach
 # the exit without god mode, and replay deterministically.
 foreach(n 1)

@@ -237,6 +237,7 @@ static int setup(run_t *r)
             fprintf(stderr, "game: %s: %s\n", o->demo_path, err);
             return 0;
         }
+        r->demo->god = o->god;
     }
     r->level = o->warp ? o->warp : r->demo ? r->demo->level : 1;
     r->skill = o->skill ? o->skill : r->demo ? r->demo->skill : 2;

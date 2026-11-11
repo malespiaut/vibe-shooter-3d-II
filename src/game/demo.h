@@ -45,6 +45,8 @@ typedef struct {
     uint16_t angle;           /* face <deg> */
     int op;                   /* expect */
     int32_t value;            /* expect */
+    int has_total;            /* expect kills=N/M: also require the kill total M */
+    int32_t total;
 } demo_cmd;
 
 #define DEMO_MAP_NAME_MAX 64
@@ -55,6 +57,7 @@ typedef struct {
     uint32_t seed;
     char map[DEMO_MAP_NAME_MAX]; /* "" or a map name: maps/<map>.vmap */
     int on_death_restart; /* `on_death restart`: a death does not end the run */
+    int god;              /* run option --god, set by the caller; read by `expect god=` */
 
     demo_cmd *cmds;
     int count, cap;
