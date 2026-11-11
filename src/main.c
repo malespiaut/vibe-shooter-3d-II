@@ -1,9 +1,11 @@
 /* Vibe Shooter 3D II entry point. M1 bootstrap: shows the palette test card
- * until the renderer exists. Quits on Esc or window close. */
+ * (in the game palette, loaded with the colormap) until the renderer exists.
+ * Quits on Esc or window close. */
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "engine/colormap.h"
 #include "engine/video.h"
 #include "platform/platform.h"
 
@@ -17,10 +19,20 @@ static void audio_fill(int16_t *out, int frames, void *user)
     memset(out, 0, (size_t)frames * PLAT_AUDIO_CHANNELS * sizeof(int16_t));
 }
 
+#ifndef VS3D_ASSETS_DIR
+#define VS3D_ASSETS_DIR "assets/gen"
+#endif
+
 int main(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
+
+    /* Palette + light colormap, built by `cmake --build build`. */
+    if (!colormap_load(VS3D_ASSETS_DIR)) {
+        fprintf(stderr, "game: %s\n", colormap_error());
+        return 1;
+    }
 
     if (!platform_init("Vibe Shooter 3D II", 3)) {
         fprintf(stderr, "game: %s\n", platform_error());
@@ -30,6 +42,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "game: audio disabled: %s\n", platform_error());
 
     video_test_pattern(framebuffer, palette);
+    memcpy(palette, colormap_palette(), PALETTE_BYTES); /* real game palette */
 
     int running = 1;
     while (running) {
