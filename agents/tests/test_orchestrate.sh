@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Unit tests for agents/orchestrate.sh. Uses only the fakes in tests/fake.
 here=$(cd "$(dirname "$0")" && pwd)
+REAL_GIT=$(command -v git); export REAL_GIT
 export PATH="$here/fake:$PATH"
 fails=0
 root=$(mktemp -d)
@@ -200,10 +201,64 @@ mkrepo() {
   done
   echo x > "$src/docs/design/a.md"
   git -C "$src" add -A && git -C "$src" -c user.name=t -c user.email=t@t commit -qm init && git -C "$src" branch issue-1
-  git clone -q --bare "$src" "$FIXTURES/origin.git" && git clone -q "$FIXTURES/origin.git" "$WORK/repo"
+  git clone -q --bare "$src" "$FIXTURES/origin.git" && git clone -q --mirror "$FIXTURES/origin.git" "$STATE/mirror"
   echo '[]' > "$FIXTURES/prs.json"
 }
 loop() { loop_once; wait; }
+
+# The fake agent plants every host-code-execution trick it can reach in its own run dir.
+evil_agent() {
+  cat > "$FIXTURES/agent.sh" <<EOF
+#!/usr/bin/env bash
+cd "\$1" || exit 0
+printf '#!/bin/sh\ntouch $FIXTURES/pwned\n' > .git/hooks/post-checkout; chmod +x .git/hooks/post-checkout
+cp .git/hooks/post-checkout .git/hooks/pre-push
+\$REAL_GIT config core.fsmonitor "touch $FIXTURES/pwned"
+\$REAL_GIT config core.hooksPath .git/hooks
+\$REAL_GIT config remote.origin.url "ext::sh -c 'touch $FIXTURES/pwned'"
+EOF
+  chmod +x "$FIXTURES/agent.sh"
+}
+
+# every host git call inside $WORK must target a dir cloned by the host and not yet handed to a container
+host_git_ok() {
+  awk -v work="$WORK/" '
+    function under(p) { return index(p "/", work) == 1 }
+    /^podman run / { for (d in fresh) if (index($0, d)) delete fresh[d]; next }
+    /^git cwd=/ {
+      cwd = substr($2, 5); t = cwd; i = 3
+      if ($3 == "-C") { t = $4; i = 5 }
+      sub_ = $i
+      if (sub_ == "clone") { if (under(cwd)) { print "clone from inside WORK: " $0; bad = 1 }
+                             if (under($NF)) fresh[$NF] = 1; next }
+      if (!under(t)) next
+      if (!(t in fresh) || (sub_ != "remote" && sub_ != "checkout")) { print "unsafe: " $0; bad = 1 }
+    }
+    END { exit bad }' "$FIXTURES/calls.log"
+}
+
+test_host_git_never_touches_agent_dirs() {
+  mkrepo
+  issue 1 OPEN malespiaut ready | issues
+  prs 7:malespiaut:art
+  evil_agent
+  loop; echo 1 > "$FIXTURES/run-exit"; rm -rf "$STATE/fail"; loop; loop
+  grep -q 'podman run .*vibe-dev-1 ' "$FIXTURES/calls.log" && grep -q 'podman run .*vibe-review-7 ' "$FIXTURES/calls.log" || return 1
+  [[ ! -e $FIXTURES/pwned ]] || { echo "host executed agent-planted code"; return 1; }
+  host_git_ok
+}
+
+test_run_dirs_removed_whatever_the_outcome() {
+  mkrepo
+  issue 1 OPEN malespiaut ready | issues
+  prs 7:malespiaut:
+  loop
+  [[ -z $(ls -A "$WORK/wt" 2>/dev/null) ]] || { echo "left after success: $(ls "$WORK/wt")"; return 1; }
+  echo 1 > "$FIXTURES/run-exit"; rm -rf "$STATE/fail" "$STATE/reviewed"
+  loop
+  [[ -z $(ls -A "$WORK/wt" 2>/dev/null) ]] || { echo "left after failure: $(ls "$WORK/wt")"; return 1; }
+  ! grep -q 'worktree' "$FIXTURES/calls.log"
+}
 
 test_loop_dev_fails_three_times_stuck() {
   mkrepo

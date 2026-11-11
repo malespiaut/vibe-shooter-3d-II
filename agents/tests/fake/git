@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Not a fake: logs cwd and args of every host git call, then runs the real git ($REAL_GIT).
+printf 'git cwd=%s %s\n' "$PWD" "$*" >> "$FIXTURES/calls.log"
+exec "$REAL_GIT" "$@"

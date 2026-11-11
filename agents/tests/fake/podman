@@ -3,6 +3,7 @@
 printf 'podman %s\n' "$*" >> "$FIXTURES/calls.log"
 case $1 in
   ps) cat "$FIXTURES/ps.txt" 2>/dev/null; exit "$(cat "$FIXTURES/ps-exit" 2>/dev/null || echo 0)" ;;
-  run) cat "$FIXTURES/run-output.txt" 2>/dev/null; exit "$(cat "$FIXTURES/run-exit" 2>/dev/null || echo 0)" ;;
+  run) [[ -x $FIXTURES/agent.sh ]] && "$FIXTURES/agent.sh" "${@: -2:1}"
+       cat "$FIXTURES/run-output.txt" 2>/dev/null; exit "$(cat "$FIXTURES/run-exit" 2>/dev/null || echo 0)" ;;
 esac
 exit 0

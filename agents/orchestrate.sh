@@ -7,11 +7,14 @@
 : "${MAX_DEVS:=4}" "${AGENT_TIMEOUT:=90m}" "${POLL:=60}" "${PLAYTEST_EVERY:=5}" "${STALE_SECS:=7200}"
 : "${DESIGNER_COOLDOWN:=1800}" "${MAX_FIX_CYCLES:=5}"
 RC_INFRA=69  # setup/infrastructure error: not the issue's fault, never counted as a failure
+: "${MIRROR:=$STATE/mirror}"  # host-private: never mounted, so agents can't plant hooks or config in it
 : "${GH_TOKEN_FILE:=$HOME/vibe-agents/gh-token}" "${CLAUDE_TOKEN_FILE:=$HOME/vibe-agents/claude-token}"
 
 # stderr, so functions whose stdout is data stay clean
 log() { mkdir -p "$LOGS"; printf '%s %s\n' "$(date -Is)" "$*" | tee -a "$LOGS/orchestrator.log" >&2; }
-git_repo() { git -C "$WORK/repo" "$@"; }
+# Security: everything under $WORK is agent-writable. The host runs git there only in mkrun,
+# on a directory it has just created, before any container sees it.
+mirror() { git -C "$MIRROR" "$@"; }
 running_names() { podman ps --filter label=vibe=1 --format '{{.Names}}'; }
 # podman down: answer "running" so nothing is started or cleaned up on top of a live container
 running() { local n; n=$(running_names) || return 0; grep -qx -- "$1" <<<"$n"; }
@@ -204,24 +207,31 @@ finish_dev() {
   esac
 }
 
-wt_remove() { git_repo worktree remove --force "$1" >/dev/null 2>&1; rm -rf "$1"; git_repo worktree prune; }
-wt_fresh() { wt_remove "$1"; git_repo worktree add -f --detach "$1" "$2" >/dev/null 2>&1; }
-pr_wt() { git_repo fetch -q origin "+refs/heads/$2:refs/remotes/origin/$2" && wt_fresh "$1" "origin/$2"; }
+# mkrun <dir> <checkout args...>: independent clone of the mirror (no hardlinks: an agent must not
+# be able to corrupt mirror objects), pointed at GitHub, checked out before the agent starts
+mkrun() {
+  local d=$1; shift
+  rm -rf "$d"
+  if ! { git clone -q -n --no-hardlinks "$MIRROR" "$d" >/dev/null 2>&1 &&
+          git -C "$d" remote set-url origin "https://github.com/$REPO.git" &&
+          git -C "$d" checkout -q "$@" >/dev/null 2>&1; }; then
+    rm -rf "$d"; return 1
+  fi
+}
 pr_head() { gh pr view "$1" --repo "$REPO" --json headRefOid,headRefName,labels \
   --jq '"\(.headRefOid) \(.headRefName) \([.labels[].name] | join(","))"'; }
 
 dispatch_dev() {
   local n=$1 wt=$WORK/wt/issue-$1
   claim "$n" || return
-  wt_remove "$wt"
-  if ! git_repo worktree add -f -B "issue-$n" "$wt" origin/main >/dev/null 2>&1; then
-    log "#$n: worktree setup failed, dropping claim"
+  if ! mkrun "$wt" --no-track -B "issue-$n" origin/main; then
+    log "#$n: run dir setup failed, dropping claim"
     gh issue edit "$n" --repo "$REPO" --remove-label in-progress >/dev/null; return
   fi
   (
     run_agent developer "dev-$n" "$wt" "Your issue is #$n in $REPO. You are on branch issue-$n.
 Open a PR from issue-$n that closes #$n."
-    rc=$?; wt_remove "$wt"; finish_dev "$n" "$rc"
+    rc=$?; rm -rf "$wt"; finish_dev "$n" "$rc"
   ) &
 }
 
@@ -230,18 +240,20 @@ dispatch_fix() {
   c=$(($(cat "$STATE/cycles/$n" 2>/dev/null || echo 0) + 1))
   if ((c > MAX_FIX_CYCLES)); then pr_stuck "$n" "$MAX_FIX_CYCLES review/fix cycles without approval"; return; fi
   read -r sha br labels < <(pr_head "$n")
-  if [[ -z $br ]] || ! pr_wt "$wt" "$br"; then log "fix #$n: checkout failed"; return; fi
+  if [[ -z $br ]] || ! mirror fetch -q --prune origin || ! mkrun "$wt" --track -B "$br" "origin/$br"; then
+    log "fix #$n: checkout failed"; return
+  fi
   mkdir -p "$STATE/cycles" "$STATE/fixed"
   (
-    run_agent developer-fix "fix-$n" "$wt" "Your PR is #$n in $REPO, branch $br (detached checkout).
+    run_agent developer-fix "fix-$n" "$wt" "Your PR is #$n in $REPO, on branch $br tracking origin/$br.
 Push with: git push origin HEAD:$br"
-    rc=$?; wt_remove "$wt"
+    rc=$?; rm -rf "$wt"
     # a usage limit or setup error means no fix ran: don't spend a cycle
     ((rc != 75 && rc != RC_INFRA)) && echo "$c" > "$STATE/cycles/$n"
     if ((rc == 0)); then
       echo "$sha" > "$STATE/fixed/$n"
       # nothing pushed means nobody will look at this PR again
-      [[ $(git_repo ls-remote origin "refs/heads/$br" | cut -f1) == "$sha" ]] && pr_stuck "$n" "fix pushed no commits"
+      [[ $(mirror ls-remote origin "refs/heads/$br" | cut -f1) == "$sha" ]] && pr_stuck "$n" "fix pushed no commits"
     fi
     finish_pr "$n" "fix-$n" "$rc"
   ) &
@@ -250,29 +262,31 @@ Push with: git push origin HEAD:$br"
 dispatch_review() {
   local n=$1 wt=$WORK/wt/pr-$1 sha br labels art=
   read -r sha br labels < <(pr_head "$n")
-  if [[ -z $br ]] || ! pr_wt "$wt" "$br"; then log "review #$n: checkout failed"; return; fi
+  if [[ -z $br ]] || ! mirror fetch -q --prune origin || ! mkrun "$wt" --track -B "$br" "origin/$br"; then
+    log "review #$n: checkout failed"; return
+  fi
   [[ ,$labels, == *,art,* || ,$labels, == *,render,* ]] && art=1
   (
-    ctx="Your PR is #$n in $REPO, head $sha, branch $br (detached checkout). Push with: git push origin HEAD:$br"
+    ctx="Your PR is #$n in $REPO, head $sha, on branch $br tracking origin/$br. Push with: git push origin HEAD:$br"
     if [[ $art ]]; then
       run_agent art-director "art-$n" "$wt" "$ctx"
-      (($? == 75)) && { backoff; wt_remove "$wt"; exit; }
+      (($? == 75)) && { backoff; rm -rf "$wt"; exit; }
       ctx+=$'\nThis PR is labelled art or render: merge it only if it has the label art:approved.'
     fi
     run_agent reviewer "review-$n" "$wt" "$ctx"
-    rc=$?; wt_remove "$wt"
+    rc=$?; rm -rf "$wt"
     ((rc == 0)) && { mkdir -p "$STATE/reviewed"; echo "$sha" > "$STATE/reviewed/$n"; }
     finish_pr "$n" "review-$n" "$rc"
   ) &
 }
 
-# designer / playtester: fresh detached origin/main worktree, never $WORK/repo
+# designer / playtester: fresh clone, detached at origin/main
 dispatch_main() { # dispatch_main <role> <name> <context> [on-success-cmd...]
   local role=$1 name=$2 ctx=$3 wt=$WORK/wt/$2
   shift 3
   cooling "$name" && return
-  wt_fresh "$wt" origin/main || { log "$name: worktree failed"; return; }
-  ( run_agent "$role" "$name" "$wt" "$ctx"; rc=$?; finish_run "$rc" "$name" >/dev/null; ((rc == 0)) && "$@" ) &
+  mkrun "$wt" --detach origin/main || { log "$name: run dir setup failed"; return; }
+  ( run_agent "$role" "$name" "$wt" "$ctx"; rc=$?; rm -rf "$wt"; finish_run "$rc" "$name" >/dev/null; ((rc == 0)) && "$@" ) &
 }
 
 mark_playtested() { echo "$1" > "$STATE/last-playtest-sha"; }
@@ -280,7 +294,7 @@ mark_playtested() { echo "$1" > "$STATE/last-playtest-sha"; }
 sync_roles() {
   local tmp
   tmp=$(mktemp -d) || return
-  if git_repo archive origin/main agents/roles 2>/dev/null | tar -x -C "$tmp" 2>/dev/null &&
+  if mirror archive main agents/roles 2>/dev/null | tar -x -C "$tmp" 2>/dev/null &&
      [[ -f $tmp/agents/roles/common.md ]]; then
     rm -rf "$STATE/roles.old"; [[ -d $STATE/roles ]] && mv "$STATE/roles" "$STATE/roles.old"
     mv "$tmp/agents/roles" "$STATE/roles"
@@ -308,14 +322,14 @@ loop_once() {
   now=$(date +%s); hold=$(cat "$STATE/backoff-until" 2>/dev/null || echo 0)
   if ((hold > now)); then log "backoff: sleeping $((hold - now))s"; sleep $((hold - now)); fi
 
-  git_repo fetch -q origin || { log "fetch failed"; return; }
+  mirror fetch -q --prune origin || { log "mirror fetch failed"; return; }
   sync_roles
   names=$(running_names) || { log "podman ps failed: skipping iteration"; return; }
   if ! [[ -r $GH_TOKEN_FILE && -r $CLAUDE_TOKEN_FILE && -r $STATE/roles/common.md ]] || ! podman image exists "$IMAGE"; then
     log "preflight failed (token files, $STATE/roles/common.md or image $IMAGE): skipping dispatch"; return
   fi
 
-  if [[ -z $(git_repo ls-tree origin/main docs/design) ]]; then
+  if [[ -z $(mirror ls-tree main docs/design) ]]; then
     grep -qx vibe-designer <<<"$names" || dispatch_main designer-bootstrap designer "Mode: bootstrap."
     return
   fi
@@ -339,10 +353,10 @@ loop_once() {
     [[ -n $n ]] && dispatch_review "$n"
   fi
 
-  head=$(git_repo rev-parse origin/main)
+  head=$(mirror rev-parse main)
   [[ -s $STATE/last-playtest-sha ]] || echo "$head" > "$STATE/last-playtest-sha"
   last=$(<"$STATE/last-playtest-sha")
-  merges=$(git_repo rev-list --count "$last..origin/main" 2>/dev/null || echo 0)
+  merges=$(mirror rev-list --count "$last..main" 2>/dev/null || echo 0)
   # also playtest when the team is idle, so the last few merges still get an acceptance pass
   if ! grep -qx vibe-playtester <<<"$names" &&
      { ((merges >= PLAYTEST_EVERY)) || { ((merges > 0)) && [[ -z $names ]]; }; }; then

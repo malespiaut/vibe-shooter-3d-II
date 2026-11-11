@@ -22,7 +22,13 @@ else
   echo "install: warning: $SRC/roles missing (Task 5); orchestrator will sync roles from origin/main" >&2
 fi
 
-[[ -d $BASE/work/repo ]] || git clone "https://github.com/$REPO.git" "$BASE/work/repo"
+# Host-private mirror, outside the container mount: the host never runs git in agent-writable dirs.
+if [[ -d $BASE/state/mirror ]]; then
+  git -C "$BASE/state/mirror" fetch -q --prune origin
+else
+  git clone -q --mirror "https://github.com/$REPO.git" "$BASE/state/mirror"
+fi
+[[ -d $BASE/work/repo ]] && echo "install: note: $BASE/work/repo is no longer used (agents get fresh clones of state/mirror); safe to delete" >&2
 
 podman build -t vibe-agents -f "$BASE/bin/Containerfile" "$BASE/bin"
 echo "install: ok"
