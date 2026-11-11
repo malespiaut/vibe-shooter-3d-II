@@ -8,7 +8,7 @@ docs/design/enemies.md and art-bible.md:
 - exactly the 128 frames of the animation list (idle 2, walk 4, windup 2,
   attack 2, pain 1, death 5; 8 directions), 72x48, origin bottom-centre;
 - nothing touches the left/right/top canvas edge (no clipped parts);
-- side view idle f0 (d2 and d6) bounding box about 64x32 (61..67 x 30..34),
+- side view idle f0 (d2 and d6) bounding box about 64x32 (62..66 x 30..34),
   standing on the bottom row; the death corpse is low (at most 20 px tall);
 - colour budget: brown, steel plus fb_red only;
 - no black holes: no interior (non-outline) pixel is black, shadow_* or a
@@ -134,7 +134,7 @@ def main():
                                             *bbox(tex["idle_d0_f0"]), *bbox(tex["death_d0_f4"]),
                                             span_min, top_min))
         for bw, bh in sides:
-            assert 61 <= bw <= 67 and 30 <= bh <= 34, (bw, bh)
+            assert 62 <= bw <= 66 and 30 <= bh <= 34, (bw, bh)
         for dd in range(8):
             assert bbox(tex["death_d%d_f4" % dd])[1] <= 20, dd
         fb = names.index("fb_red")

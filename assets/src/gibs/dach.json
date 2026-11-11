@@ -11,7 +11,7 @@
   "jitter": 0.4,
   "spread": 40.0,
   "spin": 35.0,
-  "gravity": 0.45,
+  "gravity": 0.7,
   "drag": 0.04,
   "bounce": 0.2,
   "friction": 0.5,

@@ -149,11 +149,11 @@ for bone, (x, y, z) in HIPS.items():
     box(x - 0.025, x + 0.025, y - 0.04, y + 0.025, 0.0, 0.03, "DachFurDark", bone)
 # Tail: thin, sticking up and back.
 box(-0.018, 0.018, 0.3, 0.38, 0.2, 0.235, "DachFur", "tail")
-box(-0.015, 0.015, 0.37, 0.44, 0.22, 0.28, "DachFurDark", "tail")
+box(-0.015, 0.015, 0.37, 0.49, 0.22, 0.28, "DachFurDark", "tail")
 # Head: long skull and snout; the nose tip sets the front of the 64 px.
 ellipsoid((0.0, -0.33, 0.265), (0.064, 0.078, 0.062), "DachFur", "head")
-box(-0.036, 0.036, -0.47, -0.36, 0.222, 0.27, "DachFur", "head")
-box(-0.022, 0.022, -0.495, -0.462, 0.244, 0.272, "DachFurDark", "head")      # nose
+box(-0.036, 0.036, -0.48, -0.36, 0.222, 0.27, "DachFur", "head")
+box(-0.022, 0.022, -0.505, -0.462, 0.244, 0.272, "DachFurDark", "head")      # nose
 box(-0.038, 0.038, -0.46, -0.38, 0.21, 0.228, "DachFurDark", "head")       # jaw line
 # Steel range-finder goggle across the brow.
 box(-0.07, 0.07, -0.385, -0.355, 0.278, 0.30, "DachMetal", "head")
