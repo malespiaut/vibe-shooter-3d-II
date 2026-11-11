@@ -96,7 +96,8 @@ int game_restart_ready(const game_state *gs)
 
 /* A dead player's tic: no input but use, which restarts the level once the
  * death view is over. The body slides to a stop (no thrust), and the world
- * (doors, pushwalls, enemies) keeps running. Returns 1 when it restarted. */
+ * (doors, pushwalls, projectiles, enemies) keeps running. Returns 1 when it
+ * restarted. */
 static int dead_tic(game_state *gs, const ticcmd *cmd)
 {
     player_t *p = &gs->player;
@@ -273,6 +274,7 @@ void game_tic(game_state *gs, const ticcmd *cmd)
             p->momx = 0;
         if (move_axis(gs, &p->x, &p->y, p->momy, 1))
             p->momy = 0;
+        projectiles_tic(gs);
         ai_tic(gs);
         gs->tic++;
         return;
