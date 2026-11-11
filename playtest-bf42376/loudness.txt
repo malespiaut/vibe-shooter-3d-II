@@ -1,0 +1,14 @@
+lid_blast                rms  -17.2 peak  -1.2 len 1.30s
+plasma_hit               rms  -16.3 peak  -1.2 len 0.21s
+tally_done               rms  -16.2 peak  -1.2 len 0.43s
+mastiff_windup           rms  -16.2 peak  -1.2 len 0.62s
+shield_block             rms  -16.1 peak  -1.2 len 0.45s
+lance_fire               rms  -16.0 peak  -1.2 len 0.50s
+...
+mutt_windup              rms   -6.6 peak  -1.2 len 0.51s
+door_locked              rms   -6.1 peak  -1.2 len 0.36s
+menu_select              rms   -5.8 peak  -1.2 len 0.14s
+item_pickup              rms   -5.6 peak  -1.2 len 0.11s
+tally_tick               rms   -5.0 peak  -1.2 len 0.02s
+menu_move                rms   -3.0 peak  -1.2 len 0.04s
+spread 14.18853028578812 count 76
