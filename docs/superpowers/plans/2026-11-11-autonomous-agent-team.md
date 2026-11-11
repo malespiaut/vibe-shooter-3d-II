@@ -20,7 +20,7 @@
 - GitHub auth inside containers: `GH_TOKEN` from `~/vibe-agents/gh-token` (a fine-grained PAT scoped to this one repo). The host `gh` login is never mounted.
 - ~~Containers mount only `~/vibe-agents/work`, at the same absolute path.~~ *Replaced:* each run gets a private clone in `~/vibe-agents/state/runs/<name>.XXXXXX`, made from the host-private mirror `~/vibe-agents/state/mirror` before the container starts. The container mounts only that directory at `/work` (rw) and its prompt file at `/prompt.md` (ro); tokens come in as env vars. `~/vibe-agents/work` is no longer used. Never mount `~/Code/vibe-shooter-3d`.
 - Orchestrator and Containerfile run from the pinned copies in `~/vibe-agents/bin/`. Agents must not modify `agents/orchestrate.sh`, `agents/Containerfile`, `agents/entrypoint.sh` or `agents/install.sh`.
-- `main` should be branch-protected (pending: not enabled yet). Project status lives in the pinned `Team status` issue; `STATUS.md` is a pointer.
+- `main` is branch-protected: a PR is required (0 approvals, since every agent shares the owner's token), enforced for admins, no force pushes, no deletion. Project status lives in the pinned `Team status` issue; `STATUS.md` is a pointer.
 - Review state is held in labels (`review:approved`, `review:changes-requested`, `art:approved`), not GitHub reviews.
 - Evidence (screenshots) goes on the orphan branch `evidence`, under `<pr-number>/`.
 - Defaults: `MAX_DEVS=4`, agent timeout `90m`, stale claim `2h`, playtest every `5` merges, `stuck` after `3` failures.

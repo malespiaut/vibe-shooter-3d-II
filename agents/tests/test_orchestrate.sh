@@ -429,16 +429,49 @@ designer_ran() { grep -q 'podman run .*--name vibe-designer ' "$FIXTURES/calls.l
 test_planning_only_when_something_changed() {
   mkrepo
   issues </dev/null
-  echo "0 $(mirror rev-parse main)" > "$STATE/designer-at"
+  mirror rev-parse main > "$STATE/planned-sha"
   loop
   ! designer_ran || { echo "planned with nothing changed"; return 1; }
   issue 3 OPEN malespiaut stuck | issues
   loop
   designer_ran || { echo "stuck issue did not trigger planning"; return 1; }
-  [[ $(<"$STATE/designer-at") == *" $(mirror rev-parse main)" ]] || return 1
-  : > "$FIXTURES/calls.log"; issues </dev/null; echo "0 oldsha" > "$STATE/designer-at"
+  [[ $(<"$STATE/planned-sha") == "$(mirror rev-parse main)" ]] || return 1
+  : > "$FIXTURES/calls.log"; issues </dev/null; echo oldsha > "$STATE/planned-sha"; rm "$STATE/designer-at"
   loop
   designer_ran
+}
+
+# A: a failed planning run records no sha, so planning runs again once cooldowns pass
+test_failed_planning_retried() {
+  mkrepo
+  issues </dev/null
+  echo 1 > "$FIXTURES/run-exit"
+  loop
+  designer_ran && [[ ! -e $STATE/planned-sha ]] || { echo "failed run recorded a sha"; return 1; }
+  : > "$FIXTURES/calls.log"; rm -rf "$STATE/fail"  # failure cooldown elapsed
+  DESIGNER_COOLDOWN=0 loop
+  designer_ran
+}
+
+# B: a successful planning run records main; with main unchanged and nothing waiting, skip
+test_successful_planning_then_skipped() {
+  mkrepo
+  issues </dev/null
+  loop
+  designer_ran && [[ $(<"$STATE/planned-sha") == "$(mirror rev-parse main)" ]] || return 1
+  : > "$FIXTURES/calls.log"
+  DESIGNER_COOLDOWN=0 loop
+  ! designer_ran
+}
+
+test_auth_401_anchored() {
+  local f=$LOGS/a.jsonl m
+  for m in "Merged PR #401" '{"type":"result","is_error":true,"usage":{"output_tokens":401}}' "took 0.401 s"; do
+    printf '%s\n' "$m" > "$f"
+    ! is_auth_error "$f" || { echo "false auth hit: $m"; return 1; }
+  done
+  echo 'API Error: 401 {"type":"error"}' > "$f"
+  is_auth_error "$f"
 }
 
 test_review_without_verdict_counts_failure() {
