@@ -146,7 +146,7 @@ def frame(kind):
             cv.set(x, y, col)
 
     # ---- forearm, then Mau's right paw over the lower half of the grip
-    gx, gy = 46.0, 68.0
+    gx, gy = 46.0, 70.5
     forearm(cv, (gx + 2, gy + 3), (gx + 30, 88), 8.0, 11.0, [0.18, 0.37, 0.52, 0.74, 0.9], seed=1)
     paw_fist(cv, gx + 1.0, gy + 1.5, 8.0, 5.5, [-4.4, -1.5, 1.5, 4.4],
              along=(-0.96, -0.28), lobe_r=(2.6, 2.2), reach=7.2)
