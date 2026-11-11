@@ -1,0 +1,22 @@
+{
+  "_comment": "Template for an enemy gib animation (enemies.md: gib, 8 frames, from the pain frame). Copy to assets/src/gibs/<enemy>.json, set sprite, source and canvas (the enemy frame canvas from art-bible.md). Dogs bleed red; dog-tech props use cyan.",
+  "sprite": "mutt",
+  "source": "sprites/mutt_pain_d0_f0.tex",
+  "seed": 1,
+  "frames": 8,
+  "chunks": 9,
+  "substeps": 2,
+  "force": 2.0,
+  "lift": 1.4,
+  "jitter": 0.4,
+  "spread": 25.0,
+  "spin": 30.0,
+  "gravity": 0.35,
+  "drag": 0.04,
+  "bounce": 0.15,
+  "friction": 0.5,
+  "centre": [0.5, 0.6],
+  "wound_depth": 2,
+  "blood_ramp": "red",
+  "wound_shade": -0.08
+}
