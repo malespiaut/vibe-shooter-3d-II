@@ -69,6 +69,7 @@ void game_init_with(game_state *gs, const bast_map *map, int level, int skill,
     doors_init(gs);
     items_spawn(gs);
     tags_init(gs);
+    boss_init(gs);
 }
 
 void game_restart(game_state *gs)
@@ -424,6 +425,16 @@ uint64_t game_hash(const game_state *gs)
         hash_i32(&h, f->x);
         hash_i32(&h, f->y);
     }
+    const boss_t *b = &gs->boss;
+    hash_u32(&h, b->id);
+    hash_u32(&h, b->phase);
+    hash_u32(&h, b->next);
+    hash_u32(&h, b->attack);
+    hash_u32(&h, b->tag_fired);
+    hash_i32(&h, b->pod_tics);
+    hash_i32(&h, b->pod_pair);
+    hash_i32(&h, b->pods_opened);
+    hash_i32(&h, b->death_tic);
     return h.value;
 }
 

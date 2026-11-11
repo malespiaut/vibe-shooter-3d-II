@@ -192,6 +192,13 @@ foreach(g mastiff_shoulders mastiff_speed mastiff_lance mastiff_hit shep_front s
         shep_howler shep_windup)
   add_test(NAME ai_${g} COMMAND test_ai_mastshep ${g})
 endforeach()
+# Woofu boss AI (issue #97).
+add_executable(test_boss tests/test_boss.c)
+target_link_libraries(test_boss PRIVATE engine)
+target_compile_options(test_boss PRIVATE -UNDEBUG)
+foreach(g fan phase pods cap tag barrage)
+  add_test(NAME boss_${g} COMMAND test_boss ${g})
+endforeach()
 # Projectiles, splash, Scarab Launcher, kibble barrels (issue #93).
 add_executable(test_projectile tests/test_projectile.c)
 target_link_libraries(test_projectile PRIVATE engine)

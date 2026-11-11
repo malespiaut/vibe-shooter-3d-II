@@ -21,6 +21,11 @@ static const projectile_info_t PLASMA = { 14980, 8192, 8, 8, 0, 0, TH_TYPE_PLASM
 static const projectile_info_t BONE = { 11235, 16384, 20, 20, 32, SPLASH_RADIUS_1_0,
                                         TH_TYPE_EXPLOSION_SMALL, SFX_bone_explode };
 
+/* enemies.md Boss: fan bolt 9 u/s, 10..20, no splash; the Pomeranian
+ * bolt's size and impact effect. */
+static const projectile_info_t BOSS_BOLT = { 16852, 8192, 10, 10, 0, 0, TH_TYPE_PLASMA_HIT,
+                                             SFX_plasma_hit };
+
 const projectile_info_t *projectile_info(uint16_t type)
 {
     switch (type) {
@@ -30,6 +35,8 @@ const projectile_info_t *projectile_info(uint16_t type)
         return &PLASMA;
     case TH_TYPE_BONE_PROJ:
         return &BONE;
+    case TH_TYPE_BOSS_BOLT:
+        return &BOSS_BOLT;
     default:
         return NULL;
     }

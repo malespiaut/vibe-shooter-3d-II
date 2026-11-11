@@ -41,6 +41,7 @@ enum {
     TH_TYPE_RETICLE = 261,     /* Dachshund mortar mark (fx reticle): the
                                 * shell lands when `tics` runs out */
     TH_TYPE_BONE_PROJ = 262,   /* Mastiff Juggernaut bone missile */
+    TH_TYPE_BOSS_BOLT = 263,   /* Woofu fan bolt (fx plasma_bolt) */
 };
 
 /* Owner id of projectiles the player fired (thinker ids are 1..MAX_THINKERS). */
@@ -109,7 +110,8 @@ int entity_on_skill(const bast_map_entity *e, int skill);
  * entity of `map` flagged for `skill` (1..3), in entity order. Enemies keep
  * AMBUSH (TH_FLAG_AMBUSH). Weapon pickups keep the
  * entity's tag and PICKUP_TRIGGER (TH_FLAG_TRIGGER). Other item types live
- * in game_state.pickups (game/items.c). */
+ * in game_state.pickups (game/items.c). Enemies keep the entity tag (the
+ * boss fires it on death). */
 void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill);
 
 /* Appends an enemy; returns its id, or 0 when the list is full or `type`

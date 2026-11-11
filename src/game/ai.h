@@ -66,6 +66,19 @@ enum {
 #define AI_DACH_FAR (10 * FIX_ONE)  /* holds within this, with sight */
 #define AI_DACH_MORTAR_RANGE (20 * FIX_ONE) /* as the Mutt's rifle */
 
+/* Finds the level's boss and BOSS_POD entities (game/boss.h); game_init
+ * calls it after spawning the thinkers. */
+void boss_init(game_state *gs);
+
+/* The BOSS_FAN_BOLTS fan bolt angles around `centre` (the player's
+ * bearing): centre + (k - 2) * BOSS_FAN_SPREAD. */
+void boss_fan_angles(angle_t centre, angle_t out[BOSS_FAN_BOLTS]);
+
+/* The barrage reticles for a boss at (bx, by) and the player at (px, py):
+ * the player, then BOSS_BARRAGE_SIDE to the left and right of the
+ * boss-player line. */
+void boss_barrage_points(fix_t bx, fix_t by, fix_t px, fix_t py, fix_t out_x[3], fix_t out_y[3]);
+
 /* One tic of every live enemy, creation order. Called by game_tic after the
  * player moved and fired. */
 void ai_tic(game_state *gs);
