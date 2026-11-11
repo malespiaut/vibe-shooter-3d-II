@@ -1,0 +1,118 @@
+# Level 2 completion (#149): maps/level2.vmap (maps/src/level2.txt), skill 2,
+# from the `--warp 2` default inventory (100 health, Claws + Ankh Pistol,
+# 50 charges; items.md: no carry-over until the episode flow exists).
+vsdemo 1
+level 2
+skill 2
+seed 0
+
+# Lobby: 2 Mutts with their backs turned.
+weapon 2
+clear 8
+goto 8 1                # Charge Vial
+goto 1 1                # Fish Snack
+# Hall of Mummified Mice.
+goto 5 7
+face 90
+use
+wait 32
+goto 5 10               # Charge Vial
+face 90
+fire 1                  # the shot wakes the two Mutts at the north end
+wait 70
+clear 12
+goto 5 14               # Fish Snack
+goto 5 15               # TRIGGER row: the sarcophagus closets open
+clear 6
+expect kills=6
+# Gallery: shells first, then the Scattergun closes the doors.
+goto 3 22               # Yarn Bundle
+goto 10 22              # Fish Snack
+goto 10 28              # Yarn Bundle
+goto 7 25               # Scattergun: tag 3 closes the doors, opens 3 closets
+weapon 3
+goto 10 25              # back to the shut east door: they come across the room
+face 180
+wait 30                 # the closets take 32 tics to open
+fire 1                  # the blast wakes the closets
+clear 12
+wait 30                 # stragglers leave the closets
+clear 12
+expect kills=12
+# The KILL_TRIGGER (tag 10) refired tag 3: the gallery door is open again.
+wait 32
+goto 13 25 70           # through it (fails if still shut)
+face 0
+use
+wait 32
+# Gift Shop Brawl: hold the vestibule, the doorway lets one Mutt in at a time.
+weapon 2
+fire 1                  # wake the shop
+wait 40
+clear 10
+wait 40
+clear 10
+wait 40
+clear 10
+face 0
+use                     # the door auto-closed meanwhile
+wait 32
+goto 15 25
+clear 10
+goto 17 27
+clear 10
+goto 15 30              # Charge Jar
+goto 20 30              # Fish Snack
+clear 10
+goto 19 23              # green key, behind the counter
+expect kills=17
+# Green door into the Hall of Pharaohs.
+goto 18 22
+face 270
+use
+wait 32
+goto 18 20
+weapon 2
+clear 14
+goto 15 18              # Charge Vial
+goto 20 18              # Linen Wrap
+clear 14
+goto 24 18              # TRIGGER column: the side closets open behind
+wait 30
+weapon 3
+fire 1
+clear 12
+wait 30
+clear 12
+goto 27 18              # Fish Snack
+weapon 2
+clear 14
+expect kills=23
+# Curator's Office.
+goto 26 16
+face 270
+use
+wait 32
+goto 26 14
+clear 10
+goto 22 14              # Yarn Bundle
+goto 30 8               # Yarn Basket
+goto 29 9               # blue key
+clear 10
+expect kills=25
+# Blue door to the loading dock.
+goto 27 20
+face 90
+use
+wait 32
+goto 27 22
+clear 10
+goto 25 22              # Charge Vial
+goto 30 22              # Fish Snack
+clear 12
+goto 28 30
+clear 12
+expect kills=28
+face 90
+use                     # the exit lever
+expect exit=1
