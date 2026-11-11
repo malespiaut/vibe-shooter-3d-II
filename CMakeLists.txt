@@ -148,5 +148,7 @@ add_test(NAME fx_loop
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_fx.py loop)
 add_test(NAME fx_determinism
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_fx.py determinism)
-set_tests_properties(fx_loop fx_determinism PROPERTIES
+add_test(NAME fx_shapes
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_fx.py shapes)
+set_tests_properties(fx_loop fx_determinism fx_shapes PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")

@@ -8,7 +8,12 @@
                           byte-identical TEX files; a different seed gives a
                           different effect; the output passes palcheck and
                           follows the naming contract.
+  test_fx.py shapes       art-director rules: explosion ignition frames carry
+                          no gray/brown and have a lobed silhouette; the
+                          reticle ring is solid, closed fb_red, fb_red_dim
+                          only in runs of >= 3, no inner shape under 8x4.
 """
+import math
 import filecmp
 import glob
 import json
@@ -87,5 +92,103 @@ def test_determinism():
         print("fx_determinism: %d files identical across runs; %s" % (len(files), r.stdout.strip()))
 
 
+def components(mask, diag=True):
+    """Connected components of a boolean mask as lists of (y, x)."""
+    h, w = mask.shape
+    seen = np.zeros_like(mask, dtype=bool)
+    nb = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    if diag:
+        nb += [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+    out = []
+    for y0, x0 in zip(*np.nonzero(mask)):
+        if seen[y0, x0]:
+            continue
+        comp, stack = [], [(y0, x0)]
+        seen[y0, x0] = True
+        while stack:
+            y, x = stack.pop()
+            comp.append((y, x))
+            for dy, dx in nb:
+                yy, xx = y + dy, x + dx
+                if 0 <= yy < h and 0 <= xx < w and mask[yy, xx] and not seen[yy, xx]:
+                    seen[yy, xx] = True
+                    stack.append((yy, xx))
+        out.append(comp)
+    return out
+
+
+def outer_radii(idx):
+    """Over 32 angles from the canvas centre: (farthest opaque pixel,
+    first transparent pixel), in px, stepping 0.25 px."""
+    h, w = idx.shape
+    cx, cy = w / 2.0, h / 2.0
+    far, body = [], []
+    for k in range(32):
+        a = 2 * math.pi * k / 32
+        r, last, first = 0.0, 0.0, None
+        while True:
+            x, y = cx + math.cos(a) * r, cy + math.sin(a) * r
+            if not (0 <= x < w and 0 <= y < h):
+                break
+            if idx[int(y), int(x)] != fx.TRANSPARENT:
+                last = r
+            elif first is None:
+                first = r
+            r += 0.25
+        far.append(last)
+        body.append(r if first is None else first)
+    return max(far) - min(far), max(body) - min(body)
+
+
+def test_shapes():
+    names = fx.palette_names()
+    by_index = {v: k for k, v in names.items()}
+    params = {p["name"]: p for p in map(fx.load_params, PARAMS)}
+    # Explosions: ignition (frames 0, 1) has no smoke colours; frames 1 and 2
+    # have a lobed outer edge (variation over 32 angles).
+    for name, need in (("explosion_small", 4.0), ("explosion_big", 6.0)):
+        p = params[name]
+        for f in range(p["frames"]):
+            idx = fx.render_frame(p, f)
+            if f < 2:
+                smoke = sorted({by_index[i] for i in np.unique(idx) if i != fx.TRANSPARENT
+                                and by_index[i].startswith(("gray_", "brown_"))})
+                assert not smoke, "%s f%d: smoke colours at ignition %s" % (name, f, smoke)
+            if f in (1, 2):
+                far, body = outer_radii(idx)
+                assert far >= need and body >= need, \
+                    "%s f%d: outer radius varies %.2f/%.2f px < %.0f" % (name, f, far, body, need)
+                print("fx_shapes: %s f%d outer radius variation %.2f px (body %.2f px), need >= %.0f"
+                      % (name, f, far, body, need))
+    # Reticle.
+    p = params["reticle"]
+    red, dim = names["fb_red"], names["fb_red_dim"]
+    w, h = p["size"]
+    for f in range(p["frames"]):
+        idx = fx.render_frame(p, f)
+        tag = "reticle f%d" % f
+        # The outer ring is one 8-connected fb_red component touching all four
+        # canvas edges, and it is closed: a 4-connected flood from the corner
+        # through everything else never reaches the centre.
+        rc = [c for c in components(idx == red) if len(c) > 8]
+        ring = max(rc, key=len)
+        ys, xs = zip(*ring)
+        assert (min(xs), max(xs), min(ys), max(ys)) == (0, w - 1, 0, h - 1), tag
+        outside = next(c for c in components(idx != red, diag=False) if (0, 0) in c)
+        assert (h // 2, w // 2) not in outside, "%s: outer ring is broken" % tag
+        assert not any(idx[y, x] != red for y, x in ring), tag
+        # fb_red_dim only in runs of >= 3 px.
+        for c in components(idx == dim):
+            assert len(c) >= 3, "%s: fb_red_dim run of %d px at %s" % (tag, len(c), c[0])
+        # Apart from the outer ring and the centre dot, every shape is >= 8x4.
+        for c in components(idx != fx.TRANSPARENT):
+            ys, xs = zip(*c)
+            bw, bh = max(xs) - min(xs) + 1, max(ys) - min(ys) + 1
+            if (h // 2, w // 2) in c and bw <= 2 and bh <= 2:
+                continue
+            assert bw >= 8 and bh >= 4, "%s: inner shape %dx%d < 8x4" % (tag, bw, bh)
+    print("fx_shapes: reticle ok (%d frames)" % p["frames"])
+
+
 if __name__ == "__main__":
-    {"loop": test_loop, "determinism": test_determinism}[sys.argv[1]]()
+    {"loop": test_loop, "determinism": test_determinism, "shapes": test_shapes}[sys.argv[1]]()

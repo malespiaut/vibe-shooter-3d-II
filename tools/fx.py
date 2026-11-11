@@ -22,12 +22,23 @@ Params (JSON):
   squash             vertical scale of the field, 1 = round (default 1)
   envelope           oneshot only: {"peak": 0.25, "decay": 1.5}
   ease               oneshot growth exponent: s = 1 - (1 - t)^ease (default 2)
+  ignition           oneshot only: {"frames": n, "ramp": k}. Frames f < n map
+                     their energy onto the k hottest ramp entries only, so
+                     the ignition flash carries no smoke colours.
   layers             list of layer objects, see below
 
 Sizes are fractions of R = w / 2. A numeric layer value may be a pair [a, b]:
 it moves from a to b with the growth s (oneshot: eased time; loop:
 0.5 - 0.5 cos(2 pi p), so it pulses and returns).
-  core      radius, intensity, soft (falloff exponent)
+  core      radius, intensity, soft (falloff exponent), metric ("round" or
+            "diamond": L1 distance, a plus/diamond instead of a box)
+  lobes     harmonics (list of integer angular frequencies), amount:
+            warps the distance field of core and ring by
+            1 + amount * f(angle), f a seeded sum of harmonics in -1..1,
+            so the silhouette is lobed instead of a disc
+  ellipse   size [w, h] px (pair of pairs to animate), intensity, fill
+            (false: 1 px 8-connected outline), min_size [w, h]: drawn only
+            when the rounded size reaches it. Exact raster, no falloff.
   rays      count, length, min_length (fraction of length), width (px),
             intensity, flicker (loop length wobble), spin (turns, integer
             for loops)
@@ -170,7 +181,10 @@ def val(v, s):
 
 def layer_core(L, g, s, rnd):
     r = max(1e-6, val(L.get("radius", 0.5), s) * g["R"])
-    x = np.clip(1.0 - g["d"] / r, 0.0, 1.0)
+    d = g["d"]
+    if L.get("metric", "round") == "diamond":
+        d = (np.abs(g["dx"]) + np.abs(g["dy"])) * g["warp"]
+    x = np.clip(1.0 - d / r, 0.0, 1.0)
     return val(L.get("intensity", 1.0), s) * x ** L.get("soft", 1.0)
 
 
@@ -199,6 +213,47 @@ def layer_rays(L, g, s, rnd, t, ph, loop):
         e = np.clip(1.0 - perp / wid, 0.0, 1.0) * frac
         out += np.where(along > 0, e, 0.0)
     return inten * out
+
+
+def lobe_warp(L, g, s, rnd):
+    """Divisor for the distance field: radius at angle a becomes
+    r * (1 + amount * f(a))."""
+    ang = np.arctan2(g["dy"], g["dx"])
+    f = np.zeros_like(ang)
+    norm = 0.0
+    for k in L.get("harmonics", [3, 5]):
+        amp, phs = rnd.uniform(0.5, 1.0), rnd.uniform(0.0, 2.0 * math.pi)
+        f += amp * np.cos(int(k) * ang + phs)
+        norm += amp
+    return 1.0 + val(L.get("amount", 0.2), s) * f / max(norm, 1e-6)
+
+
+def layer_ellipse(L, g, s, rnd):
+    h, w = g["d"].shape
+    size = L.get("size", [w, h])
+    if isinstance(size[0], (list, tuple)):
+        ew = size[0][0] + (size[1][0] - size[0][0]) * s
+        eh = size[0][1] + (size[1][1] - size[0][1]) * s
+    else:
+        ew, eh = float(size[0]), float(size[1])
+    ew, eh = int(math.floor(ew + 0.5)), int(math.floor(eh + 0.5))
+    mw, mh = L.get("min_size", [1, 1])
+    out = np.zeros_like(g["d"])
+    if ew < mw or eh < mh or ew < 1 or eh < 1:
+        return out
+    ys, xs = np.mgrid[0:h, 0:w].astype(np.float64)
+    a, b = ew / 2.0, eh / 2.0
+    inside = ((xs + 0.5 - g["cx"]) / a) ** 2 + ((ys + 0.5 - g["cy"]) / b) ** 2 <= 1.0
+    if L.get("fill", False):
+        mask = inside
+    else:
+        # Inner boundary: inside pixels with a 4-neighbour outside. The
+        # result is a 1 px ring, 8-connected all the way round.
+        pad = np.pad(inside, 1, constant_values=False)
+        allin = pad[:-2, 1:-1] & pad[2:, 1:-1] & pad[1:-1, :-2] & pad[1:-1, 2:]
+        mask = inside & ~allin
+    out[mask] = val(L.get("intensity", 1.0), s)
+    return out
 
 
 def layer_ring(L, g, s, rnd):
@@ -265,7 +320,8 @@ def grid(p):
     dx = xs + 0.5 - cx
     dy = (ys + 0.5 - cy) / sq
     return {"dx": dx, "dy": dy, "d": np.sqrt(dx * dx + dy * dy),
-            "R": w / 2.0, "cx": cx, "cy": cy, "squash": sq}
+            "R": w / 2.0, "cx": cx, "cy": cy, "squash": sq,
+            "warp": np.ones((h, w))}
 
 
 def energy(p, f):
@@ -275,6 +331,12 @@ def energy(p, f):
     loop = p["mode"] == "loop"
     E = np.zeros_like(g["d"])
     noise_layers = []
+    # Lobe warps reshape the distance field before any layer reads it.
+    for i, L in enumerate(p["layers"]):
+        if L["type"] == "lobes":
+            rnd = random.Random(p["seed"] * 1000003 + i)
+            g["warp"] = g["warp"] / lobe_warp(L, g, s, rnd)
+    g["d"] = g["d"] * g["warp"]
     for i, L in enumerate(p["layers"]):
         # One RNG per layer, reseeded every frame: the random layout (ray
         # angles, sparkle paths) is identical in every frame.
@@ -288,6 +350,10 @@ def energy(p, f):
             E += layer_ring(L, g, s, rnd)
         elif kind == "sparkles":
             E += layer_sparkles(L, g, s, rnd, t, ph, loop)
+        elif kind == "ellipse":
+            E += layer_ellipse(L, g, s, rnd)
+        elif kind == "lobes":
+            pass
         elif kind == "noise":
             noise_layers.append((L, ValueNoise(p["seed"] * 7919 + i)))
         else:
@@ -302,6 +368,9 @@ def render_frame(p, f):
     E = energy(p, f)
     names = palette_names()
     ramp = np.array([names[n] for n in p["ramp"]], dtype=np.uint8)
+    ign = p.get("ignition")
+    if ign and p["mode"] == "oneshot" and f < ign["frames"]:
+        ramp = ramp[:ign["ramp"]]
     cut = p.get("cutoff", 0.15)
     x = np.clip((E - cut) / (1.0 - cut), 0.0, 1.0)
     k = np.minimum(len(ramp) - 1, np.floor((1.0 - x) * len(ramp)).astype(np.int64))

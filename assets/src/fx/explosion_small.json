@@ -3,7 +3,9 @@
   "frames": 8, "mode": "oneshot", "seed": 101, "cutoff": 0.14,
   "ramp": ["fb_sun", "fb_yellow", "fb_orange", "fb_fire", "orange_09", "orange_07", "orange_05", "brown_05", "gray_06", "gray_05"],
   "envelope": {"peak": 0.12, "decay": 1.1}, "ease": 2.5,
+  "ignition": {"frames": 2, "ramp": 7},
   "layers": [
+    {"type": "lobes", "harmonics": [2, 3, 5, 7], "amount": [0.4, 0.1]},
     {"type": "core", "radius": [0.3, 0.85], "intensity": [1.6, 0.7], "soft": 0.8},
     {"type": "rays", "count": 9, "length": [0.6, 0.95], "min_length": 0.45, "width": 3.0, "intensity": [1.0, 0.1]},
     {"type": "ring", "radius": [0.2, 0.95], "width": [3.0, 5.0], "intensity": [0.5, 0.15]},
