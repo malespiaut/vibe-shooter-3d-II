@@ -130,6 +130,23 @@ Pre-render exposure and ramps (rules for `tools/blender_render.py`):
   material jump to a neighbouring ramp (gold to olive, gray to steel), which breaks the colour
   budget. This is still pure nearest, with no dithering.
 
+## View models (first-person weapons)
+
+Hand-drawn in screen pixels, bottom-centred over the 320x208 view (sizes in `weapons.md`). They
+follow the HUD light rule (top-left key, 1 px dark shadow bottom-right, no outline) plus:
+
+- **Aim**: the barrel axis, extended on screen, crosses the horizon row (y=104) within 160+-24 px.
+  A gun pointing well off the centre reads as swung, not aimed.
+- **Proportion**: a barrel or slide is clearly longer than it is wide on screen (length at least
+  2x the rear face width), with a dark bore (2-3 px of a ramp's darkest entries) at the muzzle.
+- **Paws** are drawn like the claw view model (`vm1`): separate toe lobes split by 1 px dark fur,
+  a knuckle highlight, and fingers that overlap and wrap the grip. A grip never stands on top of
+  the paw like a pedestal, and a paw is never a shaded circle.
+- **Forearms** are shaded as cylinders (light on the left edge, dark on the right) with 3-5
+  irregular, curved tabby bands across the arm axis. Straight, even diagonal hatching reads as wood
+  and is rejected, because it merges with wooden grips and stocks.
+- All frames of all weapons share one paw and arm treatment.
+
 ## Rejected looks (the art director rejects on sight)
 
 - Blur, bilinear scaling, anti-aliased edges against transparency, "AA mush" from downscaled renders.
