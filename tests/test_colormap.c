@@ -96,6 +96,22 @@ int main(int argc, char **argv)
            pal->lab[warm][2], plain, pal->lab[plain][2]);
     assert(pal->lab[warm][2] > pal->lab[plain][2]);
 
+    /* Key colour in shade (issue #109): blue_07..blue_11 keep a blue hue
+     * (Oklab b < 0) and chroma >= 0.04 through row 20. */
+    for (int k = 7; k <= 11; k++) {
+        char nm[16];
+        snprintf(nm, sizeof nm, "blue_%02d", k);
+        int bi = index_of(pal, argv[2], nm);
+        for (int r = 0; r <= 20; r++) {
+            int v = colormap_row(r)[bi];
+            double a = pal->lab[v][1], b = pal->lab[v][2];
+            double ch = sqrt(a * a + b * b);
+            if (!(b < 0 && ch >= 0.04))
+                fprintf(stderr, "%s row %d -> %d: chroma %.3f b %.3f\n", nm, r, v, ch, b);
+            assert(b < 0 && ch >= 0.04);
+        }
+    }
+
     /* Loader rejects bad input and keeps the old tables. */
     static uint8_t bad[COLORMAP_BYTES];
     assert(!colormap_set(pal->rgb[0], bad, sizeof bad - 1));
