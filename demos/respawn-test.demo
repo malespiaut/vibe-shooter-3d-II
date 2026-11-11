@@ -1,0 +1,32 @@
+# Respawn test (issue #192) on maps/respawntest.vmap (layout in
+# maps/src/respawntest.txt): take the Sun Shard from the RESPAWN_ITEM alcove
+# (5,5), wait for it to restock (1050 tics after it was taken) and take it
+# again, then use the tag-4 wall switch, which stops the restocking for
+# good: 1100 tics later the alcove is still empty and the cells did not
+# rise. Respawned items do not count: items stays 1/1.
+vsdemo 1
+level 8
+skill 2
+seed 0
+map respawntest
+
+expect cells=0
+goto 5 5               # into the alcove: Sun Shard, 20 cells
+expect cells=20
+expect items=1
+goto 5 3               # step out
+wait 1050              # it is back (taken < 1050 tics before the wait ended)
+goto 5 5               # take it again
+expect cells=40
+expect items=1
+goto 5 3
+wait 1050
+goto 5 5               # and a third time: it keeps restocking
+expect cells=60
+goto 1 1               # in front of the switch
+face 180               # west, toward s (0,1)
+use                    # fires tag 4: the alcove stops restocking
+wait 1100
+goto 5 5               # the alcove is empty
+expect cells=60
+expect items=1

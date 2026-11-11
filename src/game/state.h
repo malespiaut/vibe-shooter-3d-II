@@ -104,6 +104,14 @@ typedef struct {
     uint8_t dropped; /* spawned by a dying enemy: not counted in items */
     int32_t amount;  /* ammo given, 0 = the pickup's normal amount */
     fix_t x, y;
+    /* RESPAWN_ITEM (game/items.c): `respawner` is constant; `respawn_on`
+     * clears for good when `tag` fires; `respawned` marks a reappeared one
+     * (not counted in items); `respawn_tics` counts down while taken, 0 =
+     * not coming back. All zero for every other pickup. */
+    uint8_t respawner;
+    uint8_t respawn_on;
+    uint8_t respawned;
+    int32_t respawn_tics;
 } pickup_t;
 
 #define MAX_PICKUPS 1024
@@ -207,8 +215,11 @@ void game_tic(game_state *gs, const ticcmd *cmd);
  * one-shot cell states), then
  * per thinker its AI fields (movedir, goal tile, movecount), then per
  * thinker its howler_hit flag, then the death timer and the level-entry
- * inventory, then the effect list (spawn count, then per slot kind, tics,
- * x, y). New
+ * inventory, then per thinker shield_tics and shoulder, then the effect
+ * list (spawn count, then per slot kind, tics, x, y), then the boss fields
+ * (id, phase, next, attack, tag_fired, pod_tics, pod_pair, pods_opened,
+ * death_tic), then per RESPAWN_ITEM pickup (spawn order) respawn_on,
+ * respawned and respawn_tics (nothing on maps without one). New
  * fields are appended as the systems that own them land. */
 uint64_t game_hash(const game_state *gs);
 
