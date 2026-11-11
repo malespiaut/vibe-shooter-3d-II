@@ -80,7 +80,8 @@ def sheet(frames, pal):
     rows = {}
     for k in sorted(frames):
         rows.setdefault(k.split("_")[0], []).append(k)
-    order = ["idle", "swipe0", "swipe1", "swipe2", "fire0", "fire1", "pump0", "pump1"]
+    order = ["idle", "swipe0", "swipe1", "swipe2", "charge0", "charge1", "fire0", "fire1", "pump0", "pump1",
+             "reload0", "roar0", "roar1", "roar2"]
     pad = 6
     w = max(sum(frames[k].w + pad for k in r) for r in rows.values()) + pad
     h = sum(max(frames[k].h for k in r) + pad for r in rows.values()) + pad

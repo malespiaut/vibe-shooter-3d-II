@@ -338,6 +338,12 @@ add_test(NAME viewmodels_1_4
 set_tests_properties(viewmodels_1_4 PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# View-model frames, weapons 5-7 (weapons.md): sizes, frame names, no holes, fullbright use, palcheck.
+add_test(NAME viewmodels_5_7
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_viewmodels_5_7.py)
+set_tests_properties(viewmodels_5_7 PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
 # Mixer: unit tests on synthetic sounds, and a scripted mix of real effects
 # into build/mixer_wav.wav (evidence).
 add_executable(test_mixer tests/test_mixer.c)
