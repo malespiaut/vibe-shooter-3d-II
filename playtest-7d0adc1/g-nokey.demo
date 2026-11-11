@@ -1,0 +1,12 @@
+# Green door (4,4) without the key: use must fail, goto should fail/time out
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+goto 4 3
+face 90
+use
+wait 40
+in 40 127 0 0 -
+expect tile=4,3

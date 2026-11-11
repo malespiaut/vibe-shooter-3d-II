@@ -1,0 +1,14 @@
+# Open D, stand in the doorway for 300 tics: must not close on the player or trap
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+goto 2 3
+face 90
+use
+wait 34
+in 12 64 0 0 -
+wait 300
+in 40 127 0 0 -
+expect tile=2,6

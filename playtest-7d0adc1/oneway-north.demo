@@ -1,0 +1,16 @@
+# One-way door O (6,4) opens only from south. Go round via door S (8,4, stay), try O from the north.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+goto 8 3
+face 90
+use
+wait 34
+goto 6 5
+face 270
+use
+wait 40
+in 30 127 0 0 -
+expect tile=6,5

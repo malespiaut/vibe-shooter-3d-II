@@ -1,0 +1,15 @@
+# D opens, walk through, then wait: door should auto-close 140 tics later. Return trip with goto.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+goto 2 3
+face 90
+use
+wait 32
+goto 2 6
+face 270
+wait 200
+goto 2 2
+expect tile=2,2

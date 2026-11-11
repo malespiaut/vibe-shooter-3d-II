@@ -1,0 +1,10 @@
+# P door (10,4) START_OPEN: walk straight through without use
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+goto 10 1
+face 90
+in 70 127 0 0 -
+expect tile=10,6

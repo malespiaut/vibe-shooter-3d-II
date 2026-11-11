@@ -1,0 +1,10 @@
+# At 100 health: Fish Snack must stay. Scarab Plate -> 200 armour, then Linen Wrap must stay (200>100),
+# Bandage at 200 should stay; second green key should stay.
+vsdemo 1
+level 1
+skill 2
+seed 0
+goto 8 1
+expect health=100
+expect armor=200
+expect items=2
