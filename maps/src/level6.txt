@@ -19,10 +19,12 @@
 #      the paws, in front of the green door.
 #   -> green door G (31,30) into the Sphinx's chest
 #   -> Heart Chamber (x 32-46, y 27-33): 15 tiles long, the Sphinx Howler
-#      on its pedestal at the east end (45,30) between gold pillars
+#      on its pedestal at the east end (45,30) between gold pillars, the
+#      pedestal end (x 42-45) lit (dark 1) so it shows from the door
 #   -> eg_door d (34,34) -> Grinding Room (x 32-46, y 35-46): the face
-#      carving (x 36-42, y 38-42, gold-striped headdress, its muzzle ground
-#      down to dt_steel_cracked), floor below (y 35-43), scaffold above
+#      carving (x 36-42, y 38-42): gold headdress sides, eye-glyph blocks
+#      set one tile back (37,39) and (41,39), the muzzle between them
+#      ground down to dt_steel_cracked (x 38-40, y 38), floor below (y 35-43), scaffold above
 #      (y 45-46) behind a railing with gaps at x 34 and x 44; blue key on
 #      the scaffold behind the face (39,46)
 #   -> back through the Heart Chamber to the blue door B (39,26)
@@ -62,6 +64,7 @@ legend g wall=eg_glyph_band flags=SOLID
 legend o wall=eg_gold_pillar flags=SOLID
 legend i wall=eg_gold_pillar flags=SOLID
 legend v wall=dt_steel_cracked flags=SOLID
+legend e wall=eg_glyph_band flags=SOLID
 legend m wall=eg_mural flags=SOLID
 legend s wall=dt_steel_panel flags=SOLID
 legend t wall=dt_steel_panel_b flags=SOLID
@@ -83,6 +86,7 @@ legend n floor=dt_grate_floor ceil=dt_concrete dark=1
 legend X floor=dt_grate_floor ceil=dt_concrete dark=1 flags=SECRET
 legend G wall=eg_door_green floor=eg_tomb_floor ceil=eg_floor_tiles dark=5 flags=DOOR key=green
 legend h floor=eg_tomb_floor ceil=eg_floor_tiles dark=6
+legend H floor=eg_tomb_floor ceil=eg_floor_tiles dark=1
 legend d wall=eg_door floor=eg_floor_tiles ceil=dt_concrete dark=5 flags=DOOR
 legend f floor=eg_sand ceil=dt_concrete dark=5
 legend k floor=dt_grate_floor ceil=dt_concrete dark=4
@@ -98,19 +102,19 @@ layout
 #r,,,,,,,,,annnnaaawaaaaaaaaaaagffffobbbbboffff#
 #r,,,,,,,,,aXnnnaaawaaaaaaaaaaagffffobbbbboffff#
 #r,,,,,,,,,aaQaWaaawaaaaaaaaaaagffffobbbbboffff#
-#rrrrrrrr,,a...................gffffobbbbboffff#
-#r,,,,,,,,,a...................gffffobvvvboffff#
+#rrrrrrrr,,a...................gffffoebbbeoffff#
+#r,,,,,,,,,a...................gffffofvvvfoffff#
 #r,,,,,,,,,a...................gfffffffffffffff#
 #r,,,,,,,,,a...................gfffffffffffffff#
 #r,,rrrrrrra...................gfffffffffffffff#
 #r,,,,,,,,,a..........cbbbbbbb.gggdgggggggggggg#
-#r,,,,,,,,,a....r.....cbbbbbbb.ghhhhhhhhhhhhhhh#
-#r,,,,,,,,,a...................ghhhhhhhhhhhhhih#
-#rrrrrrrr,,a...................ghhhhhhhhhhhhhhh#
-#r,,,,,,,,,a...................Ghhhhhhhhhhhhhhm#
-#r,,,,,,,,,a...................ghhhhhhhhhhhhhhh#
-#r,,,,,,,,,a...................ghhhhhhhhhhhhhih#
-#r,,rrrrrrra...................ghhhhhhhhhhhhhhh#
+#r,,,,,,,,,a....r.....cbbbbbbb.ghhhhhhhhhhHHHHh#
+#r,,,,,,,,,a...................ghhhhhhhhhhHHHih#
+#rrrrrrrr,,a...................ghhhhhhhhhhHHHHh#
+#r,,,,,,,,,a...................GhhhhhhhhhhHHHHm#
+#r,,,,,,,,,a...................ghhhhhhhhhhHHHHh#
+#r,,,,,,,,,a...................ghhhhhhhhhhHHHih#
+#r,,rrrrrrra...................ghhhhhhhhhhHHHHh#
 #r,,,,,,,,,a....r.....cbbbbbbb.ggggggggBggggggg#
 #r,,,,,,,,,a..........cbbbbbbb.gaaazlllllllzaaa#
 #r,,,,,,,,,a...................gaaazlllllllzaaa#
