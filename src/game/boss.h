@@ -12,7 +12,8 @@
  *   BOSS_FAN_SPREAD, k = 0..4.
  * - Pods: the first BOSS_POD_TICS_1 tics the boss is awake (any state but
  *   STAND), then every BOSS_POD_TICS_1 in phase 1 and BOSS_POD_TICS_2 in
- *   phase 2 (the phase-2 timer starts at the phase switch), it opens the
+ *   phase 2 (at the phase switch a wait longer than BOSS_POD_TICS_2 is cut
+ *   to it), it opens the
  *   next pair of BOSS_POD entities (pods 0 and 1, then 2 and 3, ...,
  *   wrapping, entity order). Each releases BOSS_POD_CHOMPERS awake
  *   Chompers 0.25 u either side of the pod along its facing's normal (at
@@ -21,7 +22,7 @@
  * - Phase switch: the hit that takes HP to <= BOSS_PHASE2_HP (and > 0)
  *   cancels any wind-up and forces a BOSS_FLINCH_TICS flinch (lid_blast);
  *   the boss never takes any other pain (pain 0, no Howler stun). Phase 2
- *   speed is x1.5. Its attacks alternate: a double fan (the second
+ *   speed is 3/2 of phase 1. Its attacks alternate: two fans (the second
  *   BOSS_FAN_GAP tics after the first, re-aimed), then a mortar barrage
  *   (BOSS_BARRAGE_WINDUP, three reticles: on the player, and BOSS_BARRAGE_SIDE
  *   either side of the player perpendicular to the boss-player line; they

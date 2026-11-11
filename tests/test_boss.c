@@ -153,6 +153,7 @@ static void test_phase(void)
            b->state, b->tics, heard(&gs, SFX_lid_blast));
     assert(b->health == 1200 && gs.boss.phase == 2 && b->state == TH_STATE_PAIN &&
            b->tics == BOSS_FLINCH_TICS && heard(&gs, SFX_lid_blast));
+    assert(gs.boss.pod_tics == BOSS_POD_TICS_2); /* 700 left, cut to 525 */
     ai_damage(&gs, b, 1); /* hits during the flinch do not restart it */
     assert(b->tics == BOSS_FLINCH_TICS);
     gs.player.health = 100000;

@@ -652,6 +652,12 @@ add_test(NAME pomdach_demo
 set_tests_properties(pomdach_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 add_demo_determinism(pomdach-test)
+add_test(NAME boss_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_boss_demo.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/boss_demo)
+set_tests_properties(boss_demo PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+add_demo_determinism(boss-test)
 
 # Mastiff / Shieldbearer test demo, run twice (issue #96).
 add_test(NAME mastshep_demo

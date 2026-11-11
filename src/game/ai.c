@@ -251,7 +251,8 @@ int ai_damage_pain(game_state *gs, thinker_t *t, int32_t damage, int32_t pain_ti
         boss_t *b = &gs->boss;
         if (b->phase == 1 && t->health <= BOSS_PHASE2_HP) {
             b->phase = 2;
-            b->pod_tics = BOSS_POD_TICS_2;
+            if (b->pod_tics > BOSS_POD_TICS_2)
+                b->pod_tics = BOSS_POD_TICS_2; /* never later than a phase-2 period */
             b->next = BOSS_NEXT_FANS;
             t->state = TH_STATE_PAIN;
             t->tics = BOSS_FLINCH_TICS;
