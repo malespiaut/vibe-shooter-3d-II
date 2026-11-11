@@ -31,6 +31,7 @@ void tags_init(game_state *gs)
             pw->state = PUSHWALL_IDLE;
             pw->moved = 0;
             pw->pos = 0;
+            pw->wall = m->cells[ty * m->width + tx].wall;
         }
     }
 }

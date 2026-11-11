@@ -29,6 +29,13 @@ static double cam_eye = 0.5; /* eye height above the floor, units */
 static char err_buf[2048];
 /* render_set_doors(): live door open amounts per cell, or NULL. */
 static const fix_t *door_open;
+/* render_set_pushwalls(): live pushwall blocks, or NULL (map state). */
+static const render_pushwall *pw_list;
+static int pw_count;
+/* Cells a live pushwall block overlaps, rebuilt per render_view(). */
+static uint8_t pw_touch[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
+/* render_set_dark(): live darkness per cell, or NULL (map `dark`). */
+static const uint8_t *dark_live;
 
 const char *render_error(void)
 {
@@ -119,6 +126,78 @@ int render_cell_is_wall(const bast_map_cell *c)
 void render_set_doors(const fix_t *open)
 {
     door_open = open;
+}
+
+void render_set_pushwalls(const render_pushwall *pw, int n)
+{
+    pw_list = pw;
+    pw_count = pw ? n : 0;
+}
+
+void render_set_dark(const uint8_t *dark)
+{
+    dark_live = dark;
+}
+
+/* Darkness of map cell `c` (a pointer into m->cells): live or map. */
+static int cell_dark(const bast_map *m, const bast_map_cell *c)
+{
+    return dark_live ? dark_live[c - m->cells] : c->dark;
+}
+
+/* Marks the cells each live pushwall block overlaps (at most 2x2). */
+static void touch_pushwalls(const bast_map *m)
+{
+    memset(pw_touch, 0, (size_t)m->width * m->height);
+    for (int i = 0; i < pw_count; i++) {
+        const int x0 = fix_to_int(pw_list[i].x), y0 = fix_to_int(pw_list[i].y);
+        const int x1 = fix_to_int(pw_list[i].x + FIX_ONE - 1);
+        const int y1 = fix_to_int(pw_list[i].y + FIX_ONE - 1);
+        for (int y = y0; y <= y1; y++)
+            for (int x = x0; x <= x1; x++)
+                if (x >= 0 && y >= 0 && x < m->width && y < m->height)
+                    pw_touch[y * m->width + x] = 1;
+    }
+}
+
+/* Nearest entry of the ray (px, py) + t (rdx, rdy) into a live pushwall
+ * block, with t in [t0, t1] (the span the ray spends in the current cell).
+ * Returns the pushwall index or -1; *t_hit, *side (0: an x face, 1: a y
+ * face) and *f (0..1 along the face toward +y or +x) describe the hit. */
+static int hit_pushwall(double px, double py, double rdx, double rdy, double t0, double t1,
+                        double *t_hit, int *side, double *f)
+{
+    int best = -1;
+    for (int i = 0; i < pw_count; i++) {
+        const double bx = pw_list[i].x / 65536.0, by = pw_list[i].y / 65536.0;
+        double xa = -1e30, xb = 1e30, ya = -1e30, yb = 1e30;
+        if (rdx != 0) {
+            const double a = (bx - px) / rdx, b = (bx + 1.0 - px) / rdx;
+            xa = a < b ? a : b;
+            xb = a < b ? b : a;
+        } else if (px < bx || px > bx + 1.0) {
+            continue;
+        }
+        if (rdy != 0) {
+            const double a = (by - py) / rdy, b = (by + 1.0 - py) / rdy;
+            ya = a < b ? a : b;
+            yb = a < b ? b : a;
+        } else if (py < by || py > by + 1.0) {
+            continue;
+        }
+        const int s = xa > ya ? 0 : 1;
+        const double te = s == 0 ? xa : ya, tx = xb < yb ? xb : yb;
+        if (te > tx || te <= 0 || te < t0 - 1e-9 || te > t1 + 1e-9)
+            continue;
+        if (best >= 0 && te >= *t_hit)
+            continue;
+        best = i;
+        *t_hit = te;
+        *side = s;
+        double ff = s == 0 ? py + te * rdy - by : px + te * rdx - bx;
+        *f = ff < 0 ? 0 : ff > 1 ? 1 : ff;
+    }
+    return best;
 }
 
 /* Open amount of door cell (x, y) as a fraction 0..1. */
@@ -224,6 +303,35 @@ static const bast_map_cell *cell(const bast_map *m, int x, int y)
     return &m->cells[y * m->width + x];
 }
 
+/* Fills `col` for a wall face hit at perpendicular distance `dist`, `f`
+ * along the face (0..1 toward +y for side 0, +x for side 1), lit by the
+ * open cell `front` the face looks into. */
+static void shade_hit(const bast_map *m, const bast_map_cell *front, double dist, int side,
+                      int stepx, int stepy, double f, int tex, int mx, int my,
+                      render_column *col)
+{
+    /* Texture u, oriented so every face reads left to right as seen
+     * from the open side (screen right = view right). */
+    double u = f;
+    if (side == 0 ? stepx > 0  /* looking east: screen right is south */
+                  : stepy < 0) /* looking south: screen right is west */
+        u = 1.0 - u;
+    int tx = (int)(u * TEX_SIZE);
+    if (tx < 0)
+        tx = 0;
+    if (tx > TEX_SIZE - 1)
+        tx = TEX_SIZE - 1;
+    int dark = front ? cell_dark(m, front) : 0;
+    int row = (int)(32.0 * dist / VIEW_DIST) + dark;
+    col->hit = 1;
+    col->dist = (float)dist;
+    col->tex = tex;
+    col->tex_x = tx;
+    col->light_row = row < 0 ? 0 : row > COLORMAP_ROWS - 1 ? COLORMAP_ROWS - 1 : row;
+    col->map_x = mx;
+    col->map_y = my;
+}
+
 /* One DDA ray (Amanatides-Woo). The perpendicular
  * distance is measured along the view direction, so a flat wall projects
  * flat (no fisheye). */
@@ -267,6 +375,28 @@ static void cast(const bast_map *m, double px, double py, double rdx, double rdy
         const bast_map_cell *c = cell(m, mx, my);
         if (!c)
             return; /* left the map: nothing to draw */
+        if (pw_list && pw_touch[my * m->width + mx]) {
+            /* The ray spends t in [t0, t1] in this cell. */
+            const double t0 = side == 0 ? sdx - ddx : sdy - ddy;
+            const double t1 = sdx < sdy ? sdx : sdy;
+            double th = 0, f = 0;
+            int ps = 0;
+            const int pi = hit_pushwall(px, py, rdx, rdy, t0, t1, &th, &ps, &f);
+            if (pi >= 0) {
+                if (th > t0 + 1e-6 && !(c->flags & BAST_CELL_SOLID))
+                    front = c; /* the hit is inside this (open) cell */
+                if (th < 1e-4)
+                    th = 1e-4;
+                shade_hit(m, front, th, ps, stepx, stepy, f, pw_list[pi].tex, mx, my, col);
+                return;
+            }
+        }
+        /* Live pushwalls replace the map's PUSHWALL cells: the tile is
+         * open floor unless a block (tested above) is in it. */
+        if (pw_list && (c->flags & BAST_CELL_PUSHWALL) && !(c->flags & BAST_CELL_SOLID)) {
+            front = c;
+            continue;
+        }
         const int is_door = c->wall != 0 && (c->flags & BAST_CELL_DOOR) &&
                             !(c->flags & (BAST_CELL_SOLID | BAST_CELL_PUSHWALL));
         if (!is_door && !render_cell_is_wall(c)) {
@@ -290,26 +420,7 @@ static void cast(const bast_map *m, double px, double py, double rdx, double rdy
             }
             f -= p;
         }
-        /* Texture u, oriented so every face reads left to right as seen
-         * from the open side (screen right = view right). */
-        double u = f;
-        if (side == 0 ? stepx > 0  /* looking east: screen right is south */
-                      : stepy < 0) /* looking south: screen right is west */
-            u = 1.0 - u;
-        int tx = (int)(u * TEX_SIZE);
-        if (tx < 0)
-            tx = 0;
-        if (tx > TEX_SIZE - 1)
-            tx = TEX_SIZE - 1;
-        int dark = front ? front->dark : 0;
-        int row = (int)(32.0 * dist / VIEW_DIST) + dark;
-        col->hit = 1;
-        col->dist = (float)dist;
-        col->tex = c->wall;
-        col->tex_x = tx;
-        col->light_row = row < 0 ? 0 : row > COLORMAP_ROWS - 1 ? COLORMAP_ROWS - 1 : row;
-        col->map_x = mx;
-        col->map_y = my;
+        shade_hit(m, front, dist, side, stepx, stepy, f, c->wall, mx, my, col);
         return;
     }
 }
@@ -380,7 +491,7 @@ static void draw_planes(const bast_map *map, double px, double py, double dx, do
             }
             const int u = (int)((wx >> 26) & (TEX_SIZE - 1));
             const int v = TEX_SIZE - 1 - (int)((wy >> 26) & (TEX_SIZE - 1));
-            int light = drow + c->dark;
+            int light = drow + cell_dark(map, c);
             if (light > COLORMAP_ROWS - 1)
                 light = COLORMAP_ROWS - 1;
             if (t->flags & BAST_TEX_FULLBRIGHT)
@@ -512,7 +623,7 @@ static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
         if (!t)
             continue;
         const bast_map_cell *c = cell(map, e->x >> 16, e->y >> 16);
-        list[n] = (render_sprite){ e->x, e->y, 0, t, c ? c->dark : 0 };
+        list[n] = (render_sprite){ e->x, e->y, 0, t, c ? cell_dark(map, c) : 0 };
         n++;
     }
     for (int i = 0; i < n_things && n < RENDER_MAX_SPRITES; i++) {
@@ -521,7 +632,7 @@ static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
         if (!t)
             continue;
         const bast_map_cell *c = cell(map, th->x >> 16, th->y >> 16);
-        list[n] = (render_sprite){ th->x, th->y, 0, t, c ? c->dark : 0 };
+        list[n] = (render_sprite){ th->x, th->y, 0, t, c ? cell_dark(map, c) : 0 };
         n++;
     }
     render_draw_sprites(list, n, fb);
@@ -556,6 +667,8 @@ void render_view_things_eye(const bast_map *map, fix_t x, fix_t y, angle_t angle
     cam_dx = dx;
     cam_dy = dy;
     cam_eye = eye;
+    if (pw_list)
+        touch_pushwalls(map);
 
     for (int sx = 0; sx < VIEW_W; sx++) {
         const double cam = (double)(sx - VIEW_W / 2) / (VIEW_W / 2);

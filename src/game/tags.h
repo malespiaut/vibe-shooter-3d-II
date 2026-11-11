@@ -33,6 +33,7 @@ typedef struct {
     uint8_t state;  /* PUSHWALL_* */
     uint8_t moved;  /* whole tiles moved so far */
     fix_t pos;      /* 0..FIX_ONE into the next tile */
+    uint8_t wall;   /* wall texture of its map cell (constant, for drawing) */
 } pushwall_t;
 
 /* Builds the pushwall list (row-major) and counts SECRET cells

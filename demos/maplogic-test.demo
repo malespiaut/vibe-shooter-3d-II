@@ -1,0 +1,29 @@
+# Map logic render test on maps/tagstest.vmap (layout in maps/src/tagstest.txt)
+# for issue #121: the renderer draws pushwalls and LIGHTS darkness from live
+# game state. Open the tag-1 door with the switch s (0,2), go into the north
+# hall, push the pushwall P (3,8) and watch it slide two tiles north, then
+# walk east onto the trigger r (9,6): tag 3 fires the LIGHTS entity and every
+# cell switches from dark 0 to dark_alt 12 that tic.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+
+goto 1 2               # in front of the switch
+face 180               # west, toward s
+use                    # fires tag 1: door (6,4) opens
+wait 32
+goto 6 5               # through the door into the north hall
+goto 3 7               # below the pushwall
+face 90                # north
+use                    # slides 2 tiles north at 1 tile per 32 tics
+wait 72                # watch it go
+expect secrets=0
+goto 8 6               # one tile west of the trigger, lights still off
+face 0                 # east, along the hall
+wait 4
+goto 9 6               # onto the trigger: the lights change
+wait 8
+face 180               # look back west at the darkened hall
+wait 8
