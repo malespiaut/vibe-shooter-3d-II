@@ -70,21 +70,37 @@ typedef struct {
     int dark;            /* cell_dark of the sprite's cell, 0..31 */
 } render_sprite;
 
+/* A live thing to draw as a world sprite (game state, not the map): its
+ * entity type picks the sprite (sprite_def_for_entity()). */
+typedef struct {
+    uint16_t type;
+    fix_t x, y;    /* floor position: the TEX origin (bottom centre) sits here */
+    angle_t angle; /* facing, for 8-direction sprites */
+} render_thing;
+
 /* Loads the TEX of every wall texture `map` uses, from
  * `assets_dir`/textures/<name>.tex, else `assets_dir`/test/<name>.tex.
  * Needs colormap_load() first for drawing. Replaces any earlier set.
  * Returns 1, or 0 with render_error() set (a missing texture is an error). */
 int render_init(const bast_map *map, const char *assets_dir);
 /* render_init() also loads the sprite frames of every map entity type that
- * has a sprite (sprite_name_for_entity()): <name>_idle_d<0..7>_f0.tex from
- * `assets_dir`/sprites, else `assets_dir`/test. d0 is required; a missing
- * d1..d7 falls back to d0 (things without facing). */
+ * has a sprite (sprite_def_for_entity()): <name>_idle_d<0..7>_f<0..frames-1>
+ * .tex from `assets_dir`/sprites, else `assets_dir`/test. d0 of every frame
+ * is required; a missing d1..d7 falls back to d0 (things without facing). */
 void render_shutdown(void);
 const char *render_error(void);
 
 /* Draws the view from (x, y) facing `angle` (eye height 0.5 units): walls,
- * then the sprites of the map's entities (frame chosen by sprite_dir()). */
+ * then the sprites of the map's static (non-live) entities (sprite_dir()). */
 void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *fb);
+/* render_view() plus `n_things` live things (pickups from game state,
+ * game/items.h items_render_things()), sorted with the static map sprites.
+ * Map entities whose sprite is `live` are drawn only from this list, so a
+ * taken pickup disappears. `tic` picks the idle animation frame
+ * (sprite_anim_frame()); it is read, never written. Types without a loaded
+ * sprite are skipped. render_view() is this with no things and tic 0. */
+void render_view_things(const bast_map *map, fix_t x, fix_t y, angle_t angle,
+                        const render_thing *things, int n_things, uint32_t tic, uint8_t *fb);
 
 /* Sky texture column drawn in screen column sx (0..VIEW_W-1) when facing
  * `angle`: (sx - angle * 1280 / 65536) mod 320. */

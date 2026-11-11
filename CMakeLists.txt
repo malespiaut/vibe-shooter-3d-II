@@ -488,6 +488,13 @@ target_link_libraries(test_render_sprites PRIVATE engine m)
 target_compile_options(test_render_sprites PRIVATE -UNDEBUG)
 add_dependencies(test_render_sprites colormap testpattern)
 add_test(NAME render_sprites COMMAND test_render_sprites ${ASSETS_GEN})
+# Pickups as world sprites from live state (issue #120). Needs the item
+# sprites from tools/build_assets.sh (tools/build.d/47-items.sh).
+add_executable(test_world_sprites_items tests/test_world_sprites_items.c)
+target_link_libraries(test_world_sprites_items PRIVATE engine m)
+target_compile_options(test_world_sprites_items PRIVATE -UNDEBUG)
+add_dependencies(test_world_sprites_items colormap testpattern)
+add_test(NAME world_sprites_items COMMAND test_world_sprites_items ${ASSETS_GEN})
 
 # Map logic: tags, switches, exit, pushwalls, triggers, secrets, lights,
 # damage floors on maps/tagstest.vmap (issue #66), one ctest per case.

@@ -288,3 +288,21 @@ void player_damage_from(game_state *gs, int32_t amount, fix_t sx, fix_t sy)
 {
     damage(gs, amount, 1, sx, sy);
 }
+
+int items_render_things(const game_state *gs, render_thing *out, int max)
+{
+    int n = 0;
+    for (int i = 0; i < gs->pickup_count && n < max; i++) {
+        const pickup_t *pk = &gs->pickups[i];
+        if (pk->taken)
+            continue;
+        out[n++] = (render_thing){ pk->type, pk->x, pk->y, 0 };
+    }
+    for (int i = 0; i < gs->things.count && n < max; i++) {
+        const thinker_t *t = &gs->things.list[i];
+        if (!(t->flags & TH_FLAG_PICKUP) || t->state == TH_STATE_TAKEN)
+            continue;
+        out[n++] = (render_thing){ t->type, t->x, t->y, t->angle };
+    }
+    return n;
+}

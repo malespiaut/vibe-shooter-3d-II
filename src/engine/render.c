@@ -18,8 +18,9 @@
 
 static bast_tex *textures[RENDER_MAX_TEXTURES];
 static bast_tex *sky;
-/* Sprite frames per entity type and direction; d1..d7 may alias d0. */
-static bast_tex *sprite_frames[BAST_ENT_TYPE_LIMIT][SPRITE_DIRS];
+/* Sprite frames per entity type, direction and idle frame; d1..d7 may
+ * alias d0 of the same frame. */
+static bast_tex *sprite_frames[BAST_ENT_TYPE_LIMIT][SPRITE_MAX_FRAMES][SPRITE_DIRS];
 static render_column columns[VIEW_W];
 static float depth[VIEW_W];
 /* Camera of the last render_view(), for render_draw_sprites(). */
@@ -42,10 +43,13 @@ void render_shutdown(void)
     bast_tex_free(sky);
     sky = NULL;
     for (int t = 0; t < BAST_ENT_TYPE_LIMIT; t++) {
-        for (int d = SPRITE_DIRS - 1; d >= 0; d--) {
-            if (d == 0 || sprite_frames[t][d] != sprite_frames[t][0])
-                bast_tex_free(sprite_frames[t][d]);
-            sprite_frames[t][d] = NULL;
+        for (int f = 0; f < SPRITE_MAX_FRAMES; f++) {
+            bast_tex **fr = sprite_frames[t][f];
+            for (int d = SPRITE_DIRS - 1; d >= 0; d--) {
+                if (d == 0 || fr[d] != fr[0])
+                    bast_tex_free(fr[d]);
+                fr[d] = NULL;
+            }
         }
     }
 }
@@ -78,22 +82,25 @@ static int load_sprites(const bast_map *map, const char *dir)
 {
     for (int i = 0; i < map->entity_count; i++) {
         const int type = map->entities[i].type;
-        const char *base = sprite_name_for_entity(type);
-        if (!base || type >= BAST_ENT_TYPE_LIMIT || sprite_frames[type][0])
+        const sprite_def *def = sprite_def_for_entity(type);
+        if (!def || sprite_frames[type][0][0])
             continue;
-        for (int d = 0; d < SPRITE_DIRS; d++) {
-            char name[128];
-            int found;
-            snprintf(name, sizeof name, "%s_idle_d%d_f0", base, d);
-            bast_tex *t = load_sprite_frame(dir, name, &found);
-            if (!t && found)
-                return 0;
-            if (!t && d == 0) {
-                snprintf(err_buf, sizeof err_buf, "sprite '%s' not found in %s/sprites or %s/test",
-                         name, dir, dir);
-                return 0;
+        for (int f = 0; f < def->frames; f++) {
+            bast_tex **fr = sprite_frames[type][f];
+            for (int d = 0; d < SPRITE_DIRS; d++) {
+                char name[128];
+                int found;
+                snprintf(name, sizeof name, "%s_idle_d%d_f%d", def->name, d, f);
+                bast_tex *t = load_sprite_frame(dir, name, &found);
+                if (!t && found)
+                    return 0;
+                if (!t && d == 0) {
+                    snprintf(err_buf, sizeof err_buf,
+                             "sprite '%s' not found in %s/sprites or %s/test", name, dir, dir);
+                    return 0;
+                }
+                fr[d] = t ? t : fr[0];
             }
-            sprite_frames[type][d] = t ? t : sprite_frames[type][0];
         }
     }
     return 1;
@@ -474,29 +481,58 @@ int render_draw_sprites(const render_sprite *s, int n, uint8_t *fb)
     return k;
 }
 
-/* Sprites of the map's entities until things exist (issue #15). */
-static void draw_map_sprites(const bast_map *map, fix_t vx, fix_t vy, uint8_t *fb)
+/* Frame of `type` seen from (vx, vy) for a thing at (x, y) facing `angle`,
+ * at render tic `tic`; NULL if the type has no loaded sprite. */
+static const bast_tex *thing_frame(int type, fix_t x, fix_t y, angle_t angle, fix_t vx,
+                                   fix_t vy, uint32_t tic)
+{
+    const sprite_def *def = sprite_def_for_entity(type);
+    if (!def || !sprite_frames[type][0][0])
+        return NULL;
+    /* Angle of the vector thing -> viewer picks the facing frame. */
+    const int dir = sprite_dir(angle_of(vx - x, vy - y), angle);
+    return sprite_frames[type][sprite_anim_frame(tic, def->frames)][dir];
+}
+
+/* Static sprites of the map's entities (non-live types, e.g. TEST_SPRITE)
+ * plus the live things, sorted and drawn together. */
+static void draw_world_sprites(const bast_map *map, fix_t vx, fix_t vy,
+                               const render_thing *things, int n_things, uint32_t tic,
+                               uint8_t *fb)
 {
     static render_sprite list[RENDER_MAX_SPRITES];
     int n = 0;
     for (int i = 0; i < map->entity_count && n < RENDER_MAX_SPRITES; i++) {
         const bast_map_entity *e = &map->entities[i];
-        if (e->type >= BAST_ENT_TYPE_LIMIT || !sprite_frames[e->type][0])
+        const sprite_def *def = sprite_def_for_entity(e->type);
+        if (!def || def->live)
             continue;
-        /* Angle of the vector thing -> viewer picks the facing frame. */
-        const int dir = sprite_dir(angle_of(vx - e->x, vy - e->y), e->angle);
+        const bast_tex *t = thing_frame(e->type, e->x, e->y, e->angle, vx, vy, tic);
+        if (!t)
+            continue;
         const bast_map_cell *c = cell(map, e->x >> 16, e->y >> 16);
-        list[n].x = e->x;
-        list[n].y = e->y;
-        list[n].height = 0;
-        list[n].tex = sprite_frames[e->type][dir];
-        list[n].dark = c ? c->dark : 0;
+        list[n] = (render_sprite){ e->x, e->y, 0, t, c ? c->dark : 0 };
+        n++;
+    }
+    for (int i = 0; i < n_things && n < RENDER_MAX_SPRITES; i++) {
+        const render_thing *th = &things[i];
+        const bast_tex *t = thing_frame(th->type, th->x, th->y, th->angle, vx, vy, tic);
+        if (!t)
+            continue;
+        const bast_map_cell *c = cell(map, th->x >> 16, th->y >> 16);
+        list[n] = (render_sprite){ th->x, th->y, 0, t, c ? c->dark : 0 };
         n++;
     }
     render_draw_sprites(list, n, fb);
 }
 
 void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *fb)
+{
+    render_view_things(map, x, y, angle, NULL, 0, 0, fb);
+}
+
+void render_view_things(const bast_map *map, fix_t x, fix_t y, angle_t angle,
+                        const render_thing *things, int n_things, uint32_t tic, uint8_t *fb)
 {
     const double px = x / 65536.0, py = y / 65536.0;
     const double dx = fine_cos(angle) / 65536.0, dy = fine_sin(angle) / 65536.0;
@@ -569,5 +605,5 @@ void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *
     draw_planes(map, px, py, dx, dy, rx, ry, angle, fb);
     memset(fb + VIEW_H * SCREEN_W, 0, (size_t)(SCREEN_H - VIEW_H) * SCREEN_W);
 
-    draw_map_sprites(map, x, y, fb);
+    draw_world_sprites(map, x, y, things, n_things, tic, fb);
 }
