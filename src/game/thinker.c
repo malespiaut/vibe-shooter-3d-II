@@ -2,38 +2,18 @@
 
 #include <string.h>
 
-/* enemies.md: HP and size (w units); radius = w / 2 in 16.16. */
-static const struct {
-    uint16_t type;
-    int32_t hp;
-    fix_t radius;
-} ENEMIES[] = {
-    { BAST_ENT_MUTT_TROOPER, 20, 16384 },              /* 0.5 wide */
-    { BAST_ENT_CHIHUAHUA_CHOMPER, 15, 12288 },         /* 0.375 */
-    { BAST_ENT_POMERANIAN_PLASMAGUNNER, 45, 20480 },   /* 0.625 */
-    { BAST_ENT_DACHSHUND_HOWITZER, 70, 32768 },        /* 1.0 */
-    { BAST_ENT_MASTIFF_JUGGERNAUT, 400, 29491 },       /* 0.9 */
-    { BAST_ENT_SHEPHERD_SHIELDBEARER, 90, 20480 },     /* 0.625 */
-    { BAST_ENT_WOOFU, 2400, 49152 },                   /* 1.5 */
-};
+#include "game/enemy_info.h"
 
-int thinker_enemy_info(uint16_t type, int32_t *hp, fix_t *radius)
+int thinker_alive(const thinker_t *t)
 {
-    for (size_t i = 0; i < sizeof ENEMIES / sizeof ENEMIES[0]; i++) {
-        if (ENEMIES[i].type == type) {
-            *hp = ENEMIES[i].hp;
-            *radius = ENEMIES[i].radius;
-            return 1;
-        }
-    }
-    return 0;
+    return !(t->flags & TH_FLAG_PICKUP) && t->state != TH_STATE_DEAD &&
+           t->state != TH_STATE_TAKEN;
 }
 
 uint16_t thinker_spawn(thinkers_t *th, uint16_t type, fix_t x, fix_t y, angle_t angle)
 {
-    int32_t hp;
-    fix_t radius;
-    if (th->count >= MAX_THINKERS || !thinker_enemy_info(type, &hp, &radius))
+    const enemy_info_t *info = enemy_info(type);
+    if (th->count >= MAX_THINKERS || !info)
         return 0;
     thinker_t *t = &th->list[th->count++];
     memset(t, 0, sizeof *t);
@@ -43,9 +23,10 @@ uint16_t thinker_spawn(thinkers_t *th, uint16_t type, fix_t x, fix_t y, angle_t 
     t->x = x;
     t->y = y;
     t->angle = angle;
-    t->health = hp;
-    t->max_health = hp;
-    t->radius = radius;
+    t->health = info->hp;
+    t->max_health = info->hp;
+    t->radius = info->radius;
+    t->movedir = DI_NONE;
     th->kill_total++;
     return (uint16_t)th->count;
 }
@@ -76,8 +57,12 @@ void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill)
         const bast_map_entity *e = &map->entities[i];
         if (!entity_on_skill(e, skill))
             continue;
-        if (thinker_spawn(th, e->type, e->x, e->y, e->angle))
+        thinker_t *en = thinker_get(th, thinker_spawn(th, e->type, e->x, e->y, e->angle));
+        if (en) {
+            if (e->flags & BAST_ENT_AMBUSH)
+                en->flags |= TH_FLAG_AMBUSH;
             continue;
+        }
         thinker_t *t = thinker_get(th, thinker_spawn_pickup(th, e->type, e->x, e->y));
         if (t) {
             t->tag = e->tag;
@@ -94,7 +79,7 @@ thinker_t *thinker_get(thinkers_t *th, uint16_t id)
 
 int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage)
 {
-    if (t->state != TH_STATE_STAND || !(t->flags & TH_FLAG_SHOOTABLE))
+    if (!thinker_alive(t) || !(t->flags & TH_FLAG_SHOOTABLE))
         return 0;
     t->health -= damage;
     if (t->health > 0)

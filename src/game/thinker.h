@@ -5,7 +5,7 @@
  * array in creation order; a thinker's id is its index + 1 and never
  * changes (thinkers are never removed, dead ones stay as corpses), so ids,
  * not pointers, are what other thinkers and the hash refer to. Id 0 means
- * "none". Enemies only stand still until the AI issue lands. */
+ * "none". Enemy behaviour lives in game/ai.c, stats in game/enemy_info.c. */
 
 #include <stdint.h>
 
@@ -16,10 +16,17 @@
 #define MAX_THINKERS 256
 
 enum {
-    TH_STATE_STAND = 0, /* alive, idle */
-    TH_STATE_DEAD = 1,  /* corpse: no longer hit, never removed */
-    TH_STATE_TAKEN = 2, /* picked-up item: inert, never removed */
+    TH_STATE_STAND = 0,  /* alive, idle (asleep); weapon pickups: on the floor */
+    TH_STATE_DEAD = 1,   /* corpse: no longer hit, never removed */
+    TH_STATE_TAKEN = 2,  /* picked-up item: inert, never removed */
+    TH_STATE_CHASE = 3,  /* awake, moving toward the player (game/ai.c) */
+    TH_STATE_WINDUP = 4, /* telegraph: stopped, facing the player */
+    TH_STATE_ATTACK = 5, /* attack resolved, recovering */
+    TH_STATE_PAIN = 6,   /* flinch */
 };
+
+/* thinker_t.movedir: 8 compass directions, counter-clockwise from east. */
+enum { DI_EAST, DI_NE, DI_NORTH, DI_NW, DI_WEST, DI_SW, DI_SOUTH, DI_SE, DI_NONE };
 
 /* thinker_t.flags */
 enum {
@@ -28,6 +35,7 @@ enum {
     TH_FLAG_SHOOTABLE = 1 << 2, /* hitscan and melee can hit it (enemies) */
     TH_FLAG_PICKUP = 1 << 3,    /* touched by the player (weapon pickups) */
     TH_FLAG_TRIGGER = 1 << 4,   /* pickup with PICKUP_TRIGGER: fires `tag` */
+    TH_FLAG_AMBUSH = 1 << 5,    /* entity AMBUSH (deaf): wakes on sight only */
 };
 
 typedef struct {
@@ -42,6 +50,9 @@ typedef struct {
     fix_t radius;   /* half the width in enemies.md */
     uint16_t target; /* thinker id, 0 = none */
     uint8_t tag;     /* entity tag (static map data, not hashed) */
+    uint8_t movedir; /* DI_*: compass direction of the step being walked */
+    uint8_t goal_tx, goal_ty; /* tile whose centre the step walks to */
+    int32_t movecount; /* tics to the next chase decision (every 8) */
 } thinker_t;
 
 typedef struct {
@@ -50,16 +61,16 @@ typedef struct {
     int32_t kills, kill_total;
 } thinkers_t;
 
-/* Enemy stats from enemies.md (HP, half width). Returns 0 when `type` is
- * not an enemy. */
-int thinker_enemy_info(uint16_t type, int32_t *hp, fix_t *radius);
+/* 1 for a live enemy (any state but DEAD; never a pickup). */
+int thinker_alive(const thinker_t *t);
 
 /* 1 when entity `e` is placed at `skill` (1..3): its SKILLn flag is set.
  * The one skill-placement test, for thinkers and pickups (game/items.c). */
 int entity_on_skill(const bast_map_entity *e, int skill);
 
 /* Empties the list and spawns every enemy and weapon-pickup entity of `map`
- * flagged for `skill` (1..3), in entity order. Weapon pickups keep the
+ * flagged for `skill` (1..3), in entity order. Enemies keep AMBUSH
+ * (TH_FLAG_AMBUSH). Weapon pickups keep the
  * entity's tag and PICKUP_TRIGGER (TH_FLAG_TRIGGER). Other item types live
  * in game_state.pickups (game/items.c). */
 void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill);

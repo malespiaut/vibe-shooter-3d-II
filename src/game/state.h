@@ -69,13 +69,15 @@ typedef struct {
     int32_t dead;
 } player_t;
 
-/* A non-weapon pickup spawned from a map entity (game/items.c). Weapon
- * pickups are thinkers (TH_FLAG_PICKUP). */
+/* A non-weapon pickup spawned from a map entity (game/items.c), or dropped
+ * by an enemy (game/ai.c). Weapon pickups are thinkers (TH_FLAG_PICKUP). */
 typedef struct {
     uint16_t type;  /* enum bast_entity_type, 48..95 */
     uint16_t flags; /* entity flags (PICKUP_TRIGGER) */
     uint8_t tag;
     uint8_t taken;
+    uint8_t dropped; /* spawned by a dying enemy: not counted in items */
+    int32_t amount;  /* ammo given, 0 = the pickup's normal amount */
     fix_t x, y;
 } pickup_t;
 
@@ -127,7 +129,9 @@ void game_tic(game_state *gs, const ticcmd *cmd);
  * armour class, satchel, powerup timers, Ninth Life, invulnerability, dead, skill,
  * pickups (count, then each taken flag in spawn order), items taken, then
  * the map logic (tags_hash: exit, lights, secrets, tags fired, pushwalls,
- * one-shot cell states). New fields are appended as the systems that own them land. */
+ * one-shot cell states), then
+ * per thinker its AI fields (movedir, goal tile, movecount). New
+ * fields are appended as the systems that own them land. */
 uint64_t game_hash(const game_state *gs);
 
 /* True when tile (tx, ty) blocks the player: outside the map, SOLID,

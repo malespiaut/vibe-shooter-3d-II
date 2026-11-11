@@ -1,0 +1,22 @@
+# AI test (#67): maps/aitest.vmap, skill 2. The pistol shot wakes the
+# east hall; the player grabs the Scattergun and shells, holds the west end
+# of the corridor and blasts the Chompers as they come single file, then
+# finishes the Mutt Troopers with the pistol.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map aitest
+
+expect kills=0
+fire 1                  # pistol: the noise wakes all five
+goto 3 5                # shells
+goto 3 4                # Scattergun
+weapon 3
+face 10 4
+fire 200
+expect kills>=3
+weapon 2
+fire 400
+expect kills=5
+expect health>0

@@ -147,6 +147,13 @@ foreach(g health armour ammo weapons keys powerups damage ninth_life spawn touch
   add_test(NAME items_${g} COMMAND test_items ${g})
 endforeach()
 
+add_executable(test_ai tests/test_ai.c)
+target_link_libraries(test_ai PRIVATE engine)
+target_compile_options(test_ai PRIVATE -UNDEBUG)
+foreach(g sight ambush windup chomper pillar drop block pushwall)
+  add_test(NAME ai_${g} COMMAND test_ai ${g})
+endforeach()
+
 add_executable(test_platform_audio tests/test_platform_audio.c)
 target_link_libraries(test_platform_audio PRIVATE platform)
 target_compile_options(test_platform_audio PRIVATE -UNDEBUG)
@@ -332,6 +339,7 @@ add_demo_determinism(m1-walk)
 add_demo_determinism(door-test)
 add_demo_determinism(m1-sprites)
 add_demo_determinism(tags-test)
+add_demo_determinism(ai-test)
 
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)

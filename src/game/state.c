@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "engine/hash.h"
+#include "game/ai.h"
 #include "game/items.h"
 
 void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32_t demo_seed)
@@ -77,17 +78,41 @@ int game_circle_blocked(const game_state *gs, fix_t x, fix_t y, fix_t r)
     return 0;
 }
 
+/* A live enemy the player circle at (x, y) overlaps, unless it already
+ * overlapped it at (x0, y0) (so an overlap can always be walked out of). */
+static int player_hits_enemy(const game_state *gs, fix_t x0, fix_t y0, fix_t x, fix_t y)
+{
+    for (int i = 0; i < gs->things.count; i++) {
+        const thinker_t *t = &gs->things.list[i];
+        if (!thinker_alive(t))
+            continue;
+        const int64_t rr = (int64_t)t->radius + PLAYER_RADIUS;
+        const int64_t dx = (int64_t)x - t->x, dy = (int64_t)y - t->y;
+        if (dx * dx + dy * dy >= rr * rr)
+            continue;
+        const int64_t ex = (int64_t)x0 - t->x, ey = (int64_t)y0 - t->y;
+        if (ex * ex + ey * ey >= rr * rr)
+            return 1;
+    }
+    return 0;
+}
+
+static int player_blocked(const game_state *gs, fix_t x0, fix_t y0, fix_t x, fix_t y)
+{
+    return game_circle_blocked(gs, x, y, PLAYER_RADIUS) || player_hits_enemy(gs, x0, y0, x, y);
+}
+
 /* Moves *pos by `delta` along one axis, stopping at the last fixed unit
- * where the player circle does not overlap a blocking tile. Returns 1 when
+ * where the player circle does not overlap a blocking tile or a live enemy. Returns 1 when
  * the move was cut short (the caller then kills momentum on that axis). */
 static int move_axis(const game_state *gs, fix_t *x, fix_t *y, fix_t delta, int axis_y)
 {
     if (delta == 0)
         return 0;
     fix_t *pos = axis_y ? y : x;
-    const fix_t start = *pos;
+    const fix_t start = *pos, x0 = *x, y0 = *y;
     *pos = start + delta;
-    if (!game_circle_blocked(gs, *x, *y, PLAYER_RADIUS))
+    if (!player_blocked(gs, x0, y0, *x, *y))
         return 0;
 
     /* Binary search the largest free step in [0, |delta|). Speeds are below
@@ -97,7 +122,7 @@ static int move_axis(const game_state *gs, fix_t *x, fix_t *y, fix_t delta, int 
     while (hi - lo > 1) {
         fix_t mid = lo + (hi - lo) / 2;
         *pos = start + sign * mid;
-        if (game_circle_blocked(gs, *x, *y, PLAYER_RADIUS))
+        if (player_blocked(gs, x0, y0, *x, *y))
             hi = mid;
         else
             lo = mid;
@@ -182,7 +207,12 @@ void game_tic(game_state *gs, const ticcmd *cmd)
     /* Triggers, secrets and damage floors under the player's new position. */
     tags_player_cell(gs);
 
+    const uint32_t shots = p->weapons.shots;
     weapon_tic(gs, (cmd->buttons & BT_WEAPON_MASK) >> BT_WEAPON_SHIFT, cmd->buttons & BT_FIRE);
+    if (p->weapons.shots != shots && p->weapons.ready != WP_CLAWS)
+        ai_noise(gs); /* gunfire wakes the area; Claws are silent */
+
+    ai_tic(gs);
 
     gs->tic++;
 }
@@ -253,5 +283,12 @@ uint64_t game_hash(const game_state *gs)
         hash_u32(&h, gs->pickups[i].taken);
     hash_i32(&h, gs->items_got);
     tags_hash(gs, &h);
+    for (int i = 0; i < gs->things.count; i++) {
+        const thinker_t *t = &gs->things.list[i];
+        hash_u32(&h, t->movedir);
+        hash_u32(&h, t->goal_tx);
+        hash_u32(&h, t->goal_ty);
+        hash_i32(&h, t->movecount);
+    }
     return h.value;
 }

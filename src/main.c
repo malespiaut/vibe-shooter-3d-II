@@ -318,6 +318,8 @@ static void run_headless(run_t *r)
         }
         if (r->gs.exit) /* an EXIT cell ends the level run */
             return;
+        if (r->gs.player.dead)
+            return; /* death ends the run; STATS shows health=0 */
     }
 }
 

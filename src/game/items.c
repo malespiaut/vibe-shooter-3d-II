@@ -159,10 +159,15 @@ void items_touch(game_state *gs)
         const int64_t dx = (int64_t)pk->x - p->x, dy = (int64_t)pk->y - p->y;
         if (dx * dx + dy * dy > r2)
             continue;
-        if (!item_apply(gs, pk->type))
+        if (pk->amount && pk->type >= BAST_ENT_CHARGE_VIAL && pk->type <= BAST_ENT_SUN_ORB) {
+            if (!give_ammo(gs, (pk->type - BAST_ENT_CHARGE_VIAL) / 2, pk->amount))
+                continue;
+        } else if (!item_apply(gs, pk->type)) {
             continue;
+        }
         pk->taken = 1;
-        gs->items_got++;
+        if (!pk->dropped)
+            gs->items_got++;
         if (pk->flags & BAST_ENT_PICKUP_TRIGGER)
             game_fire_tag(gs, pk->tag);
     }

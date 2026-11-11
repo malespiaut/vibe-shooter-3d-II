@@ -1,6 +1,7 @@
 #include "game/weapon.h"
 #include <stddef.h>
 
+#include "game/ai.h"
 #include "game/state.h"
 
 /* weapons.md Stats. Damage base..base+spread; spread in angle units. */
@@ -93,8 +94,8 @@ void weapon_select(weapons_t *w, int wp)
 
 /* Distance along the unit ray (dx, dy) from (x, y) to the first blocking
  * tile, or `range` if none is reached within it. Grid DDA, fixed point. */
-static fix_t trace_wall(const struct game_state *gs, fix_t x, fix_t y, fix_t dx, fix_t dy,
-                        fix_t range)
+fix_t game_trace_wall(const struct game_state *gs, fix_t x, fix_t y, fix_t dx, fix_t dy,
+                      fix_t range)
 {
     int tx = fix_to_int(x), ty = fix_to_int(y);
     if (game_tile_blocks(gs, tx, ty))
@@ -141,7 +142,7 @@ uint16_t weapon_trace(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t 
                       fix_t *wall_dist)
 {
     const fix_t dx = fine_cos(a), dy = fine_sin(a);
-    const fix_t wall = trace_wall(gs, x, y, dx, dy, HITSCAN_RANGE);
+    const fix_t wall = game_trace_wall(gs, x, y, dx, dy, HITSCAN_RANGE);
     if (wall_dist)
         *wall_dist = wall < range ? wall : range;
 
@@ -149,7 +150,7 @@ uint16_t weapon_trace(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t 
     int64_t best_t = 0;
     for (int i = 0; i < gs->things.count; i++) {
         const thinker_t *t = &gs->things.list[i];
-        if (t->state != TH_STATE_STAND || !(t->flags & TH_FLAG_SHOOTABLE))
+        if (!thinker_alive(t) || !(t->flags & TH_FLAG_SHOOTABLE))
             continue;
         const int64_t ox = (int64_t)t->x - x, oy = (int64_t)t->y - y;
         const int64_t along = (ox * dx + oy * dy) / FIX_ONE; /* projection, 16.16 */
@@ -198,7 +199,7 @@ static void fire_weapon(game_state *gs)
         thinker_t *t = thinker_get(&gs->things, id);
         if (t) {
             int32_t dmg = wi->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)wi->dmg_spread + 1);
-            thinker_damage(&gs->things, t, dmg);
+            ai_damage(gs, t, dmg);
         }
     }
 }

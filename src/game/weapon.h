@@ -108,6 +108,13 @@ void weapon_select(weapons_t *w, int wp);
  * items_touch took the pickups (weapon pickups included). */
 void weapon_tic(struct game_state *gs, int select_slot, int fire);
 
+/* Distance along the unit vector (dx, dy) from (x, y) to the first tile
+ * that blocks (game_tile_blocks: live doors), or `range` if none is reached
+ * within it; 0 when (x, y) is itself in a blocking tile. Grid DDA. Shots
+ * and enemy sight share it. */
+fix_t game_trace_wall(const struct game_state *gs, fix_t x, fix_t y, fix_t dx, fix_t dy,
+                      fix_t range);
+
 /* Traces one ray from (x, y) at angle `a` up to `range`: returns the id of
  * the nearest live thinker hit before any blocking tile, or 0. *wall_dist
  * (if not NULL) gets the distance to the first blocking tile, capped at

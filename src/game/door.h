@@ -67,6 +67,10 @@ int door_passable(const door_t *d);
  * Returns 1 when the door starts opening. */
 int door_use(game_state *gs, int idx);
 
+/* Enemy (game/ai.c): opens a closed or closing door with no key, mode
+ * AUTO or STAY, and not ONEWAY. Returns 1 when it starts opening. */
+int door_monster_open(game_state *gs, int idx);
+
 /* Tag/switch activation (the tag system calls this): an open or opening
  * START_OPEN door closes; any other closed or closing door opens, whatever
  * its mode, key or side. */
@@ -76,7 +80,8 @@ void door_activate(game_state *gs, int idx);
  * `close_tics` (> 0; from its switch's param). */
 void door_activate_timed(game_state *gs, int idx, int32_t close_tics);
 
-/* Moves every door by one tic. */
+/* Moves every door by one tic. A door never starts closing on the player
+ * or a live enemy, and re-opens if one is inside a closing door. */
 void doors_tic(game_state *gs);
 
 /* BT_USE: the first non-empty tile within DOOR_USE_RANGE along the view

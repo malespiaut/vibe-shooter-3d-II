@@ -9,7 +9,9 @@ enum {
     PAL_BLACK = 0,
     PAL_WHITE = 1,
     PAL_GRAY = 2, /* gray_00..gray_15 = 2..17 */
+    PAL_RED = 94, /* red_00..red_15 = 94..109 */
     PAL_FB_YELLOW = 241,
+    PAL_FB_ORANGE = 243,
 };
 
 static void put(uint8_t *framebuffer, int x, int y, uint8_t c)
@@ -20,7 +22,9 @@ static void put(uint8_t *framebuffer, int x, int y, uint8_t c)
 
 /* Dev top-down view: one square of `scale` px per tile, north up, walls in
  * the gray ramp (shade by wall texture), floor dark gray, open sky a step
- * lighter, player as a 3-pixel arrow (white centre, yellow tip). */
+ * lighter, player as a 3-pixel arrow (white centre, yellow tip), enemies
+ * as 3x3 squares (dim red asleep, bright red awake, orange winding up or
+ * attacking) and corpses as one red_07 pixel (red_04 vanished on the floor). */
 void topdown_draw(const game_state *gs, uint8_t *framebuffer)
 {
     const bast_map *m = gs->map;
@@ -46,6 +50,26 @@ void topdown_draw(const game_state *gs, uint8_t *framebuffer)
                 for (int x = 0; x < scale; x++)
                     put(framebuffer, ox + tx * scale + x, sy + y, col);
         }
+    }
+
+    for (int i = 0; i < gs->things.count; i++) {
+        const thinker_t *t = &gs->things.list[i];
+        if (t->flags & TH_FLAG_PICKUP)
+            continue;
+        const int ex = ox + (int)(((int64_t)t->x * scale) >> FIX_SHIFT);
+        const int ey = oy + m->height * scale - 1 - (int)(((int64_t)t->y * scale) >> FIX_SHIFT);
+        if (t->state == TH_STATE_DEAD) {
+            put(framebuffer, ex, ey, PAL_RED + 7);
+            continue;
+        }
+        uint8_t col = PAL_RED + 12;
+        if (t->state == TH_STATE_STAND)
+            col = PAL_RED + 7;
+        else if (t->state == TH_STATE_WINDUP || t->state == TH_STATE_ATTACK)
+            col = PAL_FB_ORANGE;
+        for (int y = -1; y <= 1; y++)
+            for (int x = -1; x <= 1; x++)
+                put(framebuffer, ex + x, ey + y, col);
     }
 
     const player_t *p = &gs->player;
