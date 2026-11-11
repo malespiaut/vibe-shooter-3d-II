@@ -1,0 +1,193 @@
+# Level 5, Kibble Refinery (docs/design/levels.md section 5), layout half
+# (issue #174): geometry, textures, light, doors, keys, switches, sludge,
+# barrels, items and secrets. No enemies yet: the population issue places
+# them on the named WAYPOINT entities below (@sludge_*, @vault_mastiff, ...).
+# Built by tools/mkmap.py into maps/level5.vmap. Coordinates are (x, y) with
+# y counted from the south (last layout row is y = 0), as in demo `goto`.
+#
+# Critical path (demos/level5-complete.demo):
+#   Loading Bay      x 1-8,   y 1-8    start (2,4) facing east
+#   Sludge Pits      x 11-25, y 1-13   grate walkways (=) over DAMAGE sludge (~ ;)
+#   Control Tower    x 27-33, y 3-12   door D (26,9), blue key (32,4)
+#   blue door B      (28,13), corridor x 28 y 14-16
+#   Grinder Hall     x 22-33, y 17-22  switch S (21,20) on the west wall, used
+#                                      from (22,20), opens the timed door T
+#                                      (34,20) for 10 s (350 tics), 12 tiles
+#                                      east across the sludge x 29-33;
+#                                      gantry y 24-25 behind a BLOCK_ALL rail (_)
+#   Antechamber      x 35-38, y 18-21
+#   Lance Vault      x 36-38, y 22-34  Lance (37,23) fires tag 2: the riveted
+#                                      wall L (37,35), 12 tiles away, slides open
+#   Mastiff lair     x 35-39, y 36-38  violet key (37,38)
+#   violet door V    (35,33), corridor y 33; ammo cache x 32-34 y 29-31
+#   Packaging Line   x 10-30, y 31-38  conveyor rows; EXIT E (9,35) used from (10,35)
+#
+# Secrets (3), each a PUSHWALL with a SECRET cell (!) behind it:
+#   F (34,6)  dt_screen_f1 among dt_screen_f0 walls in the Control Tower
+#             -> room x 35-37 y 5-7, Sun Orb
+#   H (20,14) dt_hazard wall behind the barrel cluster on the Sludge Pits
+#             north island -> room x 19-21 y 15-16, Catnip Frenzy
+#   C (20,30) dt_conveyor where the Packaging Line belt runs into the wall
+#             -> room x 19-21 y 27-29, Scarab Plate
+#
+# Light: floodlit cells are dark 0-2 under dt_ceiling_light; the shadowed
+# corners (, ; ') are dark 12-16, right next to them.
+
+name Kibble Refinery
+music 5
+par 240
+
+# Walls
+legend # wall=dt_steel_panel_c flags=SOLID
+legend b wall=dt_steel_panel_b flags=SOLID
+legend h wall=dt_hazard flags=SOLID
+legend r wall=dt_riveted_plate flags=SOLID
+legend p wall=dt_pump flags=SOLID
+legend k wall=dt_server_rack flags=SOLID
+legend m wall=dt_screen_f0 flags=SOLID
+legend n wall=dt_banner flags=SOLID
+legend c wall=dt_conveyor flags=SOLID
+# Floors: floodlit (dark 0-2) and shadow (dark 12-16)
+legend . floor=dt_concrete ceil=dt_ceiling_light dark=0
+legend , floor=dt_concrete ceil=dt_concrete dark=14
+legend : floor=dt_diamond_plate ceil=dt_ceiling_light dark=0
+legend ' floor=dt_diamond_plate ceil=dt_concrete dark=12
+legend = floor=dt_grate_floor ceil=dt_ceiling_light dark=2
+legend v floor=dt_diamond_plate ceil=dt_concrete dark=8
+legend g floor=dt_grate_floor ceil=dt_concrete dark=10
+legend _ floor=dt_grate_floor ceil=dt_concrete dark=8 flags=BLOCK_ALL
+legend ~ floor=dt_kibble_sludge ceil=dt_concrete dark=4 flags=DAMAGE param=5
+legend ; floor=dt_kibble_sludge ceil=dt_concrete dark=16 flags=DAMAGE param=5
+legend ! floor=dt_diamond_plate ceil=dt_concrete dark=12 flags=SECRET
+# Doors, switches, exit
+legend D wall=dt_door floor=dt_diamond_plate ceil=dt_concrete dark=2 flags=DOOR
+legend B wall=dt_door_blue floor=dt_diamond_plate ceil=dt_concrete dark=2 flags=DOOR key=blue
+legend V wall=dt_door_violet floor=dt_diamond_plate ceil=dt_concrete dark=2 flags=DOOR key=violet
+legend T wall=dt_door floor=dt_diamond_plate ceil=dt_concrete dark=2 flags=DOOR mode=timed tag=3
+legend L wall=dt_riveted_plate floor=dt_concrete ceil=dt_concrete dark=14 flags=DOOR mode=switch tag=2
+legend S wall=dt_switch_off flags=SOLID|SWITCH tag=3 param=10
+legend E wall=dt_switch_off flags=SOLID|EXIT
+# Pushwalls (secrets)
+legend F wall=dt_screen_f1 floor=dt_diamond_plate ceil=dt_concrete dark=12 flags=PUSHWALL
+legend H wall=dt_hazard floor=dt_diamond_plate ceil=dt_concrete dark=12 flags=PUSHWALL
+legend C wall=dt_conveyor floor=dt_diamond_plate ceil=dt_concrete dark=12 flags=PUSHWALL
+
+layout
+############n#####n#####n#####n####rrrrr########
+##########'''''''''''''''''''''####,,,,,########
+##########'''''''''''''''''''''####,,,,,########
+##########'''''''''''''''''''''####,,,,,########
+#########E:::::::::::::::::::::####rrLrr########
+##########:::ccccc::::ccccc::::####rvvvr########
+##########:::::::::::::::::::::''''Vvvvr########
+##########:::::::::::::::::::::##'#r:::r########
+##########:::::::::::::::::::::#:::rvvvr########
+##############ccccccCcc#########:::rvvvr########
+###################'!'##########:::rvvvr########
+###################'''#############r:::r########
+###################'''#############rvvvr########
+#####################pppppppppppppprvvvr########
+#####################pggggggggggggprvvvr########
+#####################pggggggggggggpr:::r########
+#####################p____________pr:::r########
+#####################p.......~~~~~pr:::r########
+#####################p..p....~~~~~r''''r########
+#####################S.......~~~~~T''''r########
+#####################p.......~~~~~r''''r########
+#####################p,,,....~~~~~r''''r########
+#####################p,,,....~~~~~rrrrrr########
+###################'''pppppp'pppppp#############
+###################'!'######'###################
+##########hhhhhhhhhhHhhhhhh#'###################
+##########h;;;;~~~~===::::##B###################
+##########h;;;;~~~~===::::#'''::::##############
+##########h;;;;~~~~===::::#'''::::##############
+##########h;;;;===~~=~::::#'''::::##############
+bbbbbbbbbbh;;;;===~~=~::::D::k:m::##############
+b,,,.....bh~~~~===~~=~::::#:::::::##############
+b,,,.....bh~~~~~=~~~=~::::#::m:k::m'''##########
+b,,,.....bh==~~~=~~~=~::::#:::::::F!''##########
+b........bh==~~~=~~~=~::::#:::::::m'''##########
+b.........============::::#:::::::##############
+b........bh==~~~~~~~~~::::#:::::::##############
+b........bh==~~~~~~~~~''''######################
+b........bh;;;~~~~~~~~''''h#####################
+bbbbbbbbbbhhhhhhhhhhhhhhhhh#####################
+end
+
+entity PLAYER_START 2 4 0
+
+# Loading Bay
+entity FISH_SNACK 7 7 0
+entity CHARGE_VIAL 4 7 0
+entity YARN_BUNDLE 7 1 0
+
+# Sludge Pits
+entity TUNA_TIN 12 2 0
+entity CHARGE_VIAL 16 9 0
+entity SCARAB 17 10 0
+entity YARN_BUNDLE 24 1 0
+entity FISH_SNACK 25 12 0
+entity KIBBLE_BARREL 15 8 0
+entity KIBBLE_BARREL 15 10 0
+entity KIBBLE_BARREL 17 8 0
+entity KIBBLE_BARREL 19 13 0
+entity KIBBLE_BARREL 21 13 0
+entity KIBBLE_BARREL 19 12 0
+entity KIBBLE_BARREL 21 11 0
+entity KIBBLE_BARREL 24 3 0
+entity KIBBLE_BARREL 25 3 0
+
+# Control Tower
+entity BLUE_ANKH 32 4 90
+entity TUNA_TIN 27 11 0
+entity CHARGE_JAR 33 12 0
+entity CHARGE_VIAL 33 9 0
+entity SCARAB 31 4 0
+entity SUN_SHARD 27 4 0
+
+# Grinder Hall
+entity CHARGE_JAR 23 22 0
+entity YARN_BASKET 23 17 0
+entity FISH_SNACK 33 22 0
+entity TUNA_TIN 33 17 0
+
+# Antechamber, Lance Vault, Mastiff lair
+entity FISH_SNACK 38 18 0
+entity CHARGE_VIAL 36 18 0
+entity EYE_OF_RA_LANCE 37 23 90 flags=SKILL1|SKILL2|SKILL3|PICKUP_TRIGGER tag=2
+entity SCARAB 38 28 0
+entity CHARGE_VIAL 36 28 0
+entity SUN_SHARD 37 30 0
+entity VIOLET_ANKH 37 38 270
+entity CHARGE_VIAL 35 38 0
+
+# Ammo cache
+entity YARN_BUNDLE 32 29 0
+entity YARN_BUNDLE 34 29 0
+entity SCARAB 33 30 0
+entity SCARAB_CRATE 33 31 0
+entity TUNA_TIN 32 31 0
+
+# Packaging Line
+entity FISH_SNACK 12 32 0
+entity FISH_SNACK 26 37 0
+entity TUNA_TIN 20 36 0
+entity SCARAB_PLATE 28 37 0
+entity SUN_SHARD 15 32 0
+
+# Secrets
+entity SUN_ORB 37 5 0
+entity CATNIP_FRENZY 19 16 0
+entity SCARAB_PLATE 19 27 0
+
+# Enemy spots for the population issue (demo navigation waypoints only).
+entity WAYPOINT 16 9 0 sludge_mutts_a
+entity WAYPOINT 20 12 0 sludge_mutts_b
+entity WAYPOINT 24 8 0 sludge_poms
+entity WAYPOINT 30 8 0 tower_squad
+entity WAYPOINT 24 25 0 grinder_dach_w
+entity WAYPOINT 32 25 0 grinder_dach_e
+entity WAYPOINT 37 37 270 vault_mastiff
+entity WAYPOINT 14 36 0 pack_mastiff
+entity WAYPOINT 24 32 0 pack_squad

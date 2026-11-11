@@ -748,10 +748,13 @@ add_dependencies(panel_mockup fonts_tex colormap)
 
 # Level completion demos (roadmap.md M4): each levelN-complete demo must reach
 # the exit without god mode, and replay deterministically.
-foreach(n 1 6 7)
+foreach(n 1 5 6 7)
   add_test(NAME complete_level${n}
     COMMAND game --headless --demo ${CMAKE_SOURCE_DIR}/demos/level${n}-complete.demo)
   set_tests_properties(complete_level${n} PROPERTIES
     PASS_REGULAR_EXPRESSION "STATS level=${n} .* exit=1 god=0")
   add_demo_determinism(level${n}-complete)
 endforeach()
+# Level 5 secrets: all three pushwalls open and their SECRET cells count.
+add_test(NAME secrets_level5
+  COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/level5-secrets.demo)
