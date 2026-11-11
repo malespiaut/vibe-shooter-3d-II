@@ -10,17 +10,18 @@ HDR = [
     "# wooden grip wrapped by the right paw. Matches HUD icon weapon_3. Composed in 3D and projected, checked at 3x.",
 ]
 
-FORE = {"idle": 21.0, "fire0": 21.0, "fire1": 21.0, "pump0": 9.4, "pump1": 6.0}
+FORE = {"idle": 12.0, "fire0": 12.0, "fire1": 12.0, "pump0": 8.6, "pump1": 6.0}
+BARREL = 24.0
 
 
 def frame(kind):
     cv = Canvas(112, 64)
-    cam = Cam(f=140, cx=42, cy=-2, off=(3.4, -5.5, 17.0), yaw=-0.22, roll=0.55)
+    cam = Cam(f=150, cx=58, cy=-18, off=(2.0, -8.0, 14.0), roll=0.3)
     P = lambda x, y, z: cam((x, y, z))
     fz = FORE[kind]
 
     # ---- magazine tube (under the barrel), far part first
-    box(cv, cam, -0.7, 0.7, -0.2, 1.2, 4.4, 31.0,
+    box(cv, cam, -0.7, 0.7, -0.2, 1.2, 4.4, BARREL - 1.6,
         top=lambda u, v: steel(9 - u * 2),
         side=lambda u, v: steel(5 - u * 1.5 - (v > 0.6)),
         rear=lambda u, v: steel(6), faces="ts")
@@ -28,12 +29,12 @@ def frame(kind):
     box(cv, cam, 0.7, 1.15, -0.1, 0.45, 4.4, fz + 1.0,
         top=lambda u, v: steel(14), side=lambda u, v: steel(9), rear=lambda u, v: steel(6), faces="ts")
     # ---- barrel: on top of the tube, tapers with distance
-    box(cv, cam, -1.0, 1.0, 1.1, 2.7, 4.4, 34.0,
+    box(cv, cam, -0.9, 0.9, 1.1, 2.5, 4.4, BARREL,
         top=lambda u, v: steel(15) if v < 0.2 else steel(13 - v * 2 - u * 2.5),
         side=lambda u, v: steel(7 - u * 2 - (v > 0.7) * 1.5),
         rear=lambda u, v: steel(6))
     # muzzle bore
-    mx, my = P(0, 2.0, 34.0)
+    mx, my = P(0, 1.8, BARREL)
     cv.set(round(mx), round(my) - 1, steel(1))
     cv.set(round(mx) - 1, round(my) - 1, steel(2))
     # ---- wood fore-end (pump), grooves across it
@@ -45,20 +46,13 @@ def frame(kind):
         g = int(u * 7) % 2 == 1 and 0.15 < u < 0.85
         return brown(6 - v * 2 - (2 if g else 0))
 
-    box(cv, cam, -1.7, 1.7, -0.9, 1.4, fz, fz + 6.0, fe_top, fe_side,
+    box(cv, cam, -1.4, 1.4, -0.9, 1.3, fz, fz + 5.0, fe_top, fe_side,
         rear=lambda u, v: brown(8 if v < 0.3 else 6), left=lambda u, v: brown(9))
-    # ---- left paw clasping the fore-end from below-left, forearm off the bottom-left
-    fx, fy = P(-1.2, -1.8, fz + 2.6)
-    stripe = lambda x, y: ((x * 3 - y * 2) // 4) % 6 == 0
-    arm = [(fx - 4, fy - 2), (fx + 4, fy + 4), (fx - 14, 66), (fx - 40, 66)]
-    cv.poly(arm, lambda x, y: fur(max(5, 8 - (fx - x) * 0.04 - (y - fy) * 0.04) - (3 if stripe(x, y) else 0)))
-    cv.ellipse(fx, fy + 1, 6.0, 4.6, shade_ellipse(8.4, 3.0, fx, fy + 1, 6.0, 4.6, fur))
-    # fingers wrapped over the left side of the fore-end
-    for i in range(3):
-        ox, oy = P(-1.9, 0.4, fz + 1.2 + i * 1.7)
-        ox += 0.5
-        cv.ellipse(ox, oy, 2.2, 1.9, shade_ellipse(9.6 - i * 0.5, 2.4, ox, oy, 2.2, 1.9, fur))
-        cv.set(round(ox + 1.8), round(oy - 1.0), "beige_13")      # sheathed claw tips
+    # ---- left paw clasping the fore-end from below, forearm off the bottom-left
+    fx, fy = P(-1.9, 0.2, fz + 2.4)
+    forearm(cv, (fx - 3, fy + 3), (fx - 40, 74), 5.0, 9.0, [0.14, 0.31, 0.5, 0.68, 0.86], seed=2)
+    paw_fist(cv, fx - 2.5, fy + 1.0, 5.5, 4.8, [-3.6, -0.4, 2.8],
+             along=(0.85, -0.53), lobe_r=(1.9, 1.8))
     # ---- receiver
     def rec_top(u, v):
         if v < 0.1:
@@ -78,7 +72,7 @@ def frame(kind):
         if u < 0.1 or v < 0.12:
             return steel(12)
         return steel(9 - (v > 0.7) * 2)
-    box(cv, cam, -1.3, 1.3, 0.6, 2.6, 0.0, 4.4, rec_top, rec_side, rec_rear)
+    box(cv, cam, -1.1, 1.1, 0.6, 2.6, 0.0, 4.4, rec_top, rec_side, rec_rear)
 
     # ---- yarn drum under the receiver, right side
     dx, dy = P(1.6, -1.2, 3.4)
@@ -89,19 +83,16 @@ def frame(kind):
             v -= 3
         return red(v)
     cv.ellipse(dx, dy, 9.0, 8.5, yarn)
-    # ---- grip (wood) behind the drum, wrapped by the right paw
+    # ---- grip (wood) behind the drum, grain along the grip, wrapped by the right paw
     gx, gy = P(0.0, 0.7, 0.6)
-    cv.poly([(gx - 5, gy - 3), (gx + 3, gy - 4), (gx + 12, 66), (gx + 1, 66)],
-            lambda x, y: brown(11 - (x - gx - (y - gy) * 0.4) * 0.5))
-    hx, hy = gx + 8, gy + 16
-    harm = [(hx - 3, hy), (hx + 9, hy - 6), (114, 50), (114, 66), (hx - 6, 66)]
-    cv.poly(harm, lambda x, y: fur(max(5, 8 - (x - hx) * 0.06) - (3 if stripe(x, y) else 0)))
-    cv.ellipse(hx + 2, hy - 1, 8, 7, shade_ellipse(8.0, 3.0, hx + 2, hy - 1, 8, 7, fur))
-    for i in range(3):            # fingers curled round the grip front (left side)
-        ox, oy = hx - 6.0, hy - 6 + i * 4.2
-        cv.ellipse(ox, oy, 3.0, 2.2, shade_ellipse(9.0 - i * 0.5, 2.4, ox, oy, 3.0, 2.2, fur))
-        cv.set(round(ox - 3), round(oy + 1), "beige_11")
-
+    def grain(x, y):
+        k = (x * 2 - y + 40) % 6
+        return brown(10 - (x - gx) * 0.3 - (3 if k == 0 else (1 if k == 3 else 0)))
+    cv.poly([(gx - 4, gy - 3), (gx + 3, gy - 4), (gx + 10, 66), (gx + 1, 66)], grain)
+    hx, hy = gx + 5, gy + 9
+    forearm(cv, (hx + 2, hy + 2), (hx + 34, 74), 6.5, 10.0, [0.2, 0.42, 0.6, 0.83], seed=0)
+    paw_fist(cv, hx + 1, hy, 6.5, 5.5, [-4.6, -1.2, 2.2, 5.6],
+             along=(-0.94, -0.34), lobe_r=(2.0, 2.2))
     # ---- muzzle effects
     if kind == "fire0":
         cx_, cy_ = round(mx), round(my) - 2
