@@ -31,7 +31,7 @@ static void run(game_state *gs, const ticcmd *cmd, int n)
 /* Fresh state, player at (x, y) in 16.16, facing `a`. */
 static void place(game_state *gs, fix_t x, fix_t y, angle_t a)
 {
-    game_init(gs, map, 1, 0);
+    game_init(gs, map, 1, 2, 0);
     gs->player.x = x;
     gs->player.y = y;
     gs->player.angle = a;
@@ -57,7 +57,7 @@ static void use_once(game_state *gs)
 static void test_init(void)
 {
     game_state gs;
-    game_init(&gs, map, 1, 0);
+    game_init(&gs, map, 1, 2, 0);
     assert(gs.door_count == 5);
     /* Row-major: all on row 4, x = 2, 4, 6, 8, 10. */
     for (int i = 0; i < 5; i++) {
@@ -241,7 +241,7 @@ static void test_demo(const char *path)
     demo_t *d = demo_parse(text, err, sizeof err);
     assert(d);
     game_state gs;
-    game_init(&gs, map, d->level, d->seed);
+    game_init(&gs, map, d->level, d->skill, d->seed);
     ticcmd cmd;
     int r;
     while ((r = demo_next(d, &gs, &cmd, err, sizeof err)) == DEMO_TIC)
