@@ -38,9 +38,10 @@ static void check(int c, int height, int light, int tex_x)
     assert(col->light_row == light);
     if (tex_x >= 0)
         assert(col->tex_x == tex_x);
-    /* The framebuffer agrees: flat fills just outside the wall span. */
-    assert(fb[(col->top - 1) * SCREEN_W + c] == RENDER_CEIL_FILL);
-    assert(fb[col->bottom * SCREEN_W + c] == RENDER_FLOOR_FILL);
+    /* Rows just outside the wall span are drawn (ceiling / floor); their
+     * texels are checked by render_floor. */
+    assert(fb[(col->top - 1) * SCREEN_W + c] != 216);
+    assert(fb[col->bottom * SCREEN_W + c] != 216);
     assert(fabsf(render_depth()[c] - col->dist) < 1e-6f);
 }
 

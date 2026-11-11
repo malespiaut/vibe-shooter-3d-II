@@ -100,6 +100,7 @@ set(TESTPATTERN_TEX)
 foreach(n 01 02 03 04 05 06 07 08)
   list(APPEND TESTPATTERN_TEX ${ASSETS_GEN}/test/test${n}.tex)
 endforeach()
+list(APPEND TESTPATTERN_TEX ${ASSETS_GEN}/test/testsky.tex)
 add_custom_command(
   OUTPUT ${TESTPATTERN_TEX}
   COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
@@ -344,3 +345,11 @@ add_test(NAME weapon_demo
           $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/weapon_demo)
 set_tests_properties(weapon_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
+# Renderer: floors, ceilings and sky on maps/m1test.vmap (issue #14).
+add_executable(test_render_floor tests/test_render_floor.c)
+target_link_libraries(test_render_floor PRIVATE engine m)
+target_compile_options(test_render_floor PRIVATE -UNDEBUG)
+add_dependencies(test_render_floor colormap testpattern)
+add_test(NAME render_floor
+  COMMAND test_render_floor ${CMAKE_SOURCE_DIR}/maps/m1test.vmap ${ASSETS_GEN})
