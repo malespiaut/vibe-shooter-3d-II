@@ -11,7 +11,8 @@
  *
  * Text colours: the menu font as shipped (gold) on the tally's dark recesses;
  * on the papyrus it is drawn as ink, the font's gold ramp remapped to brown
- * (remap_ramp, draw2d.h). */
+ * (remap_ramp, draw2d.h). papyrus-gold draws the unremapped gold font on the
+ * papyrus, for comparison. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,8 +85,9 @@ static int wrap(const char *src, int cols, char *out, size_t cap)
 
 int main(int argc, char **argv)
 {
-    if (argc != 5 || (strcmp(argv[2], "papyrus") && strcmp(argv[2], "tally"))) {
-        fprintf(stderr, "usage: panel_mockup <assets/gen> papyrus <text file> <out.png>\n"
+    int gold = argc == 5 && !strcmp(argv[2], "papyrus-gold");
+    if (argc != 5 || (strcmp(argv[2], "papyrus") && strcmp(argv[2], "tally") && !gold)) {
+        fprintf(stderr, "usage: panel_mockup <assets/gen> papyrus|papyrus-gold <text file> <out.png>\n"
                         "       panel_mockup <assets/gen> tally <level name> <out.png>\n");
         return 2;
     }
@@ -100,7 +102,7 @@ int main(int argc, char **argv)
         return 1;
     }
     int rc = 0;
-    if (!strcmp(argv[2], "papyrus")) {
+    if (!strcmp(argv[2], "papyrus") || gold) {
         bast_tex *panel = load_panel(dir, "papyrus_panel");
         FILE *f = fopen(argv[3], "rb");
         if (!panel || !f) {
@@ -118,7 +120,7 @@ int main(int argc, char **argv)
         uint8_t ink[256];
         remap_ramp(ink, "gold", "brown");
         draw_patch(fb, panel, 0, 0);
-        draw_text(fb, menu, BOX_X, BOX_Y, wrapped, ink);
+        draw_text(fb, menu, BOX_X, BOX_Y, wrapped, gold ? NULL : ink);
         int w = text_width(menu, wrapped);
         printf("papyrus: %d lines (max %d), widest %d px (box %d), height %d px (box %d)\n",
                lines, MAX_LINES, w, BOX_W, lines * menu->cell_h, BOX_H);

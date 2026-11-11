@@ -1,23 +1,24 @@
-# Gold end cap of a papyrus scroll rod, left end (tools/panels.py mirrors it for
-# the right end and re-shades so the light stays top-left). 8x16, hud legend
-# (assets/src/hud/legend.txt): a-e gold dark -> light, 1-5 steel.
+# Gold end cap of a papyrus scroll rod, left end, seen side-on: ball tip,
+# neck, collar; the rod joins at the right. tools/panels.py mirrors it for the
+# right end (two entries darker). Light from the top-left. 10x16, hud legend
+# (assets/src/hud/legend.txt): a-e gold dark -> light.
 name finial
-size 8 16
+size 10 16
 shadow sand_01
 grid
-...ccb..
-..deccb.
-.deedcba
-.eedccba
-.edccbba
-..dcbba.
-..cbba..
-.dccbbaa
-.edccbaa
-.dcbbaa.
-..cbba..
-.dcbbaa.
-.edcbbaa
-.dccbba.
-..dcba..
-...ba...
+......edc.
+......edcb
+..ed..edcb
+.eeed.edcb
+eeddc.edcb
+edddcdedcb
+edccccedcb
+dcccbcdcbb
+dccbbcdcba
+cccbbbdcba
+cbbbabcbba
+.bbaa.cbba
+..ba..cbba
+......cbba
+......cba.
+......ba..
