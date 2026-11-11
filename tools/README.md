@@ -40,7 +40,8 @@ no stale file) and print a one-line summary. Pick `NN` after the steps it depend
 | `20-texgen.sh` | `assets/gen/textures/*.tex` from `assets/src/textures/*.json` (`tools/texgen.py`) |
 | `30-sfx.sh` | `assets/gen/sfx/*.snd` from `assets/src/sfx/*.json` |
 | `45-sprites.sh` | `assets/gen/sprites/*.tex` from hand-drawn indexed `assets/src/sprites/*.png` (origin bottom-centre) |
-| `50-gibs.sh` | `assets/gen/gibs/<sprite>_gib_d0_f<n>.tex` from every `assets/src/gibs/*.json` whose `source` (relative to `assets/gen/`) exists |
+| `60-sprites.sh` | `assets/gen/sprites/<name>_<anim>_d<dir>_f<frame>.tex` from `assets/src/sprites/<name>/sprite.json` + `<name>.blend`, or a generator `model.py` built into `assets/gen/blend/<name>/` (`tools/blender_render.py`) |
+| `65-gibs.sh` | `assets/gen/gibs/<sprite>_gib_d0_f<n>.tex` from every `assets/src/gibs/*.json` whose `source` (relative to `assets/gen/`) exists (runs after `60-sprites.sh`: enemy gibs start from a pre-rendered `pain` frame) |
 
 ## Quantize RGBA to TEX: `quantize.py`
 

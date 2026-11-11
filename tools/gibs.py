@@ -35,7 +35,7 @@ row, 1x).
 
 Parameters (JSON; defaults in DEFAULTS):
   sprite        output name prefix (default: source file stem)
-  source        source TEX path relative to assets/gen (used by build.d/50-gibs.sh)
+  source        source TEX path relative to assets/gen (used by build.d/65-gibs.sh)
   seed          random seed                       frames     frame count
   chunks        Voronoi chunk count K             substeps   simulation steps per frame
   force         outward speed, px/step            lift       extra upward speed, px/step
