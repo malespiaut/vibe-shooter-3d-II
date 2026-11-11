@@ -1,0 +1,40 @@
+vsdemo 1
+# Front-end flow (issue #101, hud.md Flow): title -> main menu -> New Game ->
+# Tomcat -> level 1 starts (on maps/m1test.vmap until level 1 exists) ->
+# walk -> Esc -> Quit to Title. Run headless with frames:
+#   build/game --headless --demo demos/flow.demo --frames-out out --frame-every 10
+start title
+map m1test
+seed 0
+
+expect screen=title
+wait 80                 # PRESS ANY KEY blinks: 35 tics on, 35 off
+key any
+expect screen=menu
+wait 20
+key down                # cursor to Controls
+key down                # Quit
+key down                # wraps to New Game
+wait 10
+key enter
+expect screen=skill     # default Tomcat
+wait 20
+key enter
+expect screen=play
+expect tic=0
+expect health=100
+in 70 127 0 0 -         # walk a little
+in 20 0 0 900 -         # and turn
+expect tic=90
+key esc
+expect screen=pause
+expect tic=90
+wait 30                 # the game is frozen under the pause menu
+expect tic=90
+key down                # Restart Level
+key down                # Controls
+key down                # Quit to Title
+wait 10
+key enter
+expect screen=title
+wait 40

@@ -112,6 +112,30 @@ int main(int argc, char **argv)
         }
     }
 
+    /* Menu dim remap (PR #136): fullbright 240..254 dim to row r of their
+     * nearest lit entry, never to another fullbright; the rest equal row r. */
+    for (int r = 0; r < COLORMAP_ROWS; r += 5) {
+        uint8_t dim[256];
+        colormap_dim_remap(r, dim);
+        const uint8_t *row = colormap_row(r);
+        for (int i = 0; i < 256; i++) {
+            if (i >= 240 && i <= 254) {
+                int l = bast_palette_nearest(pal, pal->rgb[i][0], pal->rgb[i][1], pal->rgb[i][2]);
+                assert(!(pal->flags[l] & 0x07));
+                assert(dim[i] == row[l]);
+                assert(dim[i] < 240 || dim[i] > 254);
+                assert(!(pal->flags[dim[i]] & BAST_PAL_FULLBRIGHT));
+            } else {
+                assert(dim[i] == row[i]);
+            }
+        }
+    }
+    {
+        uint8_t dim[256];
+        colormap_dim_remap(20, dim);
+        assert(dim[241] != 241 && dim[253] != 253); /* the Scarab crest indices */
+    }
+
     /* Loader rejects bad input and keeps the old tables. */
     static uint8_t bad[COLORMAP_BYTES];
     assert(!colormap_set(pal->rgb[0], bad, sizeof bad - 1));

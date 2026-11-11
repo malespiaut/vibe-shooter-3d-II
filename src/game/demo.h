@@ -44,6 +44,7 @@ typedef struct {
     char name[DEMO_NAME_MAX]; /* goto @name; expect: the stat name */
     uint16_t angle;           /* face <deg> */
     int op;                   /* expect */
+    uint8_t key;              /* key: FKEY_* (game/flow.h) pressed this tic */
     int32_t value;            /* expect */
 } demo_cmd;
 
@@ -55,6 +56,7 @@ typedef struct {
     uint32_t seed;
     char map[DEMO_MAP_NAME_MAX]; /* "" or a map name: maps/<map>.vmap */
     int on_death_restart; /* `on_death restart`: a death does not end the run */
+    int start;    /* `start`: FLOW_PLAY (default, `start level`) or FLOW_TITLE */
 
     demo_cmd *cmds;
     int count, cap;
@@ -64,6 +66,13 @@ typedef struct {
     int32_t done; /* tics consumed by cmds[pc] */
     uint16_t target; /* face/fire nearest, clear: thinker id being fought, 0 = none yet */
     nav_state nav;   /* goto: replanning memory, reset per command */
+
+    /* Front-end flow (game/flow.h). `key` is written by demo_next: the menu
+     * key of the tic it returned (FKEY_NONE unless a `key` line). `screen`
+     * is written by the runner before demo_next: the current flow screen,
+     * which `expect screen=<name>` reads. */
+    int key;
+    int screen;
 } demo_t;
 
 /* Parses demo text (NUL-terminated). On error returns NULL and writes
