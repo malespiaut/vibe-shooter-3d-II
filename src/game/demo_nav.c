@@ -54,12 +54,13 @@ int nav_face(const game_state *gs, angle_t target, ticcmd *out)
     return 0;
 }
 
-/* Breadth-first distances (in tiles) from (tx, ty) over passable tiles.
- * The map is static for now (no door motion yet), so the distance field from
- * the target equals the one from the player and fixes the path. */
-static void bfs(const bast_map *map, int tx, int ty, int16_t *dist)
+/* Breadth-first distances (in tiles) from (tx, ty) over tiles passable in
+ * the live state (game_tile_blocks: a closed or moving door blocks, an open
+ * one does not). Recomputed every tic, so goto waits for nothing: it reports
+ * NAV_NO_PATH while a door on the only route is shut. */
+static void bfs(const game_state *gs, int tx, int ty, int16_t *dist)
 {
-    const int w = map->width, h = map->height;
+    const int w = gs->map->width, h = gs->map->height;
     static const int dx[4] = { 1, 0, -1, 0 }, dy[4] = { 0, 1, 0, -1 };
     int16_t queue[NAV_MAX_CELLS];
     int head = 0, tail = 0;
@@ -72,7 +73,7 @@ static void bfs(const bast_map *map, int tx, int ty, int16_t *dist)
         int cx = c % w, cy = c / w;
         for (int k = 0; k < 4; k++) {
             int nx = cx + dx[k], ny = cy + dy[k];
-            if (game_tile_blocks(map, nx, ny) || dist[ny * w + nx] != NAV_UNREACHED)
+            if (game_tile_blocks(gs, nx, ny) || dist[ny * w + nx] != NAV_UNREACHED)
                 continue;
             dist[ny * w + nx] = (int16_t)(dist[c] + 1);
             queue[tail++] = (int16_t)(ny * w + nx);
@@ -86,7 +87,7 @@ int nav_goto(const game_state *gs, int tx, int ty, ticcmd *out)
     const bast_map *map = gs->map;
     const player_t *p = &gs->player;
     memset(out, 0, sizeof *out);
-    if (game_tile_blocks(map, tx, ty))
+    if (game_tile_blocks(gs, tx, ty))
         return NAV_NO_PATH;
 
     const fix_t ex = tile_centre(tx) - p->x, ey = tile_centre(ty) - p->y;
@@ -97,10 +98,10 @@ int nav_goto(const game_state *gs, int tx, int ty, ticcmd *out)
     }
 
     int16_t dist[NAV_MAX_CELLS];
-    bfs(map, tx, ty, dist);
+    bfs(gs, tx, ty, dist);
     const int w = map->width;
     const int px = fix_to_int(p->x), py = fix_to_int(p->y);
-    if (game_tile_blocks(map, px, py) || dist[py * w + px] == NAV_UNREACHED)
+    if (game_tile_blocks(gs, px, py) || dist[py * w + px] == NAV_UNREACHED)
         return NAV_NO_PATH;
 
     /* Next tile on the path: the first neighbour (E, N, W, S) one step
@@ -109,7 +110,7 @@ int nav_goto(const game_state *gs, int tx, int ty, ticcmd *out)
     const int here = dist[py * w + px];
     for (int k = 0; k < 4 && here > 0; k++) {
         int cx = px + dx[k], cy = py + dy[k];
-        if (!game_tile_blocks(map, cx, cy) && dist[cy * w + cx] == here - 1) {
+        if (!game_tile_blocks(gs, cx, cy) && dist[cy * w + cx] == here - 1) {
             nx = cx;
             ny = cy;
             break;
