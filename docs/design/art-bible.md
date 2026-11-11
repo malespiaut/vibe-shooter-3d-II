@@ -71,8 +71,9 @@ All ramps except `fb_*` and `transparent` are warm-shifted by this rule. Accepta
 - **One light direction for everything**: key light from the **top-left, 45 degrees**, in front of
   the viewer. Textures: highlights on top and left edges of bevels, shadows bottom-right. Sprites:
   pre-rendered with a sun lamp from upper-left-front (Blender: rotation X=45, Z=-45 relative to the
-  camera, so it rotates with the camera for all 8 directions), plus a weak fill (20%) from the
-  opposite side. Never rim lights.
+  camera, so it rotates with the camera for all 8 directions), plus a weak fill (20%) along the
+  camera axis, from the viewer (Blender: rotation X=90, Z=0 relative to the camera), so it reaches
+  every face the camera sees and can never rim-light. Never rim lights.
 - **Outline rule**: world sprites (enemies, pickups, props) get a 1 px **selective outline**: on
   silhouette edges facing away from the light (right and bottom) use the darkest entry of the
   local ramp; on lit edges no outline. Never pure black outlines, never outlines on wall or floor
@@ -111,6 +112,23 @@ All ramps except `fb_*` and `transparent` are warm-shifted by this rule. Accepta
 Pre-rendered enemies use an orthographic camera at eye height, fixed pixel scale (64 px per Blender
 unit), and are rendered at exactly the final size (no downscaling from large renders that turns
 into mush); compositing adds edge contrast before quantization.
+
+Pre-render exposure and ramps (rules for `tools/blender_render.py`):
+- **Exposure**: a face square to the key light renders at its material's base colour (Cycles sun
+  strength `pi`, fill `0.2 * pi`) with colour management view transform `Standard`, look `None`,
+  exposure 0, gamma 1 (never AgX or Filmic: AgX, Blender's default, darkens and desaturates lit
+  faces by about 16 sRGB levels before quantization). Every material must reach the upper half of
+  its ramp on lit faces; a sprite whose brightest pixel stops mid-ramp fails the 8-entry contrast
+  rule above.
+- **No black holes**: every face the camera sees gets some fill, so no opaque pixel inside the
+  silhouette renders as `black`, `shadow_*` or a ramp's `_00` (`_00` is reserved for the outline).
+  A fill placement that leaves faces edge-on to it while in key shadow does not meet this.
+- **Ramp-constrained quantization**: `sprite.json` maps each material to one ramp (at most 3 ramps
+  plus fullbright per sprite). Each pixel is quantized to the Oklab-nearest entry **within its
+  material's ramp**; the outline uses that ramp's `_00`. Fullbright materials map to their own
+  `fb_*` entry and never into a ramp. Global nearest-over-the-palette lets dark tones of one
+  material jump to a neighbouring ramp (gold to olive, gray to steel), which breaks the colour
+  budget. This is still pure nearest, with no dithering.
 
 ## Rejected looks (the art director rejects on sight)
 
