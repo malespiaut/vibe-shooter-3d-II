@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         assert(!music_parse(big, err2, sizeof err2) && strstr(err2, "too many tokens"));
         q = big + sprintf(big, "vmus 1\ntempo 4\n\ninst 01 square");
         for (int i = 0; i < 130; i++)
-            q += sprintf(q, " v=1");
+            q += sprintf(q, " x");
         sprintf(q, "\n");
         expect_fail(big, 4);
         /* 128 entries on one line is the maximum; more across order lines
