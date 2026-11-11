@@ -10,7 +10,7 @@ Three stages, all in palette-index space (no RGB re-quantization):
    source TEX (best-candidate sampling, so seeds spread evenly); every opaque
    pixel joins its nearest seed (squared distance, ties to the lower seed).
    Each cell is one chunk.
-2. Wound bleeding: a pixel with a 4-neighbour in another chunk is a wound
+2. Wound bleeding: a pixel with a 4-neighbour in a higher-id chunk is a wound
    (depth 0); a breadth-first search inside each chunk gives every pixel its
    depth from the nearest wound. Pixels with depth < wound_depth are blended
    toward the blood ramp (a palette ramp name such as "red", "brown" or
@@ -199,13 +199,15 @@ N4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
 def wound_depths(cell):
     """{(x, y): depth} from the chunk boundaries (BFS inside each chunk).
-    Pixels of a chunk that touches no other chunk are absent."""
+    Only the lower-id side of a boundary is depth 0, so a crack between two
+    chunks is 1 px wide in the intact frame. Pixels of a chunk that has no
+    higher-id neighbour are absent."""
     depth = {}
     q = deque()
     for (x, y), c in cell.items():
         for dx, dy in N4:
             o = cell.get((x + dx, y + dy))
-            if o is not None and o != c:
+            if o is not None and o > c:
                 depth[(x, y)] = 0
                 q.append((x, y))
                 break

@@ -58,7 +58,7 @@ def opaque(t):
     return sum(1 for v in t.pixels if v != T)
 
 
-def check_frames(src, frames, p, label):
+def check_frames(src, frames, p, label, max_changed=None):
     n0 = opaque(src)
     assert len(frames) == p["frames"], label
     assert opaque(frames[0]) == n0, (label, opaque(frames[0]), n0)
@@ -91,6 +91,8 @@ def check_frames(src, frames, p, label):
                 changed += 1
                 assert b in ramp, (label, x, y, a, b)
     assert changed > 0, (label, "no wound pixels")
+    if max_changed is not None:
+        assert changed <= max_changed * n0, (label, "wound px", changed, "of", n0)
     # something actually moved by the last frame
     assert frames[-1].pixels != frames[0].pixels, label
     print("%s: opaque %d -> %s, %d wound px, floor %d"
@@ -100,7 +102,7 @@ def check_frames(src, frames, p, label):
 def test_pixels():
     src = pot_tex()
     p = gibs.load_params(POT_JSON)
-    check_frames(src, gibs.generate(src, p), p, "prop_pot")
+    check_frames(src, gibs.generate(src, p), p, "prop_pot", max_changed=0.25)
     for seed in range(1, 6):
         p = blob_params(seed=seed)
         check_frames(blob_tex(), gibs.generate(blob_tex(), p), p, "blob seed %d" % seed)

@@ -19,9 +19,9 @@
     0.5,
     0.6
   ],
-  "wound_depth": 2,
+  "wound_depth": 1,
   "blood_ramp": "brown",
-  "wound_shade": -0.1,
+  "wound_shade": -0.25,
   "canvas": [
     72,
     40
