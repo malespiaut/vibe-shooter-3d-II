@@ -1,0 +1,89 @@
+# Doors: goto does not path through a closed door, so each one is opened by
+# hand (goto the tile in front, face, use, wait 32).
+#
+# Level 1 "Sandbox Gate" completion (maps/level1.vmap, layout and
+# coordinates in maps/src/level1.txt), skill 2. High-level commands only.
+# Takes both secrets and kills all 14 Mutts, then pulls the EXIT lever.
+vsdemo 1
+level 1
+skill 2
+seed 0
+
+weapon 2
+# The Welcome Mat: the Mutt 6 tiles ahead has its back turned.
+fire nearest
+goto 10 4              # Fish Snack behind the east pillar
+# Gatehouse: the door is straight ahead of the start.
+goto 6 7
+face 90
+use
+wait 32
+goto 6 9
+clear
+goto 8 9               # Charge Vial
+goto 4 9               # Fish Snack
+# Litter Courtyard: four Mutts behind the pillars.
+goto 6 10
+face 90
+use
+wait 32
+goto 6 12
+clear 12               # the first shot wakes the courtyard
+wait 35                # the others come out from behind the pillars
+clear 12
+goto 8 13
+clear 12
+goto 8 13              # the shrine-entrance Mutt heard the shots too
+clear 14
+expect kills=7
+goto 12 12             # Charge Vial; the green door is right here, locked
+goto 8 13              # Charge Jar
+goto 4 19              # Fish Snack
+# Secret 1: the scratched-paw wall on the west side.
+goto 4 15
+face 180
+use
+wait 70
+goto 2 17
+expect secrets=1
+goto 1 16
+goto 1 18
+goto 1 17              # Linen Wrap
+# Shrine of the Green Ankh.
+goto 12 17
+goto 15 15             # Tuna Tin
+goto 21 19             # Charge Vial
+goto 21 17             # green key: the closets open behind us
+wait 35                # the doors take 32 tics
+goto 17 17             # heading out, the closet Mutts see us down the doorways
+clear 12
+wait 35
+clear 12
+expect kills=10
+# Secret 2: the paler block in the north wall, the alcove seen through
+# the window.
+goto 17 19
+face 90
+use
+wait 70
+goto 19 21
+expect secrets=2
+# Back through the courtyard to the green door, into the Gate Winch Room.
+goto 12 12
+face 0
+use
+wait 32
+goto 14 10
+clear 12
+goto 14 9
+clear 12
+goto 15 5
+clear 12
+goto 19 5              # the dais around the lever
+clear 12
+expect kills=14
+goto 14 2              # Fish Snack
+goto 22 5
+face 0
+use
+expect exit=1

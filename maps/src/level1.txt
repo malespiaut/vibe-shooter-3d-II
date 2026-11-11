@@ -1,0 +1,134 @@
+# Level 1 "Sandbox Gate" (docs/design/levels.md section 1), 24x24, built by
+# tools/mkmap.py into maps/level1.vmap. Coordinates are (x, y), y counted
+# from the south (the last layout row is y = 0), as demo goto.
+#
+# Critical path: start plaza (6,1) -> gatehouse door D (6,8), straight ahead
+# -> gatehouse (dark 8) -> inner gate door (6,11) -> Litter Courtyard (x 4-12, y 12-19,
+# obelisk o and four pillars i) -> corridor (13-14,17) -> Shrine of the Green
+# Ankh (x 15-21, y 15-19, key at (21,17)) -> back to the green door G (13,12),
+# on the courtyard's east wall, seen from the inner gate before the key -> passage
+# (14,10-12) -> Gate Winch Room (DT steel, x 14-22, y 2-9) -> EXIT lever E
+# (23,5), used from (22,5).
+#
+# Shrine ambush: taking the key (PICKUP_TRIGGER, tag 4) opens the two
+# eg_tomb_stone closet doors t (15,20) and (16,14), switch mode tag 4.
+# Secrets: P (3,15) eg_paw_wall pushwall (the only paw wall on the map),
+# slides west to (1,15) -> room x 1-2, y 16-18 (SECRET cell x (2,17)):
+# Linen Wrap + 2 Fish Snacks. L (17,20) paler eg_sand_blocks2 pushwall in the
+# shrine's eg_sand_blocks north wall, slides north to (17,22) -> lit alcove
+# A (dark 0, SECRET cell X (19,21)): Charge Jar, seen from the shrine through
+# the window W (19,20), a BLOCK_ALL floor cell.
+#
+# Outdoor cells have a ceiling until sky_dawn (#155) exists; #150 switches
+# them to sky. Pillars and the obelisk are wall blocks until props (#131).
+# DT scaffolds use dt_riveted_plate: dt_scaffold_sandstone (21 chars) does
+# not fit the 16-char map texture name table.
+
+name Sandbox Gate
+music 1
+par 150
+
+legend # wall=eg_ashlar flags=SOLID
+legend a wall=eg_sand_blocks flags=SOLID
+legend s wall=dt_riveted_plate flags=SOLID
+legend i wall=eg_gold_pillar flags=SOLID
+legend o wall=eg_glyph_band flags=SOLID
+legend b wall=eg_sand_blocks flags=SOLID
+legend n wall=eg_glyph_band flags=SOLID
+legend k wall=eg_tomb_stone flags=SOLID
+legend m wall=dt_steel_panel flags=SOLID
+legend r wall=dt_pump flags=SOLID
+legend E wall=eg_switch_off flags=SOLID|EXIT
+legend . floor=eg_sand ceil=eg_floor_tiles dark=2
+legend , floor=eg_sand ceil=eg_floor_tiles dark=0
+legend h floor=eg_floor_tiles ceil=eg_planks dark=8
+legend D wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=8 flags=DOOR
+legend G wall=eg_door_green floor=eg_floor_tiles ceil=eg_planks dark=4 flags=DOOR key=green
+legend - floor=eg_floor_tiles ceil=eg_planks dark=6
+legend P wall=eg_paw_wall floor=eg_floor_tiles ceil=eg_floor_tiles dark=6 flags=PUSHWALL
+legend q floor=eg_floor_tiles ceil=eg_floor_tiles dark=6
+legend x floor=eg_floor_tiles ceil=eg_floor_tiles dark=6 flags=SECRET
+legend _ floor=eg_floor_tiles ceil=eg_floor_tiles dark=6
+legend t wall=eg_tomb_stone floor=eg_tomb_floor ceil=eg_tomb_floor dark=10 flags=DOOR mode=switch tag=4
+legend c floor=eg_tomb_floor ceil=eg_tomb_floor dark=10
+legend L wall=eg_sand_blocks2 floor=eg_floor_tiles ceil=eg_floor_tiles dark=0 flags=PUSHWALL
+legend A floor=eg_floor_tiles ceil=eg_floor_tiles dark=0
+legend X floor=eg_floor_tiles ceil=eg_floor_tiles dark=0 flags=SECRET
+legend W floor=eg_floor_tiles ceil=eg_floor_tiles dark=0 flags=BLOCK_ALL
+legend w floor=dt_grate_floor ceil=dt_steel_panel dark=6
+
+layout
+########################
+##############cc#A######
+##############cc#AAXA###
+###aaaasaasaaabtbLbWbbb#
+###a,,,,,,,,,s#_______b#
+#qqs,,,,,,,,,a#_______n#
+#qxa,i,,,,,i,_________n#
+#qqa,,,,,,,,,a#_______n#
+#qqP,,,,o,,,,a#_______b#
+###a,i,,,,,i,abbtbbbbbb#
+###s,,,,,,,,,a##cc######
+###a,,,,,,,,,G-#cc######
+######D#######-#########
+####hhhhh#####-mmmmmmmm#
+####hhhhh####mwwwwwwwwwm
+######D######mwwwwwwwwwm
+#####...#####mwwwrwwwwwm
+#####...#####mwwwwwwwwwm
+##s##...##s##mwwwwwwwwwE
+##.........##mwwwrwwwwwm
+#s.i.....i.s#mwwwwwwwwwm
+##.........##mwwwwwwwwwm
+#s.........s#mmmmmmmmmmm
+########################
+end
+
+entity PLAYER_START 6 1 90
+
+# Mutts: 14 at skill 2. SKILL2|SKILL3 ones are absent on Kitten (11 left,
+# -21%); SKILL3 ones are Sabretooth extras (17, +21%).
+# The Welcome Mat: back turned, 6 tiles straight ahead of the start.
+entity MUTT_TROOPER 6 7 90
+# Gatehouse, in the dark corner.
+entity MUTT_TROOPER 4 10 0 flags=SKILL2|SKILL3
+# Litter Courtyard: one behind each pillar as seen from the inner gate (6,11).
+entity MUTT_TROOPER 4 15 270
+entity MUTT_TROOPER 12 16 270
+entity MUTT_TROOPER 5 18 270
+entity MUTT_TROOPER 11 18 270
+# Shrine entrance.
+entity MUTT_TROOPER 15 17 180 flags=SKILL2|SKILL3
+# Shrine ambush closets: the shut doors keep them from hearing or seeing
+# the player until the key opens them (tag 4).
+entity MUTT_TROOPER 14 22 270
+entity MUTT_TROOPER 15 21 270
+entity MUTT_TROOPER 16 13 90 flags=SKILL1|SKILL2|SKILL3
+# Gate Winch Room: around the exit lever, plus one at the door.
+entity MUTT_TROOPER 21 3 180
+entity MUTT_TROOPER 20 5 180
+entity MUTT_TROOPER 21 7 180
+entity MUTT_TROOPER 16 9 270 flags=SKILL2|SKILL3
+# Sabretooth extras.
+entity MUTT_TROOPER 2 4 0 flags=SKILL3
+entity MUTT_TROOPER 8 19 270 flags=SKILL3
+entity MUTT_TROOPER 21 9 180 flags=SKILL3
+
+# Critical-path items: 4 Fish Snacks, 1 Tuna Tin, 3 Charge Vials, 1 Charge Jar.
+entity FISH_SNACK 10 4 0
+entity FISH_SNACK 4 9 0
+entity FISH_SNACK 4 19 0
+entity FISH_SNACK 14 2 0
+entity TUNA_TIN 15 15 0
+entity CHARGE_VIAL 8 9 0
+entity CHARGE_VIAL 12 12 0
+entity CHARGE_VIAL 21 19 0
+entity CHARGE_JAR 8 13 0
+entity GREEN_ANKH 21 17 0 flags=SKILL1|SKILL2|SKILL3|PICKUP_TRIGGER tag=4
+
+# Secret 1 (paw wall): Linen Wrap + 2 Fish Snacks.
+entity LINEN_WRAP 1 17 0
+entity FISH_SNACK 1 16 0
+entity FISH_SNACK 1 18 0
+# Secret 2 (lit alcove behind the shrine): Charge Jar.
+entity CHARGE_JAR 19 21 0
