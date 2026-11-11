@@ -1,0 +1,34 @@
+# Respawn test map (issue #192): one Throne Arena style restock alcove,
+# built by tools/mkmap.py into maps/respawntest.vmap. Test fixture for
+# RESPAWN_ITEM (tech.md Map entities, demos/respawn-test.demo), not a game
+# level. Coordinates are (x, y) with y counted from the south (last layout
+# row is y = 0).
+#
+#   (5,5)  alcove in the north wall: RESPAWN_ITEM, param SUN_SHARD (60),
+#          tag 4. The Sun Shard restocks 1050 tics after it is taken.
+#   s (0,1) wall switch, tag 4: stops the restocking for good (in level 8
+#          the alcoves share the tag Woofu's death fires).
+#   Player starts at (2,2) facing north.
+
+name Respawn Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+legend a floor=test03 ceil=test05 dark=4
+legend s wall=test03 flags=SOLID|SWITCH tag=4
+
+layout
+##########
+#####a####
+#........#
+#........#
+#........#
+s........#
+##########
+end
+
+entity PLAYER_START 2 2 90
+entity RESPAWN_ITEM 5 5 0 tag=4 param=60

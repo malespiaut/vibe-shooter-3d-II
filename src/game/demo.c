@@ -284,7 +284,10 @@ static int cmd_clear(demo_t *d, line_ctx *c)
  * them (main.c print_stats); they move here when their systems land.
  * level and god are run options, not game state, and are not offered. */
 static const char *const STATS[] = { "tic", "health", "armor", "kills",
-                                     "items", "secrets", "exit", "tile" };
+                                     "items", "secrets", "exit", "tile",
+                                     "charges", "shells", "scarabs", "cells" };
+/* Ammo stats (not on the STATS line): gs->player.weapons.ammo[AM_*]. */
+static const char *const AMMO_STATS[AM_TYPES] = { "charges", "shells", "scarabs", "cells" };
 
 static int32_t stat_value(const game_state *gs, const char *name)
 {
@@ -302,6 +305,9 @@ static int32_t stat_value(const game_state *gs, const char *name)
         return gs->secrets;
     if (strcmp(name, "exit") == 0)
         return gs->exit;
+    for (int a = 0; a < AM_TYPES; a++)
+        if (strcmp(name, AMMO_STATS[a]) == 0)
+            return gs->player.weapons.ammo[a];
     return 0;
 }
 
@@ -324,7 +330,7 @@ static int cmd_expect(demo_t *d, line_ctx *c)
         known |= strcmp(stat, STATS[i]) == 0;
     if (!known)
         return fail(c, "expect: unknown stat '%s' (tic health armor kills items secrets exit "
-                       "tile)", stat);
+                       "tile charges shells scarabs cells)", stat);
 
     static const struct {
         const char *text;

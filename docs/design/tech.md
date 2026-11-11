@@ -101,8 +101,20 @@ the same tag: closed ones open, `START_OPEN` ones close. This is how layouts cha
 Special entity types fire or react to tags: `KILL_TRIGGER` (fires its `param` tag when every
 enemy carrying its `tag` is dead), `PICKUP_TRIGGER` flag on a pickup (fires its tag when taken),
 `LIGHTS` (when its tag fires, every cell switches from `dark` to `dark_alt`), `WAYPOINT` (named,
-demo navigation only), `PLAYER_START`, `BOSS_POD`, `RESPAWN_ITEM` (L8 only), `TEST_SPRITE` (type 15, renderer test fixture drawing the `testspr` test-pattern sprite; never in a level). Entity names are an
+demo navigation only), `PLAYER_START`, `BOSS_POD`, `RESPAWN_ITEM` (L8 only, see below), `TEST_SPRITE` (type 15, renderer test fixture drawing the `testspr` test-pattern sprite; never in a level). Entity names are an
 optional trailing table: uint16 count, then (uint16 entity index, char[16] name).
+
+`RESPAWN_ITEM` (type 6, #192, the Throne Arena restock alcoves): spawns, at its position and on the
+skills its flags select, the pickup whose entity type is its `param`. `param` must be a non-weapon
+pickup type 48..68 (54..61 for the ammo the alcoves give); anything else is reported on stderr at
+map load and the entity is ignored. The pickup is present at level start; once taken it reappears
+at the same spot `RESPAWN_TICS` = 1050 tics later (taken in tic T, back in tic T+1050, before that
+tic's pickup check), for every skill, with no RNG. When the entity's `tag` fires, restocking stops for
+good: an absent item never comes back, a present one stays until taken. `tag` 0 never stops; the
+entity never fires its tag itself (`PICKUP_TRIGGER` is ignored on it). Only the first pickup counts
+toward `items`; respawned ones play the normal pickup sound and message, and the reappearance is
+silent (`audio.md` has no respawn sound). The state hash appends, per `RESPAWN_ITEM` pickup in spawn
+order, its restocking flag, respawned flag and countdown (nothing on maps without one).
 
 Maps are authored in the editor (M2). Before the editor exists, maps are produced by
 `tools/mkmap.py` from an ASCII layout in `maps/src/*.txt`; the `.vmap` is the committed source of
@@ -140,7 +152,7 @@ Body, executed in order, each line consuming tics:
 | `fire <n>` | Hold fire for n tics. |
 | `face nearest` / `fire nearest [max]` | Turn to (and shoot) the nearest visible live enemy until it dies or `max` tics (default 350). Nearest = smallest distance with line of sight, ties to the lower thinker id; picked on the first tic and kept. Turns at keyboard rate; fires when the aim error after the turn is under 1 degree (182). No visible enemy, or a timeout, exits 2. |
 | `clear [radius] [max]` | Fight visible live enemies (awake or not) within radius (default 10 units) until none is left; fails after `max` tics (default 2100). Re-targets the nearest when the current one dies, hides or leaves the radius. No pathing; strafes left 17 tics, right 18, while fighting. Weapon is the author's (`weapon n`). |
-| `expect <stat><op><value>` | Assert on the stats (e.g. `expect exit=1`, `expect health>=20`). Failure makes the run exit 2. |
+| `expect <stat><op><value>` | Assert on the stats (e.g. `expect exit=1`, `expect health>=20`); besides the STATS fields, `charges`, `shells`, `scarabs` and `cells` read the player's ammo. Failure makes the run exit 2. |
 
 High-level commands are resolved each tic from game state into the same per-tic input a player
 produces, so they are deterministic and survive balance changes better than raw input.

@@ -14,6 +14,7 @@
 #define CATSEYE_TICS 2100
 #define NINTH_LIFE_HEALTH 50
 #define NINTH_LIFE_INVULN_TICS 70
+#define RESPAWN_TICS 1050      /* RESPAWN_ITEM restock delay, every skill */
 
 /* True for entity types that are pickups (weapons 32..47, items 48..95). */
 int item_is_pickup(int type);
@@ -26,7 +27,9 @@ void player_start_inventory(player_t *p);
 /* Spawns a pickup_t for every non-weapon pickup entity of the map whose
  * SKILLn flag matches gs->skill, in entity order (weapon pickups are
  * thinkers, spawned by thinkers_spawn_map, which must run first). Sets
- * items_total to both, and resets the items counter. */
+ * items_total to both, and resets the items counter.
+ * A RESPAWN_ITEM entity spawns the pickup whose type is its `param`
+ * (48..68); any other param is logged to stderr and the entity ignored. */
 void items_spawn(game_state *gs);
 
 /* Applies pickup `type` to the player. Returns 1 when it was used (and must
@@ -45,8 +48,15 @@ void items_touch(game_state *gs);
  * the count. */
 int items_render_things(const game_state *gs, render_thing *out, int max);
 
-/* Counts down powerup and invulnerability timers. Called by game_tic. */
+/* Counts down powerup and invulnerability timers, and RESPAWN_ITEM
+ * countdowns: an alcove item taken in tic T is back in tic T+RESPAWN_TICS
+ * (before items_touch). Called by game_tic, dead or alive. */
 void items_tic(game_state *gs);
+
+/* `tag` fired: every RESPAWN_ITEM pickup carrying it stops respawning for
+ * good (an absent one never comes back; a present one stays until taken).
+ * Called by the tag system for every non-zero tag. */
+void items_tag_fired(game_state *gs, int tag);
 
 /* Damages the player by `amount` (> 0): Kitten halves it (min 1), armour
  * absorbs 1/3 (Linen) or 1/2 (Plate) rounded down, capped by the armour

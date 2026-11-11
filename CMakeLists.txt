@@ -166,6 +166,14 @@ foreach(g health armour ammo weapons keys powerups damage ninth_life spawn touch
   add_test(NAME items_${g} COMMAND test_items ${g})
 endforeach()
 
+# RESPAWN_ITEM alcoves (tech.md Map entities, #192).
+add_executable(test_respawn tests/test_respawn.c)
+target_link_libraries(test_respawn PRIVATE engine)
+target_compile_options(test_respawn PRIVATE -UNDEBUG)
+foreach(g present timing tag_absent tag_present items invalid hash)
+  add_test(NAME respawn_${g} COMMAND test_respawn ${g})
+endforeach()
+
 # Player death and level restart (hud.md Flow, items.md).
 add_executable(test_death tests/test_death.c)
 target_link_libraries(test_death PRIVATE engine)
@@ -362,6 +370,11 @@ add_test(NAME death_demo
 add_test(NAME items_demo
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_items_demo.py
           $<TARGET_FILE:game> ${CMAKE_SOURCE_DIR})
+
+# RESPAWN_ITEM alcove demo (#192): its expect lines check the cells after
+# each restock and after the switch stopped it; exit 0 = all held.
+add_test(NAME respawn_demo
+  COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/respawn-test.demo)
 
 # Sprite pre-render pipeline (tools/blender_render.py). Exits 77 = skipped
 # when `blender` is not installed.
@@ -633,3 +646,4 @@ add_test(NAME sound_events
           $<TARGET_FILE:game> $<TARGET_FILE:test_sound> ${CMAKE_SOURCE_DIR}
           ${CMAKE_BINARY_DIR}/test_tmp/sound_events)
 add_demo_determinism(door-locked)
+add_demo_determinism(respawn-test)
