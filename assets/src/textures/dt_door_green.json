@@ -28,7 +28,7 @@
     "band": {"ramp": "green", "lo": 2, "hi": 11, "level": 0.6, "base2": false},
     "leaf": {"ramp": "steel", "lo": 3, "hi": 13, "level": 0.55},
     "rib": {"ramp": "steel", "lo": 4, "hi": 14, "level": 0.6, "base2": false},
-    "ankh": {"ramp": "green", "lo": 6, "hi": 11, "level": 0.65, "base2": false}
+    "ankh": {"ramp": "green", "lo": 5, "hi": 11, "level": 0.7, "base2": false}
   },
   "base2": {"ramp": "gray", "lo": 3, "hi": 10, "threshold": 0.35}
 }
