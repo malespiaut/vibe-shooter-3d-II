@@ -203,8 +203,9 @@ def obelisk(img, it, fill, lit):
 def block(img, it, fill, lit):
     x0, w, top = it["x"], it["w"], it["top"]
     rect(img, x0, top, w, H - top, fill)
-    for y in range(top, H):
-        img.set(x0, y, lit)
+    if w < W:  # a full-width wall has no left end, so no lit edge (no seam)
+        for y in range(top, H):
+            img.set(x0, y, lit)
     m = it.get("merlon")
     if m:
         mw, gap = m

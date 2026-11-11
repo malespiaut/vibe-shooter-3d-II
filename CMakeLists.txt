@@ -472,6 +472,7 @@ add_demo_determinism(ai-test)
 add_demo_determinism(combat-test)
 add_demo_determinism(lance-howler-test)
 add_demo_determinism(death-test)
+add_demo_determinism(sky-turn)
 
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)

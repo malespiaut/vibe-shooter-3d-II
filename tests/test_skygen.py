@@ -55,6 +55,17 @@ def main():
             rolled = row[-160:] + row[:-160]
             assert shifted.px[y * W:(y + 1) * W] == rolled, (name, "row", y)
 
+        # Shifting proves the painter treats the join like any other column
+        # pair, but an element whose left end sits at x = 0 could still draw
+        # a line there (a full-width wall's lit edge did). Fail on a vertical
+        # run of 4+ rows where column 0 differs from both its neighbours,
+        # which match each other. Checker dither rows come in pairs, so they
+        # never make such a run.
+        a, b, c = col(img, W - 1), col(img, 0), col(img, 1)
+        run = 0
+        for y in range(H):
+            run = run + 1 if (b[y] != a[y] and a[y] == c[y]) else 0
+            assert run < 4, (name, "vertical line at the 319|0 join ending row", y)
         seam = diff(col(img, W - 1), col(img, 0))
         inner = max(diff(col(img, x), col(img, x + 1)) for x in range(W - 1))
         assert seam <= inner, (name, seam, inner)

@@ -20,7 +20,7 @@
       {"type": "pyramid", "x": 262, "top": 70, "slope": [3, 2]}
     ]},
     {"fill": "indigo_00", "lit": "indigo_01", "ground": 99, "items": [
-      {"type": "block", "x": 0, "w": 34, "top": 86},
+      {"type": "block", "x": 1, "w": 33, "top": 86},
       {"type": "block", "x": 34, "w": 26, "top": 90},
       {"type": "obelisk", "x": 64, "top": 62, "w": 5},
       {"type": "block", "x": 70, "w": 40, "top": 92, "merlon": [3, 3]},
