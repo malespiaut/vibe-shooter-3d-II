@@ -20,6 +20,7 @@ enum {
                       * headbutt (dmg_*) within it, near edge as melee */
     ATK_MISSILE = 5, /* Mastiff: launches `missile` (game/projectile.c) at the
                       * player from alternating shoulders */
+    ATK_BOSS = 6,    /* Woofu: fans and mortar barrages (game/boss.h) */
 };
 
 typedef struct {

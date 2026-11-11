@@ -192,6 +192,13 @@ foreach(g mastiff_shoulders mastiff_speed mastiff_lance mastiff_hit shep_front s
         shep_howler shep_windup)
   add_test(NAME ai_${g} COMMAND test_ai_mastshep ${g})
 endforeach()
+# Woofu boss AI (issue #97).
+add_executable(test_boss tests/test_boss.c)
+target_link_libraries(test_boss PRIVATE engine)
+target_compile_options(test_boss PRIVATE -UNDEBUG)
+foreach(g fan phase pods cap tag barrage)
+  add_test(NAME boss_${g} COMMAND test_boss ${g})
+endforeach()
 # Projectiles, splash, Scarab Launcher, kibble barrels (issue #93).
 add_executable(test_projectile tests/test_projectile.c)
 target_link_libraries(test_projectile PRIVATE engine)
@@ -645,6 +652,12 @@ add_test(NAME pomdach_demo
 set_tests_properties(pomdach_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 add_demo_determinism(pomdach-test)
+add_test(NAME boss_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_boss_demo.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/boss_demo)
+set_tests_properties(boss_demo PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+add_demo_determinism(boss-test)
 
 # Mastiff / Shieldbearer test demo, run twice (issue #96).
 add_test(NAME mastshep_demo

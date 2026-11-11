@@ -93,6 +93,7 @@ void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill)
             continue;
         thinker_t *en = thinker_get(th, thinker_spawn(th, e->type, e->x, e->y, e->angle));
         if (en) {
+            en->tag = e->tag;
             if (e->flags & BAST_ENT_AMBUSH)
                 en->flags |= TH_FLAG_AMBUSH;
             en->tag = e->tag; /* for KILL_TRIGGER (game/tags.c) */

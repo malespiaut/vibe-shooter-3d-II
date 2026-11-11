@@ -214,6 +214,11 @@ static void spawn_drop(game_state *gs, const thinker_t *t, const enemy_info_t *i
     pk->amount = info->drop_amount;
 }
 
+static int boss_is(const game_state *gs, const thinker_t *t)
+{
+    return gs->boss.id && t == &gs->things.list[gs->boss.id - 1];
+}
+
 int ai_damage(game_state *gs, thinker_t *t, int32_t damage)
 {
     return ai_damage_pain(gs, t, damage, 0);
@@ -231,13 +236,32 @@ int ai_damage_pain(game_state *gs, thinker_t *t, int32_t damage, int32_t pain_ti
             if (t->flags & TH_FLAG_GIB)
                 game_sound(gs, SFX_gib_splat, t->x, t->y);
             else
-                enemy_sound(gs, t, info->snd_death);
+                enemy_sound(gs, t, info->snd_death); /* Woofu: woofu_death */
+        }
+        if (boss_is(gs, t)) {
+            gs->boss.death_tic = (int32_t)gs->tic + BOSS_DEATH_TICS;
+            t->tics = BOSS_DEATH_TICS; /* the death animation (render) */
         }
         return 1;
     }
     if (!info || damage <= 0)
         return 0;
     wake(gs, t);
+    if (boss_is(gs, t)) { /* pain 0: only the scripted phase-2 flinch */
+        boss_t *b = &gs->boss;
+        if (b->phase == 1 && t->health <= BOSS_PHASE2_HP) {
+            b->phase = 2;
+            if (b->pod_tics > BOSS_POD_TICS_2)
+                b->pod_tics = BOSS_POD_TICS_2; /* never later than a phase-2 period */
+            b->next = BOSS_NEXT_FANS;
+            t->state = TH_STATE_PAIN;
+            t->tics = BOSS_FLINCH_TICS;
+            t->movedir = DI_NONE;
+            game_sound(gs, SFX_lid_blast, t->x, t->y);
+            enemy_sound(gs, t, info->snd_pain); /* woofu_pain: its only pain */
+        }
+        return 0;
+    }
     if (pain_tics > 0) { /* forced: no pain roll */
         if (t->state != TH_STATE_PAIN)
             enemy_sound(gs, t, info->snd_pain);
@@ -322,7 +346,8 @@ static void launch_missile(game_state *gs, thinker_t *t, const enemy_info_t *inf
 /* Each enemy attack sound (enemy_info snd_attack) has one owner, the code
  * that makes the attack: hitscan on the shot (hit or miss), melee only on
  * a hit, a missile at its launch point, plasma once per bolt, and the
- * Dachshund's mortar_launch only with a reticle (its headbutt is silent).
+ * Dachshund's mortar_launch only with a reticle (its headbutt is silent),
+ * Woofu's fan_fire once per fan (boss_fan; its barrage is a mortar_launch).
  * Nothing else plays them. */
 
 /* Player near edge within the melee reach of `t`. */
@@ -352,6 +377,46 @@ static int pom_volley_tic(int32_t tics)
     return 0;
 }
 
+void boss_fan_angles(angle_t centre, angle_t out[BOSS_FAN_BOLTS])
+{
+    for (int k = 0; k < BOSS_FAN_BOLTS; k++)
+        out[k] = (angle_t)(centre + (angle_t)((k - BOSS_FAN_BOLTS / 2) * (int32_t)BOSS_FAN_SPREAD));
+}
+
+/* A fan of boss bolts centred on the player's bearing now. */
+static void boss_fan(game_state *gs, thinker_t *t)
+{
+    angle_t a[BOSS_FAN_BOLTS];
+    t->angle = angle_to_player(gs, t);
+    boss_fan_angles(t->angle, a);
+    for (int k = 0; k < BOSS_FAN_BOLTS; k++)
+        projectile_spawn(gs, TH_TYPE_BOSS_BOLT, thinker_id(gs, t), t->x, t->y, BOSS_BOLT_Z, a[k]);
+    enemy_sound(gs, t, enemy_info(t->type)->snd_attack); /* fan_fire, once per fan */
+}
+
+void boss_barrage_points(fix_t bx, fix_t by, fix_t px, fix_t py, fix_t out_x[3], fix_t out_y[3])
+{
+    const angle_t side = (angle_t)(angle_of(px - bx, py - by) + ANG90);
+    const fix_t sx = fix_mul(BOSS_BARRAGE_SIDE, fine_cos(side));
+    const fix_t sy = fix_mul(BOSS_BARRAGE_SIDE, fine_sin(side));
+    out_x[0] = px;
+    out_y[0] = py;
+    out_x[1] = px + sx;
+    out_y[1] = py + sy;
+    out_x[2] = px - sx;
+    out_y[2] = py - sy;
+}
+
+/* Three reticles: on the player and BOSS_BARRAGE_SIDE either side. */
+static void boss_barrage(game_state *gs, thinker_t *t)
+{
+    fix_t x[3], y[3];
+    boss_barrage_points(t->x, t->y, gs->player.x, gs->player.y, x, y);
+    game_sound(gs, SFX_mortar_launch, t->x, t->y);
+    for (int k = 0; k < 3; k++)
+        reticle_spawn(gs, thinker_id(gs, t), x[k], y[k]);
+}
+
 static void resolve_attack(game_state *gs, thinker_t *t, const enemy_info_t *info)
 {
     int hit = 0;
@@ -372,6 +437,11 @@ static void resolve_attack(game_state *gs, thinker_t *t, const enemy_info_t *inf
             enemy_sound(gs, t, info->snd_attack); /* mortar_launch */
             reticle_spawn(gs, thinker_id(gs, t), gs->player.x, gs->player.y);
         }
+    } else if (info->attack == ATK_BOSS) {
+        if (gs->boss.attack == BOSS_NEXT_BARRAGE)
+            boss_barrage(gs, t);
+        else
+            boss_fan(gs, t);
     }
     if (hit) {
         const int32_t dmg = info->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)info->dmg_spread + 1);
@@ -386,6 +456,14 @@ static void start_windup(game_state *gs, thinker_t *t, const enemy_info_t *info)
     enemy_sound(gs, t, info->snd_windup);
     t->state = TH_STATE_WINDUP;
     t->tics = ai_windup_tics(gs, t->type);
+    if (boss_is(gs, t)) {
+        boss_t *b = &gs->boss;
+        b->attack = b->phase == 2 ? b->next : BOSS_NEXT_FANS;
+        if (b->phase == 2)
+            b->next = b->attack == BOSS_NEXT_FANS ? BOSS_NEXT_BARRAGE : BOSS_NEXT_FANS;
+        if (b->attack == BOSS_NEXT_BARRAGE)
+            t->tics = gs->skill == 3 ? BOSS_BARRAGE_WINDUP * 3 / 4 : BOSS_BARRAGE_WINDUP;
+    }
     t->angle = angle_to_player(gs, t);
     t->movedir = DI_NONE;
 }
@@ -535,7 +613,10 @@ static void chase_move(game_state *gs, thinker_t *t, const enemy_info_t *info)
         return;
     }
     t->angle = angle_of(vx, vy);
-    const fix_t step = len < info->speed ? len : info->speed;
+    fix_t speed = info->speed;
+    if (boss_is(gs, t) && gs->boss.phase == 2)
+        speed = speed * 3 / 2; /* Unleashed */
+    const fix_t step = len < speed ? len : speed;
     move_axis(gs, t, (fix_t)((int64_t)vx * step / len), 0);
     move_axis(gs, t, (fix_t)((int64_t)vy * step / len), 1);
     if (t->movedir != DI_NONE && t->x == gx && t->y == gy)
@@ -617,6 +698,9 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
         if (t->state == TH_STATE_ATTACK && info->attack == ATK_PLASMA && player_alive &&
             pom_volley_tic(t->tics))
             fire_bolt(gs, t, info); /* the next bolt of the volley */
+        if (t->state == TH_STATE_ATTACK && boss_is(gs, t) && gs->boss.phase == 2 &&
+            gs->boss.attack == BOSS_NEXT_FANS && t->tics == AI_ATTACK_TICS && player_alive)
+            boss_fan(gs, t); /* the second fan */
         if (t->tics <= 0) {
             t->state = TH_STATE_CHASE;
             t->tics = 0;
@@ -631,6 +715,8 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
             t->tics = AI_ATTACK_TICS;
             if (info->attack == ATK_PLASMA)
                 t->tics += (AI_POM_BOLTS - 1) * AI_POM_BOLT_GAP;
+            if (boss_is(gs, t) && gs->boss.phase == 2 && gs->boss.attack == BOSS_NEXT_FANS)
+                t->tics += BOSS_FAN_GAP; /* fans fire twice in a row */
             t->movecount = AI_DECIDE_TICS;
         }
         return;
@@ -652,7 +738,7 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
     if (--t->movecount <= 0) {
         t->movecount = AI_DECIDE_TICS;
         if ((info->attack == ATK_HITSCAN || info->attack == ATK_PLASMA ||
-             info->attack == ATK_MISSILE) &&
+             info->attack == ATK_MISSILE || info->attack == ATK_BOSS) &&
             player_dist(gs, t) <= info->range && ai_line_of_sight(gs, t) &&
             (int32_t)rng_range(&gs->rng, 256) < info->aggression) {
             start_windup(gs, t, info);
@@ -667,10 +753,100 @@ static void think(game_state *gs, thinker_t *t, const enemy_info_t *info, int16_
     chase_move(gs, t, info);
 }
 
+static int live_chompers(const game_state *gs)
+{
+    int n = 0;
+    for (int i = 0; i < gs->things.count; i++) {
+        const thinker_t *t = &gs->things.list[i];
+        n += t->type == BAST_ENT_CHIHUAHUA_CHOMPER && thinker_alive(t);
+    }
+    return n;
+}
+
+/* Opens pod `p`: up to BOSS_POD_CHOMPERS awake Chompers, under the cap. */
+static void open_pod(game_state *gs, const boss_pod_t *p)
+{
+    const enemy_info_t *ci = enemy_info(BAST_ENT_CHIHUAHUA_CHOMPER);
+    const angle_t side = (angle_t)(p->angle + ANG90);
+    const fix_t sx = fix_mul(BOSS_POD_SPREAD, fine_cos(side));
+    const fix_t sy = fix_mul(BOSS_POD_SPREAD, fine_sin(side));
+    game_sound(gs, SFX_pod_open, p->x, p->y);
+    for (int k = 0; k < BOSS_POD_CHOMPERS; k++) {
+        if (live_chompers(gs) >= BOSS_MAX_CHOMPERS)
+            return;
+        fix_t x = k == 0 ? p->x + sx : p->x - sx;
+        fix_t y = k == 0 ? p->y + sy : p->y - sy;
+        if (ai_circle_blocked(gs, x, y, ci->radius)) {
+            x = p->x;
+            y = p->y;
+        }
+        thinker_t *c = thinker_get(&gs->things,
+                                   thinker_spawn(&gs->things, BAST_ENT_CHIHUAHUA_CHOMPER, x, y,
+                                                 p->angle));
+        if (!c)
+            return;
+        /* Released awake and silent: pod_open is their sound, not 2 sight
+         * voices per pod. Same state change as wake(). */
+        c->state = TH_STATE_CHASE;
+        c->movecount = 0;
+        c->movedir = DI_NONE;
+    }
+}
+
+void boss_init(game_state *gs)
+{
+    boss_t *b = &gs->boss;
+    memset(b, 0, sizeof *b);
+    for (int i = 0; i < gs->things.count; i++) {
+        if (gs->things.list[i].type == BAST_ENT_WOOFU) {
+            b->id = (uint16_t)(i + 1);
+            b->tag = gs->things.list[i].tag;
+            break;
+        }
+    }
+    b->phase = 1;
+    b->pod_tics = BOSS_POD_TICS_1;
+    for (int i = 0; i < gs->map->entity_count && b->pod_count < BOSS_MAX_PODS; i++) {
+        const bast_map_entity *e = &gs->map->entities[i];
+        if (e->type != BAST_ENT_BOSS_POD || !entity_on_skill(e, gs->skill))
+            continue;
+        b->pods[b->pod_count].x = e->x;
+        b->pods[b->pod_count].y = e->y;
+        b->pods[b->pod_count].angle = e->angle;
+        b->pod_count++;
+    }
+}
+
+/* Pod timer and the death tag; before the thinkers think. */
+static void boss_tic(game_state *gs)
+{
+    boss_t *b = &gs->boss;
+    thinker_t *t = thinker_get(&gs->things, b->id);
+    if (!t)
+        return;
+    if (b->death_tic && !b->tag_fired && (int32_t)gs->tic >= b->death_tic) {
+        b->tag_fired = 1;
+        game_fire_tag(gs, b->tag);
+    }
+    if (!thinker_alive(t) || t->state == TH_STATE_STAND || gs->player.dead)
+        return;
+    if (--b->pod_tics > 0)
+        return;
+    b->pod_tics = b->phase == 2 ? BOSS_POD_TICS_2 : BOSS_POD_TICS_1;
+    if (b->pod_count == 0)
+        return;
+    for (int k = 0; k < 2; k++) {
+        open_pod(gs, &b->pods[(b->pod_pair * 2 + k) % b->pod_count]);
+        b->pods_opened++;
+    }
+    b->pod_pair++;
+}
+
 void ai_tic(game_state *gs)
 {
     static int16_t dist[MAP_CELLS];
     int have_dist = 0;
+    boss_tic(gs);
     for (int i = 0; i < gs->things.count; i++) {
         thinker_t *t = &gs->things.list[i];
         if (!thinker_alive(t))

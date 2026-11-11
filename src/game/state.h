@@ -17,6 +17,7 @@
 #include "game/fx.h"
 #include "game/tags.h"
 #include "game/sound.h"
+#include "game/boss.h"
 
 #define TICRATE 35
 
@@ -158,6 +159,7 @@ typedef struct game_state {
     uint32_t demo_seed;
     inventory_t entry;      /* level-entry inventory snapshot */
     uint32_t restarts;      /* deaths restarted this run; not hashed */
+    boss_t boss;            /* Woofu (game/boss.h, game/ai.c) */
 } game_state;
 
 /* Resets the state for `map` (borrowed, must outlive the state): tic 0, RNG

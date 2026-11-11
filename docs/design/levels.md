@@ -42,7 +42,9 @@ Pools: L1 14 Mutt. L2 18 Mutt, 10 Chomper. L3 16 Mutt, 10 Chomper, 8 Pom. L4 12 
 Pom, 5 Dachshund. L5 14 Mutt, 10 Chomper, 10 Pom, 6 Dachshund, 2 Mastiff. L6 14 Mutt, 12 Chomper, 10
 Pom, 6 Dachshund, 8 Shield, 2 Mastiff. L7 16 Mutt, 14 Chomper, 12 Pom, 8 Dachshund, 10 Shield, 4
 Mastiff. L8 8 Mutt, 8 Chomper, 6 Pom, 4 Dachshund, 4 Shield, 2 Mastiff, Woofu 2400 + up to 12
-summoned Chompers.
+summoned Chompers. Pod Chompers add to the kills total as they spawn (game/boss.h), so the L8
+end screen reads e.g. `kills 41/41` with 4 pod openings; the total grows during the fight and is
+only final when Woofu dies.
 
 Balance PRs adjust item placement first, enemy counts second, stats last, and update this table.
 

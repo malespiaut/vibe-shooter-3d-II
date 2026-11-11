@@ -1,0 +1,58 @@
+# Boss test map: 23x20, built by tools/mkmap.py into maps/bosstest.vmap.
+# Test fixture for demos/boss-test.demo (issue #97: Woofu phases, fans,
+# pods, mortar barrage, death opens the exit), not a game level. A sky arena
+# (ceilings omitted = sky). Woofu stands in the north half facing the
+# player start, carrying tag 1. Four kennel pods sit by the east
+# and west walls facing in. The north wall has a switch-mode door on tag 1
+# (only the boss's death opens it) and, behind it, a closet ending in the
+# EXIT wall. Lance, launcher, ammo and armour lie by the player start.
+# Textures are the renderer test patterns.
+
+name Boss Test
+sky testsky
+music 0
+par 120
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 dark=0
+legend c floor=test04 ceil=test05 dark=0
+legend D wall=test02 floor=test04 ceil=test05 flags=DOOR mode=switch tag=1
+legend E wall=test03 flags=SOLID|EXIT
+
+layout
+###########E###########
+##########ccc##########
+###########D###########
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#.....................#
+#######################
+end
+
+# ty counts from the south: the last layout row is ty = 0.
+entity PLAYER_START 11 1 90
+entity EYE_OF_RA_LANCE 10 1 0
+entity SCARAB_LAUNCHER 12 1 0
+entity SCARAB_CRATE 13 1 0
+entity SCARAB_PLATE 9 1 0
+entity SUN_SHARD 8 1 0
+entity GOLDEN_SARDINE 7 1 0
+entity GOLDEN_SARDINE 14 1 0
+entity WOOFU 11 12 270 tag=1
+entity BOSS_POD 1 13 0
+entity BOSS_POD 21 13 180
+entity BOSS_POD 1 6 0
+entity BOSS_POD 21 6 180

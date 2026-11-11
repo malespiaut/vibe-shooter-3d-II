@@ -1,0 +1,33 @@
+# Boss test (#97): maps/bosstest.vmap, skill 2. Woofu faces the player
+# start and wakes on tic 0. The player picks up the supplies on the start
+# row (fans fly meanwhile), then `clear` fights with the Scarab Launcher;
+# when the scarabs run out the weapon auto-switches to the Eye of Ra Lance.
+# Woofu flinches into phase 2 at HP 1200 (lid_blast), the first pods open at
+# 700 awake tics and their 4 Chompers die in the clear too. 105 tics after
+# Woofu dies its tag 1 opens the switch-mode door in the north wall (no other
+# way to open it); the player walks through and uses the EXIT wall behind.
+# Ends with kills=5/5 (Woofu + 4 pod Chompers) and exit=1.
+vsdemo 1
+level 8
+skill 2
+seed 0
+map bosstest
+
+expect kills=0
+goto 7 1                # Golden Sardine
+goto 8 1                # Sun Shard
+goto 9 1                # Scarab Plate
+goto 10 1               # Eye of Ra Lance
+goto 12 1               # Scarab Launcher
+goto 13 1               # Scarab crate
+goto 14 1               # Golden Sardine
+goto 11 2
+weapon 5
+face 11 12
+clear 20 6000
+expect health>0
+wait 170
+goto 11 18
+face 90
+use
+expect exit=1

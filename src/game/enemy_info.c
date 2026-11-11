@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "bast.h"
+#include "game/boss.h"
 #include "game/thinker.h"
 
 /* enemies.md Stats. Radius = width / 2. Enemies without an attack row yet
@@ -42,7 +43,9 @@ static const enemy_info_t ENEMIES[] = {
       0, 0, 0, 1,
       ENEMY_SND(shep_sight), ENEMY_SND(shep_windup), ENEMY_SND(baton_hit),
       ENEMY_SND(shep_pain), ENEMY_SND(shep_death) },
-    { BAST_ENT_WOOFU, 2400, 49152, 1498, ATK_NONE, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0,
+    /* Boss: attacks and timings in game/boss.h; pain 0 (scripted flinch only). */
+    { BAST_ENT_WOOFU, 2400, 49152, 1498, ATK_BOSS, 0, 0, BOSS_RANGE, BOSS_FAN_WINDUP, 0, 64, 0,
+      0, 0, 0, 0,
       ENEMY_SND(woofu_sight), 0, ENEMY_SND(fan_fire),
       ENEMY_SND(woofu_pain), ENEMY_SND(woofu_death) },
 };
