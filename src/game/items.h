@@ -4,6 +4,7 @@
 /* Pickups, inventory and player damage (items.md, weapons.md Ammo types,
  * tech.md Skill). Simulation only: the sprite renderer draws pickups. */
 
+#include "engine/render.h"
 #include "game/state.h"
 
 #define HEALTH_CAP 100         /* Fish Snack, Tuna Tin */
@@ -37,6 +38,12 @@ int item_apply(game_state *gs, int type);
  * PICKUP_TRIGGER pickups fire their tag. Called by game_tic after the move,
  * before weapon_tic. */
 void items_touch(game_state *gs);
+
+/* Fills `out` (up to `max`) with every pickup still lying in the world:
+ * untaken pickup_t in spawn order, then live weapon-pickup thinkers in
+ * creation order. Read only (the renderer's view of live state). Returns
+ * the count. */
+int items_render_things(const game_state *gs, render_thing *out, int max);
 
 /* Counts down powerup and invulnerability timers. Called by game_tic. */
 void items_tic(game_state *gs);

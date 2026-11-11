@@ -31,6 +31,7 @@
 #include "engine/video.h"
 #include "game/demo.h"
 #include "game/hud.h"
+#include "game/items.h"
 #include "game/sound.h"
 #include "game/state.h"
 #include "game/topdown.h"
@@ -290,22 +291,27 @@ static int setup(run_t *r)
 /* Draws the current view into the framebuffer. Reads game state only. */
 static void draw(const run_t *r)
 {
-    if (r->opt.topdown)
+    static render_thing things[RENDER_MAX_SPRITES];
+    if (r->opt.topdown) {
         topdown_draw(&r->gs, framebuffer);
-    else {
-        /* Live door state (game/door.h) as the per-cell table the renderer
-         * reads: only DOOR cells are looked at, the rest may stay 0. Door
-         * cells past MAX_DOORS are not tracked by the game (doors_init skips
-         * them), so they keep 0 here and draw closed. */
-        static fix_t door_open[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
-        for (int i = 0; i < r->gs.door_count; i++) {
-            const door_t *d = &r->gs.doors[i];
-            door_open[d->ty * r->map->width + d->tx] = d->pos;
-        }
-        render_set_doors(door_open);
-        render_view(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle, framebuffer);
-        hud_draw(framebuffer, &r->hud, &r->gs);
+        return;
     }
+    /* Live door state (game/door.h) as the per-cell table the renderer
+     * reads: only DOOR cells are looked at, the rest may stay 0. Door
+     * cells past MAX_DOORS are not tracked by the game (doors_init skips
+     * them), so they keep 0 here and draw closed. */
+    static fix_t door_open[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
+    for (int i = 0; i < r->gs.door_count; i++) {
+        const door_t *d = &r->gs.doors[i];
+        door_open[d->ty * r->map->width + d->tx] = d->pos;
+    }
+    render_set_doors(door_open);
+    /* Pickups from live state: a taken one is gone the same tic. The tic is
+     * only read (shimmer frame), so the state hash is unaffected. */
+    const int n = items_render_things(&r->gs, things, RENDER_MAX_SPRITES);
+    render_view_things(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle, things, n,
+                       r->gs.tic, framebuffer);
+    hud_draw(framebuffer, &r->hud, &r->gs);
 }
 
 /* Writes a 16.16 value as decimal world units with 4 decimals (integer
