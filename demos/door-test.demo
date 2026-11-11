@@ -1,0 +1,15 @@
+# Door test: from the start (2,1) facing north, walk to plain door D at
+# (2,4), use it, wait for it to open, walk through into the north hall.
+# tests/test_door.c replays this and asserts the player ends past the door
+# (y > 5); add `expect` lines once the demo commands of #11 land.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+
+in 30 127 0 0 -        # walk north until the closed door stops us (y = 3.75)
+in 1 0 0 0 U           # use: the door is 0.25 ahead, within 0.75
+wait 32                # 32 tics to open fully
+in 25 127 0 0 -        # walk through into the north hall
+wait 10

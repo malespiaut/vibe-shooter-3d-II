@@ -37,7 +37,7 @@ void topdown_draw(const game_state *gs, uint8_t *framebuffer)
         for (int tx = 0; tx < m->width; tx++) {
             const bast_map_cell *c = &m->cells[ty * m->width + tx];
             uint8_t col;
-            if (game_tile_blocks(m, tx, ty))
+            if (game_tile_blocks(gs, tx, ty))
                 col = (uint8_t)(PAL_GRAY + 8 + (c->wall % 4) * 2);
             else
                 col = (uint8_t)(PAL_GRAY + (c->ceil == 0 ? 3 : 1));

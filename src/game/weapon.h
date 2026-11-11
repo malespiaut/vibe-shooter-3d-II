@@ -3,8 +3,9 @@
 
 /* Player weapons (weapons.md Stats, Behaviour notes). Slots 1..7; this
  * module fires 1-4 (Claws, Ankh Pistol, Hairball Scattergun, Sistrum
- * Repeater). Hitscan: DDA ray against blocking tiles (game_tile_blocks, so
- * closed doors block), then the nearest live thinker whose radius the ray
+ * Repeater). Hitscan: DDA ray against blocking tiles (game_tile_blocks with
+ * live door state: a door that is not fully open blocks, an open one lets
+ * shots through), then the nearest live thinker whose radius the ray
  * crosses. All maths is fixed point; spread and damage come from the
  * gameplay RNG. */
 

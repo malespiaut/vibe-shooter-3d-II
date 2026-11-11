@@ -289,6 +289,7 @@ function(add_demo_determinism name)
             -P ${CMAKE_SOURCE_DIR}/tests/determinism.cmake)
 endfunction()
 add_demo_determinism(m1-walk)
+add_demo_determinism(door-test)
 
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)
@@ -353,3 +354,10 @@ target_compile_options(test_render_floor PRIVATE -UNDEBUG)
 add_dependencies(test_render_floor colormap testpattern)
 add_test(NAME render_floor
   COMMAND test_render_floor ${CMAKE_SOURCE_DIR}/maps/m1test.vmap ${ASSETS_GEN})
+
+# Doors and keys on maps/doortest.vmap, plus the door-test demo replay.
+add_executable(test_door tests/test_door.c)
+target_link_libraries(test_door PRIVATE engine)
+target_compile_options(test_door PRIVATE -UNDEBUG)
+add_test(NAME door COMMAND test_door ${CMAKE_SOURCE_DIR}/maps/doortest.vmap
+  ${CMAKE_SOURCE_DIR}/demos/door-test.demo)

@@ -13,6 +13,7 @@
 #include "engine/rng.h"
 #include "game/thinker.h"
 #include "game/weapon.h"
+#include "game/door.h"
 
 #define TICRATE 35
 
@@ -54,6 +55,7 @@ typedef struct {
     int32_t health;
     int32_t armour;
     weapons_t weapons;
+    uint32_t keys; /* KEY_GREEN | KEY_BLUE | KEY_VIOLET (door.h) */
 } player_t;
 
 typedef struct game_state {
@@ -62,6 +64,10 @@ typedef struct game_state {
     const bast_map *map;     /* not owned, never hashed (static data) */
     player_t player;
     thinkers_t things; /* every thinker, creation order */
+    uint8_t prev_buttons;    /* last tic's buttons, for rising edges */
+    int door_count;
+    door_t doors[MAX_DOORS]; /* row-major order of the DOOR cells */
+    int16_t door_index[64 * 64]; /* cell y*width+x -> door, -1 = none */
 } game_state;
 
 /* Resets the state for `map` (borrowed, must outlive the state): tic 0, RNG
@@ -77,17 +83,23 @@ void game_tic(game_state *gs, const ticcmd *cmd);
 /* 64-bit FNV-1a over the canonical serialisation (tech.md State hash):
  * tic, RNG state, player (x, y, angle, momx, momy, health, armour, weapon
  * state, ammo), every thinker in creation order (type, x, y, angle, state,
- * flags, tics, health, target id), kills and kill total. New fields are
- * appended as the systems that own them land. */
+ * flags, tics, health, target id), kills and kill total, then player keys,
+ * previous buttons, door count and every door (state, pos, timer). New
+ * fields are appended as the systems that own them land. */
 uint64_t game_hash(const game_state *gs);
 
 /* True when tile (tx, ty) blocks the player: outside the map, SOLID,
- * BLOCK_ALL, PUSHWALL, or a DOOR that is not START_OPEN (no door motion
- * exists yet, so a door is in its initial state). */
-int game_tile_blocks(const bast_map *map, int tx, int ty);
+ * BLOCK_ALL, PUSHWALL, or a DOOR that is not fully open (live door state). */
+int game_tile_blocks(const game_state *gs, int tx, int ty);
 
 /* True when a circle of radius r at (x, y) overlaps a blocking tile
  * (touching is not overlapping). */
-int game_circle_blocked(const bast_map *map, fix_t x, fix_t y, fix_t r);
+int game_circle_blocked(const game_state *gs, fix_t x, fix_t y, fix_t r);
+
+/* True when the circle overlaps tile (tx, ty) (touching is not overlapping). */
+int game_circle_overlaps_tile(fix_t x, fix_t y, fix_t r, int tx, int ty);
+
+/* Grants key bits (KEY_*). Test and demo use until key pickups land. */
+void game_give_keys(game_state *gs, uint32_t keys);
 
 #endif
