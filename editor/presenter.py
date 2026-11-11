@@ -159,11 +159,19 @@ class Presenter:
         self.view.set_status("filled %d cells" % n)
         self.view.refresh()
 
+    def _busy(self):
+        """True while a stroke or rect drag is held; undo/redo would split it."""
+        return self.stroke or self.drag is not None
+
     def undo(self):
+        if self._busy():
+            return
         if not self.model.undo():
             self.view.set_status("nothing to undo")
 
     def redo(self):
+        if self._busy():
+            return
         if not self.model.redo():
             self.view.set_status("nothing to redo")
 

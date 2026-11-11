@@ -85,6 +85,16 @@ def test_presenter(tmp):
     p.undo()
     assert snapshot(m) == orig
 
+    # Undo/redo are ignored while a stroke is held: the stroke stays one step.
+    p.on_press(2, 2)
+    p.undo()
+    p.redo()
+    p.on_drag(3, 2)
+    p.on_release(3, 2)
+    assert [m.cell(x, 2)["floor"] for x in (2, 3)] == [t06] * 2
+    p.undo()
+    assert snapshot(m) == orig
+
     # Ceiling erase = sky (0); eyedropper picks the layer value.
     p.set_layer("ceil")
     p.set_tool("erase")
