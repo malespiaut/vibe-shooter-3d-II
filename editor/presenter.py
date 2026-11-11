@@ -5,6 +5,7 @@ selection_changed() (the selected cell / entity or their values changed) and
 problems_changed() (the validation list changed); the
 presenter calls them, the view calls the presenter's on_* / action methods
 with cell coordinates (x east, y north, (0, 0) south-west)."""
+import atexit
 import os
 import shutil
 import tempfile
@@ -416,6 +417,7 @@ class Presenter:
     def _work_dir(self):
         if self._tmpdir is None or not os.path.isdir(self._tmpdir):
             self._tmpdir = tempfile.mkdtemp(prefix="vs3d-editor-")
+            atexit.register(shutil.rmtree, self._tmpdir, True)
         return self._tmpdir
 
     def _prepare_launch(self):
