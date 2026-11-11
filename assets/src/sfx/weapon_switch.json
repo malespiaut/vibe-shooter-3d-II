@@ -1,0 +1,40 @@
+{
+  "desc": "Weapon going down and coming up: two quick dry clicks, the second higher.",
+  "seed": 62,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 900,
+      "freq_end": 500,
+      "duty": 0.25,
+      "attack": 0.001,
+      "release": 0.03,
+      "gain": 0.8
+    },
+    {
+      "wave": "noise",
+      "attack": 0.001,
+      "release": 0.02,
+      "lowpass": 4000,
+      "gain": 0.6
+    },
+    {
+      "wave": "square",
+      "start": 0.14,
+      "freq": 1300,
+      "freq_end": 750,
+      "duty": 0.25,
+      "attack": 0.001,
+      "release": 0.035,
+      "gain": 0.8
+    },
+    {
+      "wave": "noise",
+      "start": 0.14,
+      "attack": 0.001,
+      "release": 0.025,
+      "lowpass": 5000,
+      "gain": 0.6
+    }
+  ]
+}

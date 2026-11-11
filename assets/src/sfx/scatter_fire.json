@@ -1,0 +1,45 @@
+{
+  "desc": "Hairball Scattergun: a fat chesty boom, a burst of fuzzy noise and a deep thump that rolls off.",
+  "seed": 54,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 12000,
+      "freq_end": 1500,
+      "attack": 0.001,
+      "decay": 0.08,
+      "sustain": 0.35,
+      "release": 0.38,
+      "lowpass": 6000,
+      "lowpass_end": 400,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 110,
+      "freq_end": 38,
+      "attack": 0.001,
+      "release": 0.3,
+      "lowpass": 400,
+      "gain": 1.1
+    },
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "release": 0.025,
+      "gain": 0.9
+    },
+    {
+      "wave": "noise",
+      "start": 0.04,
+      "freq": 1500,
+      "freq_end": 300,
+      "attack": 0.03,
+      "release": 0.4,
+      "lowpass": 700,
+      "lowpass_end": 200,
+      "gain": 0.5
+    }
+  ]
+}

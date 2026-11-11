@@ -1,0 +1,33 @@
+{
+  "desc": "Ankh Pistol: a bright energy zap falling in pitch over a short crack.",
+  "seed": 53,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 1800,
+      "freq_end": 220,
+      "duty": 0.25,
+      "attack": 0.001,
+      "release": 0.22,
+      "lowpass": 6000,
+      "lowpass_end": 1200,
+      "gain": 0.8
+    },
+    {
+      "wave": "saw",
+      "freq": 900,
+      "freq_end": 110,
+      "attack": 0.001,
+      "release": 0.16,
+      "gain": 0.4
+    },
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "release": 0.04,
+      "lowpass": 8000,
+      "gain": 0.9
+    }
+  ]
+}

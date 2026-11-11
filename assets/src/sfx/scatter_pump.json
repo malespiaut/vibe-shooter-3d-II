@@ -1,0 +1,44 @@
+{
+  "desc": "Pump action: a woody clack back, then a heavier clack forward.",
+  "seed": 55,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 9000,
+      "attack": 0.001,
+      "release": 0.035,
+      "lowpass": 4500,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "freq": 620,
+      "freq_end": 380,
+      "duty": 0.3,
+      "attack": 0.001,
+      "release": 0.04,
+      "lowpass": 2500,
+      "gain": 0.5
+    },
+    {
+      "wave": "noise",
+      "start": 0.15,
+      "freq": 7000,
+      "attack": 0.001,
+      "release": 0.05,
+      "lowpass": 3500,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "start": 0.15,
+      "freq": 420,
+      "freq_end": 230,
+      "duty": 0.3,
+      "attack": 0.001,
+      "release": 0.06,
+      "lowpass": 2000,
+      "gain": 0.7
+    }
+  ]
+}

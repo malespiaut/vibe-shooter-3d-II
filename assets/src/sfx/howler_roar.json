@@ -1,0 +1,66 @@
+{
+  "desc": "Sphinx Howler: a huge growling lion roar with a ringing metal overtone, swelling and falling away.",
+  "seed": 61,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 120,
+      "freq_end": 65,
+      "vibrato": [
+        7,
+        1.0
+      ],
+      "tremolo": [
+        28,
+        0.5
+      ],
+      "attack": 0.08,
+      "decay": 0.3,
+      "sustain": 0.7,
+      "hold": 0.3,
+      "release": 0.5,
+      "lowpass": 1600,
+      "lowpass_end": 450,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 82,
+      "freq_end": 46,
+      "duty": 0.35,
+      "attack": 0.06,
+      "hold": 0.5,
+      "release": 0.6,
+      "lowpass": 500,
+      "gain": 0.7
+    },
+    {
+      "wave": "noise",
+      "freq": 5000,
+      "freq_end": 1200,
+      "tremolo": [
+        28,
+        0.6
+      ],
+      "attack": 0.05,
+      "hold": 0.4,
+      "release": 0.6,
+      "lowpass": 3000,
+      "lowpass_end": 500,
+      "gain": 0.6
+    },
+    {
+      "wave": "triangle",
+      "start": 0.05,
+      "freq": 740,
+      "freq_end": 700,
+      "tremolo": [
+        6,
+        0.5
+      ],
+      "attack": 0.1,
+      "release": 1.0,
+      "gain": 0.25
+    }
+  ]
+}

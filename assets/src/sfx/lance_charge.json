@@ -1,0 +1,44 @@
+{
+  "desc": "Eye of Ra Lance spooling up: a rising shimmering whine that ends bright.",
+  "seed": 59,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 180,
+      "freq_end": 1500,
+      "vibrato": [
+        18,
+        0.4
+      ],
+      "attack": 0.25,
+      "hold": 0.15,
+      "release": 0.04,
+      "lowpass": 900,
+      "lowpass_end": 6000,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "freq": 360,
+      "freq_end": 3000,
+      "duty": 0.25,
+      "tremolo": [
+        24,
+        0.6
+      ],
+      "attack": 0.3,
+      "hold": 0.1,
+      "release": 0.04,
+      "gain": 0.35
+    },
+    {
+      "wave": "noise",
+      "freq": 6000,
+      "attack": 0.35,
+      "release": 0.09,
+      "lowpass": 1500,
+      "lowpass_end": 6000,
+      "gain": 0.25
+    }
+  ]
+}

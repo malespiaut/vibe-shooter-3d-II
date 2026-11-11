@@ -1,0 +1,44 @@
+{
+  "desc": "Hurt cat: a short strangled 'mrow' that breaks into a spitting hiss.",
+  "seed": 63,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 520,
+      "freq_end": 760,
+      "vibrato": [
+        22,
+        0.6
+      ],
+      "attack": 0.01,
+      "hold": 0.08,
+      "release": 0.06,
+      "lowpass": 900,
+      "lowpass_end": 2600,
+      "gain": 0.9
+    },
+    {
+      "wave": "square",
+      "freq": 260,
+      "freq_end": 380,
+      "duty": 0.2,
+      "attack": 0.01,
+      "hold": 0.08,
+      "release": 0.05,
+      "lowpass": 1400,
+      "gain": 0.35
+    },
+    {
+      "wave": "noise",
+      "start": 0.11,
+      "freq": 22050,
+      "attack": 0.01,
+      "decay": 0.05,
+      "sustain": 0.6,
+      "release": 0.2,
+      "lowpass": 9000,
+      "lowpass_end": 4000,
+      "gain": 0.75
+    }
+  ]
+}
