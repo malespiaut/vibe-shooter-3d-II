@@ -301,3 +301,35 @@ target_compile_options(test_render_walls PRIVATE -UNDEBUG)
 add_dependencies(test_render_walls colormap testpattern)
 add_test(NAME render_walls
   COMMAND test_render_walls ${CMAKE_SOURCE_DIR}/maps/m1test.vmap ${ASSETS_GEN})
+
+# Fonts (docs/design/hud.md Fonts): the committed indexed sheets ->
+# assets/gen/fonts/*.tex (same conversion as tools/build.d/50-fonts.sh), so
+# the 2D drawing test and tools have them after a plain build.
+set(FONT_TEXES)
+foreach(f small menu bigdigits)
+  add_custom_command(
+    OUTPUT ${ASSETS_GEN}/fonts/${f}.tex
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${ASSETS_GEN}/fonts
+    COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+            BAST_PALETTE=${ASSETS_GEN}/palette.bin
+            ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/png2tex.py
+            ${CMAKE_SOURCE_DIR}/assets/src/fonts/${f}.png ${ASSETS_GEN}/fonts/${f}.tex
+    DEPENDS bast ${ASSETS_GEN}/palette.bin ${CMAKE_SOURCE_DIR}/assets/src/fonts/${f}.png
+            ${CMAKE_SOURCE_DIR}/tools/png2tex.py ${CMAKE_SOURCE_DIR}/tools/bast.py
+    COMMENT "Building font ${f}.tex")
+  list(APPEND FONT_TEXES ${ASSETS_GEN}/fonts/${f}.tex)
+endforeach()
+add_custom_target(fonts_tex ALL DEPENDS ${FONT_TEXES})
+add_dependencies(fonts_tex palette)
+
+# 2D drawing (issue #44): ctest draw2d, and
+# build/draw2d_specimen <assets/gen dir> <out.png> for the specimen screen.
+add_executable(test_draw2d tests/test_draw2d.c)
+target_link_libraries(test_draw2d PRIVATE engine)
+target_compile_options(test_draw2d PRIVATE -UNDEBUG)
+add_dependencies(test_draw2d fonts_tex)
+add_test(NAME draw2d COMMAND test_draw2d ${ASSETS_GEN} ${PALETTE_GPL})
+
+add_executable(draw2d_specimen tools/draw2d_specimen.c)
+target_link_libraries(draw2d_specimen PRIVATE engine)
+add_dependencies(draw2d_specimen fonts_tex colormap)
