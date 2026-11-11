@@ -5,6 +5,8 @@ Sources (assets/src/hud/):
   legend.txt      shared character -> palette entry name legend
   *.pix           hand-drawn icons as explicit pixel grids (format below)
   statusbar.json  panel layout: hud.md boxes in panel-local coordinates
+  <sub>/*.pix     icon groups (e.g. faces/): written to <out>/<sub>/<name>.tex;
+                  an optional <sub>/legend.txt adds to / overrides the shared legend
 
 .pix format:
   # comment
@@ -322,6 +324,19 @@ def build(src, pal):
         if name in sprites:
             raise HudError("%s: duplicate name %s" % (path, name))
         sprites[name] = img
+    for sub in sorted(os.listdir(src)):
+        d = os.path.join(src, sub)
+        if not os.path.isdir(d):
+            continue
+        leg = dict(legend)
+        if os.path.isfile(os.path.join(d, "legend.txt")):
+            leg.update(load_legend(os.path.join(d, "legend.txt"), pal))
+        for path in sorted(glob.glob(os.path.join(d, "*.pix"))):
+            name, img = load_pix(path, leg, pal)
+            key = sub + "/" + name
+            if key in sprites:
+                raise HudError("%s: duplicate name %s" % (path, name))
+            sprites[key] = img
     with open(os.path.join(src, "statusbar.json")) as f:
         layout = json.load(f)
     out = {"statusbar": build_panel(layout, pal, sprites)}
@@ -345,7 +360,7 @@ def mockup(assets, layout, keys, weapon):
 
 
 def sheet(assets, pal):
-    names = [k for k in sorted(assets) if k != "statusbar"]
+    names = [k for k in sorted(assets) if k != "statusbar" and "/" not in k]
     cell_w, cell_h, cols = 52, 24, 6
     rows = (len(names) + cols - 1) // cols
     s = Image8(cols * cell_w + 4, rows * cell_h + 4, pal("sand_10"))
@@ -374,6 +389,7 @@ def main(argv=None):
             shutil.rmtree(args.out)
         os.makedirs(args.out, exist_ok=True)
         for name, img in sorted(assets.items()):
+            os.makedirs(os.path.dirname(os.path.join(args.out, name)), exist_ok=True)
             img.to_tex().save(os.path.join(args.out, name + ".tex"))
             img.to_pil(pal).save(os.path.join(args.out, name + ".png"),
                                  transparency=T)

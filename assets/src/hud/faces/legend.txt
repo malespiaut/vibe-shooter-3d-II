@@ -1,0 +1,33 @@
+# Face legend for assets/src/hud/faces/*.pix (Mau, hud.md "Cat face").
+# Adds to / overrides the shared assets/src/hud/legend.txt. Ramps dark -> light,
+# light from the top-left; fur for Mau, green eyes, pink nose/tongue/inner ear.
+# fur (ginger tabby)
+0  fur_01
+1  fur_03
+2  fur_05
+3  fur_07
+4  fur_09
+5  fur_11
+# inner ear, nose, tongue
+p  pink_03
+P  pink_05
+Q  pink_07
+R  pink_09
+# eyes
+k  green_02
+E  green_05
+F  green_08
+G  green_10
+# cream muzzle and whiskers
+w  beige_07
+x  beige_10
+y  beige_13
+z  beige_15
+# open mouth
+A  red_03
+# sunglasses (god mode)
+s  steel_02
+S  steel_06
+W  steel_13
+# pupils, mouth line: near-black, never pure black
+K  steel_00
