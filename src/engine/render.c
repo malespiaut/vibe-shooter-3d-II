@@ -2,9 +2,11 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "engine/colormap.h"
+#include "engine/files.h"
 #include "engine/video.h"
 
 /* Floats here are projection maths only (tech.md Simulation: Gameplay
@@ -43,20 +45,22 @@ int render_cell_is_wall(const bast_map_cell *c)
 
 static bast_tex *load_one(const char *dir, const char *name)
 {
+    /* Through files.c (tech.md "Archives"): game.pak first, loose fallback. */
     static const char *const sub[] = { "textures", "test" };
-    char path[768];
+    char path[256];
     for (size_t i = 0; i < sizeof sub / sizeof sub[0]; i++) {
-        snprintf(path, sizeof path, "%s/%s/%s.tex", dir, sub[i], name);
-        FILE *f = fopen(path, "rb");
-        if (!f)
+        snprintf(path, sizeof path, "%s/%s.tex", sub[i], name);
+        int64_t n = 0;
+        uint8_t *data = files_read(path, &n);
+        if (!data)
             continue;
-        fclose(f);
-        bast_tex *t = bast_tex_load(path);
+        bast_tex *t = bast_tex_from_memory(data, n);
+        free(data);
         if (!t)
-            snprintf(err_buf, sizeof err_buf, "%s: %s", path, bast_error());
+            snprintf(err_buf, sizeof err_buf, "%s/%s: %s", dir, path, bast_error());
         else if (t->width != TEX_SIZE || t->height != TEX_SIZE) {
-            snprintf(err_buf, sizeof err_buf, "%s: wall textures are %dx%d, got %dx%d", path,
-                     TEX_SIZE, TEX_SIZE, t->width, t->height);
+            snprintf(err_buf, sizeof err_buf, "%s/%s: wall textures are %dx%d, got %dx%d", dir,
+                     path, TEX_SIZE, TEX_SIZE, t->width, t->height);
             bast_tex_free(t);
             t = NULL;
         }
@@ -70,6 +74,10 @@ static bast_tex *load_one(const char *dir, const char *name)
 int render_init(const bast_map *map, const char *assets_dir)
 {
     render_shutdown();
+    if (!files_init(assets_dir)) {
+        snprintf(err_buf, sizeof err_buf, "%s", files_error());
+        return 0;
+    }
     uint8_t used[RENDER_MAX_TEXTURES] = { 0 };
     for (int i = 0; i < map->width * map->height; i++)
         if (render_cell_is_wall(&map->cells[i]))

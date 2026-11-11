@@ -236,8 +236,9 @@ static int setup(run_t *r)
         fprintf(stderr, "game: %s: %s\n", map_path, bast_error());
         return 0;
     }
-    /* Wall textures, only needed by the 3D view. */
-    if (!o->topdown && !render_init(r->map, VS3D_ASSETS_DIR)) {
+    /* Wall textures, only needed when the 3D view draws: in a window, or
+     * headless with --frames-out. A headless run without frames never draws. */
+    if (!o->topdown && (!o->headless || o->frames_dir) && !render_init(r->map, VS3D_ASSETS_DIR)) {
         fprintf(stderr, "game: %s\n", render_error());
         return 0;
     }
