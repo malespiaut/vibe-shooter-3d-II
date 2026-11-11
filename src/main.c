@@ -8,20 +8,28 @@
  *   game --headless --demo <file.demo> [--frames-out <dir>] [--frame-every N] ...
  *
  * Flags and exit codes: docs/design/roadmap.md (Verification tooling
- * contract). Window mode: WASD / arrows move (left/right arrows turn), Shift
- * runs, E / Space uses (after a death: restarts), mouse X turns; quits on Esc or window close. The last stdout line of
- * every run is the STATS line.
+ * contract). With no --warp/--map/--record (and in demos with `start
+ * title`) the run begins on the title screen and goes through the front-end
+ * flow (game/flow.h, hud.md Flow); otherwise it starts straight in play.
+ * Window mode: WASD / arrows move (left/right arrows turn), Shift runs, mouse
+ * X turns, left click / Ctrl fires, E / Space uses (after a death: restarts), 1-7 select weapons, Esc
+ * opens the pause menu; window close quits. The last stdout line of every
+ * run is the STATS line.
  *
- * Sound: after every tic the game's sound events (game/sound.h) go to the
- * mixer in window mode (distance volume and pan from the player), nowhere in
- * headless mode, and with --sound-log to a file, one line per event:
- * `tic name x y` (tic = the tic that made it, 0-based; x y in world units
- * with 4 decimals, `- -` for local player sounds).
+ * Sound: after every game tic the game's sound events (game/sound.h) go to
+ * the mixer in window mode (distance volume and pan from the player),
+ * nowhere in headless mode, and with --sound-log to a file, one line per
+ * event: `tic name x y` (tic = the tic that made it, 0-based; x y in world
+ * units with 4 decimals, `- -` for local player sounds). Menu ticks and
+ * paused tics run no game tic and drain nothing.
  *
- * Music (game/jukebox.h): the level's track (audio.md, Music) starts at tic
- * 0 and again on a level restart, at MUSIC_GAME_VOLUME; --sound-log gets `tic music <name>` on every
- * change. A track that is not composed yet logs `music: <name> missing`
- * once and plays silence. */
+ * Music (game/jukebox.h, audio.md Music): `title` on the title and menu
+ * screens; the level's track in play, from the level start and again on a
+ * New Game, Restart Level or death restart; the pause menu (and Controls
+ * opened from it) keeps the level track going. All at MUSIC_GAME_VOLUME;
+ * --sound-log gets `tic music <name>` on every change (tic = the level's
+ * tic). A track that is not composed yet logs `music: <name> missing` once
+ * and plays silence. */
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -39,6 +47,7 @@
 #include "game/ai.h"
 #include "game/demo.h"
 #include "game/hud.h"
+#include "game/flow.h"
 #include "game/fx.h"
 #include "game/items.h"
 #include "game/jukebox.h"
@@ -208,6 +217,14 @@ typedef struct {
     int level, skill;
     uint32_t seed;
     game_state gs;
+    game_state entry; /* level entry state, for Restart Level */
+    flow_t flow;
+    flow_world world;
+    flow_gfx *gfx;   /* menus; loaded when anything is drawn */
+    uint32_t run_tic; /* tics run, menus included (frames, --max-tics) */
+    int exit_flow;    /* main menu Quit chosen */
+    const char *music; /* track last asked of the jukebox (NULL: stopped) */
+    int music_set;     /* music is valid */
     FILE *hash_log;
     FILE *sound_log;
     int audio;                      /* window mode: sounds go to the mixer */
@@ -215,7 +232,6 @@ typedef struct {
     demo_rec rec;
     hud_state hud; /* render side: timers, face (game/hud.h) */
     int status;
-    uint32_t tics; /* tics run, over restarts: frame names, --max-tics */
 } run_t;
 
 /* Map choice: --map, else --warp N (maps/levelN.vmap), else the demo's
@@ -287,6 +303,13 @@ static int setup(run_t *r)
         fprintf(stderr, "game: %s/fonts/menu.tex: cannot load\n", VS3D_ASSETS_DIR);
         return 0;
     }
+    if (!o->headless || o->frames_dir) {
+        r->gfx = flow_gfx_load(VS3D_ASSETS_DIR);
+        if (!r->gfx) {
+            fprintf(stderr, "game: %s\n", flow_gfx_error());
+            return 0;
+        }
+    }
     if (o->hash_log) {
         r->hash_log = fopen(o->hash_log, "w");
         if (!r->hash_log) {
@@ -308,6 +331,17 @@ static int setup(run_t *r)
     demo_rec_init(&r->rec);
     game_init(&r->gs, r->map, r->level, r->skill, r->seed);
     hud_state_init(&r->hud, &r->gs, o->god);
+    /* Start screen: --warp, --map and --record jump straight into play;
+     * else the demo's `start` line (default level); else the title. */
+    int screen = FLOW_TITLE;
+    if (o->warp || o->map_path || o->record_path)
+        screen = FLOW_PLAY;
+    else if (r->demo)
+        screen = r->demo->start;
+    else if (o->headless)
+        screen = FLOW_PLAY; /* --headless --max-tics N: the M1 smoke run */
+    r->world = (flow_world){ &r->gs, &r->entry, r->map, r->level, r->seed };
+    flow_init(&r->flow, screen, &r->world);
     return 1;
 }
 
@@ -319,50 +353,58 @@ static int setup(run_t *r)
 static void draw(const run_t *r)
 {
     static render_thing things[RENDER_MAX_SPRITES];
-    if (r->opt.topdown) {
-        topdown_draw(&r->gs, framebuffer);
-        return;
+    int screen = r->flow.screen;
+    if (screen == FLOW_PLAY || screen == FLOW_PAUSE) {
+        if (r->opt.topdown)
+            topdown_draw(&r->gs, framebuffer);
+        else {
+            /* Live door state (game/door.h) as the per-cell table the
+             * renderer reads: only DOOR cells are looked at, the rest may
+             * stay 0. Door cells past MAX_DOORS are not tracked by the game
+             * (doors_init skips them), so they keep 0 here and draw closed. */
+            static fix_t door_open[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
+            for (int i = 0; i < r->gs.door_count; i++) {
+                const door_t *d = &r->gs.doors[i];
+                door_open[d->ty * r->map->width + d->tx] = d->pos;
+            }
+            render_set_doors(door_open);
+            /* Live pushwalls (game/tags.h): the block is pos along (dx, dy)
+             * from its current tile. Live darkness: dark or dark_alt. */
+            static render_pushwall pws[MAX_PUSHWALLS];
+            for (int i = 0; i < r->gs.pushwall_count; i++) {
+                const pushwall_t *pw = &r->gs.pushwalls[i];
+                pws[i].x = fix_from_int(pw->tx) + pw->dx * pw->pos;
+                pws[i].y = fix_from_int(pw->ty) + pw->dy * pw->pos;
+                pws[i].tex = pw->wall;
+            }
+            render_set_pushwalls(pws, r->gs.pushwall_count);
+            static uint8_t dark[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
+            for (int ty = 0; ty < r->map->height; ty++)
+                for (int tx = 0; tx < r->map->width; tx++)
+                    dark[ty * r->map->width + tx] = (uint8_t)game_cell_dark(&r->gs, tx, ty);
+            render_set_dark(dark);
+            /* Pickups from live state: a taken one is gone the same tic. The
+             * tic is only read (shimmer frame), so the state hash is
+             * unaffected. Under pause the tic is frozen, so are the shimmer,
+             * the enemy animation and the FX. */
+            int n = items_render_things(&r->gs, things, RENDER_MAX_SPRITES);
+            /* Enemies, corpses included: animation from live AI state (read only). */
+            n += ai_render_things(&r->gs, things + n, RENDER_MAX_SPRITES - n);
+            /* Projectiles, explosions and impact effects (game/fx.h), read only. */
+            n = fx_render_things(&r->gs, things, n, RENDER_MAX_SPRITES);
+            render_view_things_eye(r->map, r->gs.player.x, r->gs.player.y,
+                                   r->gs.player.angle, game_eye_height(&r->gs), things, n,
+                                   r->gs.tic, framebuffer);
+            hud_draw(framebuffer, &r->hud, &r->gs);
+            if (screen == FLOW_PLAY && game_restart_ready(&r->gs) && menu_font) {
+                const int x = (VIEW_W - text_width(menu_font, DEATH_PROMPT)) / 2;
+                const int y = (VIEW_H - menu_font->cell_h) / 2;
+                draw_text(framebuffer, menu_font, x, y, DEATH_PROMPT, NULL);
+            }
+        }
     }
-    /* Live door state (game/door.h) as the per-cell table the renderer
-     * reads: only DOOR cells are looked at, the rest may stay 0. Door
-     * cells past MAX_DOORS are not tracked by the game (doors_init skips
-     * them), so they keep 0 here and draw closed. */
-    static fix_t door_open[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
-    for (int i = 0; i < r->gs.door_count; i++) {
-        const door_t *d = &r->gs.doors[i];
-        door_open[d->ty * r->map->width + d->tx] = d->pos;
-    }
-    render_set_doors(door_open);
-    /* Live pushwalls (game/tags.h): the block is pos along (dx, dy) from its
-     * current tile. Live darkness: dark or dark_alt. */
-    static render_pushwall pws[MAX_PUSHWALLS];
-    for (int i = 0; i < r->gs.pushwall_count; i++) {
-        const pushwall_t *pw = &r->gs.pushwalls[i];
-        pws[i].x = fix_from_int(pw->tx) + pw->dx * pw->pos;
-        pws[i].y = fix_from_int(pw->ty) + pw->dy * pw->pos;
-        pws[i].tex = pw->wall;
-    }
-    render_set_pushwalls(pws, r->gs.pushwall_count);
-    static uint8_t dark[BAST_MAP_MAX_DIM * BAST_MAP_MAX_DIM];
-    for (int ty = 0; ty < r->map->height; ty++)
-        for (int tx = 0; tx < r->map->width; tx++)
-            dark[ty * r->map->width + tx] = (uint8_t)game_cell_dark(&r->gs, tx, ty);
-    render_set_dark(dark);
-    /* Pickups from live state: a taken one is gone the same tic. The tic is
-     * only read (shimmer frame), so the state hash is unaffected. */
-    int n = items_render_things(&r->gs, things, RENDER_MAX_SPRITES);
-    /* Enemies, corpses included: animation from live AI state (read only). */
-    n += ai_render_things(&r->gs, things + n, RENDER_MAX_SPRITES - n);
-    /* Projectiles, explosions and impact effects (game/fx.h), read only. */
-    n = fx_render_things(&r->gs, things, n, RENDER_MAX_SPRITES);
-    render_view_things_eye(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle,
-                           game_eye_height(&r->gs), things, n, r->gs.tic, framebuffer);
-    hud_draw(framebuffer, &r->hud, &r->gs);
-    if (game_restart_ready(&r->gs) && menu_font) {
-        const int x = (VIEW_W - text_width(menu_font, DEATH_PROMPT)) / 2;
-        const int y = (VIEW_H - menu_font->cell_h) / 2;
-        draw_text(framebuffer, menu_font, x, y, DEATH_PROMPT, NULL);
-    }
+    /* Pause darkens the view and the status bar in place. */
+    flow_draw(&r->flow, r->gfx, framebuffer);
 }
 
 /* Writes a 16.16 value as decimal world units with 4 decimals (integer
@@ -412,43 +454,59 @@ static void drain_sounds(run_t *r)
     }
 }
 
-/* (Re)starts the current level's track; no track for the level: silence.
- * Called on level start and on level restart (step), with the level's
- * tic, which a restart rewinds to 0. */
-static void level_music(const run_t *r)
+/* Music for the current screen (audio.md Music): the level's track in
+ * play and pause (and Controls opened from pause), `title` on every other
+ * screen. Only a change of track, or `restart` (level (re)started), calls
+ * the jukebox, so pausing does not restart the level track. */
+static void update_music(run_t *r, int restart)
 {
-    const char *name = music_track_for_level(r->level);
-    if (name)
-        jukebox_play(name, r->gs.tic);
+    const int screen = r->flow.screen;
+    const int in_level = screen == FLOW_PLAY || screen == FLOW_PAUSE ||
+                         (screen == FLOW_CONTROLS && r->flow.back == FLOW_PAUSE);
+    const char *want = in_level ? music_track_for_level(r->level) : "title";
+    if (!restart && r->music_set && want == r->music)
+        return;
+    r->music = want;
+    r->music_set = 1;
+    if (want)
+        jukebox_play(want, r->gs.tic);
     else
         jukebox_stop(r->gs.tic);
 }
 
-/* Runs one tic with `cmd`; logs the hash, records, dumps a frame. */
-static int step(run_t *r, const ticcmd *cmd)
+/* Runs one tic of the flow with menu key `key` and `cmd` (a game tic when
+ * the screen is PLAY); logs the hash, records game tics, dumps a frame.
+ * Frames are named by the run tic, which equals the game tic for runs that
+ * start in play. */
+static int step(run_t *r, int key, const ticcmd *cmd)
 {
     const uint32_t restarts = r->gs.restarts;
-    game_tic(&r->gs, cmd);
-    r->tics++;
-    /* A restart rewinds the event ring (game_init): the HUD starts over too,
-     * with no stale messages, flashes or dead face. */
-    if (r->gs.restarts != restarts) {
+    int res = flow_tic(&r->flow, key, &r->world, cmd);
+    r->run_tic++;
+    /* New Game / Restart Level / a death restart (game_init rewinds the
+     * event ring): the HUD starts over, fresh face, no stale flashes, and
+     * the level track starts over with the level. */
+    const int restarted = (res & FLOW_NEWLEVEL) || r->gs.restarts != restarts;
+    if (restarted)
         hud_state_init(&r->hud, &r->gs, r->opt.god);
-        level_music(r); /* the track starts over with the level */
-    }
-    hud_tic(&r->hud, &r->gs);
-    drain_sounds(r);
+    update_music(r, restarted);
+    if (res & FLOW_TICKED) /* the HUD only advances with the game (pause freezes it) */
+        hud_tic(&r->hud, &r->gs);
+    if (res & FLOW_TICKED) /* the queue holds the last game tic's events */
+        drain_sounds(r);
+    if (res & FLOW_EXIT)
+        r->exit_flow = 1;
     if (r->hash_log)
         fprintf(r->hash_log, "%016" PRIx64 "\n", game_hash(&r->gs));
-    if (r->opt.record_path && !demo_rec_add(&r->rec, cmd)) {
+    if ((res & FLOW_TICKED) && r->opt.record_path && !demo_rec_add(&r->rec, cmd)) {
         fprintf(stderr, "game: out of memory recording\n");
         return 0;
     }
-    /* Frames are named by tics run, which keep counting across a restart
-     * (the level's own tic goes back to 0). */
-    if (r->opt.frames_dir && r->tics % (uint32_t)r->opt.frame_every == 0) {
+    /* Frames are named by run tic, which keeps counting across menus and
+     * restarts (the level's own tic goes back to 0). */
+    if (r->opt.frames_dir && r->run_tic % (uint32_t)r->opt.frame_every == 0) {
         char path[1024];
-        snprintf(path, sizeof path, "%s/frame_%06" PRIu32 ".png", r->opt.frames_dir, r->tics);
+        snprintf(path, sizeof path, "%s/frame_%06" PRIu32 ".png", r->opt.frames_dir, r->run_tic);
         draw(r);
         if (!png_write_indexed(path, framebuffer, SCREEN_W, SCREEN_H, colormap_palette())) {
             fprintf(stderr, "game: %s: cannot write\n", path);
@@ -459,10 +517,12 @@ static int step(run_t *r, const ticcmd *cmd)
 }
 
 /* Input for the next tic from the demo. 0 = stop (end, failure). */
-static int demo_input(run_t *r, ticcmd *cmd)
+static int demo_input(run_t *r, ticcmd *cmd, int *key)
 {
     char err[256] = "";
+    r->demo->screen = r->flow.screen;
     int s = demo_next(r->demo, &r->gs, cmd, err, sizeof err);
+    *key = r->demo->key;
     if (s == DEMO_FAIL) {
         fprintf(stderr, "game: %s: %s\n", r->opt.demo_path, err);
         r->status = EXIT_EXPECT;
@@ -472,18 +532,19 @@ static int demo_input(run_t *r, ticcmd *cmd)
 
 static int tic_limit_hit(const run_t *r)
 {
-    return r->opt.max_tics && (long)r->tics >= r->opt.max_tics;
+    return r->opt.max_tics && (long)r->run_tic >= r->opt.max_tics;
 }
 
 static void run_headless(run_t *r)
 {
     jukebox_init(VS3D_MUSIC_DIR, 0, r->sound_log); /* log only, no mixer */
-    level_music(r);
-    while (!tic_limit_hit(r)) {
+    update_music(r, 1);
+    while (!tic_limit_hit(r) && !r->exit_flow) {
         ticcmd cmd = { 0, 0, 0, 0 };
-        if (r->demo && !demo_input(r, &cmd))
+        int key = FKEY_NONE;
+        if (r->demo && !demo_input(r, &cmd, &key))
             return;
-        if (!step(r, &cmd)) {
+        if (!step(r, key, &cmd)) {
             r->status = EXIT_ERROR;
             return;
         }
@@ -499,6 +560,28 @@ static void run_headless(run_t *r)
     }
 }
 
+/* Window keys -> menu keys. Every key counts as "any" on the title. */
+static int menu_key(int key)
+{
+    switch (key) {
+    case PKEY_UP:
+    case 'w':
+        return FKEY_UP;
+    case PKEY_DOWN:
+    case 's':
+        return FKEY_DOWN;
+    case PKEY_ENTER:
+    case PKEY_SPACE:
+        return FKEY_ENTER;
+    case PKEY_ESCAPE:
+        return FKEY_ESC;
+    default:
+        return FKEY_ANY;
+    }
+}
+
+#define KEY_QUEUE 8
+
 static void run_window(run_t *r)
 {
     if (!platform_init("Vibe Shooter 3D II", 3)) {
@@ -506,8 +589,8 @@ static void run_window(run_t *r)
         r->status = EXIT_ERROR;
         return;
     }
-    /* Mixer and every effect before the device opens. A missing sound is
-     * not fatal: that effect stays silent. */
+    /* Mixer and every effect before the device opens. A missing sound or
+     * song is not fatal: it stays silent. */
     mixer_init(VS3D_ASSETS_DIR);
     music_attach();
     music_set_volume(MUSIC_GAME_VOLUME);
@@ -521,11 +604,14 @@ static void run_window(run_t *r)
         r->audio = 1;
     else
         fprintf(stderr, "game: audio disabled: %s\n", platform_error());
-    level_music(r);
+    update_music(r, 1);
     platform_set_relative_mouse(true);
 
     uint8_t held[PKEY_COUNT] = { 0 };
+    int mouse_fire = 0;
     int mouse_dx = 0;
+    int keyq[KEY_QUEUE], keyq_len = 0; /* menu keys, one consumed per tic */
+    int weapon_key = 0;                /* 1-7 pressed since the last tic */
     uint64_t start = platform_ticks_ms();
     uint32_t tics_done = 0; /* tics run since `start` */
 
@@ -533,15 +619,28 @@ static void run_window(run_t *r)
     while (running) {
         plat_event ev;
         while (platform_poll_event(&ev)) {
-            if (ev.type == PEV_QUIT)
+            if (ev.type == PEV_QUIT) {
                 running = 0;
-            else if (ev.type == PEV_KEY_DOWN && ev.key == PKEY_ESCAPE)
-                running = 0;
-            else if ((ev.type == PEV_KEY_DOWN || ev.type == PEV_KEY_UP) && ev.key > 0 &&
-                     ev.key < PKEY_COUNT)
+            } else if ((ev.type == PEV_KEY_DOWN || ev.type == PEV_KEY_UP) && ev.key > 0 &&
+                       ev.key < PKEY_COUNT) {
                 held[ev.key] = ev.type == PEV_KEY_DOWN;
-            else if (ev.type == PEV_MOUSE_MOVE)
+                if (ev.type == PEV_KEY_DOWN) {
+                    int mk = menu_key(ev.key);
+                    /* Auto-repeat only scrolls menus. */
+                    if ((!ev.repeat || mk == FKEY_UP || mk == FKEY_DOWN) && keyq_len < KEY_QUEUE)
+                        keyq[keyq_len++] = mk;
+                    if (ev.key >= '1' && ev.key <= '7')
+                        weapon_key = ev.key - '0';
+                }
+            } else if (ev.type == PEV_MOUSE_DOWN || ev.type == PEV_MOUSE_UP) {
+                if (ev.button == PMOUSE_LEFT)
+                    mouse_fire = ev.type == PEV_MOUSE_DOWN;
+                if (ev.type == PEV_MOUSE_DOWN && r->flow.screen == FLOW_TITLE &&
+                    keyq_len < KEY_QUEUE)
+                    keyq[keyq_len++] = FKEY_ANY;
+            } else if (ev.type == PEV_MOUSE_MOVE) {
                 mouse_dx += ev.dx;
+            }
         }
 
         /* Whole tics owed at 35 Hz since start. After a stall, drop the
@@ -552,16 +651,22 @@ static void run_window(run_t *r)
         }
         while (running && tics_done < due) {
             ticcmd cmd = { 0, 0, 0, 0 };
+            int key = FKEY_NONE;
             if (tic_limit_hit(r)) {
                 running = 0;
                 break;
             }
             if (r->demo) {
-                if (!demo_input(r, &cmd)) {
+                if (!demo_input(r, &cmd, &key)) {
                     running = 0;
                     break;
                 }
             } else {
+                if (keyq_len > 0) {
+                    key = keyq[0];
+                    keyq_len--;
+                    memmove(keyq, keyq + 1, (size_t)keyq_len * sizeof keyq[0]);
+                }
                 int fwd = 0, side = 0, turn = 0;
                 if (held['w'] || held[PKEY_UP])
                     fwd += TICCMD_MAX;
@@ -586,14 +691,28 @@ static void run_window(run_t *r)
                 cmd.turn = (int16_t)turn;
                 if (held[PKEY_LSHIFT] || held[PKEY_RSHIFT])
                     cmd.buttons |= BT_RUN;
+                if (mouse_fire || held[PKEY_LCTRL] || held[PKEY_RCTRL])
+                    cmd.buttons |= BT_FIRE;
                 if (held['e'] || held[PKEY_SPACE])
                     cmd.buttons |= BT_USE; /* opens doors; dead, restarts */
+                if (weapon_key)
+                    cmd.buttons |= (uint8_t)(weapon_key << BT_WEAPON_SHIFT);
+                weapon_key = 0;
             }
-            if (!step(r, &cmd)) {
+            if (!step(r, key, &cmd)) {
                 r->status = EXIT_ERROR;
                 running = 0;
                 break;
             }
+            {
+                mixer_sound *ms = r->flow.sound == FSND_MOVE     ? r->sfx[SFX_menu_move]
+                                  : r->flow.sound == FSND_SELECT ? r->sfx[SFX_menu_select]
+                                                                 : NULL;
+                if (ms)
+                    mixer_start(ms, MIXER_SOURCE_NONE, MIXER_VOL_MAX, MIXER_PAN_CENTER);
+            }
+            if (r->exit_flow)
+                running = 0;
             tics_done++;
             if (r->gs.exit) { /* an EXIT cell ends the level run */
                 running = 0;
@@ -610,7 +729,7 @@ static void run_window(run_t *r)
     mixer_shutdown();
 
     if (r->opt.record_path) {
-        if (demo_rec_write(&r->rec, r->opt.record_path, r->level, r->skill, 0, r->map_name))
+        if (demo_rec_write(&r->rec, r->opt.record_path, r->level, r->gs.skill, 0, r->map_name))
             fprintf(stderr, "game: recorded %" PRIu32 " tics to %s\n", r->gs.tic,
                     r->opt.record_path);
         else {
@@ -666,6 +785,7 @@ int main(int argc, char **argv)
     render_shutdown();
     hud_shutdown();
     font_free(menu_font);
+    flow_gfx_free(r.gfx);
     bast_map_free(r.map);
     return r.status;
 }

@@ -28,4 +28,12 @@ const uint8_t *colormap_palette(void);
 /* 256-byte row r; r is clamped to 0..COLORMAP_ROWS-1. */
 const uint8_t *colormap_row(int r);
 
+/* Shade remap that also dims fullbright entries, for the darkened view and
+ * backdrop behind menus (art bible, PR #136/#180). out[i] = row r of lit(i):
+ * lit(i) is i, except for fullbright entries, where it is the Oklab-nearest
+ * non-reserved, non-fullbright, non-transparent entry (ties: lowest index),
+ * computed once by colormap_load(). After colormap_set() alone, lit is the
+ * identity. */
+void colormap_dim_remap(int r, uint8_t out[256]);
+
 #endif

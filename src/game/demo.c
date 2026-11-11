@@ -2,6 +2,7 @@
 
 #include "game/demo_combat.h"
 #include "game/demo_nav.h"
+#include "game/flow.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -277,6 +278,26 @@ static int cmd_clear(demo_t *d, line_ctx *c)
     return 1;
 }
 
+/* key <up|down|enter|esc|any>: one tic pressing a menu key (game/flow.h). */
+static int cmd_key(demo_t *d, line_ctx *c)
+{
+    static const char *const NAMES[] = { "up", "down", "enter", "esc", "any" };
+    static const uint8_t KEYS[] = { FKEY_UP, FKEY_DOWN, FKEY_ENTER, FKEY_ESC, FKEY_ANY };
+    if (!want_args(c, 1))
+        return 0;
+    for (int i = 0; i < 5; i++) {
+        if (strcmp(c->tok[1], NAMES[i]) == 0) {
+            demo_cmd *cmd = push(d, c, DEMO_CMD_IN);
+            if (!cmd)
+                return 0;
+            cmd->n = 1;
+            cmd->key = KEYS[i];
+            return 1;
+        }
+    }
+    return fail(c, "key: '%s' is not one of up down enter esc any", c->tok[1]);
+}
+
 /* Stats `expect` can read: the STATS line fields that live in game state.
  * kills/items/secrets compare the first number of the X/Y pair. items reads
  * gs->items_got (issue #64). Counters
@@ -284,7 +305,7 @@ static int cmd_clear(demo_t *d, line_ctx *c)
  * them (main.c print_stats); they move here when their systems land.
  * level and god are run options, not game state, and are not offered. */
 static const char *const STATS[] = { "tic", "health", "armor", "kills",
-                                     "items", "secrets", "exit", "tile" };
+                                     "items", "secrets", "exit", "tile", "screen" };
 
 static int32_t stat_value(const game_state *gs, const char *name)
 {
@@ -324,7 +345,7 @@ static int cmd_expect(demo_t *d, line_ctx *c)
         known |= strcmp(stat, STATS[i]) == 0;
     if (!known)
         return fail(c, "expect: unknown stat '%s' (tic health armor kills items secrets exit "
-                       "tile)", stat);
+                       "tile screen)", stat);
 
     static const struct {
         const char *text;
@@ -347,7 +368,16 @@ static int cmd_expect(demo_t *d, line_ctx *c)
     demo_cmd tmp = { 0 };
     tmp.op = op;
     strcpy(tmp.name, stat);
-    if (strcmp(stat, "tile") == 0) {
+    if (strcmp(stat, "screen") == 0) {
+        /* expect screen=title: the flow screen the runner reports. */
+        if (op != DEMO_OP_EQ && op != DEMO_OP_NE)
+            return fail(c, "expect screen: only = and != apply");
+        int sc = flow_screen_from_name(p);
+        if (sc < 0)
+            return fail(c, "expect screen: unknown screen '%s' (title menu skill controls play "
+                           "pause)", p);
+        tmp.value = sc;
+    } else if (strcmp(stat, "tile") == 0) {
         if (op != DEMO_OP_EQ && op != DEMO_OP_NE)
             return fail(c, "expect tile: only = and != apply");
         char buf[32];
@@ -427,6 +457,21 @@ static int hdr_map(demo_t *d, line_ctx *c)
     return 1;
 }
 
+/* start <level|title>: where the run begins. `start level` (the default)
+ * plays the level from tic 0; `start title` begins on the title screen. */
+static int hdr_start(demo_t *d, line_ctx *c)
+{
+    if (!want_args(c, 1))
+        return 0;
+    if (strcmp(c->tok[1], "level") == 0)
+        d->start = FLOW_PLAY;
+    else if (strcmp(c->tok[1], "title") == 0)
+        d->start = FLOW_TITLE;
+    else
+        return fail(c, "start: want 'level' or 'title', got '%s'", c->tok[1]);
+    return 1;
+}
+
 typedef struct {
     const char *name;
     int (*parse)(demo_t *d, line_ctx *c);
@@ -454,6 +499,7 @@ static const cmd_entry header_cmds[] = {
     { "skill", hdr_skill },
     { "seed", hdr_seed },
     { "map", hdr_map },
+    { "start", hdr_start },
 };
 
 /* The body dispatch table. */
@@ -467,6 +513,7 @@ static const cmd_entry body_cmds[] = {
     { "fire", cmd_fire },
     { "clear", cmd_clear },
     { "expect", cmd_expect },
+    { "key", cmd_key },
 };
 
 #define COUNT(a) (int)(sizeof(a) / sizeof((a)[0]))
@@ -492,6 +539,8 @@ demo_t *demo_parse(const char *text, char *err, size_t errlen)
     strcpy(buf, text);
     d->level = 1;
     d->skill = 2;
+    d->start = FLOW_PLAY;
+    d->screen = FLOW_PLAY;
 
     line_ctx c = { 0 };
     c.err = err;
@@ -588,8 +637,18 @@ static int run_fail(char *err, size_t errlen, const demo_cmd *c, const char *fmt
 }
 
 /* 1 when the expect holds; else writes the failure. */
-static int check_expect(const demo_cmd *c, const game_state *gs, char *err, size_t errlen)
+static int check_expect(const demo_t *d, const demo_cmd *c, const game_state *gs, char *err,
+                        size_t errlen)
 {
+    if (strcmp(c->name, "screen") == 0) {
+        if ((d->screen == c->value) == (c->op == DEMO_OP_EQ))
+            return 1;
+        run_fail(err, errlen, c, "expect screen%s%s failed: screen is %s at tic %u",
+                 OP_TEXT[c->op], flow_screen_name(c->value),
+                 flow_screen_name(d->screen) ? flow_screen_name(d->screen) : "?",
+                 (unsigned)gs->tic);
+        return 0;
+    }
     if (c->has_tile) {
         int32_t px = fix_to_int(gs->player.x), py = fix_to_int(gs->player.y);
         int same = px == c->tx && py == c->ty;
@@ -693,12 +752,13 @@ static int combat_next(demo_t *d, const demo_cmd *c, const game_state *gs, ticcm
 
 int demo_next(demo_t *d, const game_state *gs, ticcmd *out, char *err, size_t errlen)
 {
+    d->key = FKEY_NONE;
     while (d->pc < d->count) {
         const demo_cmd *c = &d->cmds[d->pc];
         memset(out, 0, sizeof *out);
         switch (c->kind) {
         case DEMO_CMD_EXPECT:
-            if (!check_expect(c, gs, err, errlen))
+            if (!check_expect(d, c, gs, err, errlen))
                 return DEMO_FAIL;
             break; /* no tic */
         case DEMO_CMD_GOTO: {
@@ -742,8 +802,10 @@ int demo_next(demo_t *d, const game_state *gs, ticcmd *out, char *err, size_t er
             if (d->done >= c->n)
                 break;
             d->done++;
-            if (c->kind == DEMO_CMD_IN)
+            if (c->kind == DEMO_CMD_IN) {
                 *out = c->cmd;
+                d->key = c->key;
+            }
             return DEMO_TIC;
         }
         d->pc++;
