@@ -5,10 +5,20 @@ import os
 import wx
 
 from . import colors
-from .presenter import Presenter, TOOLS, LAYERS
+from . import entities as E
+from .model import bast
+from .presenter import (Presenter, TOOLS, LAYERS, VIEW_MODES, LIGHT_FIELDS, DOOR_KEYS,
+                        DOOR_MODES, ENT_DIRS, door_key, door_mode, entity_dir)
 
 TOOL_LABELS = {"paint": "Paint", "rect": "Rectangle", "eyedropper": "Eyedropper",
-               "erase": "Erase"}
+               "erase": "Erase", "light": "Light", "flags": "Flags", "entity": "Entity"}
+# One-letter overlay glyph per cell flag (SOLID is shown by the wall itself).
+FLAG_GLYPHS = {"DOOR": "D", "PUSHWALL": "P", "SWITCH": "S", "EXIT": "X", "SECRET": "$",
+               "DAMAGE": "!", "ONEWAY": ">", "START_OPEN": "o", "BLOCK_MONSTER": "m",
+               "BLOCK_ALL": "#", "TRIGGER": "T"}
+ENT_FLAG_LABELS = (("SKILL1", "Skill 1 Kitten"), ("SKILL2", "Skill 2 Tomcat"),
+                   ("SKILL3", "Skill 3 Sabretooth"), ("AMBUSH", "Ambush / deaf"),
+                   ("SECRET_ONLY", "Secret only"), ("PICKUP_TRIGGER", "Pickup fires tag"))
 
 
 class GridCanvas(wx.ScrolledWindow):
@@ -24,6 +34,7 @@ class GridCanvas(wx.ScrolledWindow):
         self.Bind(wx.EVT_LEFT_UP, self.on_up)
         self.Bind(wx.EVT_MOTION, self.on_motion)
         self.Bind(wx.EVT_MOUSEWHEEL, self.on_wheel)
+        self.Bind(wx.EVT_KEY_DOWN, self.on_key)
         self.update_virtual()
 
     @property
@@ -63,6 +74,17 @@ class GridCanvas(wx.ScrolledWindow):
         else:
             self.p.on_hover(x, y)
 
+    def on_key(self, ev):
+        """Entity shortcuts: Delete removes, R / Shift+R turn 45 deg CCW / CW."""
+        k, e = ev.GetKeyCode(), self.p.selected_entity()
+        if k in (wx.WXK_DELETE, wx.WXK_BACK) and e:
+            self.p.delete_entity()
+        elif k == ord("R") and e:
+            d = entity_dir(e["angle"]) + (-1 if ev.ShiftDown() else 1)
+            self.p.rotate_entity(d % 8)
+        else:
+            ev.Skip()
+
     def on_wheel(self, ev):
         if ev.ControlDown():
             self.set_zoom(self.zoom + (2 if ev.GetWheelRotation() > 0 else -2))
@@ -75,6 +97,27 @@ class GridCanvas(wx.ScrolledWindow):
         dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
         p, m, z = self.p, self.p.model, self.zoom
+        H = m.height
+        if p.view_mode == "light":
+            self._paint_light(dc, p, m, z)
+        else:
+            self._paint_textures(dc, p, m, z)
+        self._paint_flags(dc, m, z)
+        self._paint_entities(dc, p, m, z)
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        if p.cell_sel and p.tool == "flags":
+            x, y = p.cell_sel
+            dc.SetPen(wx.Pen(wx.Colour(80, 255, 255), 2))
+            dc.DrawRectangle(x * z, (H - 1 - y) * z, z + 1, z + 1)
+        if p.selection:
+            x0, y0, x1, y1 = p.selection
+            lx, hx = min(x0, x1), max(x0, x1)
+            ly, hy = min(y0, y1), max(y0, y1)
+            dc.SetPen(wx.Pen(wx.Colour(255, 230, 60), 2))
+            dc.DrawRectangle(lx * z, (H - 1 - hy) * z, (hx - lx + 1) * z + 1,
+                             (hy - ly + 1) * z + 1)
+
+    def _paint_textures(self, dc, p, m, z):
         layer = p.layer
         dc.SetPen(wx.Pen(wx.Colour(0, 0, 0)))
         for y in range(m.height):
@@ -97,21 +140,84 @@ class GridCanvas(wx.ScrolledWindow):
                     dc.SetBrush(wx.Brush(wx.Colour(*colors.SKY_RGB)))
                     dc.DrawPolygon([(sx + z - z // 3, sy + 1), (sx + z, sy + 1),
                                     (sx + z, sy + z // 3)])
-        if p.selection:
-            x0, y0, x1, y1 = p.selection
-            lx, hx = min(x0, x1), max(x0, x1)
-            ly, hy = min(y0, y1), max(y0, y1)
-            dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            dc.SetPen(wx.Pen(wx.Colour(255, 230, 60), 2))
-            dc.DrawRectangle(lx * z, (m.height - 1 - hy) * z, (hx - lx + 1) * z + 1,
-                             (hy - ly + 1) * z + 1)
+
+    def _paint_light(self, dc, p, m, z):
+        """Grey by darkness of the chosen field (0 = bright), value printed."""
+        field = p.light_field
+        dc.SetFont(wx.Font(max(6, z // 3), wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL,
+                           wx.FONTWEIGHT_NORMAL))
+        for y in range(m.height):
+            sy = (m.height - 1 - y) * z
+            for x in range(m.width):
+                c = m.cell(x, y)
+                sx = x * z
+                g = colors.dark_grey(c[field])
+                dc.SetPen(wx.Pen(wx.Colour(0, 0, 0)))
+                dc.SetBrush(wx.Brush(wx.Colour(g, g, g)))
+                dc.DrawRectangle(sx, sy, z + 1, z + 1)
+                if c["wall"]:
+                    dc.SetPen(wx.Pen(wx.Colour(110, 60, 40)))
+                    dc.DrawLine(sx + 2, sy + 2, sx + z - 1, sy + z - 1)
+                    dc.DrawLine(sx + z - 2, sy + 2, sx + 1, sy + z - 1)
+                if z >= 16:
+                    dc.SetTextForeground(wx.Colour(0, 0, 0) if g > 128 else
+                                         wx.Colour(230, 230, 230))
+                    dc.DrawText(str(c[field]), sx + 2, sy + z - z // 3 - 4)
+
+    def _paint_flags(self, dc, m, z):
+        if z < 12:
+            return
+        names = [(b, FLAG_GLYPHS[n]) for n, b in bast.cell_flags().items() if n in FLAG_GLYPHS]
+        dc.SetFont(wx.Font(max(6, z // 3), wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL,
+                           wx.FONTWEIGHT_BOLD))
+        dc.SetTextForeground(wx.Colour(255, 240, 80))
+        dc.SetTextBackground(wx.Colour(0, 0, 0))
+        dc.SetBackgroundMode(wx.SOLID)
+        for y in range(m.height):
+            sy = (m.height - 1 - y) * z
+            for x in range(m.width):
+                c = m.cell(x, y)
+                g = "".join(ch for b, ch in names if c["flags"] & b)
+                if c["tag"]:
+                    g += str(c["tag"])
+                if g:
+                    dc.DrawText(g[:max(1, z // 7)], x * z + 1, sy + 1)
+        dc.SetBackgroundMode(wx.TRANSPARENT)
+
+    def _paint_entities(self, dc, p, m, z):
+        H = m.height
+        dc.SetFont(wx.Font(max(6, z // 3), wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL,
+                           wx.FONTWEIGHT_NORMAL))
+        for i, e in enumerate(m.entities):
+            cx = e["x"] * z // 65536
+            cy = (H * 65536 - e["y"]) * z // 65536
+            r = max(3, z * 3 // 10)
+            sel = i == p.entity_sel
+            dc.SetPen(wx.Pen(wx.Colour(255, 255, 0) if sel else wx.Colour(0, 0, 0),
+                             3 if sel else 1))
+            dc.SetBrush(wx.Brush(wx.Colour(*E.rgb_of(e["type"]))))
+            dc.DrawCircle(cx, cy, r)
+            d = entity_dir(e["angle"])
+            dx, dy = ((1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1),
+                      (1, 1))[d]
+            k = r * 2 if dx and dy else r * 3 // 2 + r // 2
+            dc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 2))
+            dc.DrawLine(cx, cy, cx + dx * k * 7 // 10, cy + dy * k * 7 // 10)
+            if z >= 12:
+                label = e["name"] or (E.name_of(e["type"])[:3] if z >= 20 else "")
+                if label:
+                    dc.SetTextForeground(wx.Colour(255, 255, 255))
+                    dc.SetTextBackground(wx.Colour(20, 20, 20))
+                    dc.SetBackgroundMode(wx.SOLID)
+                    dc.DrawText(label, cx - r, cy + r)
+                    dc.SetBackgroundMode(wx.TRANSPARENT)
 
 
 class EditorFrame(wx.Frame):
     """Implements the presenter's view interface."""
 
     def __init__(self, model=None):
-        super().__init__(None, size=(1024, 720))
+        super().__init__(None, size=(1280, 800))
         self.presenter = None
         self.status = self.CreateStatusBar(2)
         self.status.SetStatusWidths([-3, -1])
@@ -121,12 +227,18 @@ class EditorFrame(wx.Frame):
         self._ready = False
         self.presenter = Presenter(model, self)
         self.canvas = GridCanvas(root, self)
+        self.props = wx.ScrolledWindow(root, style=wx.VSCROLL)
+        self.props.SetScrollRate(0, 10)
+        self._syncing = False
         self._build_side()
+        self._build_props()
         s = wx.BoxSizer(wx.HORIZONTAL)
         s.Add(self.side, 0, wx.EXPAND | wx.ALL, 4)
         s.Add(self.canvas, 1, wx.EXPAND)
+        s.Add(self.props, 0, wx.EXPAND | wx.ALL, 4)
         root.SetSizer(s)
         self._ready = True
+        self.selection_changed()
         self.textures_changed()
         self.title_changed()
         self.Bind(wx.EVT_CLOSE, self.on_close)
@@ -160,16 +272,23 @@ class EditorFrame(wx.Frame):
                                     choices=[TOOL_LABELS[t] for t in TOOLS],
                                     majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.tool_box.Bind(wx.EVT_RADIOBOX,
-                           lambda e: self.presenter.set_tool(TOOLS[e.GetInt()]))
+                           lambda e: (self.presenter.set_tool(TOOLS[e.GetInt()]),
+                                      self.canvas.Refresh()))
         self.layer_box = wx.RadioBox(self.side, label="Layer",
                                      choices=["Wall", "Floor", "Ceiling (0 = sky)"],
                                      majorDimension=1, style=wx.RA_SPECIFY_COLS)
         self.layer_box.Bind(wx.EVT_RADIOBOX,
                             lambda e: self.presenter.set_layer(LAYERS[e.GetInt()]))
+        self.mode_box = wx.RadioBox(self.side, label="View",
+                                    choices=["Textures", "Light"],
+                                    majorDimension=2, style=wx.RA_SPECIFY_COLS)
+        self.mode_box.Bind(wx.EVT_RADIOBOX,
+                           lambda e: self.presenter.set_view_mode(VIEW_MODES[e.GetInt()]))
         s.Add(self.tool_box, 0, wx.EXPAND | wx.BOTTOM, 4)
         s.Add(self.layer_box, 0, wx.EXPAND | wx.BOTTOM, 4)
+        s.Add(self.mode_box, 0, wx.EXPAND | wx.BOTTOM, 4)
         s.Add(wx.StaticText(self.side, label="Textures"), 0, wx.BOTTOM, 2)
-        self.tex_list = wx.ListCtrl(self.side, size=(200, 300),
+        self.tex_list = wx.ListCtrl(self.side, size=(200, 200),
                                     style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
         self.tex_list.InsertColumn(0, "#", width=44)
         self.tex_list.InsertColumn(1, "name", width=140)
@@ -180,6 +299,170 @@ class EditorFrame(wx.Frame):
         add.Bind(wx.EVT_BUTTON, self.on_add_texture)
         s.Add(add, 0, wx.EXPAND)
         self.side.SetSizer(s)
+
+    def _guard(self, fn):
+        """Wrap a widget handler: ignore events raised by selection_changed()
+        itself, show model errors instead of raising."""
+        def handler(ev):
+            if self._syncing:
+                return
+            try:
+                fn(ev)
+            except Exception as ex:  # ModelError / ValueError from the presenter
+                self.set_status(str(ex))
+                self.selection_changed()
+        return handler
+
+    def _build_props(self):
+        P, pr = self.props, lambda: self.presenter
+        s = wx.BoxSizer(wx.VERTICAL)
+
+        # Light
+        box = wx.StaticBoxSizer(wx.VERTICAL, P, "Light (Light tool)")
+        self.light_field = wx.RadioBox(P, choices=["dark", "dark_alt (after LIGHTS)"],
+                                       majorDimension=1, style=wx.RA_SPECIFY_COLS)
+        self.light_field.Bind(wx.EVT_RADIOBOX, self._guard(
+            lambda e: pr().set_light_field(LIGHT_FIELDS[e.GetInt()])))
+        self.light_slider = wx.Slider(P, value=0, minValue=0, maxValue=31,
+                                      style=wx.SL_HORIZONTAL | wx.SL_LABELS)
+        self.light_slider.Bind(wx.EVT_SLIDER, self._guard(
+            lambda e: pr().set_light_value(self.light_slider.GetValue())))
+        box.Add(self.light_field, 0, wx.EXPAND)
+        box.Add(wx.StaticText(P, label="Darkness 0 (bright) .. 31"), 0, wx.TOP, 4)
+        box.Add(self.light_slider, 0, wx.EXPAND)
+        s.Add(box, 0, wx.EXPAND | wx.BOTTOM, 6)
+
+        # Cell
+        box = wx.StaticBoxSizer(wx.VERTICAL, P, "Cell (Flags tool)")
+        self.cell_label = wx.StaticText(P, label="no cell selected")
+        box.Add(self.cell_label, 0, wx.BOTTOM, 4)
+        grid = wx.GridSizer(2, 2, 6)
+        self.flag_checks = {}
+        for name in bast.cell_flags():
+            cb = wx.CheckBox(P, label=name)
+            cb.Bind(wx.EVT_CHECKBOX, self._guard(
+                lambda e, n=name: pr().set_cell_flag(n, e.IsChecked())))
+            self.flag_checks[name] = cb
+            grid.Add(cb)
+        box.Add(grid, 0, wx.EXPAND | wx.BOTTOM, 4)
+        g2 = wx.FlexGridSizer(2, 4, 4)
+        self.cell_tag = wx.SpinCtrl(P, min=0, max=255)
+        self.cell_param = wx.SpinCtrl(P, min=0, max=255)
+        self.cell_tag.Bind(wx.EVT_SPINCTRL, self._guard(
+            lambda e: pr().set_cell_values(tag=self.cell_tag.GetValue())))
+        self.cell_param.Bind(wx.EVT_SPINCTRL, self._guard(
+            lambda e: pr().set_cell_values(param=self.cell_param.GetValue())))
+        self.door_key = wx.Choice(P, choices=list(DOOR_KEYS))
+        self.door_mode = wx.Choice(P, choices=list(DOOR_MODES))
+        self.door_key.Bind(wx.EVT_CHOICE, self._guard(
+            lambda e: pr().set_door(key=e.GetSelection())))
+        self.door_mode.Bind(wx.EVT_CHOICE, self._guard(
+            lambda e: pr().set_door(mode=e.GetSelection())))
+        for lbl, ctl in (("Tag", self.cell_tag), ("Param", self.cell_param),
+                         ("Door key", self.door_key), ("Door mode", self.door_mode)):
+            g2.Add(wx.StaticText(P, label=lbl), 0, wx.ALIGN_CENTER_VERTICAL)
+            g2.Add(ctl, 1, wx.EXPAND)
+        box.Add(g2, 0, wx.EXPAND)
+        s.Add(box, 0, wx.EXPAND | wx.BOTTOM, 6)
+
+        # Entity
+        box = wx.StaticBoxSizer(wx.VERTICAL, P, "Entity (Entity tool)")
+        self.ent_types = [t[0] for t in E.TYPES]
+        self.ent_place = wx.Choice(P, choices=["%s (%s)" % (t[3], t[2]) for t in E.TYPES])
+        self.ent_place.Bind(wx.EVT_CHOICE, self._guard(
+            lambda e: pr().set_entity_type(self.ent_types[e.GetSelection()])))
+        box.Add(wx.StaticText(P, label="Type to place"), 0)
+        box.Add(self.ent_place, 0, wx.EXPAND | wx.BOTTOM, 6)
+        self.ent_label = wx.StaticText(P, label="no entity selected")
+        box.Add(self.ent_label, 0, wx.BOTTOM, 4)
+        g3 = wx.FlexGridSizer(2, 4, 4)
+        self.ent_type = wx.Choice(P, choices=[t[3] for t in E.TYPES])
+        self.ent_type.Bind(wx.EVT_CHOICE, self._guard(
+            lambda e: pr().set_entity_props(type=self.ent_types[e.GetSelection()])))
+        self.ent_dir = wx.Choice(P, choices=list(ENT_DIRS))
+        self.ent_dir.Bind(wx.EVT_CHOICE, self._guard(
+            lambda e: pr().rotate_entity(e.GetSelection())))
+        self.ent_tag = wx.SpinCtrl(P, min=0, max=255)
+        self.ent_param = wx.SpinCtrl(P, min=0, max=255)
+        self.ent_tag.Bind(wx.EVT_SPINCTRL, self._guard(
+            lambda e: pr().set_entity_props(tag=self.ent_tag.GetValue())))
+        self.ent_param.Bind(wx.EVT_SPINCTRL, self._guard(
+            lambda e: pr().set_entity_props(param=self.ent_param.GetValue())))
+        self.ent_name = wx.TextCtrl(P, style=wx.TE_PROCESS_ENTER)
+        self.ent_name.SetMaxLength(16)
+        apply_name = self._guard(lambda e: pr().set_entity_props(name=self.ent_name.GetValue()))
+        self.ent_name.Bind(wx.EVT_TEXT_ENTER, apply_name)
+        self.ent_name.Bind(wx.EVT_KILL_FOCUS, lambda e: (apply_name(e), e.Skip()))
+        for lbl, ctl in (("Type", self.ent_type), ("Facing", self.ent_dir),
+                         ("Tag", self.ent_tag), ("Param", self.ent_param),
+                         ("Name", self.ent_name)):
+            g3.Add(wx.StaticText(P, label=lbl), 0, wx.ALIGN_CENTER_VERTICAL)
+            g3.Add(ctl, 1, wx.EXPAND)
+        box.Add(g3, 0, wx.EXPAND | wx.BOTTOM, 4)
+        self.ent_checks = {}
+        for name, lbl in ENT_FLAG_LABELS:
+            cb = wx.CheckBox(P, label=lbl)
+            cb.Bind(wx.EVT_CHECKBOX, self._guard(
+                lambda e, n=name: pr().set_entity_flag(n, e.IsChecked())))
+            self.ent_checks[name] = cb
+            box.Add(cb, 0, wx.BOTTOM, 2)
+        dele = wx.Button(P, label="Delete entity")
+        dele.Bind(wx.EVT_BUTTON, self._guard(lambda e: pr().delete_entity()))
+        box.Add(dele, 0, wx.EXPAND | wx.TOP, 4)
+        s.Add(box, 0, wx.EXPAND)
+        P.SetSizer(s)
+        P.SetMinSize((320, -1))
+
+    # presenter view interface ---------------------------------------------
+    def selection_changed(self):
+        if not getattr(self, "_ready", False) and not hasattr(self, "ent_checks"):
+            return
+        p = self.presenter
+        self._syncing = True
+        try:
+            self.mode_box.SetSelection(VIEW_MODES.index(p.view_mode))
+            self.tool_box.SetSelection(TOOLS.index(p.tool))
+            self.light_field.SetSelection(LIGHT_FIELDS.index(p.light_field))
+            self.light_slider.SetValue(p.light_value)
+            self.ent_place.SetSelection(self.ent_types.index(p.entity_type))
+            c = p.selected_cell()
+            for name, cb in self.flag_checks.items():
+                cb.Enable(c is not None)
+                cb.SetValue(bool(c and c["flags"] & bast.cell_flags()[name]))
+            for ctl in (self.cell_tag, self.cell_param):
+                ctl.Enable(c is not None)
+            self.cell_label.SetLabel("cell (%d, %d)" % p.cell_sel if c else "no cell selected")
+            self.cell_tag.SetValue(c["tag"] if c else 0)
+            self.cell_param.SetValue(c["param"] if c else 0)
+            door = p.is_door()
+            self.door_key.Enable(door)
+            self.door_mode.Enable(door)
+            self.door_key.SetSelection(door_key(c["param"]) if door else wx.NOT_FOUND)
+            self.door_mode.SetSelection(door_mode(c["param"]) if door else wx.NOT_FOUND)
+
+            e = p.selected_entity()
+            for ctl in (self.ent_type, self.ent_dir, self.ent_tag, self.ent_param,
+                        self.ent_name, *self.ent_checks.values()):
+                ctl.Enable(e is not None)
+            if e:
+                self.ent_label.SetLabel("entity #%d %s at (%.1f, %.1f)" % (
+                    p.entity_sel, E.name_of(e["type"]), e["x"] / 65536, e["y"] / 65536))
+                if e["type"] in self.ent_types:
+                    self.ent_type.SetSelection(self.ent_types.index(e["type"]))
+                self.ent_dir.SetSelection(entity_dir(e["angle"]))
+                self.ent_tag.SetValue(e["tag"])
+                self.ent_param.SetValue(e["param"])
+                if self.ent_name.GetValue() != e["name"]:
+                    self.ent_name.ChangeValue(e["name"])
+                for name, cb in self.ent_checks.items():
+                    cb.SetValue(bool(e["flags"] & bast.entity_flags()[name]))
+            else:
+                self.ent_label.SetLabel("no entity selected")
+                self.ent_name.ChangeValue("")
+            self.props.Layout()
+            self.props.FitInside()
+        finally:
+            self._syncing = False
 
     # presenter view interface ---------------------------------------------
     def refresh(self):

@@ -98,6 +98,7 @@ class Presenter:
             self.texture = 1 if len(model.textures) > 1 else 0
         self.view.textures_changed()
         self.view.title_changed()
+        self.view.selection_changed()
         self.view.refresh()
 
     def _on_model(self, what):
