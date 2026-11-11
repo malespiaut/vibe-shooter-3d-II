@@ -73,9 +73,10 @@ const char *sprite_name_for_entity(int type);
  * impacts, frames `<name>_d0_f<frame>.tex` under assets/gen/fx/ (one
  * direction). A render_thing whose type is SPRITE_FX_BASE + FXS_* draws
  * one, with the frame the game picked (render_thing.frame). `fullbright`
- * ones are drawn with colormap row 0 whatever the light (energy: projectiles
- * and explosions); the others are shaded like any sprite, their fb_* pixels
- * staying bright through the colormap. */
+ * ones are drawn with colormap row 0 whatever the light (pure energy: the
+ * scarab projectile, whose TEX carries BAST_TEX_FULLBRIGHT); the others,
+ * explosions included, are shaded like any sprite: their fb_* core stays
+ * bright through the colormap while smoke and debris darken with the room. */
 enum { SPRITE_FX_BASE = 0x4000 };
 enum {
     FXS_SCARAB_PROJ,
