@@ -75,9 +75,15 @@ for name, rgb in MATS.items():
 verts, faces, face_mat, vgroup = [], [], [], []
 
 
+# Everything (vertices and bone pivots) is moved SHIFT toward +Y (back) so
+# the open jaw and the lunges fit the 40 px canvas (+-0.3125 u) in the side
+# views; the tail is short and upright for the same reason.
+SHIFT = 0.03
+
+
 def add(vs, fs, mat, bone):
     b = len(verts)
-    verts.extend(vs)
+    verts.extend((x, y + SHIFT, z) for x, y, z in vs)
     vgroup.extend([bone] * len(vs))
     for f in fs:
         faces.append(tuple(b + i for i in f))
@@ -122,14 +128,13 @@ def prism(tri, y0, y1, mat, bone):
     add(vs, fs, mat, bone)
 
 
-# Pivots (bone heads). Everything is shifted 0.02 toward +Y so the jaw and
-# the tail both fit the 40 px canvas (+-0.3125 u) in the side views.
+# Pivots (bone heads), before SHIFT.
 NECK = (0.0, -0.09, 0.27)
 HINGE = (0.0, -0.15, 0.265)
 EAR_L, EAR_R = (0.06, -0.14, 0.37), (-0.06, -0.14, 0.37)
 HIPS = {"leg_fl": (0.06, -0.06, 0.15), "leg_fr": (-0.06, -0.06, 0.15),
         "leg_bl": (0.06, 0.15, 0.15), "leg_br": (-0.06, 0.15, 0.15)}
-TAIL = (0.0, 0.19, 0.22)
+TAIL = (0.0, 0.18, 0.22)
 LENS = (0.0, -0.245, 0.33)
 
 # Body: barrel chest, short back.
@@ -142,8 +147,8 @@ for bone, (x, y, z) in HIPS.items():
     box(x - 0.021, x + 0.021, y - 0.021, y + 0.021, 0.025, z + 0.02, "ChompFur", bone)
     box(x - 0.026, x + 0.026, y - 0.034, y + 0.026, 0.0, 0.03, "ChompJaw", bone)
 # Tail: two thin segments curling up and back.
-box(-0.016, 0.016, 0.18, 0.23, 0.215, 0.25, "ChompFur", "tail")
-box(-0.016, 0.016, 0.22, 0.255, 0.245, 0.31, "ChompFurDark", "tail")
+box(-0.016, 0.016, 0.17, 0.215, 0.215, 0.25, "ChompFur", "tail")
+box(-0.016, 0.016, 0.195, 0.228, 0.245, 0.31, "ChompFurDark", "tail")
 # Head: apple dome.
 ellipsoid((0.0, -0.15, 0.335), (0.095, 0.085, 0.07), "ChompFur", "head", seg=10)
 # Huge triangle ears: outer fur prism, inner red prism just in front.
@@ -200,8 +205,8 @@ rig.select_set(True)
 bpy.ops.object.mode_set(mode="EDIT")
 for name, (head, parent) in BONES.items():
     eb = arm.edit_bones.new(name)
-    eb.head = head
-    eb.tail = (head[0], head[1], head[2] + 0.05)
+    eb.head = (head[0], head[1] + SHIFT, head[2])
+    eb.tail = (head[0], head[1] + SHIFT, head[2] + 0.05)
     eb.roll = 0.0
 for name, (head, parent) in BONES.items():
     if parent:
@@ -292,37 +297,38 @@ make_action("ChompWalk", [
 ])
 # Wind-up: crouch, head up, jaws thrown wide open (single pose held).
 make_action("ChompWindup", [
-    {"root": {"loc": up(-2), "rot": (6, 0, 0)}, **legs(-14, -14, 18, 18),
+    {"root": {"loc": up(-2)}, **legs(-8, -8, 18, 18),
      "head": {"rot": (-14, 0, 0)}, "jaw": {"rot": (58, 0, 0)}, **ears(12, 20),
      "tail": {"rot": (-30, 0, 0)}},
 ])
 # Attack: f0 lunge and snap shut on the target, f1 recover with jaws half open.
 make_action("ChompAttack", [
-    {"root": {"loc": (0.0, 2 * U, 3 * U), "rot": (-8, 0, 0)}, **legs(-38, -38, 30, 30),
+    {"root": {"loc": (0.0, 2 * U, 1 * U), "rot": (-8, 0, 0)}, **legs(-38, -38, 30, 30),
      "head": {"rot": (10, 0, 0)}, "jaw": {"rot": (-4, 0, 0)}, **ears(-6, 25),
-     "tail": {"rot": (-35, 0, 0)}},
+     "tail": {"rot": (10, 0, 0)}},
     {"root": {"loc": up(0)}, **legs(-8, -8, 6, 6), "jaw": {"rot": (22, 0, 0)}, **ears(4, 6)},
 ])
 # Pain: jerked back and sideways, jaw slack, ears flattened.
 make_action("ChompPain", [
-    {"root": {"loc": (0.0, 0.0, -2 * U), "rot": (10, 0, 12)}, **legs(18, 18, -10, -10),
+    {"root": {"rot": (-10, 0, 12)}, **legs(18, 18, -10, -10),
      "head": {"rot": (-24, 12, 0)}, "jaw": {"rot": (30, 0, 0)}, **ears(28, 30),
      "tail": {"rot": (40, 0, 0)}},
 ])
 # Death: yelp and rear up, legs buckle, topple onto the left side; the last
 # frame is the corpse (lenses dark: the lens bone shrinks into the visor).
 make_action("ChompDeath", [
-    {"root": {"rot": (14, 0, 0)}, **legs(-20, -20, 10, 10), "head": {"rot": (-30, 0, 0)},
+    {"root": {"rot": (-14, 0, 0)}, **legs(-20, -20, 10, 10),
+     "head": {"rot": (-30, 0, 0)},
      "jaw": {"rot": (50, 0, 0)}, **ears(20, 25), "tail": {"rot": (30, 0, 0)}},
-    {"root": {"loc": up(-1), "rot": (0, 0, 18)}, **legs(30, 30, -24, -24),
+    {"root": {"loc": (2 * U, -U, -U), "rot": (0, 0, 18)}, **legs(30, 30, -24, -24),
      "head": {"rot": (16, 0, 0)}, "jaw": {"rot": (32, 0, 0)}, **ears(30, 10)},
-    {"root": {"loc": up(0), "rot": (0, 0, 42)}, **legs(50, 40, -40, -36),
+    {"root": {"loc": (5 * U, 0.0, -U), "rot": (0, 0, 42)}, **legs(50, 40, -40, -36),
      "head": {"rot": (24, 0, 10)}, "jaw": {"rot": (24, 0, 0)}, **ears(40, 20)},
-    {"root": {"loc": up(3), "rot": (0, 0, 70)}, **legs(30, 50, -20, -50),
-     "head": {"rot": (14, 0, 18)}, "jaw": {"rot": (30, 0, 0)}, **ears(50, 30),
-     "lens": {"scale": 0.01}},
-    {"root": {"loc": up(4), "rot": (0, 0, 84)}, **legs(20, 40, -16, -36),
-     "head": {"rot": (10, 0, 22)}, "jaw": {"rot": (36, 0, 0)}, **ears(55, 35),
+    {"root": {"loc": (7 * U, 3 * U, 0.0), "rot": (0, 0, 70)}, **legs(16, 24, -10, -16),
+     "head": {"rot": (14, 0, 18)}, "jaw": {"rot": (30, 0, 0)}, **ears(50, 60),
+     "tail": {"rot": (50, 0, 0)}, "lens": {"scale": 0.01}},
+    {"root": {"loc": (9 * U, 4 * U, -U), "rot": (0, 0, 84)}, **legs(20, 40, -16, -36),
+     "head": {"rot": (10, 0, 22)}, "jaw": {"rot": (36, 0, 0)}, **ears(55, 70),
      "tail": {"rot": (60, 0, 0)}, "lens": {"scale": 0.01}},
 ])
 pose()
