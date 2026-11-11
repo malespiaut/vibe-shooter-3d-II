@@ -1,0 +1,82 @@
+# View model 2, Ankh Pistol (weapons.md): 3/4 rear view, canted. Square steel slide of near-constant
+# width receding toward the view centre (lit top face on the left, shaded side face with the gold
+# inlay on the right, flat muzzle with a bushing ring and dark bore), gold ankh-loop rear sight
+# standing proud of the top face (top face seen through the loop), steel frame, wooden grip wrapped by Mau's right paw.
+# Matches HUD icon weapon_2. Composed in tools/vmcompose/vm2.py, checked at 3x in game.
+# idle.
+name vm2_idle
+size 64 72
+shadow steel_00
+grid
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+..........................................E
+................................EEEEEEEEDCC
+......................JJJJJDDDDDDEEE2DDDDCC
+......................MKKKKDLMLJDEEE2DDDDCC
+......................MKKKKDMAAHDEEE2DDDDCCC
+......................MKKKKDJAAGDEEE4EDDDCCC
+......................MKKKKDIHGFDEEE4EDDDCCC
+......................MKKKKDDDDDDEEE42EDDDCC
+......................MKKKKKKJJGEEEE42EEDDCC
+......................NKKKKKKKJGFEEE42EEDDCC
+......................NKKKKKKKJGFEEE42EEEDCCC
+......................NLKKKKKKKGFFEE52EEEECCC
+......................NLKKKKKKKGFFFEE2EEEECCC
+......................NLLKKKKKKGFFFEE2EEEECCC
+......................NLLKKKKKKGGFFFE5EEEEECC
+......................NLLBBBKKKGGFFFE5EEEEECC
+......................NLB998BKKHHFFFF53EEEECCC
+......................NB99877BKHHFFFF53EEEECCC
+......................B998LH65BHHFFFF53EEEECCC
+......................B99LLH65BKHFFFF53EEEECCC
+......................B98LLH54BKHFFFF53FEEECCC
+......................B88GHG54BKHFFFF63FCCCCCC
+......................NB76G543BKHFCCCC3CFEEECC
+......................NLB6544BKKHFFFFF6FCCCCCCC
+......................OLLB54BLLKHGCCCC6CCFEECCC
+......................OBBB84BBBBHGGFFF63FCCCCCC
+......................B333333338BGCCCC63CFFFCCC
+......................B88888BBBBHGGGFF63FCCCCCC
+......................OBBB844BLLHHCCCC63CFFFFCC
+......................OMMB844BLLHHGGGF63FFFFFCCC
+......................OMMB844BLLHHGGGG63FMMMMMMM
+......................OMMMBBBMMMMMMMMMMMMGGGGDDD
+......................MMMMMIIIIIIFGGGGGGGGGGGDDD
+......................KKIIIIIIIIBBBGGGGGGGGGGDDD
+......................KKIIIIIIIIBBBGGGGGGGGGGDDD
+......................KKIIIIIIIIBBBGGGGGGGGGGDDDD
+......................KKIIIIIIIIBBBBGGGGGGGGGGDDD
+......................KKIIIIIIIIIFGGGGGGGDDDDDDDD
+......................KKIIIIDDDDDDDDDDDDDDDDDDDDD
+......................KKDDDDDDDDDDDDGGGGGGGGDDDD
+......................KKKGGGGGGGGGGGGGGGGGGGDDD
+.......................KKGGGGGGGGGGGGGGGGGGDDDD
+.......................KKKGGGGGGGGGpoqrronqqppp
+.......................K...J..I.rnntsssronqqppp
+.......................L...G..Itrtqqsssrronqqppp
+.......................L..G...Ivuuqqsssrronqqppp
+.......................L......Ivvutqtsssrronqqppp
+.......................L......Ivvutqqssqrronqqppp
+........................HFFFFF..vvuqqtsqqrronqqpp
+................................vvutqqsrsrronqqppp
+................................vvuuqqtsssrroqqqpp
+.................................vvutqqsssrronqqppp
+.................................vvutqqsssrrooqqqpp
+..................................vvutqcccccronqqppp
+..................................vvutckkjicconqqqpp
+..................................vvuucXThgfcronqqpp
+...................................vvucihgfecronqqppd
+...................................vvcccgfeckkkjjjjihdd
+....................................vcXTcccckkjjjiiihgdddd
+....................................vcihgfecjjjjiiihhhfbaadd
+....................................ckcgfecjjjiiiihhhgfcceddddd
+.....................................XTccccjjiiihhhgggecfeeebaad

@@ -1,0 +1,75 @@
+# View model 3, Hairball Scattergun (weapons.md): 3/4 rear view, canted. Narrow steel receiver
+# (lit top face with the ejection port, shaded side with the gold inlay), separate barrel (left)
+# and magazine tube (right) receding toward the view centre with two bores at the tip, wooden
+# pump fore-end gripped from above by the left paw, red wound-yarn drum on the right of the
+# receiver, wooden grip wrapped by the right paw. Matches HUD icon weapon_3.
+# Composed in tools/vmcompose/vm3.py, checked at 3x in game.
+# idle.
+name vm3_idle
+size 112 64
+shadow steel_00
+grid
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.......................................................................A
+..................................................................AAAAAA
+..........................................................KKKKBBLKKKKCBA
+.......................................................HMMKAAGDBGKAAGDBAA
+.......................................................HMMKAAGDBGKAAGDBAA
+.......................................................HMMKGGGDCGKGGGDCAA
+.......................................................HHMJIGFDCBLLHFECBA.m
+.......................................................AHMMIHFECBLLooopppoo
+.......................................................AHMMIssssrrrqqqpppoo
+.....................................................uutvvuuuuuorrrqmqppppoo
+.....................................................wwvvvqquuuonrrqmqqpppoo
+.....................................................wwvvvqquuuoorrrmmqpppoo
+.....................................................wwwvvqquuuqorrrmmqpppoo
+.....................................................wwwvvucckccorrrmmqpppoo
+......................................................wwvvckkjihcrrrqmqpppooo
+...................................................kkkkkjjccccccXrrrqmqppppoo
+.................................................kkkkkjjjicckjihcrrrqmqqpppoo
+.................................................kkkkjjjiickccccXnrrrmmqpppoo
+.................................................kkkjjiiihhckkjicorrrmmqpppooo
+.................................................kjhjiiihhgcjcccTXrrrmmqpppooo
+.................................................jjiiiffeggcckjicorrrqmqppppoo
+.................................................jiiihhgggfckkihgcrrrqmqppppoo
+.................................................hihhhgggffcihgfTXrrrqmqqpppoo
+.................................................jgghggfffddcgfecorrrrmmqpppoom
+................................................jjjiihhwwvvvqcccuorrrrqoonnnmmm
+................................................jjiiihhwwvvvuuuusqqpppooonnnmmm
+...............................................jddddddgwwtttssssssqpppoHGEDCA
+...............................................dddddddduutttssssGFDDNNJIGFDCA
+..............................................jddddddddudAIOOKJIGFEDNNJIGFECA
+..............................................jjiiddddddceIOOKJIGFEDNNKIHFEDCA...D.[[[))))
+.............................................jjjiihhddddccAOOLJIHFEDDNKIHGDDDDDDC[[[[[[[)((
+.............................................jjiihhhggdccbAOOLJIHGEDDDDDEE44EEDD[[[[[[[)))((
+............................................jjiiihhgggffcaAOOIIIIKIIFEEEEEE4EEDD[[[[[[)))))yx
+...........................................jjjiihhhggfIIIILLLLLKKKKIFEEEDEE4EEEyy[[[[)))yyyyx
+...........................................jjiiihhgggfOOLLLLLLLLKKKIFFEDDEE4EEE[yy[[)))yyyy(z
+..........................................jdddddhhggffOOMLLLLLLLKKKIFFFEEEE44EE[[yy[))yyy(((zz
+..........................................ddddddddggffOOMLLLLLLLLKKIFFFFEEE44E[)[[yy)LF(((yyxx
+.........................................jjjiihddddfffOOMMLLLLLLLKKIFFFFEDEE4E))[[yyyFF((yyxxx
+.........................................jjiiihhgdddfedOMMMBCCCDLLKIIFFDDEEE5EE)[))yy(((yyxzy
+........................................jjjiihhhggddcedOMMMBCCCDDLKIIFFFFFEE5EE))))yy((yyzzzy
+........................................jjiiihhgggffcbdOMMMBCCCCDLLIIFFFFFFE5EE)()yyyyyyzzzxx
+.......................................jjjiihhhggfffcacOMMMBCCCCDLLLIFFFFDDE55EE((yyyyyxzzxx
+......................................jjjiiihhgggffeddcOMMMBCCCCDLLLIFFFDFFF55cckcc(yyxzzxx
+......................................jjjiihhhggfffedc.OMMMBCCCCDLLLIFFFFFFFF5ckjihcxxxyxx
+.....................................jddddihhgggffeddc.OOMMBBBBBBLLLIFFFFFFFF5XTihgcCxy
+.....................................ddddddddggfffeddc.OOMMMMMLLLLLLIIFFFDDFF5cihgecC
+....................................jjddddddddgfffddc...OMMMMMMLLLLLIIFFDFFFFcchgeckkkkjkjj
+....................................jjiiidddddddfeddc...OMMMMMMLLLLLIIFKKKKKKXTcccckkjjjiiiig
+...................................jjjiiihhddddccedc....OMMMMMMMKKKKKKKsssrrrcihgfckjjjiiihhg
+...................................jjiiihhhggddccddc....OKKKKKKK...uttqpsssrcchgfecjjiiiihhhgdd
+..................................jjjiiihhgggffccac.....K.........uutttqpsssXkccccjjiiihhhgggeddd
+..................................jjiiihhhgggffebdc................uutttqpsscTihgcggfihhhgggffedad
+.................................jjjiiihhgggfffedcc.................uuttqqpscihgfciihhheedffffcccddd
+................................jdddddhhhgggffeddc..................uuuttqqcXcccccihhhgggfffdddcfeeddd
+................................dddddddddggfffeddc...................uutttqckThgfchhgggfffeedddffffeebad

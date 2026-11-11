@@ -1,0 +1,71 @@
+# View model 1, Claws (weapons.md): Mau's two ginger paws, backs toward the viewer.
+# Composed from shaded shapes, then pixel-corrected by hand. Light from the top-left.
+# swipe0: left paw slashes up and across, claws out; right paw drops back.
+name vm1_swipe0
+size 96 64
+shadow steel_00
+grid
+.
+.....................................Z
+.....................................Z
+.....................................V.......Z
+....................................YV......YW
+....................................YV......YS
+...................................YYS.....YVS.......W
+...................................YVS.....YV.......Z
+.................................iYYVS....YVS......YV
+...............................jjjYVVS..jYYVS.....YVS
+...............................kjjiVSSjkjYVVS....YYV
+..............................jjjjihgekjjihVSd...YVS.......Z
+..............................jjiihgfjjjiihgedjjYYVS......ZW
+..............................iiihgfejjiihgfejjYYVSS.....YS
+..............................hhhgfediiihgfejkjjiVSe....YV
+.............................jgggfeddhhhgfedjjjihgfed..YVS
+............................jjkeeedddfgffedhjjiihgedd.YYVS
+...........................jjkkkddddjjeedddhiihhgfejjYYVS
+..........................jjjkkkjhhjjjjddddhhhggfejkjYVVS
+.........................ijjhjjjjjhhjjiiiihhfgfeejkjjihSSd
+.........................ijjjjjjjjhhhjiiiihhheeddjjjiihfed
+.........................ijjjjjjjjjhhgiiihhhhgdddiiiihgfdd
+.........................ijjjjjjjjjjgggiihhhgggffiihhgfedd
+.........................iijjjjjjjiiiggghhhhgggffghggfedd
+.........................iiiiiiiiiiiiiifffhgggffdfffeeddd
+.........................hiiiiiiiiiiihhhhheeedddccdddddd
+.........................hhiiiiiiiihhhhhhgggedddeeddddd
+.........................ghhhhhhhhhhhhhggggffffeedddddd
+.........................hghhhhhhhhhhgggggffffeeedddddd
+........................ihfggghhhggggggggffffeeeddddbdd
+.......................ijhhfggggggggggfffffeeeedddddddd
+.......................ijhhjfffgggfffffffeeeedddddddddd
+......................ijjjhjjefffffffffeeeeeddddddddddd
+......................ijjjhhjieeeeeeeeeeeedddddddddddd..........................W
+.....................ijjjjhhiiideeeeeeddddddddddddddd..........................YV......V
+....................ihjjjjjhgiiidddddddddddddddddddd....................YV....jYVSfd..YVf
+....................ihjjjjjgggiihhddddddddddddddddd.....................YVSfd.jYVhfdiYYVSe
+...................ijhhjjjjiggihhhhgddddddddddddd......................jYYVSedjjihfddYihged
+...................ijhhjjjiiggghhhgggffeddddddbbb.................Z....kjihgedjjigfddjihged
+..................ijjjhjjjiiigfffhgggffeedddbbbb..................YVSg.kjihgeddihgfddjihgedd
+.................ijjjjhhjiiiiifffeegfffeebbbbbdd..................jYVSfdjihgeddhhfeddihgfedd
+.................ijjjjhhiiiiihhffeeeddccbbbbdddd.................jjjihfdihgfdddhgfdddihgedd
+................ijjjjjjhgiiiihhhgeedddccbdddddd..................kjjigfddhgeddffedddgggfdddd
+................ijhjjjjggiiihhhhgggffeeeddddddd..................jjihgfddfedddiiddfeeeedddbdd
+...............ijhhjjjjiggiihhhgggfffeedddddddd..................jiihgeddedddiiihffegffeebbdd
+..............iijjhjjjiiggghhhhgggfffeeddddddbd..................hihgfdddhhhhgggfffggffeebdddd
+..............ijjjhjjjiiiggfhhhgggffeeeddddbbd....................ggfeddjhhhggggffgggffecbdddd
+.............ijjjjhhjiiiiifffhgggfffeedddbbbdd....................jeeddjjjjjiiihhhggfffedddddd
+.............ijjjjhhjiiiiiffffeggffeeebbbbdddd....................jhikjjjjjiiiihhhggffeedddddd
+............ijjjjjjhgiiiiihhfeeedddccbbbddddd.....................jjhhjjjjjiiihhhgggffeedddddd
+...........iijjjjjjhgiiiihhhhgeedddccbddddddd.....................jjjhhjjjiiiihhgggffeeddddddd
+...........ijjhjjjjiggiiihhhggggffeeedddddddd.....................jjjjjjjiiiihhhggfffeeddddddd
+..........ijjjhjjjjiggiihhhhgggfffeedddddddd......................ijjjjiiiiihhhgggffeedddddddd
+..........ijjjhhjjiiiggihhhggggffeeedddddbdd......................iiiiiiiiihhhgggffeedddddddd
+.........ijjjjhhjjiiiggfhhhgggfffeeddddbbbdd......................hiiiiiihhhhgggffeeedddddddd
+........iijjjjjhjiiiiigffhhgggfffeeddbbbbdd........................hiiihhhhhgggffeeeddddddddd
+........ijjjjjjhhiiiiihfffeegfffeecbbbbdddd........................ghhhhhhggggffeeeddddddddddd
+.......ijjjjjjjhgiiiiihhffeeedddccbbbdddddd.........................ggggggggfffeeedddddddbdddd
+.......ijjjjjjjjgiiiihhhhgeeeddcccddddddddd..........................fgggffffeeeddddddddbddddd
+......ijjjjjjjjiggiiihhhhgggfffeeedddddddd............................iffffeeeddddddddccdddddbd
+.....iijjjhhjjiigggihhhhggggfffeeddddddddd............................iiiidddddddddedddeeddddbd
+.....ijjjjhhjjiiiggihhhhgggfffeeedddddbddd............................iiiiigggffffeeddfeedddbbd
+....iijjjjjhjiiiiigfhhhggggfffeeddddbbddd.............................hiiiiiiigfffeegffeeddbbddd
+....ijjjjjjhhiiiiigfffhgggfffeeeddbbbdddd.............................hiiiiiiiihhhgggffeeddbbddd

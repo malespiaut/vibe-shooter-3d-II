@@ -332,6 +332,12 @@ add_test(NAME hud_faces_t345
 set_tests_properties(hud_faces_t345 PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# View-model frames, weapons 1-4 (weapons.md): build step output, sizes, frame names, palcheck.
+add_test(NAME viewmodels_1_4
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_viewmodels.py)
+set_tests_properties(viewmodels_1_4 PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
 # Mixer: unit tests on synthetic sounds, and a scripted mix of real effects
 # into build/mixer_wav.wav (evidence).
 add_executable(test_mixer tests/test_mixer.c)
