@@ -1,0 +1,24 @@
+# Window-mode fire and weapon keys (#205): recorded with --record from a
+# real window session on maps/weapontest.vmap (input injected through XTest
+# under Xvfb). Left mouse held 48 tics (pistol), key 1 (Claws), Left Ctrl
+# held 22 tics, key 2 (pistol), Right Ctrl held 18 tics.
+# Expected sounds: pistol_fire 104 116 128 140, weapon_switch 170,
+# claw_swish 199 213, weapon_switch 231, pistol_fire 261 273.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map weapontest
+in 104 0 0 0 -
+in 48 0 0 0 F
+in 18 0 0 0 -
+in 1 0 0 0 1
+in 28 0 0 0 -
+in 22 0 0 0 F
+in 10 0 0 0 -
+in 1 0 0 0 2
+in 29 0 0 0 -
+in 18 0 0 0 F
+in 17 0 0 0 -
+expect kills=1
+expect health=47
