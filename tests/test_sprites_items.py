@@ -22,6 +22,12 @@ TABLE = {
     "linen": (24, 16, 1), "plate": (32, 20, 2), "bandage": (8, 8, 1),
     "key_green": (16, 24, 2), "key_blue": (16, 24, 2), "key_violet": (16, 24, 2),
     "catnip": (16, 20, 2), "amulet": (16, 16, 1), "ninth": (16, 24, 1),
+    # Ammo, Litter Satchel and weapon pickups (#85).
+    "vial": (8, 16, 1), "jar": (16, 20, 1), "yarn": (16, 12, 1),
+    "basket": (24, 20, 1), "scarab": (12, 10, 1), "crate_scarab": (28, 20, 1),
+    "shard": (12, 16, 1), "orb": (20, 20, 2), "satchel": (24, 20, 1),
+    "wpn3": (32, 11, 1), "wpn4": (32, 15, 1), "wpn5": (32, 11, 1),
+    "wpn6": (32, 11, 1), "wpn7": (32, 14, 1),
 }
 
 
@@ -64,7 +70,7 @@ def main():
                 print("ok %-22s %dx%d ramps %s" % (name, w, h, ",".join(sorted(ramps))))
         got = {f for f in os.listdir(out) if f.endswith(".tex")}
         assert got == want, "unexpected/missing: %s" % sorted(got ^ want)
-        assert len(want) == 18, len(want)
+        assert len(want) == 33, len(want)
         r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "palcheck.py"), out],
                            capture_output=True, text=True)
         print(r.stdout.strip())

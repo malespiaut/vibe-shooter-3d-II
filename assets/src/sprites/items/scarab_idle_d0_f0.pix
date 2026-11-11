@@ -1,0 +1,23 @@
+# Scarab (items.md Ammo, 1 scarab): gold scarab beetle seen from the front and above, wing-case seam
+# down the middle, lapis eyes, legs splayed. Drawn by hand.
+name scarab_idle_d0_f0
+size 12 10
+= s blue_06
+= t blue_08
+= a gold_02
+= b gold_04
+= c gold_06
+= d gold_08
+= e gold_10
+= I gold_11
+grid
+...IeeId....
+..eIeedcd...
+.eIeedaccb..
+.edddacccb..
+dedddacccbc.
+.ddccabbba..
+b.ctstcbb.a.
+.b.cbbbb.a..
+b..b.a.a..a.
+............
