@@ -1,0 +1,14 @@
+{
+  "_doc": "Intermission tally panel (hud.md Flow). tools/panels.py reads it. header = level name recess (one menu-font line), body = KILLS / ITEMS / SECRETS / TIME-PAR (menu font, 20 px pitch). Screen px.",
+  "size": [320, 240],
+  "wall": {"ramp": "sand", "base": 4, "lit": 6, "shade": 2, "joint": 1, "block": [48, 24], "seed": 7},
+  "stele": {"ramp": "sand", "box": [12, 8, 305, 229], "base": 10, "grain": 26, "seed": 41,
+            "joints": [58, 196]},
+  "recess": {"ramp": "sand", "fill": 2, "shadow": 0, "lip": 5},
+  "header": [28, 22, 291, 45],
+  "body": [28, 72, 291, 183],
+  "eyes": [[20, 202, 0], [280, 202, 1]],
+  "friezes": [[44, 275, 205, 8], [24, 295, 62, 4]],
+  "straps": [[12, 16], [301, 305]],
+  "rivets": [[13, 12], [13, 112], [13, 222], [302, 12], [302, 112], [302, 222]]
+}

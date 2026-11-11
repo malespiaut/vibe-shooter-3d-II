@@ -1,0 +1,24 @@
+# Gold end cap of a papyrus scroll rod, left end, seen side-on: ball tip,
+# neck, collar; the rod joins at the right. tools/panels.py mirrors it for the
+# right end (two entries darker). Light from the top-left. 10x16, hud legend
+# (assets/src/hud/legend.txt): a-e gold dark -> light.
+name finial
+size 10 16
+shadow sand_01
+grid
+......edc.
+......edcb
+..ed..edcb
+.eeed.edcb
+eeddc.edcb
+edddcdedcb
+edccccedcb
+dcccbcdcbb
+dccbbcdcba
+cccbbbdcba
+cbbbabcbba
+.bbaa.cbba
+..ba..cbba
+......cbba
+......cba.
+......ba..

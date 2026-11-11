@@ -653,3 +653,9 @@ add_test(NAME jukebox COMMAND test_jukebox ${CMAKE_SOURCE_DIR}/assets/src/music
 add_test(NAME music_events
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_music_events.py
           $<TARGET_FILE:game> ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/test_tmp/music_events)
+
+# Text panels (issue #156): build/panel_mockup draws papyrus_panel / tally_panel
+# with the menu font through draw2d, for evidence and to check the text fits.
+add_executable(panel_mockup tools/panel_mockup.c)
+target_link_libraries(panel_mockup PRIVATE engine)
+add_dependencies(panel_mockup fonts_tex colormap)
