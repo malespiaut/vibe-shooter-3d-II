@@ -40,8 +40,9 @@ int item_apply(game_state *gs, int type);
 void items_touch(game_state *gs);
 
 /* Fills `out` (up to `max`) with every pickup still lying in the world:
- * untaken pickup_t in spawn order, then live weapon-pickup thinkers in
- * creation order. Read only (the renderer's view of live state). Returns
+ * untaken pickup_t in spawn order, then, in creation order, live
+ * weapon-pickup thinkers and every decoration thinker (a broken pot or an
+ * exploded barrel as its gib frame, thinker_gib_frame()). Read only (the renderer's view of live state). Returns
  * the count. */
 int items_render_things(const game_state *gs, render_thing *out, int max);
 

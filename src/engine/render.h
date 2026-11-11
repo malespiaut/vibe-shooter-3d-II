@@ -76,6 +76,7 @@ typedef struct {
     uint16_t type;
     fix_t x, y;    /* floor position: the TEX origin (bottom centre) sits here */
     angle_t angle; /* facing, for 8-direction sprites */
+    int gib;       /* 0: idle sprite; n > 0: gib frame n - 1 (sprite_def gib) */
 } render_thing;
 
 /* Loads the TEX of every wall texture `map` uses, from
@@ -86,7 +87,9 @@ int render_init(const bast_map *map, const char *assets_dir);
 /* render_init() also loads the sprite frames of every map entity type that
  * has a sprite (sprite_def_for_entity()): <name>_idle_d<0..7>_f<0..frames-1>
  * .tex from `assets_dir`/sprites, else `assets_dir`/test. d0 of every frame
- * is required; a missing d1..d7 falls back to d0 (things without facing). */
+ * is required; a missing d1..d7 falls back to d0 (things without facing).
+ * Types with a gib animation (sprite_def gib) also load
+ * `assets_dir`/gibs/<gib>_gib_d0_f<0..SPRITE_GIB_FRAMES-1>.tex, all required. */
 void render_shutdown(void);
 const char *render_error(void);
 

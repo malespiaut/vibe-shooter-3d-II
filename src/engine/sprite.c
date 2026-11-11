@@ -43,6 +43,22 @@ static const sprite_def defs[BAST_ENT_TYPE_LIMIT] = {
     [BAST_ENT_CATNIP_FRENZY] = { "items/catnip", 2, 1 },
     [BAST_ENT_CATS_EYE_AMULET] = { "items/amulet", 1, 1 },
     [BAST_ENT_NINTH_LIFE] = { "items/ninth", 1, 1 },
+
+    /* Decorations (items.md; assets/src/sprites/props/, #127, #128; the pot
+     * is assets/src/sprites/prop_pot.png, copied by 48-props.sh). Live:
+     * drawn from game state, so a broken pot shows its gibs. The brazier
+     * flickers at 6 tics a frame; the rack's LEDs blink at the shimmer
+     * rate. */
+    [BAST_ENT_KIBBLE_BARREL] = { "props/kibble_barrel", 1, 1, 0, "kibble_barrel" },
+    [BAST_ENT_PAPYRUS_POT] = { "props/papyrus_pot", 1, 1, 0, "prop_pot" },
+    [BAST_ENT_OBELISK_STUB] = { "props/obelisk_stub", 1, 1, 0, NULL },
+    [BAST_ENT_PILLAR_SAND] = { "props/pillar_sand", 1, 1, 0, NULL },
+    [BAST_ENT_BRAZIER] = { "props/brazier", 4, 1, 6, NULL },
+    [BAST_ENT_CAT_STATUE] = { "props/cat_statue", 1, 1, 0, NULL },
+    [BAST_ENT_CRATE] = { "props/crate", 1, 1, 0, NULL },
+    [BAST_ENT_FLOODLIGHT] = { "props/floodlight", 1, 1, 0, NULL },
+    [BAST_ENT_DOG_BANNER] = { "props/dog_banner", 1, 1, 0, NULL },
+    [BAST_ENT_SERVER_RACK] = { "props/server_rack", 2, 1, 0, NULL },
 };
 
 const sprite_def *sprite_def_for_entity(int type)
@@ -63,4 +79,12 @@ int sprite_anim_frame(uint32_t tic, int frames)
     if (frames <= 1)
         return 0;
     return (int)((tic / SPRITE_SHIMMER_TICS) % (uint32_t)frames);
+}
+
+int sprite_def_frame(const sprite_def *def, uint32_t tic)
+{
+    const uint32_t tics = def->tics > 0 ? (uint32_t)def->tics : SPRITE_SHIMMER_TICS;
+    if (def->frames <= 1)
+        return 0;
+    return (int)((tic / tics) % (uint32_t)def->frames);
 }

@@ -10,8 +10,9 @@
 
 enum {
     SPRITE_DIRS = 8,
-    SPRITE_MAX_FRAMES = 2, /* idle animation frames per direction */
-    SPRITE_SHIMMER_TICS = 18 /* items.md: 2-frame 18-tic shimmer */
+    SPRITE_MAX_FRAMES = 4, /* idle animation frames per direction */
+    SPRITE_SHIMMER_TICS = 18, /* items.md: 2-frame 18-tic shimmer */
+    SPRITE_GIB_FRAMES = 8 /* tools/gibs.py frames per gib animation */
 };
 
 /* Direction frame 0..7 for a thing facing `thing_angle`, seen by a viewer
@@ -32,6 +33,8 @@ typedef struct {
     const char *name; /* may hold a subdirectory: "items/fish" */
     int frames;       /* 1..SPRITE_MAX_FRAMES */
     int live;
+    int tics;         /* tics per idle frame, 0 = SPRITE_SHIMMER_TICS */
+    const char *gib;  /* gib animation gibs/<gib>_gib_d0_f<0..7>.tex, or NULL */
 } sprite_def;
 
 /* Sprite of map entity `type`, or NULL if that type has no sprite yet.
@@ -45,5 +48,9 @@ const char *sprite_name_for_entity(int type);
 /* Idle frame shown at render tic `tic` by a sprite with `frames` frames:
  * SPRITE_SHIMMER_TICS tics per frame, looping. */
 int sprite_anim_frame(uint32_t tic, int frames);
+
+/* Idle frame of `def` at render tic `tic`: def->tics (or
+ * SPRITE_SHIMMER_TICS) tics per frame, looping. */
+int sprite_def_frame(const sprite_def *def, uint32_t tic);
 
 #endif

@@ -209,8 +209,17 @@ enum bast_entity_type {
     BAST_ENT_NINTH_LIFE = 68,
 
     BAST_ENT_KIBBLE_BARREL = 96, /* items.md Decorations: explodes, chains */
+    BAST_ENT_PAPYRUS_POT = 97,   /* breaks into gibs, drops nothing */
+    BAST_ENT_OBELISK_STUB = 98,
+    BAST_ENT_PILLAR_SAND = 99,
+    BAST_ENT_BRAZIER = 100,      /* fullbright, animated */
+    BAST_ENT_CAT_STATUE = 101,
+    BAST_ENT_CRATE = 102,
+    BAST_ENT_FLOODLIGHT = 103,
+    BAST_ENT_DOG_BANNER = 104,   /* hanging: not solid */
+    BAST_ENT_SERVER_RACK = 105,  /* animated (blinking LEDs) */
 
-    BAST_ENT_TYPE_LIMIT = 97 /* one past the highest type number in use */
+    BAST_ENT_TYPE_LIMIT = 106 /* one past the highest type number in use */
 };
 
 /* "PLAYER_START" etc. (the enum name without BAST_ENT_), NULL if unknown. */

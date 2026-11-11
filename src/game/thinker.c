@@ -63,6 +63,44 @@ uint16_t thinker_spawn_barrel(thinkers_t *th, fix_t x, fix_t y)
     return (uint16_t)th->count;
 }
 
+int thinker_is_decor(int type)
+{
+    return type >= BAST_ENT_KIBBLE_BARREL && type <= BAST_ENT_SERVER_RACK;
+}
+
+uint16_t thinker_spawn_decor(thinkers_t *th, uint16_t type, fix_t x, fix_t y)
+{
+    if (type == BAST_ENT_KIBBLE_BARREL)
+        return thinker_spawn_barrel(th, x, y);
+    if (th->count >= MAX_THINKERS || !thinker_is_decor(type))
+        return 0;
+    thinker_t *t = &th->list[th->count++];
+    memset(t, 0, sizeof *t);
+    t->type = type;
+    t->state = TH_STATE_STAND;
+    t->x = x;
+    t->y = y;
+    t->radius = PROP_RADIUS;
+    if (type == BAST_ENT_DOG_BANNER) {
+        t->state = TH_STATE_PROP;
+        t->radius = 0;
+    } else if (type == BAST_ENT_PAPYRUS_POT) {
+        t->flags = TH_FLAG_SHOOTABLE;
+        t->health = POT_HP;
+        t->max_health = POT_HP;
+    }
+    return (uint16_t)th->count;
+}
+
+int thinker_gib_frame(const thinker_t *t)
+{
+    if (t->state != TH_STATE_DEAD ||
+        (t->type != BAST_ENT_PAPYRUS_POT && t->type != BAST_ENT_KIBBLE_BARREL))
+        return -1;
+    const int f = (PROP_GIB_TICS - t->tics) / PROP_GIB_FRAME_TICS;
+    return f < 0 ? 0 : f > PROP_GIB_FRAMES - 1 ? PROP_GIB_FRAMES - 1 : f;
+}
+
 uint16_t thinker_alloc(thinkers_t *th)
 {
     for (int i = 0; i < th->count; i++) {
@@ -95,8 +133,8 @@ void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill)
                 en->flags |= TH_FLAG_AMBUSH;
             continue;
         }
-        if (e->type == BAST_ENT_KIBBLE_BARREL) {
-            thinker_spawn_barrel(th, e->x, e->y);
+        if (thinker_is_decor(e->type)) {
+            thinker_spawn_decor(th, e->type, e->x, e->y);
             continue;
         }
         thinker_t *t = thinker_get(th, thinker_spawn_pickup(th, e->type, e->x, e->y));
@@ -123,6 +161,12 @@ int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage)
     if (t->type == BAST_ENT_KIBBLE_BARREL) {
         t->state = TH_STATE_DYING;
         t->tics = BARREL_FUSE_TICS;
+        return 1;
+    }
+    if (t->type == BAST_ENT_PAPYRUS_POT) {
+        t->state = TH_STATE_DEAD;
+        t->tics = PROP_GIB_TICS;
+        t->flags |= TH_FLAG_GIB;
         return 1;
     }
     t->state = TH_STATE_DEAD;

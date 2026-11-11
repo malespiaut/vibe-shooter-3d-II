@@ -25,6 +25,7 @@ enum {
     TH_STATE_PAIN = 6,   /* flinch */
     TH_STATE_DYING = 7,  /* killed barrel: explodes when `tics` runs out */
     TH_STATE_FREE = 8,   /* spent projectile or effect: slot reusable */
+    TH_STATE_PROP = 9,   /* non-solid decoration (DOG_BANNER): drawn only */
 };
 
 /* thinker_t.movedir: 8 compass directions, counter-clockwise from east. */
@@ -51,6 +52,21 @@ enum {
 #define BARREL_HP 20
 #define BARREL_RADIUS ((fix_t)16384)
 #define BARREL_FUSE_TICS 4 /* from the killing hit to the explosion */
+
+/* Decorations (items.md Decorations), types BAST_ENT_KIBBLE_BARREL..
+ * BAST_ENT_SERVER_RACK. Solid ones are live (thinker_alive) and block the
+ * player and enemies at PROP_RADIUS; only the pot and the barrel are
+ * shootable. DOG_BANNER hangs overhead: TH_STATE_PROP, never blocks. The
+ * papyrus pot breaks on any hit (POT_HP 5, below every weapon's minimum)
+ * and drops nothing. A broken pot or exploded barrel is TH_STATE_DEAD with
+ * `tics` counting PROP_GIB_TICS down to 0 (projectiles_tic): its gib
+ * animation plays one frame per PROP_GIB_FRAME_TICS, then the last frame
+ * (the debris) stays. */
+#define PROP_RADIUS ((fix_t)16384) /* 0.25 u */
+#define POT_HP 5
+#define PROP_GIB_FRAMES 8
+#define PROP_GIB_FRAME_TICS 4
+#define PROP_GIB_TICS (PROP_GIB_FRAMES * PROP_GIB_FRAME_TICS)
 
 /* thinker_t.flags */
 enum {
@@ -101,7 +117,7 @@ int thinker_alive(const thinker_t *t);
  * The one skill-placement test, for thinkers and pickups (game/items.c). */
 int entity_on_skill(const bast_map_entity *e, int skill);
 
-/* Empties the list and spawns every enemy, weapon-pickup and kibble-barrel
+/* Empties the list and spawns every enemy, weapon-pickup and decoration
  * entity of `map` flagged for `skill` (1..3), in entity order. Enemies keep
  * AMBUSH (TH_FLAG_AMBUSH). Weapon pickups keep the
  * entity's tag and PICKUP_TRIGGER (TH_FLAG_TRIGGER). Other item types live
@@ -120,6 +136,19 @@ uint16_t thinker_spawn_pickup(thinkers_t *th, uint16_t type, fix_t x, fix_t y);
  * or 0 when full. */
 uint16_t thinker_spawn_barrel(thinkers_t *th, fix_t x, fix_t y);
 
+/* 1 for a decoration type (BAST_ENT_KIBBLE_BARREL..BAST_ENT_SERVER_RACK). */
+int thinker_is_decor(int type);
+
+/* Appends a decoration of `type` (see PROP_RADIUS): the barrel through
+ * thinker_spawn_barrel(), the pot shootable, DOG_BANNER as TH_STATE_PROP,
+ * the rest solid and inert. Returns its id, or 0 when full or `type` is
+ * not a decoration. */
+uint16_t thinker_spawn_decor(thinkers_t *th, uint16_t type, fix_t x, fix_t y);
+
+/* Gib frame (0..PROP_GIB_FRAMES-1) of a broken pot or exploded barrel,
+ * or -1 when `t` is not one. */
+int thinker_gib_frame(const thinker_t *t);
+
 /* A zeroed thinker for a projectile or effect: the first TH_STATE_FREE
  * slot, else a new one at the end. Returns its id, 0 when full. Only
  * transient thinkers ever become FREE, so ids that other thinkers keep
@@ -132,7 +161,8 @@ thinker_t *thinker_get(thinkers_t *th, uint16_t id);
 /* Applies `damage` to a live thinker: at HP <= 0 it becomes dead (counted
  * as a kill when it counts) and gibs at HP <= -(max HP / 2). A barrel
  * instead becomes TH_STATE_DYING with BARREL_FUSE_TICS on its fuse
- * (projectiles_tic explodes it). Returns 1 when this hit killed it. */
+ * (projectiles_tic explodes it); a pot breaks at once (TH_STATE_DEAD,
+ * TH_FLAG_GIB, PROP_GIB_TICS on `tics`). Returns 1 when this hit killed it. */
 int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage);
 
 #endif

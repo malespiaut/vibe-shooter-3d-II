@@ -47,7 +47,16 @@ TYPES = (
     (66, "CATNIP_FRENZY", "item", "Catnip Frenzy"),
     (67, "CATS_EYE_AMULET", "item", "Cat's Eye Amulet"),
     (68, "NINTH_LIFE", "item", "Ninth Life"),
-    (96, "KIBBLE_BARREL", "decoration", "Kibble Barrel"),)
+    (96, "KIBBLE_BARREL", "decoration", "Kibble Barrel"),
+    (97, "PAPYRUS_POT", "decoration", "Papyrus Pot"),
+    (98, "OBELISK_STUB", "decoration", "Obelisk Stub"),
+    (99, "PILLAR_SAND", "decoration", "Sandstone Pillar"),
+    (100, "BRAZIER", "decoration", "Brazier"),
+    (101, "CAT_STATUE", "decoration", "Cat Statue"),
+    (102, "CRATE", "decoration", "Crate"),
+    (103, "FLOODLIGHT", "decoration", "Floodlight"),
+    (104, "DOG_BANNER", "decoration", "Dog Banner"),
+    (105, "SERVER_RACK", "decoration", "Server Rack"),)
 
 CATEGORIES = ("special", "enemy", "weapon", "item", "decoration")
 

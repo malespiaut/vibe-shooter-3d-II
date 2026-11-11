@@ -371,17 +371,37 @@ static int overlaps_player(const game_state *gs, fix_t x, fix_t y, fix_t r)
     return dx * dx + dy * dy < rr * rr;
 }
 
+/* 1 when the circle (x, y, r) overlaps a solid decoration (a live one,
+ * thinker_is_decor) that the circle at (x0, y0) did not already overlap,
+ * so a body can always walk out of one. */
+static int overlaps_prop(const game_state *gs, fix_t x0, fix_t y0, fix_t x, fix_t y, fix_t r)
+{
+    for (int i = 0; i < gs->things.count; i++) {
+        const thinker_t *o = &gs->things.list[i];
+        if (!thinker_is_decor(o->type) || !thinker_alive(o))
+            continue;
+        const int64_t rr = (int64_t)r + o->radius;
+        const int64_t dx = (int64_t)x - o->x, dy = (int64_t)y - o->y;
+        const int64_t ex = (int64_t)x0 - o->x, ey = (int64_t)y0 - o->y;
+        if (dx * dx + dy * dy < rr * rr && ex * ex + ey * ey >= rr * rr)
+            return 1;
+    }
+    return 0;
+}
+
 /* Moves `t` by `delta` along one axis: the largest part of it (halving)
- * that does not overlap a blocking tile, nor bring it closer into the
- * player's circle. */
+ * that does not overlap a blocking tile or a solid decoration, nor bring
+ * it closer into the player's circle. */
 static void move_axis(const game_state *gs, thinker_t *t, fix_t delta, int axis_y)
 {
     fix_t *pos = axis_y ? &t->y : &t->x;
     const fix_t start = *pos;
+    const fix_t x0 = t->x, y0 = t->y;
     const int was_on_player = overlaps_player(gs, t->x, t->y, t->radius);
     for (; delta != 0; delta /= 2) {
         *pos = start + delta;
         if (!ai_circle_blocked(gs, t->x, t->y, t->radius) &&
+            !overlaps_prop(gs, x0, y0, t->x, t->y, t->radius) &&
             (was_on_player || !overlaps_player(gs, t->x, t->y, t->radius)))
             return;
     }

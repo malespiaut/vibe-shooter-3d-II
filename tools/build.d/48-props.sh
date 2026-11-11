@@ -10,6 +10,17 @@ set -eu
 cd "$(dirname "$0")/../.."
 out=${PROPS_OUT:-assets/gen/sprites/props}   # PROPS_OUT: ctest sprites_props_dt
 python3 tools/items.py --src assets/src/sprites/props -o "$out" --clean
+# The papyrus pot is the hand-drawn assets/src/sprites/prop_pot.png (#53),
+# also the source of its gibs (assets/src/gibs/prop_pot.json): one indexed
+# PNG, written here under the world-sprite name the engine loads.
+python3 - assets/src/sprites/prop_pot.png "$out/papyrus_pot_idle_d0_f0.tex" <<'PY'
+import sys
+sys.path.insert(0, "tools")
+from PIL import Image
+import bast
+img = Image.open(sys.argv[1]); img.load()
+bast.Tex.from_image(img, origin=(img.size[0] // 2, img.size[1])).save(sys.argv[2])
+PY
 n=0
 for json in assets/src/sprites/props/*/sprite.json; do
     [ -e "$json" ] || continue

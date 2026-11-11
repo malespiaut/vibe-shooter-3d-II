@@ -296,13 +296,18 @@ int items_render_things(const game_state *gs, render_thing *out, int max)
         const pickup_t *pk = &gs->pickups[i];
         if (pk->taken)
             continue;
-        out[n++] = (render_thing){ pk->type, pk->x, pk->y, 0 };
+        out[n++] = (render_thing){ pk->type, pk->x, pk->y, 0, 0 };
     }
     for (int i = 0; i < gs->things.count && n < max; i++) {
         const thinker_t *t = &gs->things.list[i];
+        if (thinker_is_decor(t->type)) {
+            /* Standing, fused or hanging: idle sprite; broken: gibs. */
+            out[n++] = (render_thing){ t->type, t->x, t->y, t->angle, thinker_gib_frame(t) + 1 };
+            continue;
+        }
         if (!(t->flags & TH_FLAG_PICKUP) || t->state == TH_STATE_TAKEN)
             continue;
-        out[n++] = (render_thing){ t->type, t->x, t->y, t->angle };
+        out[n++] = (render_thing){ t->type, t->x, t->y, t->angle, 0 };
     }
     return n;
 }
