@@ -1,29 +1,32 @@
-# Level 6 "Sphinx Under Construction" walkthrough (maps/level6.vmap, layout
-# and coordinates in maps/src/level6.txt), skill 2. High-level commands only.
-# Layout only: the map has no enemies yet (#178 adds them and turns this
-# into a fighting run). Climbs the scaffold, takes both secrets, goes
-# through both one-way drops, takes the Satchel, both keys and the Howler,
-# and uses the exit lift.
-# Doors: goto does not path through a closed door, so each one is opened by
-# hand (goto the tile in front, face, use, wait 32).
+# Level 6 "Sphinx Under Construction" completion (#178): maps/level6.vmap
+# (maps/src/level6.txt), skill 2, no god, from the --warp default inventory
+# (Claws + Ankh Pistol, 50 charges; no carry-over yet). High-level commands.
 vsdemo 1
 level 6
 skill 2
 seed 0
 
-# Workers' camp: the scaffold door is north of the start.
+goto 8 2               # Hairball Scattergun
+weapon 2
+face 0
+clear 24
+goto 22 2              # Sistrum Repeater
+weapon 4
+clear 24
 goto 10 4              # Fish Snack
 goto 18 8              # Yarn Bundle
 goto 24 5              # Charge Jar
+clear 24
+expect kills=3
 goto 4 9
 face 90
 use
 wait 32
-# Scaffold climb, one gap per level.
 goto 4 12
+clear 12
 goto 3 13              # Fish Snack
 goto 9 17              # Charge Vial
-# Secret 1: the fresh-cut sandstone block in the east wall.
+clear 12
 goto 10 17
 face 0
 use
@@ -31,66 +34,120 @@ wait 140
 goto 12 16
 expect secrets=1
 goto 13 18             # Golden Sardine
+goto 9 17
+clear 12
 goto 3 21              # Tuna Tin
+clear 12
 goto 9 26              # Charge Vial
+clear 12
 goto 3 30              # Fish Snack
+clear 12
 goto 9 33              # Yarn Bundle
+clear 12
 goto 3 37              # Tuna Tin
+clear 12
 goto 9 41              # Fish Snack
-# One-way drop 1: east onto the Sphinx's back.
+clear 12
+expect kills=6
 goto 10 44
 face 0
 use
 wait 32
 goto 13 44
 expect tile=13,44
+clear 12
 goto 16 45             # Charge Vial
 goto 20 44             # Sun Shard
-# One-way drop 2: down the chute into Paw Plaza.
+clear 12
+expect kills=8
 goto 19 44
 face 270
 use
 wait 32
+weapon 4
+goto 19 42
+face 270
+clear 14
+goto 19 40
+clear 8
+goto 19 42
+clear 14
+wait 60
+clear 14
 goto 19 39
-expect tile=19,39
-# Secret 2: the gap in the scaffold boards, then the loose boards beside it.
-goto 15 39
-goto 13 39
-face 90
-use
-wait 105
-goto 12 41
-expect secrets=2
-goto 12 42             # Cat's Eye Amulet
-goto 15 42             # Sun Orb
-# Paw Plaza.
+clear 10
+goto 19 42
+clear 14
+wait 60
+clear 14
+goto 19 39
+clear 14
 goto 14 37             # Fish Snack
+clear 14
+# Paw Plaza set piece: round the north paw onto the Mastiff's back.
 goto 30 38             # Charge Jar
+goto 30 34
+face 270
+clear 10
+goto 30 32
+face 180
+clear 10
 goto 23 28             # Litter Satchel
+goto 30 27
+face 270
+clear 10
 goto 30 21             # Scarab Crate
+expect kills=29
 goto 14 22             # Tuna Tin
 goto 28 30             # green key
-# Green door into the Sphinx's chest.
+# Green door into the Sphinx's chest: the Shield Wall waits inside.
 goto 30 30
 face 0
 use
 wait 32
+goto 33 32             # Charge Jar
 goto 33 28             # Scarab Plate
 expect armor=200
-goto 44 33             # Tuna Tin
+goto 44 33             # Tuna Tin, along the north wall
 goto 45 30             # Sphinx Howler on its pedestal
 weapon 7
-# Grinding Room.
+face 180
+clear 6
+expect kills=34
+# Grinding Room: Chompers below, Dachshunds on the scaffold above. Open the
+# door, then hold the Heart Chamber side and let the floor come through it.
+weapon 4
 goto 34 33
 face 90
 use
 wait 32
-goto 34 36
+goto 34 32
+face 90
+clear 8
+wait 60
+clear 8
+wait 60
+clear 8
+goto 34 33
+face 90
+use                    # the door shut meanwhile
+wait 32
+goto 34 35
+weapon 4
+clear 14
 goto 46 35             # Fish Snack
+clear 14
 goto 46 43             # Charge Vial
+clear 14
+goto 44 44
+clear 14
 goto 39 46             # blue key, on the scaffold behind the face
+clear 14
 goto 32 43             # Tuna Tin
-# Back through the Heart Chamber to the blue door.
+clear 14
+expect kills=48
+# Back through the Heart Chamber to the blue door; the lift landing's guard
+# comes out through it into the Howler's cone.
 goto 34 35
 face 270
 use
@@ -98,8 +155,20 @@ wait 32
 goto 39 27
 face 270
 use
-wait 32
+wait 20
+goto 39 29
+weapon 7
+face 39 26
+clear 6
+weapon 4
+clear 10
+wait 40
+clear 10
+goto 39 25
+clear 10
 goto 40 22             # Fish Snack
+clear 10
+expect kills=52
 goto 39 20
 face 270
 use
