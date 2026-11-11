@@ -167,6 +167,12 @@ entity WAYPOINT 39 23 0 @lift
 # 2 Yarn Bundles, 1 Scarab Crate, 1 Sun Shard, Sphinx Howler.
 # Workers' camp.
 entity FISH_SNACK 10 4 0
+# Pistol-start cache (#178): the level is balanced for the arsenal carried
+# from level 5 (levels.md Difficulty curve); without carry-over (--warp,
+# demos, a restart from a pistol start) these make it fair. With a full
+# arsenal they only add their ammo.
+entity HAIRBALL_SCATTERGUN 8 2 0
+entity SISTRUM_REPEATER 22 2 0
 entity CHARGE_JAR 24 5 0
 entity YARN_BUNDLE 18 8 0
 # Scaffold climb.
@@ -205,3 +211,79 @@ entity GOLDEN_SARDINE 13 18 0
 # Secret 2 (gap in the scaffold boards): Cat's Eye Amulet + Sun Orb.
 entity CATS_EYE_AMULET 12 42 0
 entity SUN_ORB 15 42 0
+
+# Enemies (#178, levels.md section 6). Skill 2: 52 = 14 Mutt, 12 Chomper,
+# 10 Pom, 6 Dachshund, 8 Shieldbearer, 2 Mastiff. Kitten drops the 13
+# flagged SKILL2|SKILL3 (39), Sabretooth adds the 10 flagged SKILL3 (62).
+# Breather: the camp and the scaffold hold only 6 Mutts.
+entity MUTT_TROOPER 15 6 180
+entity MUTT_TROOPER 25 7 180
+entity MUTT_TROOPER 29 6 180 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 6 21 270
+entity MUTT_TROOPER 7 29 270 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 6 37 270
+# Upper walk on the Sphinx's back.
+entity MUTT_TROOPER 18 45 180
+entity MUTT_TROOPER 21 46 180 flags=SKILL2|SKILL3
+# Paw Plaza: a Mastiff and 2 Shieldbearers hold the green door between the
+# paws (AMBUSH: the plaza's gunfire does not pull them out; they wake when
+# they see you, so you pick the fight and the flank). The rest spread round
+# the paws so the flanking routes are contested.
+entity MASTIFF_JUGGERNAUT 27 30 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity SHEPHERD_SHIELDBEARER 25 28 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity SHEPHERD_SHIELDBEARER 25 32 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 14 24 90
+entity MUTT_TROOPER 20 22 90
+entity MUTT_TROOPER 25 22 180 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 25 37 180
+entity MUTT_TROOPER 28 38 180 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 14 30 0
+entity MUTT_TROOPER 18 28 0 flags=SKILL3
+entity MUTT_TROOPER 21 36 270 flags=SKILL3
+entity POMERANIAN_PLASMAGUNNER 29 23 90
+entity POMERANIAN_PLASMAGUNNER 29 36 270
+entity POMERANIAN_PLASMAGUNNER 20 35 270
+entity POMERANIAN_PLASMAGUNNER 20 25 90
+entity POMERANIAN_PLASMAGUNNER 27 24 180 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 12 20 90
+entity CHIHUAHUA_CHOMPER 13 20 90 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 28 20 180
+entity CHIHUAHUA_CHOMPER 27 20 180 flags=SKILL2|SKILL3
+entity DACHSHUND_HOWITZER 30 39 180
+entity DACHSHUND_HOWITZER 30 20 180 flags=SKILL2|SKILL3
+entity SHEPHERD_SHIELDBEARER 13 35 270 flags=SKILL3
+# Heart Chamber, Shield Wall: 3 Shieldbearers in a line across the chamber,
+# between the green door and the Howler's pedestal.
+entity SHEPHERD_SHIELDBEARER 38 28 180
+entity SHEPHERD_SHIELDBEARER 38 30 180
+entity SHEPHERD_SHIELDBEARER 38 32 180
+# Grinding Room: Dachshunds on the scaffold above, Chompers on the floor.
+entity DACHSHUND_HOWITZER 33 46 270
+entity DACHSHUND_HOWITZER 37 46 270
+entity DACHSHUND_HOWITZER 42 46 270
+entity DACHSHUND_HOWITZER 46 45 270
+entity DACHSHUND_HOWITZER 40 45 270 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 33 40 270
+entity CHIHUAHUA_CHOMPER 34 42 270
+entity CHIHUAHUA_CHOMPER 44 40 270
+entity CHIHUAHUA_CHOMPER 45 42 270 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 39 36 180
+entity CHIHUAHUA_CHOMPER 37 43 270 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 43 43 270 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 35 43 270 flags=SKILL3
+entity POMERANIAN_PLASMAGUNNER 45 37 180
+entity POMERANIAN_PLASMAGUNNER 33 37 0 flags=SKILL2|SKILL3
+entity POMERANIAN_PLASMAGUNNER 39 43 270
+entity POMERANIAN_PLASMAGUNNER 44 43 180 flags=SKILL3
+entity SHEPHERD_SHIELDBEARER 44 36 180
+# Lift landing: the last stand before the exit lift.
+entity MASTIFF_JUGGERNAUT 39 21 90
+entity SHEPHERD_SHIELDBEARER 37 24 90
+entity SHEPHERD_SHIELDBEARER 41 24 90 flags=SKILL2|SKILL3
+entity POMERANIAN_PLASMAGUNNER 36 21 90
+entity POMERANIAN_PLASMAGUNNER 42 21 90
+entity POMERANIAN_PLASMAGUNNER 36 24 90
+entity POMERANIAN_PLASMAGUNNER 42 24 90 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 37 22 90
+entity CHIHUAHUA_CHOMPER 41 22 90 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 40 23 90 flags=SKILL3
