@@ -1,7 +1,7 @@
 # Level 6 "Sphinx Under Construction" (docs/design/levels.md section 6),
 # 48x48, built by tools/mkmap.py into maps/level6.vmap. Coordinates are
 # (x, y), y counted from the south (the last layout row is y = 0), as demo
-# goto. LAYOUT ONLY: no enemies yet (issue #178 adds the 52 and the named
+# goto. Enemies (#178) are at the end of the file; the named
 # WAYPOINTs below mark their areas.
 #
 # Critical path:
