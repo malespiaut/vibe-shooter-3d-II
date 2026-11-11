@@ -280,6 +280,13 @@ add_test(NAME sprites_items
 set_tests_properties(sprites_items PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
+# Status-bar cat faces, tiers 3-5 (hud.md Cat face): names, 32x32, damage build-up,
+# all 52 faces present, palcheck.
+add_test(NAME hud_faces_t345
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_hud_faces_t345.py)
+set_tests_properties(hud_faces_t345 PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
 # Mixer: unit tests on synthetic sounds, and a scripted mix of real effects
 # into build/mixer_wav.wav (evidence).
 add_executable(test_mixer tests/test_mixer.c)

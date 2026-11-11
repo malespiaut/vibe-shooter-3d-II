@@ -31,3 +31,10 @@ S  steel_06
 W  steel_13
 # pupils, mouth line: near-black, never pure black
 K  steel_00
+# blood (tier 3+ torn ear notch, bandage seep)
+b  red_06
+B  red_09
+# bandage linen (tier 4+)
+c  gray_08
+C  gray_11
+D  gray_14

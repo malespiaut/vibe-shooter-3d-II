@@ -1,0 +1,37 @@
+# tier 5 (1-19): tier 4 + fur on end, left ear flat
+name face_t5_idle1
+size 32 32
+shadow sand_00
+grid
+.
+.........................1
+........................21
+.......................Bb2
+......................B..b
+.....................33.B2
+.............4..4...D33pb21
+....555555...4.44.4D33pbp21
+.555555555555555DCc43ppppp1
+..5PPPPP5555525DCc24332ppp1
+..55PPP5555552DCc42433332p1
+.545PP5555552DCc24413333211111
+.....555DDDDDc44443333332221
+.....55DCCCCCc444333kkkk22
+..5455DCccCCCc44333kKzEEk2111
+....52DCCbBCCc43333kKFFFk11
+...555DCCCbccc33333kKGGGk11
+...452DCCCCCc3333322kkkk111
+....44cccccc333332222221111
+.yy.DCc4443333332222211111y
+...yyyyy433yyQRQQxxx111yyy1y
+....D444yyyyyyPPxxxxx1y1111y
+.....33333yyyyKKxxxxx11111..y
+......yyyyxx1KxxK1xxx1xxxx..y
+.yyyyy33332xxxxxxxxx111111xxxyx
+........2222xxxxxxx1111......y
+..........221wwwww111
+...........111www111
+.
+.
+.
+.
