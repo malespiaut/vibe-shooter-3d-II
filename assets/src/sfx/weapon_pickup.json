@@ -1,0 +1,57 @@
+{
+  "desc": "Metallic double 'cha-chak' of a weapon being cocked, with a low confident blip.",
+  "seed": 20,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 14000,
+      "attack": 0.0005,
+      "release": 0.03,
+      "lowpass": 7000,
+      "gain": 0.9
+    },
+    {
+      "wave": "square",
+      "freq": 2400,
+      "freq_end": 1400,
+      "attack": 0.0005,
+      "release": 0.03,
+      "gain": 0.35
+    },
+    {
+      "wave": "noise",
+      "start": 0.09,
+      "freq": 9000,
+      "attack": 0.0005,
+      "release": 0.05,
+      "lowpass": 4000,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "start": 0.09,
+      "freq": 1300,
+      "freq_end": 700,
+      "attack": 0.0005,
+      "release": 0.05,
+      "gain": 0.4
+    },
+    {
+      "wave": "square",
+      "start": 0.02,
+      "freq": 220,
+      "duty": 0.4,
+      "arp": [
+        0,
+        7,
+        12
+      ],
+      "arp_step": 0.06,
+      "attack": 0.003,
+      "hold": 0.15,
+      "release": 0.1,
+      "lowpass": 1800,
+      "gain": 0.6
+    }
+  ]
+}

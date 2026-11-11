@@ -1,0 +1,54 @@
+{
+  "desc": "Punchy 'ka-ching': thump plus bright major chord ring.",
+  "seed": 34,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 6000,
+      "attack": 0.0005,
+      "release": 0.05,
+      "lowpass": 3000,
+      "gain": 0.7
+    },
+    {
+      "wave": "square",
+      "freq": 120,
+      "freq_end": 60,
+      "attack": 0.0005,
+      "release": 0.08,
+      "lowpass": 600,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "start": 0.03,
+      "freq": 1047,
+      "duty": 0.25,
+      "attack": 0.002,
+      "decay": 0.1,
+      "sustain": 0.4,
+      "release": 0.3,
+      "gain": 0.5
+    },
+    {
+      "wave": "triangle",
+      "start": 0.03,
+      "freq": 1319,
+      "attack": 0.002,
+      "decay": 0.1,
+      "sustain": 0.4,
+      "release": 0.3,
+      "gain": 0.5
+    },
+    {
+      "wave": "triangle",
+      "start": 0.03,
+      "freq": 1568,
+      "attack": 0.002,
+      "decay": 0.1,
+      "sustain": 0.4,
+      "release": 0.3,
+      "gain": 0.5
+    }
+  ]
+}

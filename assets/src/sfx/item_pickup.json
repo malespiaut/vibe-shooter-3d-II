@@ -1,0 +1,33 @@
+{
+  "desc": "Short bright two-note blip up an octave.",
+  "seed": 19,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 880,
+      "duty": 0.25,
+      "arp": [
+        0,
+        12
+      ],
+      "arp_step": 0.04,
+      "attack": 0.001,
+      "hold": 0.06,
+      "release": 0.04,
+      "gain": 1.0
+    },
+    {
+      "wave": "triangle",
+      "freq": 1760,
+      "arp": [
+        0,
+        12
+      ],
+      "arp_step": 0.04,
+      "attack": 0.001,
+      "hold": 0.06,
+      "release": 0.05,
+      "gain": 0.4
+    }
+  ]
+}

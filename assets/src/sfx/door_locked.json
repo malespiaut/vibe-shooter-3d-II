@@ -1,0 +1,43 @@
+{
+  "desc": "Two short harsh low buzzes, 'access denied'.",
+  "seed": 13,
+  "crush": 5,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 98,
+      "duty": 0.3,
+      "attack": 0.003,
+      "hold": 0.11,
+      "release": 0.02,
+      "gain": 0.8
+    },
+    {
+      "wave": "saw",
+      "freq": 147,
+      "attack": 0.003,
+      "hold": 0.11,
+      "release": 0.02,
+      "gain": 0.5
+    },
+    {
+      "wave": "square",
+      "start": 0.17,
+      "freq": 98,
+      "duty": 0.3,
+      "attack": 0.003,
+      "hold": 0.15,
+      "release": 0.04,
+      "gain": 0.8
+    },
+    {
+      "wave": "saw",
+      "start": 0.17,
+      "freq": 147,
+      "attack": 0.003,
+      "hold": 0.15,
+      "release": 0.04,
+      "gain": 0.5
+    }
+  ]
+}
