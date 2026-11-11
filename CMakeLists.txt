@@ -653,7 +653,7 @@ add_test(NAME world_sprites_enemies COMMAND test_world_sprites_enemies ${ASSETS_
 add_executable(test_tags tests/test_tags.c)
 target_link_libraries(test_tags PRIVATE engine)
 target_compile_options(test_tags PRIVATE -UNDEBUG)
-foreach(c switch start_open timed pushwall trigger secret lights damage exit)
+foreach(c switch start_open timed pushwall trigger secret lights damage exit kill_trigger)
   add_test(NAME tags_${c} COMMAND test_tags ${CMAKE_SOURCE_DIR}/maps/tagstest.vmap ${c})
 endforeach()
 

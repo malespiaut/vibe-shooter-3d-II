@@ -15,6 +15,7 @@
 #define HALF (FIX_ONE / 2)
 
 static const bast_map *map;
+static const char *map_path;
 
 static const ticcmd IDLE = { 0, 0, 0, 0 };
 static const ticcmd USE = { 0, 0, 0, BT_USE };
@@ -289,6 +290,57 @@ static void test_exit(void)
     printf("tags_exit: ok\n");
 }
 
+/* KILL_TRIGGER (tech.md Map): fires its `param` tag once, on the tic the
+ * last live enemy carrying its `tag` dies. The test adds two tag-7 Mutts in
+ * the north hall and a KILL_TRIGGER tag 7 param 1 (tag 1 opens door (6,4)),
+ * plus a KILL_TRIGGER tag 9 with no tagged enemy: it never fires. */
+static void test_kill_trigger(void)
+{
+    bast_map *m = bast_map_load(map_path);
+    assert(m);
+    static const struct { uint16_t type; int tx, ty; uint8_t tag, param; } add[] = {
+        { BAST_ENT_MUTT_TROOPER, 2, 6, 7, 0 },
+        { BAST_ENT_MUTT_TROOPER, 4, 6, 7, 0 },
+        { BAST_ENT_MUTT_TROOPER, 10, 6, 0, 0 },
+        { BAST_ENT_KILL_TRIGGER, 1, 1, 7, 1 },
+        { BAST_ENT_KILL_TRIGGER, 1, 2, 9, 3 },
+    };
+    for (size_t i = 0; i < sizeof add / sizeof add[0]; i++) {
+        int k = bast_map_add_entity(m);
+        assert(k >= 0);
+        bast_map_entity *e = &m->entities[k];
+        e->type = add[i].type;
+        e->x = FX(add[i].tx) + HALF;
+        e->y = FX(add[i].ty) + HALF;
+        e->flags = BAST_ENT_SKILL_ALL | BAST_ENT_AMBUSH;
+        e->tag = add[i].tag;
+        e->param = add[i].param;
+    }
+    game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    run(&gs, &IDLE, 5);
+    assert(gs.tags_fired == 0);
+    thinker_t *mutt[3];
+    int n = 0;
+    for (int i = 0; i < gs.things.count; i++)
+        if (gs.things.list[i].type == BAST_ENT_MUTT_TROOPER)
+            mutt[n++] = &gs.things.list[i];
+    assert(n == 3 && mutt[0]->tag == 7 && mutt[1]->tag == 7 && mutt[2]->tag == 0);
+    thinker_damage(&gs.things, mutt[0], 1000);
+    run(&gs, &IDLE, 5);
+    assert(gs.tags_fired == 0); /* one tagged Mutt still lives */
+    assert(door(&gs, 6, 4)->state == DOOR_CLOSED);
+    thinker_damage(&gs.things, mutt[1], 1000);
+    run(&gs, &IDLE, 1);
+    assert(gs.tags_fired == 1 && gs.last_tag == 1);
+    assert(door(&gs, 6, 4)->state == DOOR_OPENING);
+    run(&gs, &IDLE, 200);
+    assert(gs.tags_fired == 1); /* once only; tag 9 has no enemy: never */
+    assert(door(&gs, 6, 4)->state == DOOR_OPEN);
+    bast_map_free(m);
+    printf("tags_kill_trigger: ok\n");
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 3) {
@@ -303,7 +355,7 @@ int main(int argc, char **argv)
         { "timed", test_timed },     { "pushwall", test_pushwall },
         { "trigger", test_trigger }, { "secret", test_secret },
         { "lights", test_lights },   { "damage", test_damage },
-        { "exit", test_exit },
+        { "exit", test_exit },       { "kill_trigger", test_kill_trigger },
     };
     bast_map *m = bast_map_load(argv[1]);
     if (!m) {
@@ -311,6 +363,7 @@ int main(int argc, char **argv)
         return 1;
     }
     map = m;
+    map_path = argv[1];
     for (size_t i = 0; i < sizeof cases / sizeof cases[0]; i++) {
         if (strcmp(argv[2], cases[i].name) == 0) {
             cases[i].fn();

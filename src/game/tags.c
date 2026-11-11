@@ -226,6 +226,32 @@ int game_cell_dark(const game_state *gs, int tx, int ty)
     return gs->lights_alt ? c->dark_alt : c->dark;
 }
 
+void kill_triggers_tic(game_state *gs)
+{
+    const bast_map *m = gs->map;
+    int k = 0;
+    for (int i = 0; i < m->entity_count && k < 32; i++) {
+        const bast_map_entity *e = &m->entities[i];
+        if (e->type != BAST_ENT_KILL_TRIGGER || !entity_on_skill(e, gs->skill))
+            continue;
+        const uint32_t bit = 1u << k++;
+        if ((gs->kill_fired & bit) || e->tag == 0)
+            continue;
+        int tagged = 0, alive = 0;
+        for (int j = 0; j < gs->things.count; j++) {
+            const thinker_t *t = &gs->things.list[j];
+            if (t->tag != e->tag || (t->flags & TH_FLAG_PICKUP) || !(t->flags & TH_FLAG_COUNTKILL))
+                continue;
+            tagged++;
+            alive += thinker_alive(t);
+        }
+        if (tagged > 0 && alive == 0) {
+            gs->kill_fired |= bit;
+            fire_tag(gs, e->param, 0);
+        }
+    }
+}
+
 void tags_hash(const game_state *gs, hash_t *h)
 {
     hash_u32(h, gs->exit);
@@ -233,6 +259,7 @@ void tags_hash(const game_state *gs, hash_t *h)
     hash_i32(h, gs->secrets);
     hash_i32(h, gs->secret_total);
     hash_u32(h, gs->tags_fired);
+    hash_u32(h, gs->kill_fired);
     hash_i32(h, gs->pushwall_count);
     for (int i = 0; i < gs->pushwall_count; i++) {
         const pushwall_t *pw = &gs->pushwalls[i];

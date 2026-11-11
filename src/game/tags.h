@@ -67,6 +67,12 @@ int pushwall_at(const game_state *gs, int tx, int ty);
 /* The live darkness of a cell: `dark`, or `dark_alt` once lights fired. */
 int game_cell_dark(const game_state *gs, int tx, int ty);
 
+/* KILL_TRIGGER entities (on the game's skill, at most 32, map order): one
+ * fires its `param` tag once, on the first tic where at least one enemy
+ * carrying its non-zero `tag` was spawned and none of them is alive. Called
+ * by game_tic after the AI. */
+void kill_triggers_tic(game_state *gs);
+
 /* Appends the map-logic state to the game hash. */
 void tags_hash(const game_state *gs, hash_t *h);
 
