@@ -7,6 +7,7 @@
   stderr and the run still exits 0;
 - music is presentation only: the STATS hash is the same with and without
   --sound-log, and a demo replays to the same hash;
+- a death and restart (death-test.demo) starts the track over;
 - with a display (xvfb), window mode starts and runs 70 tics with no audio
   device (SDL_AUDIO_DRIVER set to a driver that does not exist).
 
@@ -46,6 +47,7 @@ for level, track in ((1, "level_eg"), (3, "level_docks")):
     assert lines and lines[0] == f"0 music {track}", lines[:3]
     assert music == [f"0 music {track}"], music
     composed = os.path.exists(os.path.join(MUSIC, track + ".vmus"))
+    assert composed, f"{track}.vmus is composed (#163) and must be found"
     missing = p.stderr.count(f"music: {track} missing")
     assert missing == (0 if composed else 1), p.stderr
     q = run(base)
@@ -67,6 +69,32 @@ for i in range(2):
 assert runs[0] == runs[1]
 assert runs[0][1].splitlines()[0] == "0 music level_eg"
 print("ok: demo replays to the same hash and sound log")
+
+# Death and restart (demos/death-test.demo, on_death restart): the track
+# starts over. The log's tic column is the level tic, which a restart rewinds
+# to 0, so the restart line is `0 music level_eg` again, written between the
+# first life's last event and the second life's first. The hash log has one
+# line per tic run, so it gives the restart's run tic: tics run minus the
+# level tic in STATS.
+log = os.path.join(tmp, "death.log")
+hlog = os.path.join(tmp, "death.hash")
+p = run(["--headless", "--demo", os.path.join(src, "demos", "death-test.demo"),
+         "--sound-log", log, "--hash-log", hlog])
+assert p.returncode == 0, (p.returncode, p.stderr)
+assert "missing" not in p.stderr, p.stderr
+lines = open(log).read().splitlines()
+music = [i for i, l in enumerate(lines) if l.split()[1] == "music"]
+assert [lines[i] for i in music] == ["0 music level_eg"] * 2, [lines[i] for i in music]
+first, second = music
+assert first == 0 and second > 1, music
+level_tic = int(p.stdout.strip().splitlines()[-1].split(" tic=")[1].split()[0])
+restart_at = len(open(hlog).read().splitlines()) - level_tic
+before = [int(l.split()[0]) for l in lines[1:second]]
+after = [int(l.split()[0]) for l in lines[second + 1:]]
+assert before and max(before) < restart_at and before[-1] > 0, before[-3:]
+assert all(t < level_tic for t in after), after
+print(f"ok: restart at run tic {restart_at}: second '{lines[second]}' "
+      f"after first-life tic {before[-1]}, {len(after)} events after it")
 
 if os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
     env = dict(os.environ, SDL_AUDIO_DRIVER="vs3d_no_such_driver")
