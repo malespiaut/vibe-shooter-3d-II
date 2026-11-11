@@ -12,6 +12,8 @@ enum {
     PAL_RED = 94, /* red_00..red_15 = 94..109 */
     PAL_FB_YELLOW = 241,
     PAL_FB_ORANGE = 243,
+    PAL_FB_RED = 245,
+    PAL_FB_CYAN = 247,
 };
 
 static void put(uint8_t *framebuffer, int x, int y, uint8_t c)
@@ -24,7 +26,9 @@ static void put(uint8_t *framebuffer, int x, int y, uint8_t c)
  * the gray ramp (shade by wall texture), floor dark gray, open sky a step
  * lighter, player as a 3-pixel arrow (white centre, yellow tip), enemies
  * as 3x3 squares (dim red asleep, bright red awake, orange winding up or
- * attacking) and corpses as one red_07 pixel (red_04 vanished on the floor). */
+ * attacking) and corpses as one red_07 pixel (red_04 vanished on the floor).
+ * Mortar reticles are fb_red 3x3 rings, enemy plasma bolts one fb_cyan
+ * pixel. */
 void topdown_draw(const game_state *gs, uint8_t *framebuffer)
 {
     const bast_map *m = gs->map;
@@ -54,6 +58,20 @@ void topdown_draw(const game_state *gs, uint8_t *framebuffer)
 
     for (int i = 0; i < gs->things.count; i++) {
         const thinker_t *t = &gs->things.list[i];
+        if (t->state == TH_STATE_STAND &&
+            (t->type == TH_TYPE_RETICLE || t->type == TH_TYPE_PLASMA_BOLT)) {
+            const int ex = ox + (int)(((int64_t)t->x * scale) >> FIX_SHIFT);
+            const int ey = oy + m->height * scale - 1 - (int)(((int64_t)t->y * scale) >> FIX_SHIFT);
+            if (t->type == TH_TYPE_PLASMA_BOLT) {
+                put(framebuffer, ex, ey, PAL_FB_CYAN);
+                continue;
+            }
+            for (int y = -1; y <= 1; y++)
+                for (int x = -1; x <= 1; x++)
+                    if (x || y)
+                        put(framebuffer, ex + x, ey + y, PAL_FB_RED);
+            continue;
+        }
         /* Not pickups, projectiles, effects or their FREE slots. */
         if ((t->flags & TH_FLAG_PICKUP) || t->type >= TH_TYPE_SCARAB_PROJ)
             continue;

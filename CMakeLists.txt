@@ -514,6 +514,13 @@ add_test(NAME lance_demo
           $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/lance_demo)
 set_tests_properties(lance_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+# Pomeranian and Dachshund AI (issue #95): kills while strafing, run twice.
+add_test(NAME pomdach_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_pomdach_demo.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/pomdach_demo)
+set_tests_properties(pomdach_demo PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+add_demo_determinism(pomdach-test)
 
 # Renderer: floors, ceilings and sky on maps/m1test.vmap (issue #14).
 add_executable(test_render_floor tests/test_render_floor.c)

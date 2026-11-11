@@ -1,0 +1,41 @@
+# Pomeranian / Dachshund test map: 24x15, built by tools/mkmap.py into
+# maps/pomdachtest.vmap. Test fixture for demos/pomdach-test.demo
+# (issue #95: Pomeranian plasma bolts, Dachshund mortar), not a game level.
+# One open room: a Sistrum Repeater and a Charge Jar by the player start,
+# two Pomeranian Plasmagunners on the east side and a Dachshund Howitzer
+# behind them, all facing west so they wake on sight. Textures are the
+# renderer test patterns.
+
+name PomDach Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+
+layout
+########################
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+########################
+end
+
+# ty counts from the south: the last layout row is ty = 0.
+entity PLAYER_START 2 7 0
+entity SISTRUM_REPEATER 3 7 0
+entity CHARGE_JAR 3 8 0
+entity POMERANIAN_PLASMAGUNNER 14 10 180
+entity POMERANIAN_PLASMAGUNNER 14 4 180
+entity DACHSHUND_HOWITZER 20 7 180
