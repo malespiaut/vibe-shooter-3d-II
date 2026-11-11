@@ -131,8 +131,10 @@ add_test(NAME sfx_determinism
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sfx.py)
 add_test(NAME mkmap_py
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_mkmap.py)
+add_test(NAME quantize
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_quantize.py)
 # Python tests load the libbast.so built here, not a stale one.
-set_tests_properties(palcheck bast_py sfx_determinism mkmap_py PROPERTIES
+set_tests_properties(palcheck bast_py sfx_determinism mkmap_py quantize PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 add_executable(test_colormap tests/test_colormap.c)
