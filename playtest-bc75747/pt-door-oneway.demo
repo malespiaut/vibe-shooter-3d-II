@@ -1,0 +1,18 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+# ONEWAY door O at x=6: go through from the south, then try to come back from the north.
+goto 6 3
+face 90
+use
+wait 32
+goto 6 6
+wait 200
+face 270
+goto 6 5
+use
+wait 40
+goto 6 3 300
+expect tile=6,3

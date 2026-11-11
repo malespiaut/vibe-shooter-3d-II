@@ -1,0 +1,16 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+# Open door D, step into the doorway tile and stand there past the 140-tic auto-close.
+goto 2 3
+face 90
+use
+wait 32
+goto 2 4
+wait 220
+expect tile=2,4
+# then continue north: the door must not have trapped us
+goto 2 6 200
+expect tile=2,6

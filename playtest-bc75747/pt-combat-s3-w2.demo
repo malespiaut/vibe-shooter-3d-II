@@ -1,0 +1,8 @@
+vsdemo 1
+level 1
+skill 3
+seed 0
+map combattest
+weapon 2
+clear 10 3000
+expect kills=6

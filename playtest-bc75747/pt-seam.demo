@@ -1,0 +1,11 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+# Walk into the north wall of the north hall, then strafe slowly along it across tile seams.
+goto 8 7
+face 90
+in 30 127 0 0 -
+in 120 0 -20 0 -
+in 120 0 20 0 -

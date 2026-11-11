@@ -1,0 +1,15 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map combattest
+# Hug every corner of the empty-ish room before waking anyone? no: run into the NW corner diagonally, then the SW
+face 135
+in 70 127 0 0 R
+in 20 127 127 0 R
+in 20 127 -127 0 R
+face 225
+in 120 127 0 0 R
+in 30 127 127 0 R
+in 30 127 -127 0 R
+expect health>0

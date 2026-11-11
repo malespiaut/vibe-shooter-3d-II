@@ -1,0 +1,16 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+# Strafe across the face of door S (x=8) while it opens; diagonal pushes into the jambs.
+goto 8 3
+face 90
+use
+in 10 0 127 0 -
+in 20 0 -127 0 -
+in 10 0 127 0 -
+in 30 127 40 0 R
+in 30 127 -40 0 R
+in 30 127 0 0 R
+wait 10
