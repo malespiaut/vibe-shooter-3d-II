@@ -232,7 +232,7 @@ def forearm(cv, a, b, w0, w1, bands, seed=0):
 
 
 def paw_fist(cv, cx, cy, w, h, lobes, along=(0.0, -1.0), lobe_r=(3.2, 2.6),
-             claws=True, body_dark=0):
+             claws=True, body_dark=0, reach=None):
     """Back of a closed paw (vm1 style): a rounded-square body with shading from
     the top-left and a row of separate toe lobes on the side given by `along`
     (unit vector from body centre toward the knuckles). Lobes are separated by
@@ -265,8 +265,9 @@ def paw_fist(cv, cx, cy, w, h, lobes, along=(0.0, -1.0), lobe_r=(3.2, 2.6),
     rx, ry = lobe_r
     n = len(lobes)
     for i, off in enumerate(lobes):
-        lx = cx + ax * (h * 0.78) + px * off
-        ly = cy + ay * (h * 0.78) + py * off
+        k = h * 0.78 if reach is None else reach
+        lx = cx + ax * k + px * off
+        ly = cy + ay * k + py * off
         # gap ring first (1 px darker outline only toward neighbours / body)
         def gap(x, y, lx=lx, ly=ly):
             return "fur_03"
@@ -283,3 +284,69 @@ def paw_fist(cv, cx, cy, w, h, lobes, along=(0.0, -1.0), lobe_r=(3.2, 2.6),
             tx, ty = lx + ax * (ry + 0.6), ly + ay * (ry + 0.6)
             cv.set(round(tx), round(ty), "beige_13")
             cv.set(round(tx - ax), round(ty - ay), "beige_09")
+
+
+# ---- screen-space strips (round 4): parts laid out along a screen axis
+
+def axis(a, b):
+    """Unit vector along a->b and its normal pointing to screen right."""
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    L = math.hypot(dx, dy)
+    ux, uy = dx / L, dy / L
+    nx, ny = -uy, ux
+    if nx < 0:
+        nx, ny = -nx, -ny
+    return (ux, uy), (nx, ny), L
+
+
+def band(cv, a, b, w0, w1, fn):
+    """Straight strip from a to b with half-widths w0 at a and w1 at b and flat
+    (perpendicular) ends. fn(t, s): t 0..1 along a->b, s -1 (screen left) ..
+    +1 (screen right) across; returns a colour or None."""
+    (ux, uy), (nx, ny), L = axis(a, b)
+    ax, ay = a
+    bx, by = b
+    pts = [(ax - nx * w0, ay - ny * w0), (ax + nx * w0, ay + ny * w0),
+           (bx + nx * w1, by + ny * w1), (bx - nx * w1, by - ny * w1)]
+
+    def f(x, y):
+        px, py = x + 0.5 - ax, y + 0.5 - ay
+        t = (px * ux + py * uy) / L
+        w = w0 + (w1 - w0) * max(0.0, min(1.0, t))
+        s = max(-1.0, min(1.0, (px * nx + py * ny) / w))
+        return fn(max(0.0, min(1.0, t)), s)
+    cv.poly(pts, f)
+
+
+def cyl_steel(t, s, hi=13.5, lo=3.0, fade=2.0):
+    """Steel cylinder seen side-on, lit from the left: a steel_13+ highlight line
+    near the left edge, falling to dark on the right; slightly darker far away."""
+    if s < -0.82:
+        v = hi - 4
+    elif s < -0.35:
+        v = hi + 1.5
+    else:
+        v = hi - 1.5 - (s + 0.35) / 1.35 * (hi - 1.5 - lo)
+    return steel(v - t * fade)
+
+
+def flash(cv, cx, cy, rx, ry, core, mid, rim, rays=(), ray_c=None):
+    """Fullbright muzzle flash: an elliptical burst (core / mid / rim rings)
+    plus straight rays [(dx, dy, length)]."""
+    for y in range(int(cy - ry) - 1, int(cy + ry) + 2):
+        for x in range(int(cx - rx) - 1, int(cx + rx) + 2):
+            dx, dy = (x + 0.5 - cx) / rx, (y + 0.5 - cy) / ry
+            r = math.hypot(dx, dy)
+            # slightly star-shaped edge
+            edge = 1.0 - 0.18 * abs(math.cos(4 * math.atan2(dy, dx)))
+            if r <= edge:
+                cv.set(x, y, core if r < 0.38 else (mid if r < 0.7 else rim))
+    for dx, dy, n in rays:
+        L = math.hypot(dx, dy)
+        for i in range(n):
+            k = (min(rx, ry) * 0.6 + i)
+            cv.set(round(cx + dx / L * k - 0.5), round(cy + dy / L * k - 0.5), ray_c or rim)
+
+
+def count_fb(cv):
+    return sum(1 for row in cv.px for c in row if c and c.startswith("fb_"))

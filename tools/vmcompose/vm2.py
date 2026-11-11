@@ -4,144 +4,149 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from draw import *
 
 HDR = [
-    "# View model 2, Ankh Pistol (weapons.md): 3/4 rear view. Long steel slide receding toward the",
-    "# view centre (lit top face, shaded right face, dark bore at the muzzle) with a gold inlay, gold",
-    "# ankh-loop rear sight on top, steel frame and trigger guard under it, wooden grip (grain along",
-    "# its axis) wrapped by Mau's right paw (toe lobes curled round the front of the grip).",
+    "# View model 2, Ankh Pistol (weapons.md): 3/4 rear view, canted. Square steel slide of near-constant",
+    "# width receding toward the view centre (lit top face on the left, shaded side face with the gold",
+    "# inlay on the right, flat muzzle with a bushing ring and dark bore), gold ankh-loop rear sight",
+    "# standing proud of the top face (open loop), steel frame, wooden grip wrapped by Mau's right paw.",
     "# Matches HUD icon weapon_2. Composed in tools/vmcompose/vm2.py, checked at 3x in game.",
 ]
 
-# Slide: rear face 2.6 wide at z=14 -> ~13 px; 30 units long -> ~29 px on screen.
-SW, SH, SL = 1.3, 1.6, 30.0
+# Screen-space layout (64x72 canvas, the view centre is at about (32, -32)).
+REAR = (42.0, 50.0)          # top-rear edge of the slide (rear face below it)
+AIM = (30.0, -32.0)
+SLIDE = 34.0                 # top face length in px, rear edge -> muzzle
+RFACE = 7.0                  # rear face height in px
+W_REAR, W_MUZ = 7.0, 5.5     # half-widths: 14 px at the rear, 11 px at the muzzle
+D, N, _ = axis(REAR, AIM)
+
+
+def at(p, t, s=0.0):
+    return (p[0] + D[0] * t + N[0] * s, p[1] + D[1] * t + N[1] * s)
 
 
 def frame(kind):
     cv = Canvas(64, 72)
-    cam = Cam(f=70, cx=27, cy=-12, off=(2.3, -10.5, 14.0), roll=0.06)
-    P = lambda x, y, z: cam((x, y, z))
-    sb = -1.6 if kind == "fire1" else 0.0       # slide recoil (toward the viewer)
+    back = 2.5 if kind == "fire1" else 0.0      # slide recoil toward the viewer
+    rear = at(REAR, -back)
 
-    # ---- grip (wood), raked back toward the viewer, grain along its axis
-    g_top = (-1.0, 1.0, 0.0, 2.6)                # x0, x1, z_rear, z_front at the top
-    yb = -8.0                                   # grip bottom (off the canvas)
-    rake = -2.4
-    gr = [P(-1.0, -1.0, 0.0), P(1.0, -1.0, 0.0), P(1.0, yb, rake), P(-1.0, yb, rake)]
-    gs = [P(1.0, -1.0, 0.0), P(1.0, -1.0, 2.6), P(1.0, yb, 2.6 + rake), P(1.0, yb, rake)]
+    # ---- wooden grip: down and right to the bottom edge, grain along its axis
+    def grip(t, s):
+        base = 11 - (s + 1) * 2.6
+        k = int((s + 1) * 4.6)
+        if k in (2, 6):
+            base -= 3
+        elif k == 4 and int(t * 9) % 3 == 0:
+            base -= 1
+        return brown(base)
+    band(cv, (42.5, 54.0), (50.0, 75.0), 5.2, 6.4, grip)
+    # ---- steel frame under the slide's rear: dark seam at the top, tang
+    band(cv, at(REAR, -RFACE + 1.0), at(REAR, -RFACE - 5.0), W_REAR - 0.6, 6.0,
+         lambda t, s: steel(3 if t < 0.2 else (10 if s < -0.55 else (5 if s > 0.6 else 7))))
 
-    def grain(x, y, base):
-        # lines along the grip axis: dark every 3rd column, broken by a slow wave
-        k = (x * 3 + (y // 5)) % 7
-        return brown(base - (3 if k == 0 else (1 if k == 4 else 0)))
-    cv.poly(gs, lambda x, y: grain(x, y, 6))
-    cv.poly(gr, lambda x, y: grain(x, y, 10))
-    # ---- frame (lower receiver) under the slide, and the trigger guard
-    box(cv, cam, -1.0, 1.0, -1.2, 0.0, 0.0, 15.0,
-        top=lambda u, v: steel(9),
-        side=lambda u, v: steel(6 - u * 2 - (v > 0.7)),
-        rear=lambda u, v: steel(8 - (v > 0.6) * 2), faces="sr")
-    # ---- slide
-    z0, z1 = 0.0 + sb, SL + sb
-    xa, xb, ya, yb2 = -SW, SW, 0.0, SH
+    # ---- slide: rear face (near end) then the top / side faces up to the muzzle
+    total = RFACE + SLIDE
 
-    def top(u, v):          # u along length, v across (0 = left)
-        if v < 0.14:
-            return steel(15 - u * 2)
-        if 0.80 <= v <= 0.92:
-            return gold(8 - u * 3)
-        if v > 0.92:
-            return steel(10 - u * 2)
-        return steel(13 - v * 2 - u * 3)
+    def slide(t, s):
+        d = t * total                            # px from the bottom of the rear face
+        if d < RFACE:                            # rear face
+            if d > RFACE - 1.0:
+                return steel(13)                 # top-rear edge catches the light
+            if s < -0.78:
+                return steel(11)
+            if s > 0.8 or d < 1.0:
+                return steel(4)
+            if abs(s + 0.05) < 0.22 and 2.0 <= d < 5.0:
+                return steel(2)                  # firing-pin channel
+            return steel(8)
+        u = (d - RFACE) / SLIDE                  # 0 rear .. 1 muzzle
+        if d > total - 1.0:
+            return steel(10 if s < -0.1 else 5)  # flat muzzle edge
+        if s < -0.85:
+            return steel(15 - u * 2)             # lit left rim
+        if s < -0.18:
+            return steel(13 - u * 2 - (s + 0.85) * 1.5)   # top face
+        if s < -0.04:
+            return steel(9 - u)                  # top / side edge
+        if 0.32 <= s <= 0.52:
+            return gold(8 - u * 3 if s < 0.42 else 5 - u * 2)   # inlay
+        if s > 0.84:
+            return steel(3)
+        if 1.5 < d - RFACE < 7.5 and int(d - RFACE) % 2 == 0 and s > 0.0:
+            return steel(3)                      # serrations
+        return steel(6.5 - u * 2 - s)            # side face
+    band(cv, at(rear, -RFACE), at(rear, SLIDE), W_REAR, W_MUZ, slide)
 
-    def side(u, v):         # v: 0 top edge -> 1 bottom edge
-        if 0.30 <= v <= 0.55:
-            return gold(7 - u * 3 if v < 0.43 else 4 - u * 2)
-        if v < 0.14:
-            return steel(10 - u * 2)
-        return steel(6 - u * 2 - (v > 0.85))
+    # ---- muzzle: 4x4 bushing ring (lit top-left) around a 2x2 dark bore
+    mx, my = at(rear, SLIDE - 3.5, 0.0)
+    mx, my = int(round(mx)) - 2, int(round(my)) - 2
+    for j in range(-1, 5):                      # dark collar so the ring reads at 1x
+        for i in range(-1, 5):
+            cv.set(mx + i, my + j, "steel_04")
+    ring = ["LMLJ", "M..H", "J..G", "IHGF"]
+    for j, row in enumerate(ring):
+        for i, ch in enumerate(row):
+            c = "steel_01" if ch == "." else "steel_%02d" % (ord(ch) - ord("A") + 1)
+            cv.set(mx + i, my + j, c)
+    muzzle = (mx + 2, my + 2)
 
-    def rear(u, v):         # u across (0 = left), v down
-        if u < 0.1 or v < 0.15:
-            return steel(12)
-        if 0.40 < u < 0.60 and 0.30 < v < 0.75:
-            return steel(3)         # firing-pin channel
-        if u > 0.9 or v > 0.82:
-            return steel(5)
-        return steel(8)
-    box(cv, cam, xa, xb, ya, yb2, z0, z1, top, side, rear)
-    # slide/frame seam and the frame's beavertail tang under the slide rear
-    cv.line(P(-1.0, 0.0, z0), P(1.0, 0.0, z0), steel(2))
-    cv.line(P(-0.7, -0.5, -0.6), P(0.7, -0.5, -0.6), steel(11))
-    cv.line(P(-0.7, -0.9, -0.6), P(0.7, -0.9, -0.6), steel(6))
-    # serrations on the side face near the rear
-    for i in range(3):
-        z = z0 + 1.2 + i * 1.2
-        cv.line(P(xb, yb2 - 0.3, z), P(xb, ya + 0.3, z), steel(3))
-    # muzzle: barrel bushing ring and dark bore at the far end
-    mx, my = P(0, yb2 * 0.55, z1)
-    mx, my = round(mx), round(my)
-    for ddx, ddy, c in ((-1, -1, steel(9)), (0, -1, steel(9)), (1, -1, steel(7)),
-                        (-1, 0, steel(2)), (0, 0, steel(1)), (1, 0, steel(2)),
-                        (-1, 1, steel(5)), (0, 1, steel(4)), (1, 1, steel(4))):
-        cv.set(mx + ddx, my - 1 + ddy, c)
-    # front sight post
-    fx, fy = P(0, yb2, z1 - 1.5)
-    cv.set(round(fx), round(fy) - 1, steel(13))
-
-    # ---- ankh-loop rear sight on the rear of the slide, skewed to follow the slide
-    bx, by = P(0, yb2, z0 + 1.6)
-    bx, by = round(bx), round(by)
-    lean = (27 - bx) / 40.0                   # leans toward the vanishing point
-    stem = 6
-    for i in range(stem):
-        x = round(bx + lean * i)
-        cv.set(x - 1, by - i, gold(11))
-        cv.set(x, by - i, gold(8))
-        cv.set(x + 1, by - i, gold(3))
-    cyb = by - 3
-    cxx = round(bx + lean * 3)
-    for x in range(cxx - 3, cxx + 5):
-        cv.set(x, cyb + (1 if x > cxx + 2 else 0), gold(10 if x <= cxx else 7))
-        cv.set(x, cyb + 1 + (1 if x > cxx + 2 else 0), gold(4))
-    lcx, lcy = cxx + 0.9 + lean * 3, cyb - 3.4
-    rx, ry = 2.6, 3.2
-    for y in range(int(lcy - ry) - 1, int(lcy + ry) + 2):
-        for x in range(int(lcx - rx) - 1, int(lcx + rx) + 2):
-            ddx, ddy = (x + 0.5 - lcx) / rx, (y + 0.5 - lcy) / ry
-            r = math.hypot(ddx, ddy)
-            if 0.5 <= r <= 1.0:
-                cv.set(x, y, gold(8 - (ddx + ddy) * 3))
-            elif r < 0.5 and cv.get(x, y) and cv.get(x, y).startswith("gold"):
-                cv.set(x, y, steel(11))
+    # ---- ankh rear sight standing up from the top face, proud of the silhouette
+    bx, by = at(rear, 5.0, -W_REAR - 0.5)       # foot on the top-left edge
+    ux, uy = -0.55, -0.84                      # "up" from the canted top face on screen
+    L = math.hypot(ux, uy)
+    ux, uy = ux / L, uy / L
+    vx, vy = -uy, ux                            # across the sight
+    for y in range(cv.h):
+        for x in range(cv.w):
+            px, py = x + 0.5 - bx, y + 0.5 - by
+            a = px * ux + py * uy               # height above the top face
+            c = px * vx + py * vy               # along the slide
+            col = None
+            if -1.0 <= a < 5.0 and abs(c) < 1.5:
+                col = gold(10.5 if c < -0.5 else (7.5 if c < 0.5 else 4))   # stem
+            if 2.0 <= a < 3.6 and abs(c) < 4.6:
+                col = gold(10 if a < 2.8 else 5)                            # cross
+            ea, ec = (a - 9.6) / 4.2, c / 3.3
+            r = math.hypot(ea, ec)
+            if r <= 1.0:
+                if r >= 0.5:
+                    col = gold(8.5 - (ec - ea) * 2.6)                       # loop
+                else:
+                    col = "hole"
+            if col == "hole":
+                cv.px[y][x] = None                                          # see-through
+            elif col:
+                cv.set(x, y, col)
 
     # ---- forearm, then Mau's right paw over the lower half of the grip
-    gx, gy = P(0.4, -3.6, -0.8)
-    forearm(cv, (gx + 2, gy + 4), (gx + 34, 84), 8.0, 11.0, [0.18, 0.37, 0.52, 0.74, 0.9], seed=1)
+    gx, gy = 44.0, 68.0
+    forearm(cv, (gx + 2, gy + 4), (gx + 34, 86), 8.0, 11.0, [0.18, 0.37, 0.52, 0.74, 0.9], seed=1)
     paw_fist(cv, gx + 3.5, gy + 2.0, 8.5, 7.5, [-6.0, -1.6, 2.8, 7.0],
              along=(-0.86, -0.5), lobe_r=(2.9, 2.5))
-    # thumb over the top of the grip, toward the frame
-    tx, ty = gx + 5.5, gy - 6.0
+    tx, ty = gx + 5.5, gy - 6.0                 # thumb over the top of the grip
     cv.ellipse(tx, ty, 2.6, 3.4, lambda x, y: fur(9.6 - ((x + 0.5 - tx) + (y + 0.5 - ty)) * 0.9))
     cv.set(round(tx - 1), round(ty - 2), "fur_11")
 
     # ---- muzzle effects
     if kind == "fire0":
-        fx, fy = mx, my - 4
-        for d in range(1, 6):
-            for sx, sy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                cv.set(fx + sx * d, fy + sy * d, "fb_cyan" if d < 3 else "fb_cyan_dim")
-        for d in range(1, 4):
-            for sx, sy in ((1, 1), (-1, 1), (1, -1), (-1, -1)):
-                cv.set(fx + sx * d, fy + sy * d, "fb_cyan" if d < 2 else "fb_cyan_dim")
-        for ddx in (-1, 0, 1):
-            for ddy in (-1, 0, 1):
-                cv.set(fx + ddx, fy + ddy, "fb_white")
+        fx, fy = at(rear, SLIDE + 6.5, -1.0)      # ankh charge in front of / above the muzzle
+        flash(cv, fx, fy, 6.0, 6.0, "fb_white", "fb_cyan", "fb_cyan_dim",
+              rays=[(1, 1, 2), (-1, 1, 2), (1, -1, 2), (-1, -1, 2), (0, -1, 2)], ray_c="fb_cyan_dim")
     if kind == "fire1":
-        cv.set(mx, my - 1, "fb_orange")
-        cv.set(mx - 1, my - 1, "fb_fire")
+        cv.set(muzzle[0] - 1, muzzle[1] - 1, "fb_cyan_dim")
+        cv.set(muzzle[0], muzzle[1] - 1, "fb_cyan_dim")
     return cv
+
+
+def measure():
+    cv = frame("idle")
+    print("vm2 slide: rear face %.1f px across, muzzle %.1f px across (%.0f%% narrower)"
+          % (2 * W_REAR, 2 * W_MUZ, 100 * (1 - W_MUZ / W_REAR)))
+    print("vm2_fire0 fullbright px:", count_fb(frame("fire0")))
 
 
 if __name__ == "__main__":
     for k in ("idle", "fire0", "fire1"):
         cv = frame(k)
         cv.write("%s/vm2_%s.pix" % (SRC, k), "vm2_" + k, HDR + ["# %s." % k])
+    if "-m" in sys.argv:
+        measure()
