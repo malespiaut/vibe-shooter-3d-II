@@ -696,6 +696,10 @@ add_test(NAME sound_events
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sound_events.py
           $<TARGET_FILE:game> $<TARGET_FILE:test_sound> ${CMAKE_SOURCE_DIR}
           ${CMAKE_BINARY_DIR}/test_tmp/sound_events)
+add_test(NAME enemy_sounds
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_enemy_sounds.py
+          $<TARGET_FILE:game> $<TARGET_FILE:test_sound> ${CMAKE_SOURCE_DIR}
+          ${CMAKE_BINARY_DIR}/test_tmp/enemy_sounds)
 add_demo_determinism(door-locked)
 
 # Music in game (issue #132): level -> track table and the game's music

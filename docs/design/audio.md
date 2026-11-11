@@ -34,6 +34,15 @@ seed. Output `assets/gen/sfx/<name>.snd`.
 | Gore | `gib_splat` |
 
 Every enemy windup has a sound: the telegraph is audible as well as visible.
+The Dachshund has no voice of its own for it, so its windup plays `reticle_beep` at the
+Dachshund. That is a different tic and place from the reticle's own beeps, which start when the
+shell is fired at the end of the windup (14 tics later on skill 2). So the player hears the
+Dachshund aim, then hears the mark. Its headbutt shares the windup, and the beep warns of it too.
+
+Each enemy attack sound plays once per attack, from the code that makes it: `mutt_fire` on every
+shot (hit or miss), `chomp_bite` and `baton_hit` only when the melee hit lands, `plasma_fire`
+once per bolt, `bone_fire` at the launching shoulder, and `mortar_launch` only with a reticle
+(never on a headbutt).
 
 ### Mix levels
 

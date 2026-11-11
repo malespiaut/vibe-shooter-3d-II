@@ -575,9 +575,15 @@ static void test_dach_headbutt(void)
     t->state = TH_STATE_CHASE;
     game_tic(&gs, &IDLE);
     assert(t->state == TH_STATE_WINDUP);
-    run(&gs, &IDLE, 14);
-    printf("dach_headbutt: damage %d, reticles %d\n", 100 - gs.player.health,
-           count_type(&gs, TH_TYPE_RETICLE));
+    int launches = 0; /* audio: a headbutt is not a mortar shot */
+    for (int i = 0; i < 14; i++) {
+        game_tic(&gs, &IDLE);
+        for (int k = 0; k < gs.sounds.count; k++)
+            launches += gs.sounds.ev[k].id == SFX_mortar_launch;
+    }
+    printf("dach_headbutt: damage %d, reticles %d, mortar_launch %d\n",
+           100 - gs.player.health, count_type(&gs, TH_TYPE_RETICLE), launches);
+    assert(launches == 0);
     assert(gs.player.health <= 95 && gs.player.health >= 90);
     assert(count_type(&gs, TH_TYPE_RETICLE) == 0);
     bast_map_free(m);
