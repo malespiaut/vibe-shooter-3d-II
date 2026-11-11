@@ -130,7 +130,11 @@ static int load_anim(const char *dir, int type, const sprite_def *def, int anim,
 static int load_sprites(const bast_map *map, const char *dir)
 {
     for (int i = 0; i < map->entity_count; i++) {
-        const int type = map->entities[i].type;
+        const bast_map_entity *e = &map->entities[i];
+        /* A RESPAWN_ITEM shows the pickup its param names (game/items.c). */
+        const int type = e->type == BAST_ENT_RESPAWN_ITEM ? e->param : e->type;
+        if (type >= BAST_ENT_TYPE_LIMIT)
+            continue;
         const sprite_def *def = sprite_def_for_entity(type);
         if (!def || sprite_frames[type][SPR_IDLE][0][0])
             continue;
