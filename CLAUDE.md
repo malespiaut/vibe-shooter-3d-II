@@ -33,7 +33,7 @@ agents/roles/*.md                     role prompts (changeable through PRs)
 - Area labels: `engine render audio tools editor art level gameplay ui`.
 - State labels: `ready in-progress stuck blocked`. Kind labels: `feature bug polish`.
 - Review labels: `review:approved`, `review:changes-requested`, `art:approved`.
-- Milestones: `M1 Engine core`, `M2 Asset pipeline & editor`, `M3 Gameplay systems`, `M4 Content: levels 1-8`, `M5 Polish & audio`, `Episode 1`.
+- Milestones: `M1 Engine core`, `M2 Asset pipeline & editor`, `M3 Gameplay systems`, `M4 Content: levels 1–8`, `M5 Polish & audio`, `Episode 1`.
 - Every issue has acceptance criteria a reviewer can verify.
 - Write dependencies in the issue body as `Depends on #n`. An issue whose dependencies are open is not dispatched.
 - Labels are the source of truth for claims. Do not remove another agent's `in-progress` label.
