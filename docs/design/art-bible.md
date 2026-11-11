@@ -114,16 +114,20 @@ into mush); compositing adds edge contrast before quantization.
 
 Pre-render exposure and ramps (rules for `tools/blender_render.py`):
 - **Exposure**: a face square to the key light renders at its material's base colour (Cycles sun
-  strength `pi`, fill `0.2 * pi`). Every material must reach the upper half of its ramp on lit faces;
-  a sprite whose brightest pixel stops mid-ramp fails the 8-entry contrast rule above.
+  strength `pi`, fill `0.2 * pi`) with colour management view transform `Standard`, look `None`,
+  exposure 0, gamma 1 (never AgX or Filmic: AgX, Blender's default, darkens and desaturates lit
+  faces by about 16 sRGB levels before quantization). Every material must reach the upper half of
+  its ramp on lit faces; a sprite whose brightest pixel stops mid-ramp fails the 8-entry contrast
+  rule above.
 - **No black holes**: every face the camera sees gets some fill, so no opaque pixel inside the
   silhouette renders as `black`, `shadow_*` or a ramp's `_00` (`_00` is reserved for the outline).
   A fill placement that leaves faces edge-on to it while in key shadow does not meet this.
 - **Ramp-constrained quantization**: `sprite.json` maps each material to one ramp (at most 3 ramps
   plus fullbright per sprite). Each pixel is quantized to the Oklab-nearest entry **within its
-  material's ramp**; the outline uses that ramp's `_00`. Global nearest-over-the-palette lets dark
-  tones of one material jump to a neighbouring ramp (gold to olive, gray to steel), which breaks the
-  colour budget. This is still pure nearest, with no dithering.
+  material's ramp**; the outline uses that ramp's `_00`. Fullbright materials map to their own
+  `fb_*` entry and never into a ramp. Global nearest-over-the-palette lets dark tones of one
+  material jump to a neighbouring ramp (gold to olive, gray to steel), which breaks the colour
+  budget. This is still pure nearest, with no dithering.
 
 ## Rejected looks (the art director rejects on sight)
 
