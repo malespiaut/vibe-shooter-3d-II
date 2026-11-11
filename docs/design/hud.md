@@ -9,11 +9,22 @@ coordinates are (x, y) from the top-left, ranges inclusive.
 |---|---|---|---|
 | Small | 6x8 (glyph 5x7, 1 px spacing) | ASCII 32-126 | status bar labels, ammo table, tally numbers, credits |
 | Menu | 10x14 (glyph 9x12) | ASCII 32-95 (upper case, digits, punctuation) | menus, intro/intermission/ending text, titles |
-| Big digits | 12x16 (glyph 11x16) | `0-9 % / -` | health, armour, current ammo |
+| Big digits | 12x16 (glyph 11x15 + 1 px shadow) | `0-9 % / -` | health, armour, current ammo |
 
 Fonts are TEX files, one glyph per cell in a 16-column sheet, hand-drawn, with a 1 px dark shadow
 (bottom-right) baked in. Text colour variants are made by remapping the font's ramp at load time
 (a 256-byte translation table, not truecolor).
+
+- Small: `assets/gen/fonts/small.tex` (96x48), glyphs ASCII 32-126 in code order; letterform 5x7
+  (lowercase descenders g j p q y raised one row), shadow fills the cell's last column and row;
+  ramp `gray` (13-15), shadow `gray_00`.
+- Menu: `assets/gen/fonts/menu.tex` (160x56), glyphs ASCII 32-95 in code order; letterform 9x12,
+  shadow to 10x13, last cell row free; ramp `gold` (2-11), shadow `gold_00`.
+- Big digits: `assets/gen/fonts/bigdigits.tex` (192x16), glyphs `0123456789%/-` in that order;
+  letterform 11x15, shadow fills the cell's last column and row; ramp `gold` (2-11), shadow `gold_00`.
+
+Glyph data is hand-drawn in `assets/src/fonts/<font>.txt`; `tools/fontsheet.py` shades it and
+exports the indexed PNGs next to it; `tools/build.d/50-fonts.sh` converts them with `png2tex.py`.
 
 ## Flow
 

@@ -161,9 +161,11 @@ add_test(NAME gibs_determinism
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_gibs.py determinism)
 add_test(NAME gibs_pixels
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_gibs.py pixels)
+add_test(NAME fonts
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_fonts.py)
 # Python tests load the libbast.so built here, not a stale one.
 set_tests_properties(palcheck bast_py sfx_determinism mkmap_py quantize editor_roundtrip
-  texgen_tile editor_entities gibs_determinism gibs_pixels PROPERTIES
+  texgen_tile editor_entities gibs_determinism gibs_pixels fonts PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 add_executable(test_colormap tests/test_colormap.c)
