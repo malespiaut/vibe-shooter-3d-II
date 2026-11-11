@@ -187,3 +187,22 @@ target_link_libraries(test_mixer_wav PRIVATE engine)
 target_compile_options(test_mixer_wav PRIVATE -UNDEBUG)
 add_dependencies(test_mixer_wav sfx)
 add_test(NAME mixer_wav COMMAND test_mixer_wav ${ASSETS_GEN} ${CMAKE_BINARY_DIR}/mixer_wav.wav)
+
+# Headless demos (roadmap.md Verification tooling contract).
+add_executable(test_png_writer tests/test_png_writer.c)
+target_link_libraries(test_png_writer PRIVATE engine)
+target_compile_options(test_png_writer PRIVATE -UNDEBUG)
+add_dependencies(test_png_writer palette)
+add_test(NAME png_writer
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_png_writer.py
+          $<TARGET_FILE:test_png_writer> ${ASSETS_GEN}/palette.bin
+          ${CMAKE_BINARY_DIR}/test_tmp/png_writer)
+
+add_executable(test_demo_parse tests/test_demo_parse.c)
+target_link_libraries(test_demo_parse PRIVATE engine)
+target_compile_options(test_demo_parse PRIVATE -UNDEBUG)
+add_test(NAME demo_parse COMMAND test_demo_parse ${CMAKE_BINARY_DIR}/demo_parse_rec.demo)
+
+add_test(NAME headless_smoke
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_headless.py
+          $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/headless)
