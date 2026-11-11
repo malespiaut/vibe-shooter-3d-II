@@ -118,14 +118,21 @@ target_link_libraries(test_snd_roundtrip PRIVATE bast_static)
 target_compile_options(test_snd_roundtrip PRIVATE -UNDEBUG)
 add_test(NAME snd_roundtrip COMMAND test_snd_roundtrip)
 
+add_executable(test_map_roundtrip tests/test_map_roundtrip.c)
+target_link_libraries(test_map_roundtrip PRIVATE bast_static)
+target_compile_options(test_map_roundtrip PRIVATE -UNDEBUG)
+add_test(NAME map_roundtrip COMMAND test_map_roundtrip)
+
 add_test(NAME palcheck
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_palette.py)
 add_test(NAME bast_py
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_bast.py)
 add_test(NAME sfx_determinism
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sfx.py)
+add_test(NAME mkmap_py
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_mkmap.py)
 # Python tests load the libbast.so built here, not a stale one.
-set_tests_properties(palcheck bast_py sfx_determinism PROPERTIES
+set_tests_properties(palcheck bast_py sfx_determinism mkmap_py PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 add_executable(test_colormap tests/test_colormap.c)
