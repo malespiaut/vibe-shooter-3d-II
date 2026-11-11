@@ -70,6 +70,14 @@ because the colormap produces them.
 All ramps except `fb_*` and `transparent` are warm-shifted by this rule. Acceptance check: row 16 of
 `steel_12` must land in a warmer hue (higher Oklab b) than the plain scaled colour would.
 
+UI dims (menu backdrops, pause) are not lighting and do not keep fullbright bright. A screen
+darkened behind menu text through colormap row `r` remaps a fullbright entry `i` (240-254) to
+`row r` of `lit(i)`. Here `lit(i)` is the nearest palette entry to `i` by Oklab, among entries that
+are not reserved, not fullbright and not transparent (ties: lowest index, the same rule as step 3).
+Every other index uses row `r` unchanged. Without this rule, glows, key shimmers and pickup
+crests stay at full brightness behind the menu and break up the gold menu text
+(PR #136, pause over pickups).
+
 ## Light and shading rules
 
 - **One light direction for everything**: key light from the **top-left, 45 degrees**, in front of
