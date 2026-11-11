@@ -113,7 +113,7 @@ protected_pr() {
 # about a "fire rate limit" or a duration_ms of 14290 never reads as a usage limit.
 is_usage_limit() {
   tail -n 20 "$1" 2>/dev/null | grep -E '"is_error": ?true|"type": ?"error"|^[^{]' |
-    grep -qiE 'usage limit|rate[ _-]?limit|overloaded_error|error:? 429\b|\b429 too many'
+    grep -qiE 'usage limit|hit your limit|limit reached|limit.{1,5}resets|resets [0-9]|rate[ _-]?limit|overloaded_error|error:? 429\b|\b429 too many'
 }
 
 episode_done() {
@@ -132,7 +132,7 @@ run_agent() {
   mkdir -p "$WORK/.prompts" "$LOGS"
   cat "$STATE/roles/common.md" "$STATE/roles/$role.md" > "$prompt" || return "$RC_INFRA"
   printf '\n%s\n' "$ctx" >> "$prompt"
-  logf=$LOGS/$name-$(date +%Y%m%dT%H%M%S).jsonl
+  logf=$LOGS/$name-$(date +%Y%m%dT%H%M%S)-$BASHPID.jsonl  # pid: two runs in one second must not share a log
   [[ -n ${ANTHROPIC_API_KEY:-} ]] && key=(-e ANTHROPIC_API_KEY)
   podman rm "vibe-$name" >/dev/null 2>&1  # a stopped leftover would block --name; never -f
   log "start vibe-$name ($role) in $wd, log $logf"
@@ -231,11 +231,13 @@ dispatch_fix() {
   if ((c > MAX_FIX_CYCLES)); then pr_stuck "$n" "$MAX_FIX_CYCLES review/fix cycles without approval"; return; fi
   read -r sha br labels < <(pr_head "$n")
   if [[ -z $br ]] || ! pr_wt "$wt" "$br"; then log "fix #$n: checkout failed"; return; fi
-  mkdir -p "$STATE/cycles" "$STATE/fixed"; echo "$c" > "$STATE/cycles/$n"
+  mkdir -p "$STATE/cycles" "$STATE/fixed"
   (
     run_agent developer-fix "fix-$n" "$wt" "Your PR is #$n in $REPO, branch $br (detached checkout).
 Push with: git push origin HEAD:$br"
     rc=$?; wt_remove "$wt"
+    # a usage limit or setup error means no fix ran: don't spend a cycle
+    ((rc != 75 && rc != RC_INFRA)) && echo "$c" > "$STATE/cycles/$n"
     if ((rc == 0)); then
       echo "$sha" > "$STATE/fixed/$n"
       # nothing pushed means nobody will look at this PR again

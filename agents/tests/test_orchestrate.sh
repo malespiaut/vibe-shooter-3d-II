@@ -8,7 +8,9 @@ trap 'rm -rf "$root"' EXIT
 
 t() { # t <name>: run test function in a subshell with fresh fixtures
   local name=$1
-  if (setup "$name" && "$name"); then echo "ok   $name"; else echo "FAIL $name"; fails=$((fails + 1)); fi
+  # orchestrator logs go to stderr; show them only when the test fails
+  if (setup "$name" && "$name") 2>"$root/$name.err"; then echo "ok   $name"
+  else echo "FAIL $name"; sed 's/^/    /' "$root/$name.err"; fails=$((fails + 1)); fi
 }
 
 setup() {
@@ -102,8 +104,12 @@ test_usage_limit_ignores_digits() {
   echo '{"type":"assistant","message":"set the fire rate limit to 4"}' > "$f"
   echo '{"type":"result","is_error":true,"duration_ms":14290,"num_turns":429}' >> "$f"
   ! is_usage_limit "$f" || return 1
-  echo '{"type":"result","is_error":true,"result":"Claude AI usage limit reached|1700000000"}' > "$f"
-  is_usage_limit "$f" || return 1
+  local m
+  for m in "Claude AI usage limit reached|1700000000" "You've hit your limit · resets 3pm (Europe/Paris)" \
+           "5-hour limit reached ∙ resets 9pm" "Weekly limit reached · resets Mon 3am"; do
+    jq -cn --arg m "$m" '{type: "result", is_error: true, result: $m}' > "$f"
+    is_usage_limit "$f" || { echo "missed: $m"; return 1; }
+  done
   echo 'API Error: 429 {"type":"error","error":{"type":"rate_limit_error"}}' > "$f"
   is_usage_limit "$f"
 }
@@ -162,6 +168,18 @@ test_fix_cycle_cap() {
   grep -q -- 'pr edit 7.*--add-label stuck' "$FIXTURES/calls.log" && ! grep -q 'podman run' "$FIXTURES/calls.log"
 }
 
+test_fix_usage_limit_keeps_cycle_count() {
+  mkrepo
+  prs 7:malespiaut:review:changes-requested
+  mkdir -p "$STATE/cycles"; echo 2 > "$STATE/cycles/7"; echo fix > "$STATE/roles/developer-fix.md"
+  echo 1 > "$FIXTURES/run-exit"; echo 'Claude AI usage limit reached|1700000000' > "$FIXTURES/run-output.txt"
+  dispatch_fix 7; wait
+  grep -q 'podman run .*--name vibe-fix-7 ' "$FIXTURES/calls.log" && [[ $(<"$STATE/cycles/7") == 2 ]] || return 1
+  echo 'plain crash' > "$FIXTURES/run-output.txt"
+  dispatch_fix 7; wait
+  [[ $(<"$STATE/cycles/7") == 3 ]]
+}
+
 test_protected_close_owner_only_and_cached() {
   prs 8:malespiaut: 9:stranger:
   jq 'map(.files = [{path: "agents/Containerfile"}])' "$FIXTURES/prs.json" > "$FIXTURES/p" && mv "$FIXTURES/p" "$FIXTURES/prs.json"
@@ -198,7 +216,7 @@ test_loop_dev_fails_three_times_stuck() {
 
 test_loop_review_failure_cools_down() {
   mkrepo
-  echo '[]' | issues
+  issues </dev/null
   prs 7:malespiaut:
   echo 1 > "$FIXTURES/run-exit"
   loop; loop
