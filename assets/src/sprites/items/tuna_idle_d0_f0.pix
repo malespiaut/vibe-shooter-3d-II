@@ -1,0 +1,36 @@
+# Tuna Tin (items.md Health, +25): a squat steel tin seen from slightly
+# above, ring-pull lid, lapis label with a beige fish. Light from top-left.
+name tuna_idle_d0_f0
+size 24 16
+= 1 steel_03
+= 2 steel_05
+= 3 steel_07
+= 4 steel_09
+= 5 steel_11
+= 6 steel_13
+= 7 steel_15
+= q blue_03
+= r blue_05
+= s blue_07
+= t blue_09
+= u blue_11
+= w beige_08
+= x beige_11
+= y beige_14
+grid
+.......................
+.......................
+.......................
+.......5666666655......
+....56677777766665543..
+..5677655555555556543..
+.567653333333333345432.
+.56776544444444445543..
+.4566666666655554443321
+.uuuuuttttttssssrrrrqq.
+.uutyyxxxxwttssssrrrqq.
+.uutxyyxxxwwtsxrrrrqqq.
+.ttsswwwwwwssssrrrqqqq.
+.6555544444333322221111
+.4333322222222111111111
+.......................

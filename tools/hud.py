@@ -115,10 +115,12 @@ class Image8:
         return bast.Tex(self.w, h, col, (0, 0), flags)
 
 
-def load_pix(path, legend, pal):
+def load_pix(path, legend, pal, extra=None, shadow="sand_01"):
+    """Parse one .pix file. `extra` maps further directive names to a
+    callback(parts) for tools that reuse the format (tools/items.py)."""
     leg = dict(legend)
     name = size = None
-    shadow = pal("sand_01")
+    shadow = pal(shadow) if shadow else None
     rows = None
     with open(path) as f:
         lines = f.read().splitlines()
@@ -142,6 +144,8 @@ def load_pix(path, legend, pal):
             leg[parts[1]] = pal(parts[2])
         elif parts[0] == "grid":
             rows = []
+        elif extra and parts[0] in extra:
+            extra[parts[0]](parts)
         else:
             raise HudError("%s:%d: unknown directive %r" % (path, no, parts[0]))
     if not name or not size or rows is None:
