@@ -1,0 +1,37 @@
+# tier 4 (20-39): tier 3 + bandaged left eye
+name face_t4_hurtl
+size 32 32
+shadow sand_00
+grid
+.
+.........................1
+........................21
+.......................Bb2
+......................B..b
+.....................33.B2
+....................D33pb21
+....555555.....4...D33pbp21
+.555555555555555DCc443ppppp1
+..5PPPPP5555525DCc24332ppp1
+..55PPP5555552DCc42433332p1
+...5PP5555552DCc244133332111
+....5555DDDDDc44443333332221
+.....55DCCCCCc444332111122
+....55DCccCCCc44333KKKKKK21
+....52DCCbBCCc43333kFKKFk11
+....55DCCCbccc33333kkkkkk11
+.y..52DCCCCCc33333222222211
+..yyy4cccccc333332222221111
+....DyD4443333332222211111y
+....Dcyyy33yyQRQQxxx111yyy1y
+....D4443yyyyyPPxxxxx1y1111y
+.yyyyy3333yyyKKKKKKxx11111xxyxx
+......yyyyxxKzAAAAzKx1xxxx..y
+......33332xKAAAAAAK11111....y
+........2222xKAQQAK1111......y
+..........221wKKKK111
+...........111www111
+.
+.
+.
+.

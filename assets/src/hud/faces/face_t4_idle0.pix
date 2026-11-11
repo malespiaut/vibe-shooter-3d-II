@@ -1,0 +1,37 @@
+# tier 4 (20-39): tier 3 + bandaged left eye
+name face_t4_idle0
+size 32 32
+shadow sand_00
+grid
+.
+......5..................1
+......55................21
+......555..............Bb2
+......5555............B..b
+.....55P555..........33.B2
+.....55PP555........D33pb21
+.....5PPPP555..4...D33pbp21
+.....5PPPP555555DCc43ppppp1
+....55PPP555525DCc24332ppp1
+....55P5555552DCc42433332p1
+....555555552DCc244133332111
+.....555DDDDDc44443333332221
+.....55DCCCCCc444333kkkk22
+....55DCccCCCc44333kEKzEk21
+....52DCCbBCCc43333kFKFFk11
+....55DCCCbccc33333kGKGGk11
+....52DCCCCCc3333322kkkk111
+....44cccccc333332222221111
+.yy.DCc4443333332222211111y
+...yyyyy433yyQRQQxxx111yyy1y
+....D444yyyyyyPPxxxxx1y1111y
+.....33333yyyyKKxxxxx11111..y
+......yyyyxx1KxxK1xxx1xxxx..y
+.yyyyy33332xxxxxxxxx111111xxxyx
+........2222xxxxxxx1111......y
+..........221wwwww111
+...........111www111
+.
+.
+.
+.
