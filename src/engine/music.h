@@ -22,6 +22,7 @@
 #define MUSIC_MAX_INSTS 32  /* ids 01..1f */
 #define MUSIC_MAX_ORDER 128
 #define MUSIC_TIC_SAMPLES 630 /* 22050 Hz / 35 Hz */
+#define MUSIC_VOL_MAX 64 /* music_set_volume: unity gain */
 
 enum { MUSIC_WAVE_SQUARE, MUSIC_WAVE_TRIANGLE, MUSIC_WAVE_NOISE, MUSIC_WAVE_PLUCK };
 
@@ -73,6 +74,9 @@ void music_attach(void);
 /* Starts `song` from order 0 (replaces any playing song). */
 void music_play(const music_song *song);
 void music_stop(void);
+/* Master music gain 0..MUSIC_VOL_MAX (default MUSIC_VOL_MAX = unity),
+ * applied to every channel; any thread, takes effect on the next render. */
+void music_set_volume(int vol);
 /* Mixer hook body: adds `frames` stereo frames into acc. */
 void music_render(int32_t *acc, int frames);
 

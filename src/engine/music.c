@@ -442,6 +442,7 @@ static struct {
 static _Atomic(const music_song *) g_req_song;
 static atomic_uint g_req_serial;
 static unsigned g_seen_serial;
+static atomic_int g_volume = MUSIC_VOL_MAX;
 
 static void music_mixer_hook(int32_t *acc, int frames, void *user)
 {
@@ -474,6 +475,12 @@ void music_play(const music_song *song)
 void music_stop(void)
 {
     music_play(NULL);
+}
+
+void music_set_volume(int vol)
+{
+    vol = vol < 0 ? 0 : vol > MUSIC_VOL_MAX ? MUSIC_VOL_MAX : vol;
+    atomic_store_explicit(&g_volume, vol, memory_order_relaxed);
 }
 
 static int clampi(int v, int lo, int hi)
@@ -690,7 +697,7 @@ static int32_t osc(chan *c)
     return v;
 }
 
-static void render_span(int32_t *acc, int n)
+static void render_span(int32_t *acc, int n, int64_t vol)
 {
     for (int i = 0; i < MUSIC_CHANNELS; i++) {
         chan *c = &g_seq.ch[i];
@@ -700,7 +707,8 @@ static void render_span(int32_t *acc, int n)
             c->gain += c->gain_step;
             int32_t g = c->gain >> 16;
             /* 4 channels at full scale sum to about +-32767. */
-            int32_t s = (osc(c) * g) >> 16;
+            /* At vol = MUSIC_VOL_MAX this is exactly (osc * g) >> 16. */
+            int32_t s = (int32_t)(((int64_t)osc(c) * g * vol) >> 22);
             acc[2 * k] += s;
             acc[2 * k + 1] += s;
         }
@@ -716,11 +724,12 @@ void music_render(int32_t *acc, int frames)
     }
     if (!g_seq.song)
         return;
+    const int64_t vol = atomic_load_explicit(&g_volume, memory_order_relaxed);
     while (frames > 0) {
         if (g_seq.tic_left == 0)
             seq_tic();
         int n = frames < g_seq.tic_left ? frames : g_seq.tic_left;
-        render_span(acc, n);
+        render_span(acc, n, vol);
         acc += 2 * n;
         frames -= n;
         g_seq.tic_left -= n;

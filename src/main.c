@@ -16,7 +16,12 @@
  * mixer in window mode (distance volume and pan from the player), nowhere in
  * headless mode, and with --sound-log to a file, one line per event:
  * `tic name x y` (tic = the tic that made it, 0-based; x y in world units
- * with 4 decimals, `- -` for local player sounds). */
+ * with 4 decimals, `- -` for local player sounds).
+ *
+ * Music (game/jukebox.h): the level's track (audio.md, Music) starts at tic
+ * 0 and again on a level restart, at MUSIC_GAME_VOLUME; --sound-log gets `tic music <name>` on every
+ * change. A track that is not composed yet logs `music: <name> missing`
+ * once and plays silence. */
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -27,12 +32,14 @@
 #include "engine/colormap.h"
 #include "engine/draw2d.h"
 #include "engine/mixer.h"
+#include "engine/music.h"
 #include "engine/png.h"
 #include "engine/render.h"
 #include "engine/video.h"
 #include "game/demo.h"
 #include "game/hud.h"
 #include "game/items.h"
+#include "game/jukebox.h"
 #include "game/sound.h"
 #include "game/state.h"
 #include "game/topdown.h"
@@ -44,6 +51,12 @@
 #ifndef VS3D_MAPS_DIR
 #define VS3D_MAPS_DIR "maps"
 #endif
+#ifndef VS3D_MUSIC_DIR
+#define VS3D_MUSIC_DIR "assets/src/music"
+#endif
+
+/* Music master gain, audio.md "Music level": 32/64 = -6 dB. */
+#define MUSIC_GAME_VOLUME 32
 
 #define MOUSE_TURN 40 /* angle units per pixel of mouse X motion */
 #define MAX_CATCHUP_TICS 10
@@ -393,6 +406,18 @@ static void drain_sounds(run_t *r)
     }
 }
 
+/* (Re)starts the current level's track; no track for the level: silence.
+ * Called on level start and on level restart (step), with the level's
+ * tic, which a restart rewinds to 0. */
+static void level_music(const run_t *r)
+{
+    const char *name = music_track_for_level(r->level);
+    if (name)
+        jukebox_play(name, r->gs.tic);
+    else
+        jukebox_stop(r->gs.tic);
+}
+
 /* Runs one tic with `cmd`; logs the hash, records, dumps a frame. */
 static int step(run_t *r, const ticcmd *cmd)
 {
@@ -401,8 +426,10 @@ static int step(run_t *r, const ticcmd *cmd)
     r->tics++;
     /* A restart rewinds the event ring (game_init): the HUD starts over too,
      * with no stale messages, flashes or dead face. */
-    if (r->gs.restarts != restarts)
+    if (r->gs.restarts != restarts) {
         hud_state_init(&r->hud, &r->gs, r->opt.god);
+        level_music(r); /* the track starts over with the level */
+    }
     hud_tic(&r->hud, &r->gs);
     drain_sounds(r);
     if (r->hash_log)
@@ -444,6 +471,8 @@ static int tic_limit_hit(const run_t *r)
 
 static void run_headless(run_t *r)
 {
+    jukebox_init(VS3D_MUSIC_DIR, 0, r->sound_log); /* log only, no mixer */
+    level_music(r);
     while (!tic_limit_hit(r)) {
         ticcmd cmd = { 0, 0, 0, 0 };
         if (r->demo && !demo_input(r, &cmd))
@@ -474,6 +503,9 @@ static void run_window(run_t *r)
     /* Mixer and every effect before the device opens. A missing sound is
      * not fatal: that effect stays silent. */
     mixer_init(VS3D_ASSETS_DIR);
+    music_attach();
+    music_set_volume(MUSIC_GAME_VOLUME);
+    jukebox_init(VS3D_MUSIC_DIR, 1, r->sound_log);
     for (int i = 0; i < SFX_COUNT; i++) {
         r->sfx[i] = mixer_load_snd(sfx_name(i));
         if (!r->sfx[i])
@@ -483,6 +515,7 @@ static void run_window(run_t *r)
         r->audio = 1;
     else
         fprintf(stderr, "game: audio disabled: %s\n", platform_error());
+    level_music(r);
     platform_set_relative_mouse(true);
 
     uint8_t held[PKEY_COUNT] = { 0 };
@@ -567,6 +600,7 @@ static void run_window(run_t *r)
         platform_sleep_ms(5);
     }
     platform_shutdown();
+    jukebox_shutdown(); /* songs freed only once the audio thread is gone */
     mixer_shutdown();
 
     if (r->opt.record_path) {
@@ -620,6 +654,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "game: %s: write failed\n", r.opt.hash_log);
         r.status = EXIT_ERROR;
     }
+    jukebox_shutdown();
     demo_rec_free(&r.rec);
     demo_free(r.demo);
     render_shutdown();

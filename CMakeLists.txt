@@ -139,7 +139,8 @@ add_dependencies(hud_tex palette)
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
 target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}"
-  VS3D_MAPS_DIR="${CMAKE_SOURCE_DIR}/maps")
+  VS3D_MAPS_DIR="${CMAKE_SOURCE_DIR}/maps"
+  VS3D_MUSIC_DIR="${CMAKE_SOURCE_DIR}/assets/src/music")
 add_dependencies(game colormap sfx testpattern hud_tex fonts_tex)
 
 enable_testing()
@@ -633,3 +634,14 @@ add_test(NAME sound_events
           $<TARGET_FILE:game> $<TARGET_FILE:test_sound> ${CMAKE_SOURCE_DIR}
           ${CMAKE_BINARY_DIR}/test_tmp/sound_events)
 add_demo_determinism(door-locked)
+
+# Music in game (issue #132): level -> track table and the game's music
+# player (unit), and --sound-log `music <name>` lines from real runs.
+add_executable(test_jukebox tests/test_jukebox.c)
+target_link_libraries(test_jukebox PRIVATE engine)
+target_compile_options(test_jukebox PRIVATE -UNDEBUG)
+add_test(NAME jukebox COMMAND test_jukebox ${CMAKE_SOURCE_DIR}/assets/src/music
+         ${CMAKE_BINARY_DIR}/test_tmp/jukebox.log)
+add_test(NAME music_events
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_music_events.py
+          $<TARGET_FILE:game> ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/test_tmp/music_events)

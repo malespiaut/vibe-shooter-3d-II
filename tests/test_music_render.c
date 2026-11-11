@@ -110,6 +110,24 @@ int main(int argc, char **argv)
         assert(memcmp(a + 2 * pass, a + 2 * (pass - (long)CMP_SECONDS * MIXER_RATE), cmp) != 0);
     printf("ok: %d s after the loop match the first pass from order %d\n", CMP_SECONDS, s->loop);
 
+    /* music_set_volume scales the music: at 32/64 every sample is half the
+     * full-volume one (per-channel rounding: within 1 per channel). */
+    {
+        long n = 10L * MIXER_RATE;
+        music_set_volume(32);
+        int16_t *h = render(s, n);
+        music_set_volume(MUSIC_VOL_MAX);
+        long maxdiff = 0;
+        for (long i = 0; i < 2 * n; i++) {
+            long d = labs((long)h[i] - a[i] / 2);
+            if (d > maxdiff)
+                maxdiff = d;
+        }
+        assert(maxdiff <= MUSIC_CHANNELS);
+        printf("ok: volume 32 halves the music (max error %ld)\n", maxdiff);
+        free(h);
+    }
+
     /* music_stop silences the music channels. */
     mixer_init(NULL);
     music_attach();
