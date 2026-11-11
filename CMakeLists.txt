@@ -65,8 +65,22 @@ add_library(platform STATIC src/platform/platform_sdl.c)
 target_include_directories(platform PUBLIC src)
 target_link_libraries(platform PRIVATE SDL3::SDL3)
 
+# Colormap build step: palette.bin + libbast.so -> assets/gen/colormap.bin.
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/colormap.bin
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/colormap.py
+          --palette ${ASSETS_GEN}/palette.bin --out ${ASSETS_GEN}/colormap.bin
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${ASSETS_GEN}/palette_flags.bin
+          ${CMAKE_SOURCE_DIR}/tools/colormap.py ${CMAKE_SOURCE_DIR}/tools/bast.py
+  COMMENT "Building colormap.bin")
+add_custom_target(colormap ALL DEPENDS ${ASSETS_GEN}/colormap.bin)
+add_dependencies(colormap palette)
+
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
+target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}")
+add_dependencies(game colormap)
 
 enable_testing()
 add_executable(test_smoke tests/test_smoke.c)
@@ -113,3 +127,9 @@ add_test(NAME sfx_determinism
 # Python tests load the libbast.so built here, not a stale one.
 set_tests_properties(palcheck bast_py sfx_determinism PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+
+add_executable(test_colormap tests/test_colormap.c)
+target_link_libraries(test_colormap PRIVATE engine m)
+target_compile_options(test_colormap PRIVATE -UNDEBUG)
+add_dependencies(test_colormap colormap)
+add_test(NAME colormap COMMAND test_colormap ${ASSETS_GEN} ${PALETTE_GPL})
