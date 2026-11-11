@@ -1,0 +1,22 @@
+$ cmake -S . -B build -G Ninja && cmake --build build
+-- The C compiler identification is GNU 16.2.1
+-- Build files have been written to: /work/build
+[6/11] Linking C executable test_smoke
+[9/11] Linking C executable test_platform_audio
+[10/11] Linking C executable game
+$ CC=clang cmake -S . -B build-clang -G Ninja && cmake --build build-clang
+-- The C compiler identification is Clang 23.1.4
+-- Build files have been written to: /work/build-clang
+[6/11] Linking C executable test_smoke
+[9/11] Linking C executable test_platform_audio
+[10/11] Linking C executable game
+$ ctest --test-dir build --output-on-failure
+1/2 Test #1: smoke ............................   Passed    0.00 sec
+2/2 Test #2: platform_audio ...................   Passed    0.07 sec
+100% tests passed out of 2
+$ ctest --test-dir build-clang --output-on-failure
+1/2 Test #1: smoke ............................   Passed    0.00 sec
+2/2 Test #2: platform_audio ...................   Passed    0.07 sec
+100% tests passed out of 2
+$ grep -rl SDL src | grep -v src/platform/; echo "exit=$?"
+exit=1
