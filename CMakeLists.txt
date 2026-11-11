@@ -486,6 +486,13 @@ add_test(NAME render_walls
   COMMAND test_render_walls ${CMAKE_SOURCE_DIR}/maps/m1test.vmap ${ASSETS_GEN})
 
 # Renderer: doors drawn from live door state on maps/doortest.vmap (#116).
+add_executable(test_render_seam tests/test_render_seam.c)
+target_link_libraries(test_render_seam PRIVATE engine m)
+target_compile_options(test_render_seam PRIVATE -UNDEBUG)
+add_dependencies(test_render_seam colormap testpattern)
+add_test(NAME render_seam
+  COMMAND test_render_seam ${CMAKE_SOURCE_DIR}/maps/doortest.vmap ${ASSETS_GEN})
+
 add_executable(test_render_doors tests/test_render_doors.c)
 target_link_libraries(test_render_doors PRIVATE engine m)
 target_compile_options(test_render_doors PRIVATE -UNDEBUG)
