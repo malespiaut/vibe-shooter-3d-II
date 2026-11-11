@@ -1,0 +1,63 @@
+{
+  "desc": "Chomper jaws opening: a quick high yip into a metallic double snap, fast enough for its short wind-up.",
+  "seed": 112,
+  "crush": 5,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 1250,
+      "freq_end": 1875.0,
+      "attack": 0.003,
+      "release": 0.07,
+      "lowpass": 8000,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "freq": 625.0,
+      "freq_end": 1000.0,
+      "duty": 0.25,
+      "crush": 3,
+      "downsample": 2,
+      "attack": 0.002,
+      "release": 0.08,
+      "gain": 0.4
+    },
+    {
+      "wave": "noise",
+      "start": 0.09,
+      "freq": 14000,
+      "attack": 0.0005,
+      "release": 0.02,
+      "gain": 0.9
+    },
+    {
+      "wave": "square",
+      "start": 0.09,
+      "freq": 2600,
+      "freq_end": 1800,
+      "duty": 0.5,
+      "attack": 0.0005,
+      "release": 0.03,
+      "gain": 0.6
+    },
+    {
+      "wave": "noise",
+      "start": 0.15,
+      "freq": 14000,
+      "attack": 0.0005,
+      "release": 0.02,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "start": 0.15,
+      "freq": 2300,
+      "freq_end": 1500,
+      "duty": 0.5,
+      "attack": 0.0005,
+      "release": 0.03,
+      "gain": 0.5
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "desc": "Mortar shell landing: a short descending whistle into a heavy crunchy blast and rumble.",
+  "seed": 134,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "triangle",
+      "freq": 2200,
+      "freq_end": 900,
+      "attack": 0.01,
+      "release": 0.12,
+      "gain": 0.35
+    },
+    {
+      "wave": "noise",
+      "start": 0.12,
+      "freq": 11000,
+      "freq_end": 500,
+      "attack": 0.001,
+      "decay": 0.15,
+      "sustain": 0.35,
+      "release": 0.45,
+      "lowpass": 5000,
+      "lowpass_end": 300,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "start": 0.12,
+      "freq": 85,
+      "freq_end": 30,
+      "attack": 0.001,
+      "release": 0.4,
+      "lowpass": 300,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "start": 0.12,
+      "attack": 0.0005,
+      "release": 0.025,
+      "gain": 0.8
+    }
+  ]
+}

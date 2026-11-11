@@ -1,0 +1,35 @@
+{
+  "desc": "Mutt rifle shot: a hard snapping crack with a crushed mid-range bang and a short tail.",
+  "seed": 103,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "decay": 0.03,
+      "sustain": 0.3,
+      "release": 0.14,
+      "lowpass": 9000,
+      "lowpass_end": 1500,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 520,
+      "freq_end": 90,
+      "duty": 0.4,
+      "crush": 3,
+      "attack": 0.001,
+      "release": 0.12,
+      "gain": 0.7
+    },
+    {
+      "wave": "triangle",
+      "freq": 180,
+      "freq_end": 50,
+      "attack": 0.001,
+      "release": 0.15,
+      "gain": 0.8
+    }
+  ]
+}

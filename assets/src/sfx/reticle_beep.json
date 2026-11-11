@@ -1,0 +1,26 @@
+{
+  "desc": "Floor reticle tick: a short bright two-tone square 'bip', crisp enough to repeat every 8 tics.",
+  "seed": 133,
+  "crush": 5,
+  "voices": [
+    {
+      "wave": "square",
+      "freq": 1760,
+      "duty": 0.5,
+      "attack": 0.001,
+      "hold": 0.04,
+      "release": 0.03,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "start": 0.035,
+      "freq": 2350,
+      "duty": 0.25,
+      "attack": 0.001,
+      "hold": 0.03,
+      "release": 0.04,
+      "gain": 0.6
+    }
+  ]
+}

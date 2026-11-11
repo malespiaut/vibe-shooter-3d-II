@@ -1,0 +1,74 @@
+{
+  "desc": "Pomeranian dying: a falling whine and an electric fizzle as the cannon discharges and dies.",
+  "seed": 126,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 1216.0,
+      "freq_end": 380.0,
+      "vibrato": [
+        9,
+        1.0
+      ],
+      "attack": 0.01,
+      "decay": 0.24,
+      "sustain": 0.6,
+      "release": 0.48,
+      "lowpass": 4560,
+      "lowpass_end": 912.0,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 608.0,
+      "freq_end": 91.2,
+      "duty": 0.3,
+      "crush": 3,
+      "downsample": 4,
+      "attack": 0.01,
+      "hold": 0.32,
+      "release": 0.4,
+      "gain": 0.55
+    },
+    {
+      "wave": "noise",
+      "start": 0.28,
+      "freq": 3000,
+      "tremolo": [
+        18,
+        0.9
+      ],
+      "attack": 0.02,
+      "release": 0.44,
+      "lowpass": 4000,
+      "lowpass_end": 600,
+      "gain": 0.45
+    },
+    {
+      "wave": "square",
+      "start": 0.68,
+      "freq": 190.0,
+      "freq_end": 76.0,
+      "duty": 0.5,
+      "crush": 2,
+      "attack": 0.001,
+      "release": 0.06,
+      "gain": 0.5
+    },
+    {
+      "wave": "noise",
+      "start": 0.1,
+      "freq": 12000,
+      "tremolo": [
+        40,
+        1.0
+      ],
+      "attack": 0.01,
+      "release": 0.4,
+      "lowpass": 9000,
+      "lowpass_end": 1500,
+      "gain": 0.35
+    }
+  ]
+}

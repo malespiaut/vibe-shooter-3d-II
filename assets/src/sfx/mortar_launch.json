@@ -1,0 +1,46 @@
+{
+  "desc": "Mortar tube firing: a deep hollow 'thoomp' with a rising whistle of the shell leaving.",
+  "seed": 132,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "triangle",
+      "freq": 140,
+      "freq_end": 40,
+      "attack": 0.001,
+      "release": 0.3,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "freq": 3000,
+      "attack": 0.001,
+      "decay": 0.05,
+      "sustain": 0.3,
+      "release": 0.2,
+      "lowpass": 2500,
+      "lowpass_end": 300,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "freq": 200,
+      "freq_end": 60,
+      "duty": 0.5,
+      "crush": 3,
+      "attack": 0.001,
+      "release": 0.18,
+      "lowpass": 900,
+      "gain": 0.5
+    },
+    {
+      "wave": "triangle",
+      "start": 0.12,
+      "freq": 900,
+      "freq_end": 2400,
+      "attack": 0.05,
+      "release": 0.3,
+      "gain": 0.35
+    }
+  ]
+}

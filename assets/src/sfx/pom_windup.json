@@ -1,0 +1,47 @@
+{
+  "desc": "Pom cannon charging: a cyan hum that swells and rises with a fast shimmer, cut before the shot.",
+  "seed": 122,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 220,
+      "freq_end": 880,
+      "vibrato": [
+        14,
+        0.4
+      ],
+      "attack": 0.25,
+      "hold": 0.12,
+      "release": 0.03,
+      "lowpass": 900,
+      "lowpass_end": 5000,
+      "gain": 0.8
+    },
+    {
+      "wave": "square",
+      "freq": 440,
+      "freq_end": 1760,
+      "duty": 0.25,
+      "tremolo": [
+        30,
+        0.6
+      ],
+      "crush": 4,
+      "downsample": 2,
+      "attack": 0.25,
+      "hold": 0.12,
+      "release": 0.03,
+      "gain": 0.45
+    },
+    {
+      "wave": "triangle",
+      "freq": 110,
+      "freq_end": 220,
+      "attack": 0.1,
+      "hold": 0.27,
+      "release": 0.03,
+      "gain": 0.5
+    }
+  ]
+}
