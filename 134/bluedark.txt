@@ -1,0 +1,22 @@
+name Blue Dark
+sky -
+music 0
+par 0
+
+legend # wall=eg_ashlar floor=eg_floor_tiles ceil=eg_sand_blocks dark=14 flags=SOLID
+legend . floor=eg_floor_tiles ceil=eg_sand_blocks dark=14
+legend B wall=eg_door_blue floor=eg_floor_tiles ceil=eg_sand_blocks dark=14 flags=DOOR key=blue
+legend G wall=eg_door_green floor=eg_floor_tiles ceil=eg_sand_blocks dark=14 flags=DOOR key=green
+legend V wall=eg_door_violet floor=eg_floor_tiles ceil=eg_sand_blocks dark=14 flags=DOOR key=violet
+
+layout
+#######
+##G#V##
+###B###
+#.....#
+#.....#
+#.....#
+#######
+end
+
+entity PLAYER_START 3 2 90
