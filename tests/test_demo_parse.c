@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "game/demo.h"
+#include "game/flow.h"
 
 static const char *GOOD = "# a comment line\n"
                           "vsdemo 1\n"
@@ -177,6 +178,42 @@ static void test_high_level(void)
     demo_free(d);
 }
 
+/* Front-end flow lines (issue #101): `start`, `key`, `expect screen=`. */
+static void test_flow_lines(void)
+{
+    char err[256] = "";
+    demo_t *d = demo_parse("vsdemo 1\nwait 1\n", err, sizeof err);
+    assert(d && d->start == FLOW_PLAY); /* default: start level */
+    demo_free(d);
+    d = demo_parse("vsdemo 1\nstart title\nkey any\nwait 1\nkey esc\nexpect screen=pause\n"
+                   "expect screen!=title\n",
+                   err, sizeof err);
+    if (!d)
+        fprintf(stderr, "%s\n", err);
+    assert(d && d->start == FLOW_TITLE && d->count == 5);
+    static game_state gs;
+    ticcmd c;
+    d->screen = FLOW_TITLE;
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_TIC && d->key == FKEY_ANY);
+    assert(c.fwd == 0 && c.buttons == 0);
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_TIC && d->key == FKEY_NONE);
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_TIC && d->key == FKEY_ESC);
+    d->screen = FLOW_PAUSE;
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_END);
+    demo_free(d);
+    d = demo_parse("vsdemo 1\nexpect screen=menu\n", err, sizeof err);
+    d->screen = FLOW_TITLE;
+    assert(demo_next(d, &gs, &c, err, sizeof err) == DEMO_FAIL);
+    assert(strstr(err, "screen is title"));
+    demo_free(d);
+    expect_error("vsdemo 1\nstart menu\n", "start: want 'level' or 'title'");
+    expect_error("vsdemo 1\nkey left\n", "key: 'left' is not one of");
+    expect_error("vsdemo 1\nexpect screen=lobby\n", "unknown screen 'lobby'");
+    expect_error("vsdemo 1\nexpect screen<title\n", "only = and != apply");
+    expect_error("vsdemo 1\nwait 1\nstart title\n", "header line 'start' after");
+    printf("ok flow lines: start, key, expect screen\n");
+}
+
 static void test_recorder(const char *path)
 {
     demo_rec r;
@@ -217,6 +254,7 @@ int main(int argc, char **argv)
     test_good();
     test_errors();
     test_high_level();
+    test_flow_lines();
     test_recorder(argc > 1 ? argv[1] : "demo_parse_rec.demo");
     printf("demo_parse: OK\n");
     return 0;

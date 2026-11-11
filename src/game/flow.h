@@ -68,6 +68,7 @@ void flow_init(flow_t *f, int screen, flow_world *w);
 enum {
     FLOW_TICKED = 1, /* game_tic ran this tic */
     FLOW_EXIT = 2,   /* main menu Quit chosen */
+    FLOW_NEWLEVEL = 4, /* w->gs was (re)started: New Game or Restart Level */
 };
 /* One tic: applies `key`, then runs game_tic(w->gs, cmd) if the screen is
  * (still) PLAY and the key did not just change it. Esc in play opens pause

@@ -117,9 +117,14 @@ level 1          # level number, same as --warp
 skill 2
 seed 0
 map m1test       # optional: play maps/<name>.vmap instead of maps/level<N>.vmap
+start level      # optional: `level` (default) plays from tic 0; `title` begins on the title screen
 ```
 The optional `map` line is for test maps that are not numbered levels (`m1-walk` uses `m1test`).
 Map choice in `build/game`: `--map` file, else `--warp N`, else the demo's `map`, else its `level`.
+`start title` runs the front-end flow (`game/flow.h`, hud.md Flow) before play: the game does not
+tic on menu screens, so `tic` counts game tics while `--frames-out` names frames by run tic (menus
+included); for `start level` the two are equal. `--warp`, `--map` and `--record` always start in
+play.
 Body, executed in order, each line consuming tics:
 
 | Line | Meaning |
@@ -134,7 +139,8 @@ Body, executed in order, each line consuming tics:
 | `fire <n>` | Hold fire for n tics. |
 | `face nearest` / `fire nearest [max]` | Turn to (and shoot) the nearest visible live enemy until it dies or `max` tics. (M3) |
 | `clear [radius] [max]` | Fight visible enemies within radius (default 10 units) until none is visible and awake. (M3) |
-| `expect <stat><op><value>` | Assert on the stats (e.g. `expect exit=1`, `expect health>=20`). Failure makes the run exit 2. |
+| `expect <stat><op><value>` | Assert on the stats (e.g. `expect exit=1`, `expect health>=20`). Failure makes the run exit 2. `expect screen=<title\|menu\|skill\|controls\|play\|pause>` (or `!=`) checks the flow screen. |
+| `key <up\|down\|enter\|esc\|any>` | Press one menu key for one tic (no movement). On the title any key continues; in play `esc` opens the pause menu. |
 
 High-level commands are resolved each tic from game state into the same per-tic input a player
 produces, so they are deterministic and survive balance changes better than raw input.

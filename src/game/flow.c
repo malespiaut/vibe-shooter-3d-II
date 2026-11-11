@@ -100,6 +100,7 @@ int flow_tic(flow_t *f, int key, flow_world *w, const ticcmd *cmd)
             game_init(w->gs, w->map, w->level, f->cursor + 1, w->seed);
             *w->entry = *w->gs;
             go(f, FLOW_PLAY, 0);
+            result |= FLOW_NEWLEVEL;
         }
         break;
     case FLOW_CONTROLS:
@@ -129,6 +130,7 @@ int flow_tic(flow_t *f, int key, flow_world *w, const ticcmd *cmd)
             case PAUSE_RESTART:
                 *w->gs = *w->entry;
                 go(f, FLOW_PLAY, 0);
+                result |= FLOW_NEWLEVEL;
                 break;
             case PAUSE_CONTROLS:
                 f->back = FLOW_PAUSE;
@@ -157,7 +159,7 @@ int flow_tic(flow_t *f, int key, flow_world *w, const ticcmd *cmd)
 #define ITEM_X 104   /* hud.md: items at x=104, y=96 + 20*i */
 #define ITEM_Y 96
 #define ITEM_DY 20
-#define HEAD_Y 60
+#define HEAD_Y 66
 #define BLINK_Y 204
 
 struct flow_gfx {
