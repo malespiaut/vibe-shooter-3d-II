@@ -1,0 +1,23 @@
+{
+  "_comment": "Dachshund Howitzer gibs (enemies.md: gib, 8 frames, from the pain frame; GAME.md 6.2). Long low body on a 72x48 canvas: more chunks than the Chomper, thrown mostly sideways so they stay on the canvas; the steel tube and brown fur bleed red.",
+  "sprite": "dach",
+  "source": "sprites/dach_pain_d0_f0.tex",
+  "seed": 23,
+  "frames": 8,
+  "chunks": 10,
+  "substeps": 2,
+  "force": 1.3,
+  "lift": 1.0,
+  "jitter": 0.4,
+  "spread": 40.0,
+  "spin": 35.0,
+  "gravity": 0.7,
+  "drag": 0.04,
+  "bounce": 0.2,
+  "friction": 0.5,
+  "centre": [0.5, 0.6],
+  "wound_depth": 1,
+  "blood_ramp": "red",
+  "wound_shade": -0.08,
+  "canvas": [72, 48]
+}
