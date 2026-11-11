@@ -7,7 +7,7 @@ HDR = [
     "# View model 2, Ankh Pistol (weapons.md): 3/4 rear view, canted. Square steel slide of near-constant",
     "# width receding toward the view centre (lit top face on the left, shaded side face with the gold",
     "# inlay on the right, flat muzzle with a bushing ring and dark bore), gold ankh-loop rear sight",
-    "# standing proud of the top face (open loop), steel frame, wooden grip wrapped by Mau's right paw.",
+    "# standing proud of the top face (top face seen through the loop), steel frame, wooden grip wrapped by Mau's right paw.",
     "# Matches HUD icon weapon_2. Composed in tools/vmcompose/vm2.py, checked at 3x in game.",
 ]
 
@@ -141,7 +141,15 @@ def frame(kind):
                 cv.set(x + ox, y + oy, "steel_02")
     for (x, y), col in ank.items():
         if col == "hole":
-            cv.px[y][x] = None                  # open loop: see-through
+            # the loop stands over the top face: the lit top-face steel shows
+            # through it, with a 1 px shadow along its inner lower-right edge
+            ring = lambda ox, oy: ank.get((x + ox, y + oy), "hole") != "hole"
+            if ring(0, 1):
+                cv.set(x, y, steel(7))
+            elif ring(1, 0) or ring(1, 1):
+                cv.set(x, y, steel(8))
+            else:
+                cv.set(x, y, steel(12))
         else:
             cv.set(x, y, col)
 

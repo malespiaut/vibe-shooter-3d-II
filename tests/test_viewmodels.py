@@ -3,7 +3,8 @@
 writes every frame of weapons 1-4 listed in issue #86 / weapons.md with the
 exact size, bottom-centre origin and transparency, from a clean output
 directory, and the output passes palcheck. Muzzle flashes use fullbright
-entries; the claws never do.
+entries; the claws never do. The pistol shows the background through no closed
+opening except its trigger guard.
 """
 import os
 import subprocess
@@ -21,7 +22,28 @@ TABLE = {
     3: ((112, 64), ["idle", "fire0", "fire1", "pump0", "pump1"]),
     4: ((96, 80), ["idle", "fire0", "fire1"]),
 }
+# Where a weapon may show the background through a closed opening (inclusive x0, y0, x1, y1).
+# vm2: only inside the trigger guard loop. Anywhere else (e.g. the ankh loop over the slide)
+# an enclosed transparent pixel is a hole through the gun.
+OPENINGS = {2: (24, 52, 32, 60)}
 FLASH = {"vm2_fire0", "vm3_fire0", "vm4_fire0", "vm4_fire1"}
+
+
+def enclosed_holes(px, w, h):
+    """Transparent pixels not 4-connected to the frame border: holes through the art
+    that would show whatever is behind the gun."""
+    T = bast.TRANSPARENT
+    seen = set()
+    stack = [(x, y) for x in range(w) for y in (0, h - 1)] + \
+            [(x, y) for y in range(h) for x in (0, w - 1)]
+    while stack:
+        x, y = stack.pop()
+        if (x, y) in seen or not (0 <= x < w and 0 <= y < h) or px[x * h + y] != T:
+            continue
+        seen.add((x, y))
+        stack += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    return [(x, y) for x in range(w) for y in range(h)
+            if px[x * h + y] == T and (x, y) not in seen]
 
 
 def main():
@@ -51,6 +73,12 @@ def main():
                 # art reaches the bottom edge (the screen edge cuts it off in game)
                 assert any(px[x * h + h - 1] != bast.TRANSPARENT for x in range(w)), \
                     "%s: bottom row is empty" % name
+                if n in OPENINGS:
+                    x0, y0, x1, y1 = OPENINGS[n]
+                    holes = [(x, y) for x, y in enclosed_holes(px, w, h)
+                             if not (x0 <= x <= x1 and y0 <= y <= y1)]
+                    assert not holes, "%s: %d transparent px enclosed by art, e.g. %s" \
+                        % (name, len(holes), holes[:4])
                 has_fb = any(p in fb for p in set(px))
                 assert has_fb == (name in FLASH or name in ("vm2_fire1", "vm3_fire1")), \
                     "%s: fullbright use %s unexpected" % (name, has_fb)

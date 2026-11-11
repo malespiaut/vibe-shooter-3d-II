@@ -1,7 +1,7 @@
 # View model 2, Ankh Pistol (weapons.md): 3/4 rear view, canted. Square steel slide of near-constant
 # width receding toward the view centre (lit top face on the left, shaded side face with the gold
 # inlay on the right, flat muzzle with a bushing ring and dark bore), gold ankh-loop rear sight
-# standing proud of the top face (open loop), steel frame, wooden grip wrapped by Mau's right paw.
+# standing proud of the top face (top face seen through the loop), steel frame, wooden grip wrapped by Mau's right paw.
 # Matches HUD icon weapon_2. Composed in tools/vmcompose/vm2.py, checked at 3x in game.
 # fire1.
 name vm2_fire1
@@ -39,10 +39,10 @@ grid
 ......................NLLBBBBKKKGFFFF53EEEECC
 ......................NLB9887BKKHFFFF53EEEECCC
 ......................NB998776BKHFFFF53EEEECCC
-......................NB9...65BKHFFFF53EEEECCC
-......................B98....5BKHFFFFF3FEEEECC
-......................B98....4BKHFFFFF3FEEEECC
-......................NB77..54BKHFCCCC6CCCCCCC
+......................NB9LLH65BKHFFFF53EEEECCC
+......................B98LLLH5BKHFFFFF3FEEEECC
+......................B98GLHG4BKHFFFFF3FEEEECC
+......................NB77GG54BKHFCCCC6CCCCCCC
 ......................NB766543BKHFFFFF6FFFEECC
 ......................NLB6543BLKHGCCCC63CCCCCCC
 ......................OLLB84BBBBHHGFFF63FFFECCC
