@@ -1,0 +1,217 @@
+# Level 3 "Nile Catwalks" (docs/design/levels.md section 3), 40x32, built by
+# tools/mkmap.py into maps/level3.vmap. Coordinates are (x, y), y counted
+# from the south (the last layout row is y = 0), as demo goto.
+#
+# Critical path: pier 1 (x 3-7, y 1-11, start (4,1) facing north) -> door
+# (4,12) -> Customs House (x 1-13, y 12-23): entry hall, door (7,17) -> west
+# office (blue key (3,21)), door (8,20) -> east office -> back to the hall,
+# Sistrum Repeater (12,15) by the blue door B (13,15) -> Barge Crossing
+# catwalk (x 14-28, y 14-17, crates c, 3 Poms at the far end) -> pump yard
+# (x 29-38, y 12-20) -> switch S (30,11) opens the Pump House timed door T
+# (36,11) for 8 s (param 8 = 280 tics); the switch can be pressed again,
+# and U (38,9) is the same switch from inside -> Pump House (x 29-37,
+# y 2-10, 2 Chompers) -> door H (28,8), catwalk (26-27,8), door (25,8) ->
+# Lighthouse of Paw-ros (x 15-25, y 1-11): the outer ring (blocked at
+# (24,7), doors d at (20,10), (16,6), (20,2)) runs all the way round the
+# central pillar to door (23,5), then the inner ring (blocked at (22,6))
+# runs round to the green key at the top, (22,7) -> back through the pump
+# house (switch U) -> green door G (33,21) -> exit yard (x 31-36, y 22-29)
+# -> barge gate EXIT E (34,30), used from (34,29).
+#
+# Barge Gate: the TRIGGER cell t (33,22) right behind the green door fires
+# tag 2, which opens the four closet doors k (30,24), (30,27), (37,24),
+# (37,27): 6 Mutts and 2 Poms. A trigger right behind the door stands in
+# for "when the green door opens": doors fire no tag of their own.
+#
+# Water: ~ cells are BLOCK_ALL with an eg_nile floor and the dusk sky.
+#
+# Secrets:
+# 1. The crate stack north of the catwalk has a gap at (21,17): a dead-end
+#    pier (21,18-24) ends at the boathouse plank wall Q (21,25), a pushwall
+#    that slides north to (21,27) -> SECRET Y (23,26): Litter Satchel.
+# 2. From the west office, the window W (5,23) (BLOCK_ALL, eg_nile floor)
+#    looks over the water at a lit annex (x 3-9, y 25-26, dark 0). The
+#    cracked block P (10,23) in the east office's north wall slides north
+#    to (10,25) -> (9,24) -> annex, SECRET X (4,26): Scarab Launcher + 4
+#    Scarabs.
+# 3. The fish mural F (28,4) on the pump house's west wall (eg_mural, used
+#    nowhere else) slides west to (26,4) -> nook, SECRET Z (27,3): Golden
+#    Sardine.
+#
+# Crates are wall blocks until decoration props (#131/#206) exist.
+
+name Nile Catwalks
+sky sky_dusk
+music 2
+par 300
+
+legend # wall=eg_sand_blocks flags=SOLID
+legend ~ floor=eg_nile ceil=sky dark=6 flags=BLOCK_ALL
+legend = floor=dt_grate_floor ceil=sky dark=6
+legend c wall=eg_planks flags=SOLID
+legend a wall=eg_ashlar flags=SOLID
+legend h floor=eg_floor_tiles ceil=eg_planks dark=6
+legend D wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=6 flags=DOOR
+legend B wall=eg_door_blue floor=eg_floor_tiles ceil=eg_planks dark=6 flags=DOOR key=blue
+legend W floor=eg_nile ceil=sky dark=0 flags=BLOCK_ALL
+legend P wall=eg_sand_cracked floor=eg_floor_tiles ceil=eg_planks dark=0 flags=PUSHWALL
+legend A floor=eg_floor_tiles ceil=eg_planks dark=0
+legend X floor=eg_floor_tiles ceil=eg_planks dark=0 flags=SECRET
+legend b wall=eg_planks flags=SOLID
+legend Q wall=eg_planks floor=eg_planks ceil=eg_planks dark=8 flags=PUSHWALL
+legend v floor=eg_planks ceil=eg_planks dark=8
+legend Y floor=eg_planks ceil=eg_planks dark=8 flags=SECRET
+legend y floor=dt_concrete ceil=sky dark=6
+legend m wall=dt_steel_panel flags=SOLID
+legend S wall=dt_switch_off flags=SOLID|SWITCH tag=1 param=8
+legend U wall=dt_switch_off flags=SOLID|SWITCH tag=1 param=8
+legend T wall=dt_door floor=dt_grate_floor ceil=dt_steel_panel dark=8 flags=DOOR mode=timed tag=1
+legend p floor=dt_grate_floor ceil=dt_steel_panel dark=8
+legend r wall=dt_pump flags=SOLID
+legend H wall=dt_door floor=dt_grate_floor ceil=dt_steel_panel dark=8 flags=DOOR
+legend F wall=eg_mural floor=dt_grate_floor ceil=dt_steel_panel dark=4 flags=PUSHWALL
+legend n floor=dt_grate_floor ceil=dt_steel_panel dark=4
+legend Z floor=dt_grate_floor ceil=dt_steel_panel dark=4 flags=SECRET
+legend l wall=eg_sand_blocks2 flags=SOLID
+legend i wall=eg_glyph_band flags=SOLID
+legend o floor=eg_floor_tiles ceil=eg_planks dark=8
+legend O floor=eg_tomb_floor ceil=eg_planks dark=10
+legend d wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=8 flags=DOOR
+legend e floor=dt_concrete ceil=sky dark=6
+legend t floor=dt_concrete ceil=sky dark=6 flags=TRIGGER tag=2
+legend G wall=dt_door_green floor=dt_concrete ceil=sky dark=6 flags=DOOR key=green
+legend k wall=dt_door floor=dt_grate_floor ceil=dt_steel_panel dark=10 flags=DOOR mode=switch tag=2
+legend j floor=dt_grate_floor ceil=dt_steel_panel dark=10
+legend E wall=dt_switch_off flags=SOLID|EXIT
+
+layout
+########################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~mmmmmmEmmmm#
+#~~~~~~~~~~~~~~~~~~bbbbbbb~~mmmeeeeeemm#
+#~~~~~~~~~~~~~~~~~~bbbbbbb~~mjmeeeeeemj#
+#~#########~~~~~~~~bbvvvvb~~mjkeeeeeekj#
+#~#AXAAAAA#~~~~~~~~bbvvYvb~~mmmeeeeeemm#
+#~#AAAAAAAA~~~~~~~~bbQbbbb~~mjmeeeeeemj#
+#~#~~~~~~AA~~~~~~~~~~=~~~~~~mjkeeeeeekj#
+#aaaaWaaaaPaaa~~~~~~~=~~~~~~mjmeeeeeemj#
+#ahhhhhhahhhha~~~~~~~=~~~~~~mmmeeteeemm#
+#ahhhhhhahhhha~~~~~~~=~~~~~~mmmmmGmmmmm#
+#ahhhhhhDhhhha~~~~~~~=~~~~~~~yyyyyyyyyy#
+#ahhhhhhahhhha~~~~~~~=~~~~~~~yyyyyyyyyy#
+#ahhhhhhahhhha~~~~ccc=ccc~~~~yyyyyyyyyy#
+#aaaaaaDaaaaaa====ccc=ccc====yyyyyyyyyy#
+#ahhhhhhhhhhha===cc==========yyyyyyyyyy#
+#ahhhhhhhhhhhB=======c=======yyyyyyyyyy#
+#ahhhhhhhhhhha==========c====yyyyyyyyyy#
+#ahhhhhhhhhhha~~~~~~~~~~~~~~~yyyyyyyyyy#
+#aaaDaaaaaaaaa~~~~~~~~~~~~~~~yyyyyyyyyy#
+#~~===~~~~~~~~~lllllllllll##mmSmmmmmTmm#
+#~~===~~~~~~~~~loooodooool##mpppppppppm#
+#~~===~~~~~~~~~lolllllllol##mpppppppppU#
+#~~===~~~~~~~~~lolOOOOOloD==Hpppppppppm#
+#~~===~~~~~~~~~lolOiiiOlll##mpprpprpppm#
+#~~=====~~~~~~~ldlOiiillol##mpppppppppm#
+#~~=====~~~~~~~lolOiiiOdol##mpppppppppm#
+#~~=====~~~~~~~lolOOOOOlolnnFpprpprpppm#
+#~~===~~~~~~~~~lolllllllolnZmpppppppppm#
+#~~===~~~~~~~~~loooodoooolnnmpppppppppm#
+#~~===~~~~~~~~~lllllllllll##mmmmmmmmmmm#
+########################################
+end
+
+entity PLAYER_START 4 1 90
+
+# Enemies at skill 2: 16 Mutts, 10 Chompers, 8 Poms (34). SKILL2|SKILL3
+# ones are absent on Kitten (26 left, -24%); SKILL3 ones are Sabretooth
+# extras (41, +21%).
+# Pier 1.
+entity MUTT_TROOPER 4 9 270
+entity MUTT_TROOPER 7 5 180 flags=SKILL2|SKILL3
+# Customs House: entry hall, west office, east office.
+entity MUTT_TROOPER 10 14 180
+entity CHIHUAHUA_CHOMPER 11 16 180
+entity CHIHUAHUA_CHOMPER 3 15 0 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 5 21 270
+entity CHIHUAHUA_CHOMPER 2 19 0
+entity MUTT_TROOPER 11 21 180
+# Barge Crossing: 3 Poms at the far end of the catwalk.
+entity POMERANIAN_PLASMAGUNNER 27 16 180
+entity POMERANIAN_PLASMAGUNNER 28 15 180
+entity POMERANIAN_PLASMAGUNNER 27 14 180 flags=SKILL2|SKILL3
+# Pump yard.
+entity MUTT_TROOPER 34 17 180
+entity CHIHUAHUA_CHOMPER 37 14 180
+entity CHIHUAHUA_CHOMPER 32 19 270 flags=SKILL2|SKILL3
+# Pump House Sprint: 2 Chompers past the timed door.
+entity CHIHUAHUA_CHOMPER 35 6 90
+entity CHIHUAHUA_CHOMPER 32 9 0
+# Lighthouse of Paw-ros: each turn of the spiral.
+entity MUTT_TROOPER 24 10 270
+entity CHIHUAHUA_CHOMPER 18 10 0
+entity POMERANIAN_PLASMAGUNNER 16 8 270
+entity MUTT_TROOPER 16 3 90 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 22 2 180
+entity POMERANIAN_PLASMAGUNNER 24 4 90
+entity MUTT_TROOPER 20 4 0
+entity CHIHUAHUA_CHOMPER 18 6 270 flags=SKILL2|SKILL3
+entity POMERANIAN_PLASMAGUNNER 20 8 0
+entity MUTT_TROOPER 22 8 180
+# Barge Gate closets (tag 2): 6 Mutts, 2 Poms.
+entity MUTT_TROOPER 29 23 0
+entity MUTT_TROOPER 29 25 0
+entity MUTT_TROOPER 29 28 0
+entity POMERANIAN_PLASMAGUNNER 29 27 0
+entity MUTT_TROOPER 38 23 180
+entity MUTT_TROOPER 38 25 180 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 38 28 180
+entity POMERANIAN_PLASMAGUNNER 38 27 180 flags=SKILL2|SKILL3
+# Sabretooth extras.
+entity MUTT_TROOPER 3 6 90 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 9 20 0 flags=SKILL3
+entity POMERANIAN_PLASMAGUNNER 26 15 180 flags=SKILL3
+entity MUTT_TROOPER 30 13 90 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 36 3 90 flags=SKILL3
+entity MUTT_TROOPER 24 6 270 flags=SKILL3
+entity MUTT_TROOPER 38 24 180 flags=SKILL3
+
+# Keys and the Repeater.
+entity BLUE_ANKH 3 21 0
+entity SISTRUM_REPEATER 12 15 0
+entity GREEN_ANKH 22 7 0
+
+# Critical-path items: 6 Fish Snacks, 3 Tuna Tins, 1 Linen Wrap, 6 Charge
+# Vials, 2 Charge Jars, 4 Yarn Bundles, 1 Yarn Basket.
+entity FISH_SNACK 7 6 0
+entity FISH_SNACK 2 13 0
+entity FISH_SNACK 15 17 0
+entity FISH_SNACK 38 20 0
+entity FISH_SNACK 37 2 0
+entity FISH_SNACK 16 2 0
+entity TUNA_TIN 2 22 0
+entity TUNA_TIN 29 20 0
+entity TUNA_TIN 18 4 0
+entity LINEN_WRAP 12 22 0
+entity CHARGE_VIAL 3 10 0
+entity CHARGE_VIAL 12 13 0
+entity CHARGE_VIAL 20 14 0
+entity CHARGE_VIAL 38 12 0
+entity CHARGE_VIAL 24 9 0
+entity CHARGE_VIAL 16 10 0
+entity CHARGE_JAR 7 22 0
+entity CHARGE_JAR 29 2 0
+entity YARN_BUNDLE 16 14 0
+entity YARN_BUNDLE 25 17 0
+entity YARN_BUNDLE 31 16 0
+entity YARN_BUNDLE 24 2 0
+entity YARN_BASKET 18 8 0
+
+# Secret 1 (boathouse): Litter Satchel.
+entity LITTER_SATCHEL 23 27 0
+# Secret 2 (lit annex): Scarab Launcher + 4 Scarabs.
+entity SCARAB_LAUNCHER 5 26 0
+entity SCARAB 3 25 0
+entity SCARAB 3 26 0
+entity SCARAB 6 25 0
+entity SCARAB 7 26 0
+# Secret 3 (fish mural nook): Golden Sardine.
+entity GOLDEN_SARDINE 26 2 0
