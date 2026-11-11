@@ -1,0 +1,36 @@
+{
+  "desc": "Dominion banner: olive cloth with an original gold paw emblem hung on a steel wall",
+  "tile": "wall",
+  "size": 64,
+  "seed": 2207,
+  "layers": [
+    {"type": "panel", "rect": [0, 0, 64, 64], "bevel": 0, "depth": 0.0, "region": "frame"},
+    {"type": "panel", "rect": [1, 1, 62, 62], "bevel": 2, "depth": 1.0, "region": "plate"},
+    {"type": "panel", "rect": [0, 3, 64, 4], "bevel": 1, "depth": 1.6, "region": "rod"},
+    {"type": "panel", "rect": [14, 7, 36, 51], "bevel": 1, "depth": 1.5, "region": "cloth"},
+    {"type": "panel", "rect": [16, 9, 32, 47], "bevel": 0, "depth": -0.15, "region": "cloth"},
+    {"type": "grooves", "lines": [[18, 10, 18, 54], [45, 10, 45, 54]], "width": 1, "depth": 0.25, "region": "seam"},
+    {"type": "glyph", "png": "paw_big.png", "x": 22, "y": 22, "depth": -0.5, "region": "emblem"},
+    {"type": "panel", "rect": [14, 58, 4, 3], "bevel": 0, "depth": 1.2, "region": "cloth"},
+    {"type": "panel", "rect": [22, 58, 4, 3], "bevel": 0, "depth": 1.2, "region": "cloth"},
+    {"type": "panel", "rect": [30, 58, 4, 3], "bevel": 0, "depth": 1.2, "region": "cloth"},
+    {"type": "panel", "rect": [38, 58, 4, 3], "bevel": 0, "depth": 1.2, "region": "cloth"},
+    {"type": "panel", "rect": [46, 58, 4, 3], "bevel": 0, "depth": 1.2, "region": "cloth"},
+    {"type": "rivets", "points": [[4, 5], [59, 5]], "radius": 1.6, "height": 0.9}
+  ],
+  "noise": {"cells": 32, "octaves": 2, "height": 0.08, "amount": 0.08, "blotch_cells": 8, "blotch": 0.3},
+  "light": {"relief": 1.0, "contrast": 0.8, "shadow": 0.25, "shadow_steps": 2, "shadow_slope": 0.45},
+  "grime": {"radius": 2, "cavity": 0.8, "shade": 0.3, "noise": 0.45, "grain": 0.15, "darken": 0.15},
+  "materials": {
+    "frame": {"ramp": "steel", "lo": 2, "hi": 9, "level": 0.45, "base2": false},
+    "plate": {"ramp": "steel", "lo": 4, "hi": 14, "level": 0.6},
+    "groove": {"ramp": "steel", "lo": 2, "hi": 8, "level": 0.4, "base2": 0.6},
+    "rivet": {"ramp": "steel", "lo": 5, "hi": 15, "level": 0.6, "base2": false},
+    "housing": {"ramp": "steel", "lo": 0, "hi": 5, "level": 0.3, "base2": false},
+    "rod": {"ramp": "steel", "lo": 4, "hi": 15, "level": 0.6, "base2": false},
+    "cloth": {"ramp": "olive", "lo": 1, "hi": 10, "level": 0.55, "base2": 0.55, "dither": true},
+    "seam": {"ramp": "olive", "lo": 0, "hi": 7, "level": 0.45, "base2": false},
+    "emblem": {"ramp": "gold", "lo": 2, "hi": 10, "level": 0.6, "base2": false}
+  },
+  "base2": {"ramp": "brown", "lo": 2, "hi": 8, "threshold": 0.45}
+}

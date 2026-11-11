@@ -123,6 +123,25 @@ def main():
             assert base2_count(idx, params, names) == 0, src
             print("control base2 off %s: 0 texels -> caught"
                   % os.path.splitext(os.path.basename(src))[0])
+    # `stripes` primitive: diagonal bands of `width` every `period` texels,
+    # continuous across the tile edge; a period that does not divide the
+    # size is rejected (it would break the wrap).
+    surf = texgen.Surface(64, None)
+    texgen.prim_stripes(surf, {"rect": [0, 0, 64, 64], "period": 16, "width": 8, "region": "s"})
+    m = surf.region == "s"
+    assert m.sum() == 64 * 64 // 2, m.sum()
+    for y in range(64):
+        for x in range(64):
+            assert m[y, x] == (((x + y) % 16) < 8), (x, y)
+    surf = texgen.Surface(64, None)
+    texgen.prim_stripes(surf, {"rect": [0, 0, 64, 64], "period": 16, "width": 8, "region": "s", "dir": "\\"})
+    assert (surf.region == "s")[0, 15] == False and (surf.region == "s")[1, 1] == True
+    try:
+        texgen.prim_stripes(texgen.Surface(64, None), {"rect": [0, 0, 64, 64], "period": 12, "width": 6})
+        raise AssertionError("stripes accepted a period that does not divide the size")
+    except texgen.TexgenError:
+        pass
+    print("stripes: pattern, wrap and period check ok")
     print("texgen_tile: OK (%d textures)" % len(SOURCES))
 
 

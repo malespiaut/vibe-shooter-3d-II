@@ -1,0 +1,52 @@
+{
+  "desc": "Dog-tech server rack (L7): four bolted units, vent slots, rows of status LEDs",
+  "tile": "wall",
+  "size": 64,
+  "seed": 2209,
+  "layers": [
+    {"type": "panel", "rect": [0, 0, 64, 64], "bevel": 0, "depth": 0.0, "region": "frame"},
+    {"type": "panel", "rect": [2, 0, 60, 64], "bevel": 1, "depth": 0.6, "region": "frame2"},
+    {"type": "panel", "rect": [4, 2, 56, 13], "bevel": 2, "depth": 1.0, "region": "plate", "tone": -0.03},
+    {"type": "grooves", "lines": [[8, 6, 36, 6], [8, 9, 36, 9]], "width": 1, "depth": 0.7, "region": "housing"},
+    {"type": "rivets", "points": [[6, 5], [57, 5], [6, 11], [57, 11]], "radius": 1.2, "height": 0.7},
+    {"type": "panel", "rect": [4, 18, 56, 13], "bevel": 2, "depth": 1.0, "region": "plate", "tone": 0.02},
+    {"type": "grooves", "lines": [[8, 22, 36, 22], [8, 25, 36, 25]], "width": 1, "depth": 0.7, "region": "housing"},
+    {"type": "rivets", "points": [[6, 21], [57, 21], [6, 27], [57, 27]], "radius": 1.2, "height": 0.7},
+    {"type": "panel", "rect": [4, 34, 56, 13], "bevel": 2, "depth": 1.0, "region": "plate", "tone": 0.0},
+    {"type": "grooves", "lines": [[8, 38, 36, 38], [8, 41, 36, 41]], "width": 1, "depth": 0.7, "region": "housing"},
+    {"type": "rivets", "points": [[6, 37], [57, 37], [6, 43], [57, 43]], "radius": 1.2, "height": 0.7},
+    {"type": "panel", "rect": [4, 50, 56, 13], "bevel": 2, "depth": 1.0, "region": "plate", "tone": -0.02},
+    {"type": "grooves", "lines": [[8, 54, 36, 54], [8, 57, 36, 57]], "width": 1, "depth": 0.7, "region": "housing"},
+    {"type": "rivets", "points": [[6, 53], [57, 53], [6, 59], [57, 59]], "radius": 1.2, "height": 0.7}
+  ],
+  "noise": {"cells": 32, "octaves": 2, "height": 0.12, "amount": 0.08, "blotch_cells": 8, "blotch": 0.5},
+  "light": {"relief": 1.0, "contrast": 0.8, "shadow": 0.25, "shadow_steps": 2, "shadow_slope": 0.45},
+  "grime": {"radius": 2, "cavity": 0.8, "shade": 0.3, "noise": 0.45, "grain": 0.15, "darken": 0.15},
+  "materials": {
+    "frame": {"ramp": "steel", "lo": 2, "hi": 9, "level": 0.45, "base2": false},
+    "plate": {"ramp": "steel", "lo": 4, "hi": 14, "level": 0.6},
+    "groove": {"ramp": "steel", "lo": 2, "hi": 8, "level": 0.4, "base2": 0.6},
+    "rivet": {"ramp": "steel", "lo": 5, "hi": 15, "level": 0.6, "base2": false},
+    "housing": {"ramp": "steel", "lo": 0, "hi": 5, "level": 0.3, "base2": false},
+    "frame2": {"ramp": "steel", "lo": 1, "hi": 7, "level": 0.4, "base2": false}
+  },
+  "base2": {"ramp": "gray", "lo": 3, "hi": 10, "threshold": 0.35},
+  "brightmap": [
+    {"rect": [42, 6, 2, 1], "entry": "fb_cyan"},
+    {"rect": [46, 6, 2, 1], "entry": "fb_cyan"},
+    {"rect": [50, 6, 2, 1], "entry": "fb_amber"},
+    {"rect": [54, 6, 2, 1], "entry": "fb_cyan"},
+    {"rect": [42, 22, 2, 1], "entry": "fb_cyan"},
+    {"rect": [46, 22, 2, 1], "entry": "fb_amber"},
+    {"rect": [50, 22, 2, 1], "entry": "fb_cyan"},
+    {"rect": [54, 22, 2, 1], "entry": "fb_cyan"},
+    {"rect": [42, 38, 2, 1], "entry": "fb_amber"},
+    {"rect": [46, 38, 2, 1], "entry": "fb_cyan"},
+    {"rect": [50, 38, 2, 1], "entry": "fb_cyan"},
+    {"rect": [54, 38, 2, 1], "entry": "fb_red"},
+    {"rect": [42, 54, 2, 1], "entry": "fb_cyan"},
+    {"rect": [46, 54, 2, 1], "entry": "fb_cyan"},
+    {"rect": [50, 54, 2, 1], "entry": "fb_cyan"},
+    {"rect": [54, 54, 2, 1], "entry": "fb_amber"}
+  ]
+}

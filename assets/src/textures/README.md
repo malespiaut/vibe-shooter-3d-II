@@ -85,7 +85,42 @@ Layer primitives (`type`):
 | `panel` | `rect`, `bevel`, `depth` (> 0 raised, < 0 inset), `region`, `tone` | bevelled plate added to the current height |
 | `rivets` | `points`, `radius` (1.5), `height` (0.8), `region` (`rivet`) | domes |
 | `grooves` | `lines` ([x0, y0, x1, y1], horizontal or vertical), `width` (1), `depth` (0.6), `region` (`groove`) | cut lines |
-| `glyph` | `png` (in `glyphs/`), `x`, `y`, `depth` (0.6), `region` (`glyph`) | inset 1-bit mask |
+| `glyph` | `png` (in `glyphs/`), `x`, `y`, `depth` (0.6, negative raises), `region` (`glyph`) | inset 1-bit mask |
+| `stripes` | `rect`, `period` (divides size), `width`, `dir` (`/` or `\`), `depth` (0), `region` (`stripe`) | diagonal hazard bands inside `rect`: texels with (x + y) or (x - y) mod `period` < `width` |
 
 Art bible rules the parameters must keep: ramps only (no fullbright outside `brightmap`), no
 outlines, dithering only through `dither`, never on detail under 16 px.
+
+## Texture list: dog-tech (and the proof texture)
+
+| Name | Kind | Use |
+|---|---|---|
+| `eg_sandstone_blocks` | wall | Egyptian base wall (L1-L4, L6) |
+| `dt_steel_panel` | wall | dog-tech base wall: two plates, stamped paw, cyan LED (proof texture) |
+| `dt_steel_panel_b` | wall | steel variant: four square plates; corridors, filler between features |
+| `dt_steel_panel_c` | wall | steel variant: three tall plates with foot vents; rooms, L5/L7 halls |
+| `dt_riveted_plate` | wall | heavy riveted slab with centre strap; bulkheads, vault walls (L5 Lance Vault) |
+| `dt_scaffold_sandstone` | wall | mixed theme: olive girders bolted over sandstone (L1 scaffolds, L6 construction) |
+| `dt_banner` | wall | Dominion banner, olive cloth, original gold paw emblem; set dressing on DT walls |
+| `dt_screen_f0` / `dt_screen_f1` | wall, 2 frames | flickering screen; the frames differ only in the readout lines and cursor (L5 secret tell, L7 control rooms) |
+| `dt_server_rack` | wall | server rack with fullbright LED rows (L7 server farm) |
+| `dt_conveyor` | wall | conveyor belt under a hazard hood (L5 Packaging Line, secret tell "belt running into a wall") |
+| `dt_pump` | wall | pump drum between steel pipes, amber lamp (L3 pump houses, L5) |
+| `dt_hazard` | wall | steel with a gold/black diagonal warning band; edges of sludge pits, drops, timed doors |
+| `dt_steel_cracked` | wall | `dt_steel_panel_b` with one cracked plate: pushwall tell, used nowhere else on a map |
+| `dt_door` | door | unkeyed DT door: split leaves, olive jambs, hazard chevrons |
+| `dt_door_green` / `dt_door_blue` / `dt_door_violet` | door | keyed DT doors: 4 px key-ramp band on both jambs and a key-coloured ankh plate (`items.md`) |
+| `dt_switch_off` / `dt_switch_on` | switch pair | lever up + red lamp / lever down + cyan lamp; exit, timed-door and tag switches |
+| `dt_grate_floor` | floor | slotted grate over a dark pit; catwalks, gantries (L3, L5) |
+| `dt_diamond_plate` | floor | tread plate with alternating raised bars; DT rooms and stairs |
+| `dt_kibble_sludge` | floor | orange-brown kibble slurry for `DAMAGE` cells (L5 Sludge Pits, Grinder Hall) |
+| `dt_concrete` | floor/ceiling | four poured slabs with saw joints; yards, L6 construction, generic ceiling |
+| `dt_ceiling_light` | ceiling | light panel: four `fb_white` tubes behind a cyan diffuser; lit DT rooms |
+
+Fullbright use in the DT set: `fb_cyan`, `fb_amber` and `fb_red` only for LEDs, screens and warning
+lamps. The ceiling light core uses `fb_white`, the light source entry the art bible names for light
+sources, because a cyan or amber tube would tint every lit room.
+
+`glyphs/`: `paw.png` (stamped paw), `paw_big.png` (banner emblem, original four-toe dog paw),
+`ankh.png` (key door plate), `crack_dt.png` (dog-tech pushwall crack; `crack.png` is the
+Egyptian one used by `eg_sand_cracked`).
