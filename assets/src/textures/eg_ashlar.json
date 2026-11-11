@@ -1,0 +1,89 @@
+{
+  "desc": "Large ashlar: two courses of big dressed sandstone blocks, thin joints, heavy wear",
+  "tile": "wall",
+  "size": 64,
+  "seed": 1103,
+  "layers": [
+    {
+      "type": "panel",
+      "rect": [
+        0,
+        0,
+        64,
+        64
+      ],
+      "bevel": 0,
+      "depth": 0.0,
+      "region": "mortar"
+    },
+    {
+      "type": "panel",
+      "rect": [
+        17,
+        16,
+        62,
+        30
+      ],
+      "bevel": 3,
+      "depth": 1.0,
+      "region": "face",
+      "tone": 0.03
+    },
+    {
+      "type": "panel",
+      "rect": [
+        47,
+        48,
+        62,
+        30
+      ],
+      "bevel": 3,
+      "depth": 1.1,
+      "region": "face",
+      "tone": -0.03
+    }
+  ],
+  "noise": {
+    "cells": 16,
+    "octaves": 3,
+    "height": 0.9,
+    "amount": 0.18,
+    "blotch_cells": 4,
+    "blotch": 0.15
+  },
+  "light": {
+    "relief": 1.0,
+    "contrast": 0.8,
+    "shadow": 0.22,
+    "shadow_steps": 2,
+    "shadow_slope": 0.4
+  },
+  "grime": {
+    "radius": 2,
+    "cavity": 0.7,
+    "shade": 0.2,
+    "noise": 0.5,
+    "grain": 0.2,
+    "darken": 0.12
+  },
+  "materials": {
+    "face": {
+      "ramp": "sand",
+      "lo": 3,
+      "hi": 13,
+      "level": 0.56
+    },
+    "mortar": {
+      "ramp": "sand",
+      "lo": 1,
+      "hi": 7,
+      "level": 0.45
+    }
+  },
+  "base2": {
+    "ramp": "brown",
+    "lo": 5,
+    "hi": 12,
+    "threshold": 0.55
+  }
+}

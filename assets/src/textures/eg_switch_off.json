@@ -1,0 +1,158 @@
+{
+  "desc": "Wall switch, off: paw lever up in a full-height gold pilaster, dim red lamp",
+  "tile": "wall",
+  "size": 64,
+  "seed": 1140,
+  "layers": [
+    {
+      "type": "bricks",
+      "rows": 4,
+      "cols": 2,
+      "mortar": 2,
+      "bevel": 2,
+      "offset": 0.5,
+      "jitter": 0.1,
+      "tone": 0.04
+    },
+    {
+      "type": "panel",
+      "rect": [
+        18,
+        0,
+        28,
+        64
+      ],
+      "bevel": 0,
+      "depth": 0.6,
+      "region": "plate"
+    },
+    {
+      "type": "panel",
+      "rect": [
+        27,
+        16,
+        10,
+        34
+      ],
+      "bevel": 1,
+      "depth": -0.9,
+      "region": "slot"
+    },
+    {
+      "type": "glyph",
+      "png": "lever_up.png",
+      "x": 28,
+      "y": 16,
+      "depth": -1.4,
+      "region": "lever"
+    },
+    {
+      "type": "panel",
+      "rect": [
+        39,
+        13,
+        6,
+        6
+      ],
+      "bevel": 1,
+      "depth": -0.4,
+      "region": "slot"
+    },
+    {
+      "type": "rivets",
+      "points": [
+        [
+          21,
+          4
+        ],
+        [
+          21,
+          59
+        ],
+        [
+          42,
+          59
+        ],
+        [
+          42,
+          4
+        ]
+      ],
+      "radius": 1.2,
+      "height": 0.5,
+      "region": "plate"
+    }
+  ],
+  "noise": {
+    "cells": 16,
+    "octaves": 3,
+    "height": 0.7,
+    "amount": 0.16,
+    "blotch_cells": 4,
+    "blotch": 0.12
+  },
+  "light": {
+    "relief": 1.0,
+    "contrast": 0.8,
+    "shadow": 0.22,
+    "shadow_steps": 2,
+    "shadow_slope": 0.4
+  },
+  "grime": {
+    "radius": 2,
+    "cavity": 0.7,
+    "shade": 0.2,
+    "noise": 0.5,
+    "grain": 0.2,
+    "darken": 0.12
+  },
+  "materials": {
+    "face": {
+      "ramp": "sand",
+      "lo": 4,
+      "hi": 13,
+      "level": 0.58
+    },
+    "mortar": {
+      "ramp": "sand",
+      "lo": 1,
+      "hi": 7,
+      "level": 0.45
+    },
+    "plate": {
+      "ramp": "gold",
+      "lo": 1,
+      "hi": 10,
+      "level": 0.54,
+      "base2": false
+    },
+    "slot": {
+      "ramp": "sand",
+      "lo": 0,
+      "hi": 7,
+      "level": 0.12,
+      "base2": false
+    },
+    "lever": {
+      "ramp": "steel",
+      "lo": 4,
+      "hi": 14,
+      "level": 0.6,
+      "base2": false
+    }
+  },
+  "base2": {
+    "ramp": "brown",
+    "lo": 5,
+    "hi": 12,
+    "threshold": 0.55
+  },
+  "brightmap": [
+    {
+      "glyph": "lamp.png",
+      "x": 40,
+      "y": 14,
+      "entry": "fb_red_dim"
+    }
+  ]
+}
