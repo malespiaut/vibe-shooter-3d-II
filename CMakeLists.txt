@@ -624,6 +624,7 @@ add_test(NAME launcher_demo
 set_tests_properties(launcher_demo PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 add_demo_determinism(launcher-test)
+add_demo_determinism(fx-test)
 
 # Weapons 6-7: the Lance / Howler test demo, run twice.
 add_test(NAME lance_demo

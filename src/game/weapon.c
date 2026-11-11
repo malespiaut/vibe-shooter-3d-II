@@ -336,10 +336,10 @@ static void fire_weapon(game_state *gs)
         thinker_t *t = thinker_get(&gs->things, id);
         if (t) {
             /* Impact fx on the near side of the thinker, before the damage
-             * can gib it (fx only reads its position). A shot stopped by a
-             * Shieldbearer's shield hits the shield, not flesh: puff. */
-            const int blocked = ai_shield_blocks(t, p->x, p->y);
-            impact_fx(gs, blocked ? FX_PUFF : FX_BLOOD, a,
+             * can gib it (fx only reads its position). A barrel, or a shot
+             * stopped by a Shieldbearer's shield, gets a puff, not blood. */
+            const int puff = t->type == BAST_ENT_KIBBLE_BARREL || ai_shield_blocks(t, p->x, p->y);
+            impact_fx(gs, puff ? FX_PUFF : FX_BLOOD, a,
                       thinker_along(p->x, p->y, a, t) - t->radius);
             ai_damage_from(gs, t, roll_damage(gs, wi), DMG_DIRECT, p->x, p->y);
             hit = 1;

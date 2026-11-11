@@ -131,18 +131,25 @@ static void test_pistol_wall(void)
     bast_map_free(m);
 }
 
-/* A pistol shot at a shootable thinker spawns blood, not a puff. */
+/* A pistol shot at an enemy spawns blood on its near side; at a barrel, a
+ * puff. */
 static void test_pistol_enemy(void)
 {
     bast_map *m = open_map();
     game_state gs;
     setup(&gs, m);
-    assert(thinker_spawn_barrel(&gs.things, FX(6) + HALF, FX(3) + HALF));
+    assert(thinker_spawn(&gs.things, BAST_ENT_MUTT_TROOPER, FX(6) + HALF, FX(3) + HALF, 0));
     game_tic(&gs, &FIRE);
     assert(fx_count(&gs) == 1);
     const fx_t *f = &gs.fx.list[0];
     assert(f->kind == FX_BLOOD);
     assert(fix_to_int(f->x) == 6 && fix_to_int(f->y) == 3);
+    assert(f->x < FX(6) + HALF);
+
+    setup(&gs, m);
+    assert(thinker_spawn_barrel(&gs.things, FX(6) + HALF, FX(3) + HALF));
+    game_tic(&gs, &FIRE);
+    assert(fx_count(&gs) == 1 && gs.fx.list[0].kind == FX_PUFF);
     bast_map_free(m);
 }
 

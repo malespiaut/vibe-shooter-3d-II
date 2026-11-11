@@ -29,8 +29,8 @@ struct game_state;
 
 enum {
     FX_NONE = 0,
-    FX_PUFF = 1,  /* hitscan on a wall: fx/puff_hit */
-    FX_BLOOD = 2, /* hitscan or claws on a shootable thinker: fx/blood_hit */
+    FX_PUFF = 1,  /* hitscan on a wall or a barrel: fx/puff_hit */
+    FX_BLOOD = 2, /* hitscan or claws on an enemy: fx/blood_hit */
     FX_KINDS
 };
 
