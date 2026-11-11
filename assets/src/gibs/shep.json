@@ -1,0 +1,29 @@
+{
+  "_comment": "Shepherd Shieldbearer gib (enemies.md: gib, 8 frames from the pain frame, GAME.md 6.2): navy riot gear, blue shield and black-and-tan fur burst into chunks with red wound edges; same 56x64 canvas as the sprite. Blast centre at 0.75 of the width (toward the shield) and seed 4 keep every chunk inside the canvas.",
+  "sprite": "shep",
+  "source": "sprites/shep_pain_d0_f0.tex",
+  "seed": 4,
+  "frames": 8,
+  "chunks": 10,
+  "substeps": 4,
+  "force": 0.9,
+  "lift": 0.4,
+  "jitter": 0.4,
+  "spread": 25.0,
+  "spin": 30.0,
+  "gravity": 0.4,
+  "drag": 0.04,
+  "bounce": 0.15,
+  "friction": 0.15,
+  "centre": [
+    0.75,
+    0.6
+  ],
+  "wound_depth": 2,
+  "blood_ramp": "red",
+  "wound_shade": -0.08,
+  "canvas": [
+    56,
+    64
+  ]
+}

@@ -381,6 +381,11 @@ add_test(NAME sprite_woofu
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprite_woofu.py)
 set_tests_properties(sprite_woofu PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+# Shepherd Shieldbearer sprite set (assets/src/sprites/shep), same checks.
+add_test(NAME sprite_shep
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_sprite_shep.py)
+set_tests_properties(sprite_shep PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 600
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 # Chihuahua Chomper sprite set (enemies.md, art-bible.md): renders the model
 # into a temp dir and checks frames, size, ramps and outline. 77 = skipped
