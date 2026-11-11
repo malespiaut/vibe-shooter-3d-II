@@ -16,8 +16,11 @@ for ((i = 2; i < ${#args[@]}; i++)); do
 done
 case $1 in issue) f=$FIXTURES/issues.json ;; pr) f=$FIXTURES/prs.json ;; esac
 update() {
+  # flock: background agent jobs edit concurrently; GitHub updates are atomic, the fixture file is not
+  exec 9>"$f.lock"; flock 9
   jq --argjson n "$num" --arg a "$add" --arg r "$rm" --arg b "$body" --arg o "${OWNER:-malespiaut}" \
-    "map(if .number == \$n then $1 else . end)" "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+    --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    "map(if .number == \$n then ($1 | .updatedAt = \$now) else . end)" "$f" > "$f.tmp" && mv "$f.tmp" "$f"
 }
 case "$1 $2" in
   "issue list" | "pr list") if [[ -f $f ]]; then jq -r "$jqf" "$f"; else echo '[]' | jq -r "$jqf"; fi ;;
