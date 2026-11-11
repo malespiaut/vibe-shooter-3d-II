@@ -94,6 +94,25 @@ def test_doortest(tmp):
         "maps/doortest.vmap is stale: rerun mkmap.py"
 
 
+def test_decortest(tmp):
+    """Every decoration type (bast.h 96..105, #131) through mkmap: names
+    resolve, the build matches the committed map, and a load + save is
+    byte-identical."""
+    out = os.path.join(tmp, "decortest.vmap")
+    m = mkmap.build(open(os.path.join(ROOT, "maps", "src", "decortest.txt")).read())
+    m.save(out)
+    names = {bast.entity_type_name(e["type"]) for e in m.entities}
+    want = {"KIBBLE_BARREL", "PAPYRUS_POT", "OBELISK_STUB", "PILLAR_SAND", "BRAZIER",
+            "CAT_STATUE", "CRATE", "FLOODLIGHT", "DOG_BANNER", "SERVER_RACK"}
+    assert want <= names, sorted(want - names)
+    assert sorted(e["type"] for e in m.entities if e["type"] >= 96) == list(range(96, 106))
+    again = os.path.join(tmp, "decortest_again.vmap")
+    bast.Map.load(out).save(again)
+    assert read(again) == read(out)
+    assert read(out) == read(os.path.join(ROOT, "maps", "decortest.vmap")), \
+        "maps/decortest.vmap is stale: rerun mkmap.py"
+
+
 def test_binding(tmp):
     m = bast.Map(3, 2)
     m.name = "tiny"
@@ -157,6 +176,7 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         test_m1test(tmp)
         test_doortest(tmp)
+        test_decortest(tmp)
         test_binding(tmp)
     test_errors()
     print("mkmap_py: ok")

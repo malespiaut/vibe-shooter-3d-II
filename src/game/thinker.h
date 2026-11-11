@@ -108,7 +108,8 @@ typedef struct {
     int32_t kills, kill_total;
 } thinkers_t;
 
-/* 1 for a live enemy or barrel: any state but DEAD, TAKEN, DYING and FREE;
+/* 1 for a live enemy or solid decoration: any state but DEAD, TAKEN,
+ * DYING, FREE and PROP;
  * never a pickup, projectile or effect (type >= TH_TYPE_SCARAB_PROJ). Doors,
  * pushwalls, player collision, hitscan, splash and AI use it. */
 int thinker_alive(const thinker_t *t);

@@ -37,6 +37,19 @@ def test_roundtrip(tmp):
     assert m.path == out and not m.dirty
 
 
+def test_roundtrip_decor(tmp):
+    """maps/decortest.vmap holds every decoration type (#131): the editor
+    names each one and saves it back byte-identical."""
+    src = os.path.join(ROOT, "maps", "decortest.vmap")
+    m = M.MapModel.open(src)
+    out = os.path.join(tmp, "rt_decor.vmap")
+    m.save(out)
+    assert read(out) == read(src), "decortest: save after open is not byte-identical"
+    from editor import entities as E
+    for n in range(96, 106):
+        assert E.category_of(n) == "decoration" and E.BY_NUMBER[n][1], n
+
+
 def test_presenter(tmp):
     p = Presenter(M.MapModel.open(SRC))
     m = p.model
@@ -306,6 +319,7 @@ def test_mvp2(tmp):
 def main():
     with tempfile.TemporaryDirectory() as tmp:
         test_roundtrip(tmp)
+        test_roundtrip_decor(tmp)
         test_presenter(tmp)
         test_new_map(tmp)
         test_mvp2(tmp)

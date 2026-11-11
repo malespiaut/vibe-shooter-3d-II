@@ -8,7 +8,8 @@ int thinker_alive(const thinker_t *t)
 {
     return !(t->flags & TH_FLAG_PICKUP) && t->type < TH_TYPE_SCARAB_PROJ &&
            t->state != TH_STATE_DEAD && t->state != TH_STATE_TAKEN &&
-           t->state != TH_STATE_DYING && t->state != TH_STATE_FREE;
+           t->state != TH_STATE_DYING && t->state != TH_STATE_FREE &&
+           t->state != TH_STATE_PROP;
 }
 
 uint16_t thinker_spawn(thinkers_t *th, uint16_t type, fix_t x, fix_t y, angle_t angle)
