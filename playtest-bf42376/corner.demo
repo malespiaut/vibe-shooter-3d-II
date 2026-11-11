@@ -1,0 +1,7 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map m1test
+in 40 127 127 300 R
+in 200 127 -127 0 R
