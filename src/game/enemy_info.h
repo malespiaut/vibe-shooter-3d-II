@@ -17,6 +17,8 @@ enum {
                       * tics apart; range = max range of the decision */
     ATK_MORTAR = 4,  /* Dachshund: a reticle (mortar) beyond `range`, a
                       * headbutt (dmg_*) within it, near edge as melee */
+    ATK_MISSILE = 5, /* Mastiff: launches `missile` (game/projectile.c) at the
+                      * player from alternating shoulders */
 };
 
 typedef struct {
@@ -25,13 +27,18 @@ typedef struct {
     fix_t radius;        /* half the width */
     fix_t speed;         /* per tic */
     uint8_t attack;      /* ATK_* */
-    int32_t dmg_base, dmg_spread; /* damage = base + rng() % (spread + 1) */
+    int32_t dmg_base, dmg_spread; /* damage = base + rng() % (spread + 1); a
+                                   * missile's direct damage is its own row */
     fix_t range;         /* hitscan: max range; melee: reach */
     int32_t windup;      /* tics, skill 2 (Sabretooth: 25% shorter) */
     int32_t pain;        /* pain chance /256 per damaging hit (Sabretooth: half) */
     int32_t aggression;  /* ranged attack chance /256 per decision */
     uint16_t drop;       /* pickup entity type dropped on death, 0 = none */
     int32_t drop_amount; /* ammo in the drop, 0 = the pickup's normal amount */
+    uint16_t missile;    /* ATK_MISSILE: projectile thinker type (TH_TYPE_*) */
+    fix_t shoulder;      /* ATK_MISSILE: lateral launch offset, alternating sides;
+                          * 0 = from the centre */
+    uint8_t shield;      /* 1: frontal shield (ai_damage_from) */
 } enemy_info_t;
 
 /* The row for `type`, or NULL when `type` is not an enemy. */
