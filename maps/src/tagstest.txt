@@ -1,0 +1,58 @@
+# Map logic test map: 13x13, built by tools/mkmap.py into maps/tagstest.vmap.
+# Test fixture for tags, switches, exit, pushwalls, triggers, secrets, lights
+# and damage floors (tests/test_tags.c, demos/tags-test.demo), not a game
+# level. Texture names are the numbered test patterns. Coordinates are
+# (x, y) with y counted from the south (last layout row is y = 0).
+#
+# South hall A (y 1-3) and north hall B (y 5-7), split by the wall row y = 4:
+#   s (0,2)  wall switch, tag 1
+#   w (0,1)  wall switch, tag 2, param 3: timed doors on tag 2 close 3 s later
+#   1 (6,4)  door, mode switch, tag 1: opened by s
+#   o (10,4) door START_OPEN, tag 1: closed by s
+#   T (3,4)  door, mode timed, tag 2: opened by w, closes 105 tics later
+#   3 (8,4)  door, mode switch, tag 3: opened by the trigger r
+#   r (9,6)  walk-over TRIGGER, tag 3 (also fires the LIGHTS entity)
+#   ~ (11,7) DAMAGE floor, 5 health per 16 tics
+#   E (1,8)  EXIT wall, used from (1,7)
+#   P (3,8)  PUSHWALL, slides north 2 tiles to (3,10); ! (3,9) is SECRET
+#   Q (7,8)  PUSHWALL, (7,10) is wall: slides 1 tile to (7,9)
+# Floors darken from dark 0 to dark_alt 12 when the lights fire.
+
+name Tags Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0 dark_alt=12
+legend ! floor=test04 ceil=test05 dark=0 dark_alt=12 flags=SECRET
+legend r floor=test04 ceil=test05 dark=0 dark_alt=12 flags=TRIGGER tag=3
+legend ~ floor=test03 ceil=test05 dark=0 dark_alt=12 flags=DAMAGE param=5
+legend s wall=test03 flags=SOLID|SWITCH tag=1
+legend w wall=test03 flags=SOLID|SWITCH tag=2 param=3
+legend E wall=test03 flags=SOLID|EXIT
+legend P wall=test01 floor=test04 ceil=test05 flags=PUSHWALL
+legend Q wall=test01 floor=test04 ceil=test05 flags=PUSHWALL
+legend 1 wall=test02 floor=test04 ceil=test05 flags=DOOR mode=switch tag=1
+legend o wall=test02 floor=test04 ceil=test05 flags=DOOR|START_OPEN tag=1
+legend T wall=test02 floor=test04 ceil=test05 flags=DOOR mode=timed tag=2
+legend 3 wall=test02 floor=test04 ceil=test05 flags=DOOR mode=switch tag=3
+
+layout
+#############
+#############
+###.#########
+###!###.#####
+#E#P###Q#####
+#..........~#
+#........r..#
+#...........#
+###T##1#3#o##
+#...........#
+s...........#
+w...........#
+#############
+end
+
+entity PLAYER_START 2 2 0
+entity LIGHTS 6 6 0 tag=3

@@ -29,6 +29,7 @@ void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32
     thinkers_spawn_map(&gs->things, map, gs->skill);
     doors_init(gs);
     items_spawn(gs);
+    tags_init(gs);
 }
 
 void game_give_keys(game_state *gs, uint32_t keys)
@@ -42,7 +43,9 @@ int game_tile_blocks(const game_state *gs, int tx, int ty)
     if (tx < 0 || ty < 0 || tx >= map->width || ty >= map->height)
         return 1;
     uint16_t f = map->cells[ty * map->width + tx].flags;
-    if (f & (BAST_CELL_SOLID | BAST_CELL_BLOCK_ALL | BAST_CELL_PUSHWALL))
+    if (f & (BAST_CELL_SOLID | BAST_CELL_BLOCK_ALL))
+        return 1;
+    if (pushwall_blocks(gs, tx, ty))
         return 1;
     if (f & BAST_CELL_DOOR) {
         int d = door_at(gs, tx, ty);
@@ -159,14 +162,13 @@ void game_tic(game_state *gs, const ticcmd *cmd)
 
     /* Use acts on the rising edge, along the view after this tic's turn. */
     if ((cmd->buttons & BT_USE) && !(gs->prev_buttons & BT_USE)) {
-        int d = door_use_target(gs);
-        if (d >= 0)
-            door_use(gs, d);
+        game_use(gs);
     }
     gs->prev_buttons = cmd->buttons;
 
     /* Doors move before the player, who sees this tic's door state. */
     doors_tic(gs);
+    pushwalls_tic(gs);
 
     player_thrust(p, cmd);
 
@@ -177,6 +179,9 @@ void game_tic(game_state *gs, const ticcmd *cmd)
         p->momy = 0;
 
     items_touch(gs);
+    /* Triggers, secrets and damage floors under the player's new position. */
+    tags_player_cell(gs);
+
     weapon_tic(gs, (cmd->buttons & BT_WEAPON_MASK) >> BT_WEAPON_SHIFT, cmd->buttons & BT_FIRE);
 
     gs->tic++;
@@ -247,5 +252,6 @@ uint64_t game_hash(const game_state *gs)
     for (int i = 0; i < gs->pickup_count; i++)
         hash_u32(&h, gs->pickups[i].taken);
     hash_i32(&h, gs->items_got);
+    tags_hash(gs, &h);
     return h.value;
 }

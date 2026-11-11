@@ -1,4 +1,5 @@
 #include "game/items.h"
+#include "game/tags.h"
 
 #include <string.h>
 
@@ -226,10 +227,4 @@ void player_damage(game_state *gs, int32_t amount)
     }
     p->health = 0;
     p->dead = 1;
-}
-
-void game_fire_tag(game_state *gs, int tag)
-{
-    gs->tags_fired++;
-    gs->last_tag = tag;
 }

@@ -19,6 +19,7 @@ typedef struct game_state game_state;
 #define DOOR_SPEED (FIX_ONE / 32) /* 32 tics to open or close fully */
 #define DOOR_WAIT_TICS 140        /* mode 0: open time before closing */
 #define DOOR_USE_RANGE (FIX_ONE * 3 / 4)
+#define DOOR_TIMER_DUE (-1)
 
 enum { DOOR_CLOSED, DOOR_OPENING, DOOR_OPEN, DOOR_CLOSING };
 
@@ -26,7 +27,8 @@ enum {
     DOOR_MODE_AUTO = 0,   /* closes DOOR_WAIT_TICS after fully open */
     DOOR_MODE_STAY = 1,   /* stays open */
     DOOR_MODE_SWITCH = 2, /* use does nothing; door_activate() only */
-    DOOR_MODE_TIMED = 3,  /* same as SWITCH until switches/timers land */
+    DOOR_MODE_TIMED = 3,  /* like SWITCH, then closes the switch's param
+                           * seconds after the switch fired */
 };
 
 enum { DOOR_SIDE_NORTH = 0, DOOR_SIDE_EAST = 1, DOOR_SIDE_SOUTH = 2, DOOR_SIDE_WEST = 3 };
@@ -44,7 +46,10 @@ typedef struct {
     uint8_t param;   /* the cell's param */
     uint16_t flags;  /* the cell's flags (ONEWAY, START_OPEN) */
     fix_t pos;       /* 0 closed .. FIX_ONE open */
-    int32_t timer;   /* DOOR_OPEN, mode AUTO: tics left before closing */
+    int32_t timer;   /* mode AUTO, DOOR_OPEN: tics left before closing;
+                      * mode TIMED: tics left of the switch delay (counting
+                      * from the switch), DOOR_TIMER_DUE once elapsed,
+                      * 0 = no delay running (stays open) */
 } door_t;
 
 /* Builds the door list from the map (called by game_init). START_OPEN
@@ -67,6 +72,10 @@ int door_use(game_state *gs, int idx);
  * its mode, key or side. */
 void door_activate(game_state *gs, int idx);
 
+/* door_activate(), and a TIMED-mode door also starts its close delay of
+ * `close_tics` (> 0; from its switch's param). */
+void door_activate_timed(game_state *gs, int idx, int32_t close_tics);
+
 /* Moves every door by one tic. */
 void doors_tic(game_state *gs);
 
@@ -74,5 +83,10 @@ void doors_tic(game_state *gs);
  * direction (grid DDA from the player's position). Returns its door index
  * if it is a door, else -1. */
 int door_use_target(const game_state *gs);
+
+/* The same trace for any use target: the first tile within DOOR_USE_RANGE
+ * that is a door or blocks. Returns 1 with the tile and the unit step
+ * (sx, sy) that entered it (the direction away from the player), else 0. */
+int use_trace(const game_state *gs, int *tx, int *ty, int *sx, int *sy);
 
 #endif

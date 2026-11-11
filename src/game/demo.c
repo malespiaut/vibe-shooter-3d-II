@@ -265,7 +265,11 @@ static int32_t stat_value(const game_state *gs, const char *name)
         return gs->things.kills;
     if (strcmp(name, "items") == 0)
         return gs->items_got;
-    return 0; /* secrets, exit: no counters yet */
+    if (strcmp(name, "secrets") == 0)
+        return gs->secrets;
+    if (strcmp(name, "exit") == 0)
+        return gs->exit;
+    return 0;
 }
 
 /* expect <stat><op><value>, or expect tile=X,Y / tile!=X,Y */
