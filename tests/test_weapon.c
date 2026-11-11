@@ -298,8 +298,35 @@ static void test_hash_covers_thinkers(void)
     bast_map_free(m);
 }
 
+static void test_weapon_pickup(void)
+{
+    bast_map *m = open_map();
+    add_entity(m, BAST_ENT_HAIRBALL_SCATTERGUN, FX(3) + HALF, FX(3) + HALF, BAST_ENT_SKILL_ALL);
+    add_entity(m, BAST_ENT_MUTT_TROOPER, FX(6) + HALF, FX(3) + HALF, BAST_ENT_SKILL_ALL);
+    game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    gs.player.x = FX(2) + HALF;
+    gs.player.y = FX(3) + HALF;
+    assert(gs.things.count == 2 && gs.things.kill_total == 1);
+    /* The pickup is not shootable: the pistol hits the Mutt behind it. */
+    game_tic(&gs, &FIRE);
+    assert(gs.things.list[0].state == TH_STATE_STAND && gs.things.list[1].health < 20);
+    gs.player.x = FX(3) + HALF - 30000; /* within 0.5 u */
+    game_tic(&gs, &IDLE);
+    assert(gs.things.list[0].state == TH_STATE_TAKEN);
+    assert(gs.player.weapons.owned & (1u << WP_SCATTERGUN));
+    assert(gs.player.weapons.ammo[AM_SHELLS] == 8 && gs.player.weapons.ready == WP_PISTOL);
+    /* Owned: ammo only, capped at 50; full ammo leaves it on the floor. */
+    weapons_t w = gs.player.weapons;
+    w.ammo[AM_SHELLS] = 45;
+    assert(weapon_give(&w, WP_SCATTERGUN) && w.ammo[AM_SHELLS] == 50);
+    assert(!weapon_give(&w, WP_SCATTERGUN));
+    bast_map_free(m);
+}
+
 int main(void)
 {
+    test_weapon_pickup();
     test_intervals();
     test_ammo();
     test_switch();

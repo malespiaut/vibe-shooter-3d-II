@@ -15,6 +15,29 @@ const weapon_info_t weapon_info[WP_SLOTS] = {
     [WP_HOWLER] = { AM_CELLS, 25, 50, 0, 80, 0, 0, 0 },
 };
 
+const int32_t ammo_max[AM_TYPES] = { 200, 50, 50, 300 };
+
+/* Ammo given by a weapon pickup, per slot (weapons.md; the pistol, not in
+ * that list, gives a Charge Vial's 10). */
+static const int32_t PICKUP_AMMO[WP_SLOTS] = { 0, 0, 10, 8, 40, 4, 60, 50 };
+
+int weapon_give(weapons_t *w, int wp)
+{
+    const weapon_info_t *wi = &weapon_info[wp];
+    const int have = (w->owned >> wp) & 1;
+    int took = 0;
+    if (wi->ammo_type != AM_NONE && w->ammo[wi->ammo_type] < ammo_max[wi->ammo_type]) {
+        int32_t a = w->ammo[wi->ammo_type] + PICKUP_AMMO[wp];
+        w->ammo[wi->ammo_type] = a < ammo_max[wi->ammo_type] ? a : ammo_max[wi->ammo_type];
+        took = 1;
+    }
+    if (!have) {
+        w->owned |= (uint8_t)(1u << wp);
+        took = 1;
+    }
+    return took;
+}
+
 void weapons_init(weapons_t *w)
 {
     *w = (weapons_t){ 0 };
@@ -107,7 +130,7 @@ uint16_t weapon_trace(struct game_state *gs, fix_t x, fix_t y, angle_t a, fix_t 
     int64_t best_t = 0;
     for (int i = 0; i < gs->things.count; i++) {
         const thinker_t *t = &gs->things.list[i];
-        if (t->state == TH_STATE_DEAD)
+        if (t->state != TH_STATE_STAND || !(t->flags & TH_FLAG_SHOOTABLE))
             continue;
         const int64_t ox = (int64_t)t->x - x, oy = (int64_t)t->y - y;
         const int64_t along = (ox * dx + oy * dy) / FIX_ONE; /* projection, 16.16 */
@@ -165,6 +188,17 @@ void weapon_tic(struct game_state *gs, int select_slot, int fire)
 {
     weapons_t *w = &gs->player.weapons;
     player_t *p = &gs->player;
+
+    /* Weapon pickups within reach of the player centre. */
+    for (int i = 0; i < gs->things.count; i++) {
+        thinker_t *t = &gs->things.list[i];
+        if (!(t->flags & TH_FLAG_PICKUP) || t->state != TH_STATE_STAND)
+            continue;
+        if (fix_dist(t->x - p->x, t->y - p->y) > PICKUP_RADIUS)
+            continue;
+        if (weapon_give(w, t->type - BAST_ENT_ANKH_PISTOL + WP_PISTOL))
+            t->state = TH_STATE_TAKEN;
+    }
 
     if (select_slot)
         weapon_select(w, select_slot);

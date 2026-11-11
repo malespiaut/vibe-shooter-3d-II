@@ -1,0 +1,31 @@
+# Weapon test map: 18x9, built by tools/mkmap.py into maps/weapontest.vmap.
+# Test fixture for demos/weapon-test.demo (thinkers and weapons 1-4), not a
+# game level. One open room; three standing Mutt Troopers, one Hairball
+# Scattergun pickup. Textures are the renderer test patterns, as m1test.
+
+name Weapon Test
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+
+layout
+##################
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+#................#
+##################
+end
+
+# ty counts from the south: the last layout row is ty = 0.
+entity PLAYER_START 2 4 0
+entity MUTT_TROOPER 12 4 180
+entity HAIRBALL_SCATTERGUN 4 2 0
+entity MUTT_TROOPER 8 7 270
+entity MUTT_TROOPER 10 1 90

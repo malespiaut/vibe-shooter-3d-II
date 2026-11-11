@@ -39,6 +39,7 @@ enum {
 #define HITSCAN_RANGE ((fix_t)(32 * 65536))
 #define CLAW_REACH ((fix_t)49152) /* 0.75 units */
 #define PLAYER_START_CHARGES 50
+#define PICKUP_RADIUS ((fix_t)32768) /* 0.5 u from the player centre */
 
 typedef struct {
     int8_t ammo_type;   /* AM_* */
@@ -75,6 +76,15 @@ int weapon_has_ammo(const weapons_t *w, int wp);
 
 /* Highest owned slot with ammo, never 5 or 7 (weapons.md). */
 int weapon_auto_pick(const weapons_t *w);
+
+/* Ammo cap without the Litter Satchel (weapons.md Ammo types). */
+extern const int32_t ammo_max[AM_TYPES];
+
+/* Weapon pickup (weapons.md Behaviour notes): owns slot `wp` and adds its
+ * pickup ammo, capped; a weapon already owned gives only the ammo. The
+ * weapon in hand does not change. Returns 1 when anything was taken (a
+ * weapon owned with full ammo stays on the floor). */
+int weapon_give(weapons_t *w, int wp);
 
 /* Starts switching to `wp` (no-op if not owned or already in hand). */
 void weapon_select(weapons_t *w, int wp);

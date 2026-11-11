@@ -18,12 +18,15 @@
 enum {
     TH_STATE_STAND = 0, /* alive, idle */
     TH_STATE_DEAD = 1,  /* corpse: no longer hit, never removed */
+    TH_STATE_TAKEN = 2, /* picked-up item: inert, never removed */
 };
 
 /* thinker_t.flags */
 enum {
     TH_FLAG_COUNTKILL = 1 << 0, /* counts toward kills total */
     TH_FLAG_GIB = 1 << 1,       /* died at HP <= -(max HP / 2) */
+    TH_FLAG_SHOOTABLE = 1 << 2, /* hitscan and melee can hit it (enemies) */
+    TH_FLAG_PICKUP = 1 << 3,    /* touched by the player (weapon pickups) */
 };
 
 typedef struct {
@@ -49,13 +52,18 @@ typedef struct {
  * not an enemy. */
 int thinker_enemy_info(uint16_t type, int32_t *hp, fix_t *radius);
 
-/* Empties the list and spawns every enemy entity of `map` flagged for
- * `skill` (1..3), in entity order. */
+/* Empties the list and spawns every enemy and weapon-pickup entity of `map`
+ * flagged for `skill` (1..3), in entity order. Other item types are added
+ * by the pickups issue (#64). */
 void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill);
 
 /* Appends an enemy; returns its id, or 0 when the list is full or `type`
  * is not an enemy. */
 uint16_t thinker_spawn(thinkers_t *th, uint16_t type, fix_t x, fix_t y, angle_t angle);
+
+/* Appends a weapon pickup (BAST_ENT_ANKH_PISTOL..SPHINX_HOWLER); returns
+ * its id, or 0 when full or `type` is not a weapon. */
+uint16_t thinker_spawn_pickup(thinkers_t *th, uint16_t type, fix_t x, fix_t y);
 
 /* NULL for id 0 or an id that does not exist. */
 thinker_t *thinker_get(thinkers_t *th, uint16_t id);
