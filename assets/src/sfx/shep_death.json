@@ -1,0 +1,96 @@
+{
+  "desc": "Shieldbearer dies: a yelp falling into a long whine, a baton fizzle, then the shield clattering down.",
+  "seed": 86,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 620,
+      "freq_end": 420,
+      "vibrato": [
+        8,
+        0.8
+      ],
+      "attack": 0.005,
+      "hold": 0.12,
+      "release": 0.05,
+      "lowpass": 3000,
+      "crush": 4,
+      "downsample": 2,
+      "gain": 1.0
+    },
+    {
+      "wave": "saw",
+      "start": 0.17,
+      "freq": 420,
+      "freq_end": 150,
+      "vibrato": [
+        6,
+        1.2
+      ],
+      "attack": 0.02,
+      "decay": 0.15,
+      "sustain": 0.7,
+      "hold": 0.15,
+      "release": 0.35,
+      "lowpass": 2500,
+      "lowpass_end": 500,
+      "crush": 4,
+      "downsample": 2,
+      "gain": 0.9
+    },
+    {
+      "wave": "noise",
+      "start": 0.1,
+      "freq": 6000,
+      "freq_end": 1500,
+      "tremolo": [
+        50,
+        0.9
+      ],
+      "attack": 0.01,
+      "release": 0.4,
+      "crush": 2,
+      "downsample": 3,
+      "lowpass": 4000,
+      "gain": 0.3
+    },
+    {
+      "wave": "noise",
+      "start": 0.72,
+      "attack": 0.0005,
+      "release": 0.02,
+      "gain": 0.6
+    },
+    {
+      "wave": "triangle",
+      "start": 0.72,
+      "freq": 1870,
+      "attack": 0.001,
+      "release": 0.25,
+      "gain": 0.5
+    },
+    {
+      "wave": "noise",
+      "start": 0.86,
+      "attack": 0.0005,
+      "release": 0.02,
+      "gain": 0.45
+    },
+    {
+      "wave": "triangle",
+      "start": 0.86,
+      "freq": 1760,
+      "attack": 0.001,
+      "release": 0.2,
+      "gain": 0.35
+    },
+    {
+      "wave": "triangle",
+      "start": 0.95,
+      "freq": 1700,
+      "attack": 0.001,
+      "release": 0.15,
+      "gain": 0.25
+    }
+  ]
+}

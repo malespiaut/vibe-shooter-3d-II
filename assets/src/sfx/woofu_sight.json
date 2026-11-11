@@ -1,0 +1,132 @@
+{
+  "desc": "Woofu appears: a grand three-note announcement chime, then a huge robotic bark-word \"SIT!\" (hiss, booming vowel, hard stop).",
+  "seed": 91,
+  "voices": [
+    {
+      "wave": "triangle",
+      "freq": 523,
+      "attack": 0.003,
+      "release": 0.4,
+      "gain": 0.6
+    },
+    {
+      "wave": "square",
+      "freq": 523,
+      "duty": 0.25,
+      "attack": 0.003,
+      "release": 0.25,
+      "lowpass": 2500,
+      "gain": 0.2
+    },
+    {
+      "wave": "triangle",
+      "start": 0.2,
+      "freq": 659,
+      "attack": 0.003,
+      "release": 0.4,
+      "gain": 0.6
+    },
+    {
+      "wave": "square",
+      "start": 0.2,
+      "freq": 659,
+      "duty": 0.25,
+      "attack": 0.003,
+      "release": 0.25,
+      "lowpass": 2500,
+      "gain": 0.2
+    },
+    {
+      "wave": "triangle",
+      "start": 0.4,
+      "freq": 784,
+      "attack": 0.003,
+      "release": 0.6,
+      "gain": 0.7
+    },
+    {
+      "wave": "square",
+      "start": 0.4,
+      "freq": 784,
+      "duty": 0.25,
+      "attack": 0.003,
+      "release": 0.4,
+      "lowpass": 2500,
+      "gain": 0.25
+    },
+    {
+      "wave": "noise",
+      "start": 0.95,
+      "attack": 0.03,
+      "hold": 0.12,
+      "release": 0.03,
+      "crush": 5,
+      "gain": 0.45
+    },
+    {
+      "wave": "saw",
+      "start": 1.13,
+      "freq": 120,
+      "freq_end": 95,
+      "vibrato": [
+        5,
+        0.3
+      ],
+      "tremolo": [
+        55,
+        0.35
+      ],
+      "attack": 0.01,
+      "decay": 0.05,
+      "sustain": 0.85,
+      "hold": 0.2,
+      "release": 0.05,
+      "lowpass": 2600,
+      "crush": 4,
+      "downsample": 2,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "start": 1.13,
+      "freq": 240,
+      "freq_end": 190,
+      "duty": 0.12,
+      "attack": 0.01,
+      "hold": 0.25,
+      "release": 0.05,
+      "lowpass": 3000,
+      "crush": 4,
+      "downsample": 2,
+      "gain": 0.4
+    },
+    {
+      "wave": "triangle",
+      "start": 1.13,
+      "freq": 2300,
+      "freq_end": 2200,
+      "attack": 0.01,
+      "hold": 0.25,
+      "release": 0.05,
+      "gain": 0.12
+    },
+    {
+      "wave": "noise",
+      "start": 1.13,
+      "freq": 3000,
+      "freq_end": 800,
+      "attack": 0.002,
+      "release": 0.06,
+      "lowpass": 2000,
+      "gain": 0.5
+    },
+    {
+      "wave": "noise",
+      "start": 1.47,
+      "attack": 0.001,
+      "release": 0.035,
+      "lowpass": 7000,
+      "gain": 0.55
+    }
+  ]
+}

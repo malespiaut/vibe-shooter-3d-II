@@ -1,0 +1,56 @@
+{
+  "desc": "Shield swings aside and the shock baton crackles up: rising electric buzz with spitting crackle (0.42 s, under the 16-tic windup).",
+  "seed": 83,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 5000,
+      "tremolo": [
+        37,
+        0.9
+      ],
+      "attack": 0.03,
+      "hold": 0.28,
+      "release": 0.1,
+      "lowpass": 4000,
+      "crush": 2,
+      "downsample": 3,
+      "gain": 0.6
+    },
+    {
+      "wave": "square",
+      "freq": 100,
+      "freq_end": 140,
+      "duty": 0.2,
+      "tremolo": [
+        60,
+        1.0
+      ],
+      "attack": 0.02,
+      "hold": 0.3,
+      "release": 0.1,
+      "lowpass": 1500,
+      "gain": 0.5
+    },
+    {
+      "wave": "saw",
+      "freq": 250,
+      "freq_end": 1000,
+      "attack": 0.25,
+      "hold": 0.08,
+      "release": 0.08,
+      "lowpass": 3000,
+      "crush": 4,
+      "gain": 0.35
+    },
+    {
+      "wave": "noise",
+      "freq": 2000,
+      "freq_end": 600,
+      "attack": 0.001,
+      "release": 0.07,
+      "lowpass": 1200,
+      "gain": 0.4
+    }
+  ]
+}

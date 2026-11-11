@@ -1,0 +1,44 @@
+{
+  "desc": "Bone missile hits: a heavy crunchy blast with a very deep thump and rumbling crushed tail.",
+  "seed": 74,
+  "crush": 5,
+  "voices": [
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "release": 0.03,
+      "gain": 0.8
+    },
+    {
+      "wave": "noise",
+      "freq": 10000,
+      "freq_end": 300,
+      "attack": 0.001,
+      "decay": 0.2,
+      "sustain": 0.4,
+      "release": 0.6,
+      "lowpass": 4500,
+      "lowpass_end": 200,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 75,
+      "freq_end": 24,
+      "attack": 0.001,
+      "release": 0.55,
+      "lowpass": 260,
+      "gain": 1.1
+    },
+    {
+      "wave": "noise",
+      "start": 0.06,
+      "freq": 700,
+      "freq_end": 90,
+      "attack": 0.04,
+      "release": 0.85,
+      "lowpass": 350,
+      "gain": 0.6
+    }
+  ]
+}

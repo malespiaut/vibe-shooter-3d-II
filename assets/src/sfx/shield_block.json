@@ -1,0 +1,49 @@
+{
+  "desc": "Shot stopped by the energy shield: a bright inharmonic metal ping over a short electric zap.",
+  "seed": 82,
+  "voices": [
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "release": 0.015,
+      "gain": 0.6
+    },
+    {
+      "wave": "triangle",
+      "freq": 1870,
+      "freq_end": 1840,
+      "attack": 0.001,
+      "release": 0.45,
+      "gain": 0.8
+    },
+    {
+      "wave": "triangle",
+      "freq": 2610,
+      "attack": 0.001,
+      "release": 0.3,
+      "gain": 0.45
+    },
+    {
+      "wave": "square",
+      "freq": 4320,
+      "duty": 0.15,
+      "attack": 0.001,
+      "release": 0.08,
+      "gain": 0.15
+    },
+    {
+      "wave": "saw",
+      "freq": 240,
+      "freq_end": 120,
+      "tremolo": [
+        70,
+        0.9
+      ],
+      "attack": 0.001,
+      "release": 0.12,
+      "lowpass": 2500,
+      "crush": 3,
+      "gain": 0.3
+    }
+  ]
+}

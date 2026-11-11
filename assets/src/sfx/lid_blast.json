@@ -1,0 +1,98 @@
+{
+  "desc": "Phase 2: the sarcophagus lid blows off: huge blast, deep boom, then the chrome lid clanging down three times.",
+  "seed": 94,
+  "crush": 6,
+  "voices": [
+    {
+      "wave": "noise",
+      "attack": 0.0005,
+      "release": 0.04,
+      "gain": 0.9
+    },
+    {
+      "wave": "noise",
+      "freq": 11000,
+      "freq_end": 350,
+      "attack": 0.001,
+      "decay": 0.2,
+      "sustain": 0.4,
+      "release": 0.5,
+      "lowpass": 5000,
+      "lowpass_end": 250,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 80,
+      "freq_end": 25,
+      "attack": 0.001,
+      "release": 0.5,
+      "lowpass": 280,
+      "gain": 1.0
+    },
+    {
+      "wave": "triangle",
+      "start": 0.55,
+      "freq": 620,
+      "attack": 0.001,
+      "release": 0.35,
+      "gain": 0.45
+    },
+    {
+      "wave": "triangle",
+      "start": 0.55,
+      "freq": 1490,
+      "attack": 0.001,
+      "release": 0.2,
+      "gain": 0.25
+    },
+    {
+      "wave": "noise",
+      "start": 0.55,
+      "attack": 0.0005,
+      "release": 0.02,
+      "lowpass": 4000,
+      "gain": 0.4
+    },
+    {
+      "wave": "triangle",
+      "start": 0.82,
+      "freq": 600,
+      "attack": 0.001,
+      "release": 0.28,
+      "gain": 0.35
+    },
+    {
+      "wave": "triangle",
+      "start": 0.82,
+      "freq": 1440,
+      "attack": 0.001,
+      "release": 0.15,
+      "gain": 0.2
+    },
+    {
+      "wave": "noise",
+      "start": 0.82,
+      "attack": 0.0005,
+      "release": 0.02,
+      "lowpass": 4000,
+      "gain": 0.3
+    },
+    {
+      "wave": "triangle",
+      "start": 1.0,
+      "freq": 590,
+      "attack": 0.001,
+      "release": 0.3,
+      "gain": 0.25
+    },
+    {
+      "wave": "noise",
+      "start": 1.0,
+      "attack": 0.0005,
+      "release": 0.02,
+      "lowpass": 4000,
+      "gain": 0.2
+    }
+  ]
+}

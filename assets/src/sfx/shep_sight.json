@@ -1,0 +1,85 @@
+{
+  "desc": "Shieldbearer alerts: a radio squelch chirp then a sharp crushed double bark, \"RUFF-RUFF\".",
+  "seed": 81,
+  "voices": [
+    {
+      "wave": "noise",
+      "freq": 6000,
+      "attack": 0.001,
+      "release": 0.05,
+      "lowpass": 4000,
+      "crush": 2,
+      "gain": 0.4
+    },
+    {
+      "wave": "square",
+      "start": 0.04,
+      "freq": 1600,
+      "freq_end": 1000,
+      "duty": 0.25,
+      "attack": 0.001,
+      "release": 0.04,
+      "gain": 0.25
+    },
+    {
+      "wave": "saw",
+      "start": 0.1,
+      "freq": 300,
+      "freq_end": 190,
+      "vibrato": [
+        12,
+        0.4
+      ],
+      "attack": 0.004,
+      "decay": 0.05,
+      "sustain": 0.6,
+      "hold": 0.06,
+      "release": 0.08,
+      "lowpass": 2500,
+      "lowpass_end": 700,
+      "crush": 5,
+      "downsample": 2,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "start": 0.1,
+      "freq": 4000,
+      "freq_end": 1000,
+      "attack": 0.002,
+      "release": 0.06,
+      "lowpass": 3000,
+      "gain": 0.5
+    },
+    {
+      "wave": "saw",
+      "start": 0.32,
+      "freq": 320,
+      "freq_end": 180,
+      "vibrato": [
+        12,
+        0.4
+      ],
+      "attack": 0.004,
+      "decay": 0.05,
+      "sustain": 0.6,
+      "hold": 0.08,
+      "release": 0.12,
+      "lowpass": 2500,
+      "lowpass_end": 600,
+      "crush": 5,
+      "downsample": 2,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "start": 0.32,
+      "freq": 4000,
+      "freq_end": 1000,
+      "attack": 0.002,
+      "release": 0.06,
+      "lowpass": 3000,
+      "gain": 0.5
+    }
+  ]
+}

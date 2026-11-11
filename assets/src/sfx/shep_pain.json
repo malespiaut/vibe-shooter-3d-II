@@ -1,0 +1,44 @@
+{
+  "desc": "Shieldbearer hit: a sharp mid yelp, bit-crushed.",
+  "seed": 85,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 560,
+      "freq_end": 330,
+      "vibrato": [
+        16,
+        0.6
+      ],
+      "attack": 0.004,
+      "decay": 0.06,
+      "sustain": 0.7,
+      "hold": 0.05,
+      "release": 0.18,
+      "lowpass": 3000,
+      "lowpass_end": 900,
+      "crush": 4,
+      "downsample": 2,
+      "gain": 1.0
+    },
+    {
+      "wave": "square",
+      "freq": 280,
+      "freq_end": 165,
+      "duty": 0.2,
+      "attack": 0.004,
+      "hold": 0.08,
+      "release": 0.15,
+      "lowpass": 1500,
+      "gain": 0.3
+    },
+    {
+      "wave": "noise",
+      "freq": 5000,
+      "attack": 0.001,
+      "release": 0.05,
+      "lowpass": 3000,
+      "gain": 0.35
+    }
+  ]
+}

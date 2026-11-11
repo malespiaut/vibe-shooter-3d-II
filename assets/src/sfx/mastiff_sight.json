@@ -1,0 +1,79 @@
+{
+  "desc": "Mastiff spots you: two huge deep crushed barks over a chugging tank-tread motor.",
+  "seed": 71,
+  "voices": [
+    {
+      "wave": "saw",
+      "freq": 105,
+      "freq_end": 72,
+      "vibrato": [
+        9,
+        0.5
+      ],
+      "attack": 0.006,
+      "decay": 0.08,
+      "sustain": 0.7,
+      "hold": 0.12,
+      "release": 0.14,
+      "lowpass": 1400,
+      "lowpass_end": 350,
+      "crush": 5,
+      "downsample": 2,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "freq": 2500,
+      "freq_end": 600,
+      "attack": 0.002,
+      "release": 0.09,
+      "lowpass": 1800,
+      "gain": 0.7
+    },
+    {
+      "wave": "saw",
+      "start": 0.36,
+      "freq": 95,
+      "freq_end": 58,
+      "vibrato": [
+        9,
+        0.5
+      ],
+      "attack": 0.006,
+      "decay": 0.1,
+      "sustain": 0.7,
+      "hold": 0.16,
+      "release": 0.2,
+      "lowpass": 1300,
+      "lowpass_end": 300,
+      "crush": 5,
+      "downsample": 2,
+      "gain": 1.0
+    },
+    {
+      "wave": "noise",
+      "start": 0.36,
+      "freq": 2200,
+      "freq_end": 500,
+      "attack": 0.002,
+      "release": 0.1,
+      "lowpass": 1600,
+      "gain": 0.6
+    },
+    {
+      "wave": "square",
+      "freq": 42,
+      "freq_end": 36,
+      "duty": 0.3,
+      "tremolo": [
+        16,
+        0.7
+      ],
+      "attack": 0.05,
+      "hold": 0.65,
+      "release": 0.15,
+      "lowpass": 320,
+      "gain": 0.6
+    }
+  ]
+}
