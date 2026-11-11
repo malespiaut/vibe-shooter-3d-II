@@ -2,7 +2,7 @@
 # 48x48, built by tools/mkmap.py into maps/level6.vmap. Coordinates are
 # (x, y), y counted from the south (the last layout row is y = 0), as demo
 # goto. LAYOUT ONLY: no enemies yet (issue #178 adds the 52 and the named
-# WAYPOINTs below mark their spots).
+# WAYPOINTs below mark their areas.
 #
 # Critical path:
 #   workers' camp (x 2-30, y 2-9, start (4,3) facing north)
@@ -196,6 +196,7 @@ entity SCARAB_CRATE 30 21 0
 entity CHARGE_JAR 30 38 0
 # Heart Chamber.
 entity SCARAB_PLATE 33 28 0
+entity CHARGE_JAR 33 32 0
 entity SPHINX_HOWLER 45 30 0
 entity TUNA_TIN 44 33 0
 # Grinding Room.
