@@ -1,0 +1,20 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+# die on the damage floor (11,7), then walk to the exit and use it while dead
+goto 1 1
+face 180
+use
+wait 32
+goto 3 6
+goto 11 7
+wait 400
+expect health=0
+weapon 1
+fire 20
+goto 1 7
+face 90
+use
+expect exit=1

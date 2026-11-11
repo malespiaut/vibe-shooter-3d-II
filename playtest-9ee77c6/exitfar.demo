@@ -1,0 +1,22 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+# use exit wall from diagonal and from 1 tile away: should not exit; then normally
+goto 1 2
+face 180
+use
+wait 32
+goto 2 7
+face 135
+use
+expect exit=0
+in 6 0 0 0 -
+goto 1 6
+face 90
+use
+expect exit=0
+goto 1 7
+face 90
+use

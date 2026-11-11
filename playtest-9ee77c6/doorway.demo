@@ -1,0 +1,14 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+# stand inside the timed door cell T past its timer
+goto 1 1
+face 180
+use
+wait 32
+goto 3 4
+wait 200
+goto 3 6
+wait 120

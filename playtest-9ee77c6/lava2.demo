@@ -1,0 +1,15 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+goto 1 1
+face 180
+use
+wait 32
+goto 3 6
+goto 11 7
+wait 400
+expect health=0
+goto 3 6 300
+expect health=0

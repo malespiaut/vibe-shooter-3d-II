@@ -1,0 +1,16 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+# stand on the damage floor until dead; then try moving
+goto 1 1
+face 180
+use
+wait 32
+goto 3 6
+goto 11 7
+expect health<100
+wait 400
+in 20 64 0 0 -
+in 10 0 0 0 U

@@ -1,0 +1,27 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+# push Q (blocked after 1 tile) while walking into it; then push P and follow it closely; push P again
+goto 1 2
+face 180
+use
+wait 32
+goto 7 7
+face 90
+use
+in 60 127 0 0 R
+face 90
+use
+wait 40
+goto 3 7
+face 90
+use
+in 80 127 0 0 R
+use
+wait 40
+goto 3 9 300
+in 30 127 0 0 R
+face 270
+in 40 127 0 0 R

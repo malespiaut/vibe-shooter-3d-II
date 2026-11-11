@@ -1,0 +1,18 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+# use timed-door switch w, go through T, then wait in north hall: does T close? can it be reopened by use?
+goto 1 1
+face 180
+use
+wait 32
+goto 3 5
+wait 150
+goto 3 5
+face 270
+use
+wait 40
+goto 3 3 200
+expect exit=0
