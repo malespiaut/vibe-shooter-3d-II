@@ -28,6 +28,10 @@ enum {
     BT_USE = 1 << 1,
     BT_RUN = 1 << 2,
 };
+/* Weapon slot select 1..7 in bits 3..5 (0 = no change); demos write it as
+ * a digit in the buttons field. No weapons exist yet, game_tic ignores it. */
+#define BT_WEAPON_SHIFT 3
+#define BT_WEAPON_MASK (7 << BT_WEAPON_SHIFT)
 
 #define TICCMD_MAX 127
 

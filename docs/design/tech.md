@@ -111,7 +111,10 @@ vsdemo 1
 level 1          # level number, same as --warp
 skill 2
 seed 0
+map m1test       # optional: play maps/<name>.vmap instead of maps/level<N>.vmap
 ```
+The optional `map` line is for test maps that are not numbered levels (`m1-walk` uses `m1test`).
+Map choice in `build/game`: `--map` file, else `--warp N`, else the demo's `map`, else its `level`.
 Body, executed in order, each line consuming tics:
 
 | Line | Meaning |
