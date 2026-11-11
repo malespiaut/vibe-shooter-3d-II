@@ -56,12 +56,15 @@ int pushwall_blocks(const game_state *gs, int tx, int ty)
 
 /* The tile the pushwall would enter next is free: inside the map, not
  * SOLID/BLOCK_ALL, not a shut door, no other pushwall (game_tile_blocks,
- * with this pushwall itself idle so its own reach does not count). */
+ * with this pushwall itself idle so its own reach does not count), and not
+ * overlapped by the player (a tag-fired pushwall never slides into them). */
 static int next_free(game_state *gs, pushwall_t *pw)
 {
     const uint8_t state = pw->state;
     pw->state = PUSHWALL_IDLE;
-    const int free = !game_tile_blocks(gs, pw->tx + pw->dx, pw->ty + pw->dy);
+    const int nx = pw->tx + pw->dx, ny = pw->ty + pw->dy;
+    const int free = !game_tile_blocks(gs, nx, ny) &&
+                     !game_circle_overlaps_tile(gs->player.x, gs->player.y, PLAYER_RADIUS, nx, ny);
     pw->state = state;
     return free;
 }

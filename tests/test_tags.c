@@ -159,6 +159,16 @@ static void test_pushwall(void)
     assert(gs.pushwalls[q].tx == 7 && gs.pushwalls[q].ty == 9);
     assert(gs.pushwalls[q].state == PUSHWALL_DONE && gs.pushwalls[q].moved == 1);
     assert(!game_tile_blocks(&gs, 7, 8) && game_tile_blocks(&gs, 7, 9));
+
+    /* P again, with the player standing in (3,10): it never slides into
+     * the player, so it stops after 1 tile at (3,9). */
+    place(&gs, 3, 7, ANG90);
+    run(&gs, &USE, 1);
+    assert(gs.pushwalls[pw].state == PUSHWALL_MOVING);
+    gs.player.y = FX(10) + HALF;
+    run(&gs, &IDLE, 200);
+    assert(gs.pushwalls[pw].ty == 9 && gs.pushwalls[pw].state == PUSHWALL_DONE);
+    assert(gs.pushwalls[pw].moved == 1 && !game_tile_blocks(&gs, 3, 10));
     printf("tags_pushwall: ok\n");
 }
 
