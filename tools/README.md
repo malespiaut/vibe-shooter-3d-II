@@ -37,6 +37,7 @@ no stale file) and print a one-line summary. Pick `NN` after the steps it depend
 
 | Step | Output |
 |------|--------|
+| `20-texgen.sh` | `assets/gen/textures/*.tex` from `assets/src/textures/*.json` (`tools/texgen.py`) |
 | `30-sfx.sh` | `assets/gen/sfx/*.snd` from `assets/src/sfx/*.json` |
 
 ## Quantize RGBA to TEX: `quantize.py`
