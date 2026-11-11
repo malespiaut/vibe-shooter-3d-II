@@ -104,6 +104,11 @@ target_link_libraries(test_snd_roundtrip PRIVATE bast_static)
 target_compile_options(test_snd_roundtrip PRIVATE -UNDEBUG)
 add_test(NAME snd_roundtrip COMMAND test_snd_roundtrip)
 
+add_executable(test_map_roundtrip tests/test_map_roundtrip.c)
+target_link_libraries(test_map_roundtrip PRIVATE bast_static)
+target_compile_options(test_map_roundtrip PRIVATE -UNDEBUG)
+add_test(NAME map_roundtrip COMMAND test_map_roundtrip)
+
 add_test(NAME palcheck
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_palette.py)
 add_test(NAME bast_py
