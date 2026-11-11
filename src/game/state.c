@@ -292,3 +292,9 @@ uint64_t game_hash(const game_state *gs)
     }
     return h.value;
 }
+
+void game_post_event(game_state *gs, const game_event *ev)
+{
+    gs->events[gs->event_seq % GAME_EVENT_RING] = *ev;
+    gs->event_seq++;
+}

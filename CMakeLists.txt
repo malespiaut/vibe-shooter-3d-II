@@ -119,11 +119,28 @@ add_custom_command(
 add_custom_target(testpattern ALL DEPENDS ${TESTPATTERN_TEX})
 add_dependencies(testpattern palette)
 
+# HUD art (hud.md Status bar, Cat face): assets/src/hud/ -> assets/gen/hud/
+# (same as tools/build.d/50-hud.sh), so the game draws the status bar after
+# a plain build. A stamp stands for the ~60 outputs.
+file(GLOB_RECURSE HUD_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/hud/*)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/hud/.stamp
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          BAST_PALETTE=${ASSETS_GEN}/palette.bin
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/hud.py
+          --src ${CMAKE_SOURCE_DIR}/assets/src/hud -o ${ASSETS_GEN}/hud --clean
+  COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/hud/.stamp
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${HUD_SOURCES} ${CMAKE_SOURCE_DIR}/tools/hud.py
+          ${CMAKE_SOURCE_DIR}/tools/bast.py
+  COMMENT "Building HUD art")
+add_custom_target(hud_tex ALL DEPENDS ${ASSETS_GEN}/hud/.stamp)
+add_dependencies(hud_tex palette)
+
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
 target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}"
   VS3D_MAPS_DIR="${CMAKE_SOURCE_DIR}/maps")
-add_dependencies(game colormap sfx testpattern)
+add_dependencies(game colormap sfx testpattern hud_tex fonts_tex)
 
 enable_testing()
 add_executable(test_smoke tests/test_smoke.c)
@@ -379,6 +396,19 @@ foreach(f small menu bigdigits)
 endforeach()
 add_custom_target(fonts_tex ALL DEPENDS ${FONT_TEXES})
 add_dependencies(fonts_tex palette)
+
+# In-game HUD (issue #99): face selection logic, and the status-bar layout
+# rendered for a fixed state.
+add_executable(test_hud_face tests/test_hud_face.c)
+target_link_libraries(test_hud_face PRIVATE engine)
+target_compile_options(test_hud_face PRIVATE -UNDEBUG)
+add_test(NAME hud_face COMMAND test_hud_face)
+add_executable(test_hud_layout tests/test_hud_layout.c)
+target_link_libraries(test_hud_layout PRIVATE engine)
+target_compile_options(test_hud_layout PRIVATE -UNDEBUG)
+add_dependencies(test_hud_layout fonts_tex hud_tex colormap)
+add_test(NAME hud_layout COMMAND test_hud_layout ${ASSETS_GEN} ${PALETTE_GPL}
+  ${CMAKE_BINARY_DIR}/test_tmp/hud_layout.png)
 
 # 2D drawing (issue #44): ctest draw2d, and
 # build/draw2d_specimen <assets/gen dir> <out.png> for the specimen screen.

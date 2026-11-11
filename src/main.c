@@ -24,6 +24,7 @@
 #include "engine/render.h"
 #include "engine/video.h"
 #include "game/demo.h"
+#include "game/hud.h"
 #include "game/state.h"
 #include "game/topdown.h"
 #include "platform/platform.h"
@@ -179,6 +180,7 @@ typedef struct {
     game_state gs;
     FILE *hash_log;
     demo_rec rec;
+    hud_state hud; /* render side: timers, face (game/hud.h) */
     int status;
 } run_t;
 
@@ -242,6 +244,10 @@ static int setup(run_t *r)
         fprintf(stderr, "game: %s\n", render_error());
         return 0;
     }
+    if (!o->topdown && (!o->headless || o->frames_dir) && !hud_init(VS3D_ASSETS_DIR)) {
+        fprintf(stderr, "game: %s\n", hud_error());
+        return 0;
+    }
     if (o->hash_log) {
         r->hash_log = fopen(o->hash_log, "w");
         if (!r->hash_log) {
@@ -255,6 +261,7 @@ static int setup(run_t *r)
     }
     demo_rec_init(&r->rec);
     game_init(&r->gs, r->map, r->level, r->skill, r->seed);
+    hud_state_init(&r->hud, &r->gs, o->god);
     return 1;
 }
 
@@ -263,14 +270,17 @@ static void draw(const run_t *r)
 {
     if (r->opt.topdown)
         topdown_draw(&r->gs, framebuffer);
-    else
+    else {
         render_view(r->map, r->gs.player.x, r->gs.player.y, r->gs.player.angle, framebuffer);
+        hud_draw(framebuffer, &r->hud, &r->gs);
+    }
 }
 
 /* Runs one tic with `cmd`; logs the hash, records, dumps a frame. */
 static int step(run_t *r, const ticcmd *cmd)
 {
     game_tic(&r->gs, cmd);
+    hud_tic(&r->hud, &r->gs);
     if (r->hash_log)
         fprintf(r->hash_log, "%016" PRIx64 "\n", game_hash(&r->gs));
     if (r->opt.record_path && !demo_rec_add(&r->rec, cmd)) {
@@ -474,6 +484,7 @@ int main(int argc, char **argv)
     demo_rec_free(&r.rec);
     demo_free(r.demo);
     render_shutdown();
+    hud_shutdown();
     bast_map_free(r.map);
     return r.status;
 }

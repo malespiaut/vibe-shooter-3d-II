@@ -233,7 +233,7 @@ static void resolve_attack(game_state *gs, thinker_t *t, const enemy_info_t *inf
         hit = in_reach(gs, t, info);
     if (hit) {
         const int32_t dmg = info->dmg_base + (int32_t)rng_range(&gs->rng, (uint32_t)info->dmg_spread + 1);
-        player_damage(gs, dmg);
+        player_damage_from(gs, dmg, t->x, t->y);
     }
 }
 
