@@ -134,7 +134,7 @@ tests/  demos/
 1. Create the public GitHub repo, push `GAME.md`, `CLAUDE.md`, `agents/`, and this spec.
 2. The user creates a fine-grained PAT for that repo and saves it to `~/vibe-agents/gh-token` (mode 600). This is the only manual step.
 3. Build the Podman image and run a smoke test: a container that runs `claude -p` and `gh issue list` against the repo.
-4. Protect `main` on GitHub (no force pushes or deletion, changes through PRs). *Status: not enabled yet; for now only the prompts forbid direct pushes.*
+4. Protect `main` on GitHub. *Enabled:* PR required with 0 approvals (every agent shares the owner's token), enforced for admins, no force pushes, no deletion.
 5. Start the orchestrator in tmux.
 
 ## Left to the builder

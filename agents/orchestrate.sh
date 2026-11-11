@@ -142,7 +142,10 @@ is_usage_limit() {
   tail_errors "$1" |
     grep -qiE 'usage limit|hit your limit|limit reached|limit.{1,5}resets|resets [0-9]|rate[ _-]?limit|overloaded_error|error:? 429\b|\b429 too many'
 }
-is_auth_error() { tail_errors "$1" | grep -qiE 'authentication_error|invalid x-api-key|OAuth token has expired|\b401\b'; }
+# 401 only as an API status: "PR #401" or "output_tokens":401 must not read as an auth failure
+is_auth_error() {
+  tail_errors "$1" | grep -qiE 'authentication_error|invalid x-api-key|OAuth token has expired|API Error:? 401\b|status[ _:"]*401\b'
+}
 
 episode_done() { # at least one OWNER "Final acceptance" closed, none open, Episode 1 closed
   [[ $(gh issue list --repo "$REPO" --state all --search '"Final acceptance" in:title' --json title,state,author \
@@ -378,11 +381,15 @@ dispatch_main() { # dispatch_main <role> <name> <context> [on-success-cmd...]
 
 mark_playtested() { echo "$1" > "$STATE/last-playtest-sha"; }
 
-# planning_needed <open-issues-json> <main-sha>: main moved since the last planning run, or something
-# waits on the designer (stuck/blocked issues, untriaged bug/polish, stuck PRs)
+# the main sha of the last SUCCESSFUL planning run; a failed run must not record it, or planning
+# (which never moves main itself) would stay skipped forever
+mark_planned() { echo "$1" > "$STATE/planned-sha"; }
+
+# planning_needed <open-issues-json> <main-sha>: main moved since the last successful planning run, or
+# something waits on the designer (stuck/blocked issues, untriaged bug/polish, stuck PRs)
 planning_needed() {
   local sha
-  read -r _ sha 2>/dev/null < "$STATE/designer-at"
+  sha=$(cat "$STATE/planned-sha" 2>/dev/null)
   [[ $sha != "$2" ]] && return 0
   [[ $(jq '[.[] | select(.author.login == "'"$OWNER"'") | [.labels[].name] |
       select(index("stuck") or index("blocked") or ((index("bug") or index("polish")) and (index("ready") | not)))]
@@ -488,11 +495,11 @@ loop_once() {
     dispatch_main playtester playtester "Playtest main at $head." mark_playtested "$head"
   fi
 
-  read -r last _ 2>/dev/null < "$STATE/designer-at"
+  read -r last _ 2>/dev/null < "$STATE/designer-at"  # dispatch time, for the cooldown only
   if (($(grep -c . <<<"$ready") < 2 * MAX_DEVS)) && ! grep -qx vibe-designer <<<"$names" &&
      ((now - ${last:-0} >= DESIGNER_COOLDOWN)) && planning_needed "$all" "$head"; then
-    echo "$now $head" > "$STATE/designer-at"
-    dispatch_main designer-plan designer "Mode: planning. The ready queue is low."
+    echo "$now" > "$STATE/designer-at"
+    dispatch_main designer-plan designer "Mode: planning. The ready queue is low." mark_planned "$head"
   fi
 
   reap_stale
