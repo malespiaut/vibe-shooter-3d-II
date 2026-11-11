@@ -1,5 +1,6 @@
 #include "game/demo.h"
 
+#include "game/demo_combat.h"
 #include "game/demo_nav.h"
 
 #include <ctype.h>
@@ -178,11 +179,13 @@ static int cmd_goto(demo_t *d, line_ctx *c)
     return 1;
 }
 
-/* face <angle_deg> | face <tx> <ty> */
+/* face <angle_deg> | face <tx> <ty> | face nearest */
 static int cmd_face(demo_t *d, line_ctx *c)
 {
     demo_cmd tmp = { 0 };
-    if (c->ntok == 2) {
+    if (c->ntok == 2 && strcmp(c->tok[1], "nearest") == 0) {
+        return push(d, c, DEMO_CMD_FACE_NEAREST) != NULL;
+    } else if (c->ntok == 2) {
         long deg;
         if (!parse_int(c, c->tok[1], -360, 360, "angle", &deg))
             return 0;
@@ -192,7 +195,7 @@ static int cmd_face(demo_t *d, line_ctx *c)
             return 0;
         tmp.has_tile = 1;
     } else {
-        return fail(c, "'face' takes <angle_deg> or <tx> <ty>");
+        return fail(c, "'face' takes <angle_deg>, <tx> <ty> or nearest");
     }
     demo_cmd *cmd = push(d, c, DEMO_CMD_FACE);
     if (!cmd)
@@ -230,10 +233,22 @@ static int cmd_weapon(demo_t *d, line_ctx *c)
     return 1;
 }
 
-/* fire <n>: hold fire for n tics. */
+/* fire <n>: hold fire for n tics. fire nearest [max]: see demo_next. */
 static int cmd_fire(demo_t *d, line_ctx *c)
 {
     long n;
+    if (c->ntok >= 2 && strcmp(c->tok[1], "nearest") == 0) {
+        long max = COMBAT_FIRE_DEFAULT_MAX;
+        if (c->ntok > 3)
+            return fail(c, "'fire nearest' takes [max]");
+        if (c->ntok == 3 && !parse_int(c, c->tok[2], 1, 1000000, "max", &max))
+            return 0;
+        demo_cmd *cmd = push(d, c, DEMO_CMD_FIRE_NEAREST);
+        if (!cmd)
+            return 0;
+        cmd->n = (int32_t)max;
+        return 1;
+    }
     if (!want_args(c, 1) || !parse_int(c, c->tok[1], 1, 1000000, "tics", &n))
         return 0;
     demo_cmd *cmd = push(d, c, DEMO_CMD_IN);
@@ -241,6 +256,24 @@ static int cmd_fire(demo_t *d, line_ctx *c)
         return 0;
     cmd->n = (int32_t)n;
     cmd->cmd.buttons = BT_FIRE;
+    return 1;
+}
+
+/* clear [radius] [max] */
+static int cmd_clear(demo_t *d, line_ctx *c)
+{
+    long radius = COMBAT_CLEAR_DEFAULT_RADIUS, max = COMBAT_CLEAR_DEFAULT_MAX;
+    if (c->ntok > 3)
+        return fail(c, "'clear' takes [radius] [max]");
+    if (c->ntok >= 2 && !parse_int(c, c->tok[1], 1, 64, "radius", &radius))
+        return 0;
+    if (c->ntok == 3 && !parse_int(c, c->tok[2], 1, 1000000, "max", &max))
+        return 0;
+    demo_cmd *cmd = push(d, c, DEMO_CMD_CLEAR);
+    if (!cmd)
+        return 0;
+    cmd->value = (int32_t)radius;
+    cmd->n = (int32_t)max;
     return 1;
 }
 
@@ -415,6 +448,7 @@ static const cmd_entry body_cmds[] = {
     { "use", cmd_use },
     { "weapon", cmd_weapon },
     { "fire", cmd_fire },
+    { "clear", cmd_clear },
     { "expect", cmd_expect },
 };
 
@@ -570,6 +604,76 @@ static int find_waypoint(const bast_map *map, const char *name, int32_t *tx, int
     return 0;
 }
 
+static int enemies_left(const game_state *gs, fix_t radius)
+{
+    int n = 0;
+    for (int i = 0; i < gs->things.count; i++)
+        n += combat_visible(gs, (uint16_t)(i + 1), radius);
+    return n;
+}
+
+#define COMBAT_DONE (-1)
+
+/* One tic of face nearest / fire nearest / clear: DEMO_TIC with *out set,
+ * DEMO_FAIL, or COMBAT_DONE (no tic used). The target is picked on the
+ * command's first tic and kept in d->target. */
+static int combat_next(demo_t *d, const demo_cmd *c, const game_state *gs, ticcmd *out,
+                       char *err, size_t errlen)
+{
+    const char *name = c->kind == DEMO_CMD_FACE_NEAREST ? "face nearest" : "fire nearest";
+    if (c->kind == DEMO_CMD_CLEAR) {
+        /* Fight the current target while it stays a valid one, else the
+         * nearest; done when no visible live enemy is within the radius. */
+        const fix_t radius = fix_from_int(c->value);
+        if (!combat_visible(gs, d->target, radius))
+            d->target = combat_nearest(gs, radius);
+        if (!d->target)
+            return COMBAT_DONE;
+        if (d->done >= c->n)
+            return run_fail(err, errlen, c,
+                            "clear: timed out after %d tics with %d visible enemies left at tile "
+                            "%d,%d",
+                            (int)c->n, enemies_left(gs, radius), (int)fix_to_int(gs->player.x),
+                            (int)fix_to_int(gs->player.y));
+        int32_t left = combat_aim(gs, d->target, out);
+        out->side = combat_strafe(d->done);
+        if (left < COMBAT_AIM_TOL)
+            out->buttons = BT_FIRE;
+        d->done++;
+        return DEMO_TIC;
+    }
+
+    if (d->done == 0 && d->target == 0) {
+        d->target = combat_nearest(gs, 0);
+        if (!d->target)
+            return run_fail(err, errlen, c, "%s: no visible enemy at tic %u", name,
+                            (unsigned)gs->tic);
+    }
+    const thinker_t *t = &gs->things.list[d->target - 1];
+    if (!thinker_alive(t))
+        return COMBAT_DONE;
+    if (c->kind == DEMO_CMD_FACE_NEAREST) {
+        int32_t e = (int16_t)(uint16_t)(angle_of(t->x - gs->player.x, t->y - gs->player.y) -
+                                        gs->player.angle);
+        if (e >= -NAV_FACE_TOL && e <= NAV_FACE_TOL)
+            return COMBAT_DONE;
+        combat_aim(gs, d->target, out);
+        d->done++;
+        return DEMO_TIC;
+    }
+    if (d->done >= c->n)
+        return run_fail(err, errlen, c,
+                        "fire nearest: timed out after %d tics, thinker %d still alive (health %d)",
+                        (int)c->n, (int)d->target, (int)t->health);
+    int32_t left = combat_aim(gs, d->target, out);
+    /* Only shoot what can be hit: a target that ducked behind a wall is
+     * tracked, not fired at. */
+    if (left < COMBAT_AIM_TOL && combat_visible(gs, d->target, 0))
+        out->buttons = BT_FIRE;
+    d->done++;
+    return DEMO_TIC;
+}
+
 int demo_next(demo_t *d, const game_state *gs, ticcmd *out, char *err, size_t errlen)
 {
     while (d->pc < d->count) {
@@ -607,6 +711,14 @@ int demo_next(demo_t *d, const game_state *gs, ticcmd *out, char *err, size_t er
             d->done++;
             return DEMO_TIC;
         }
+        case DEMO_CMD_FACE_NEAREST:
+        case DEMO_CMD_FIRE_NEAREST:
+        case DEMO_CMD_CLEAR: {
+            int s = combat_next(d, c, gs, out, err, errlen);
+            if (s == COMBAT_DONE)
+                break;
+            return s;
+        }
         default: /* DEMO_CMD_IN, DEMO_CMD_WAIT */
             if (d->done >= c->n)
                 break;
@@ -617,6 +729,7 @@ int demo_next(demo_t *d, const game_state *gs, ticcmd *out, char *err, size_t er
         }
         d->pc++;
         d->done = 0;
+        d->target = 0;
     }
     return DEMO_END;
 }

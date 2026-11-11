@@ -20,6 +20,9 @@ enum {
     DEMO_CMD_GOTO,      /* to tile (tx, ty), or waypoint `name`; fails after n tics */
     DEMO_CMD_FACE,      /* to angle `angle`, or to tile (tx, ty) when has_tile */
     DEMO_CMD_EXPECT,    /* assert stat op value (no tic) */
+    DEMO_CMD_FACE_NEAREST, /* turn to the nearest visible live enemy */
+    DEMO_CMD_FIRE_NEAREST, /* face and shoot it until it dies; fails after n tics */
+    DEMO_CMD_CLEAR,        /* fight visible enemies within `value` units; fails after n */
     /* use, weapon and fire are DEMO_CMD_IN with a fixed ticcmd. */
 };
 
@@ -57,6 +60,7 @@ typedef struct {
     /* Playback cursor. */
     int pc;
     int32_t done; /* tics consumed by cmds[pc] */
+    uint16_t target; /* face/fire nearest, clear: thinker id being fought, 0 = none yet */
 } demo_t;
 
 /* Parses demo text (NUL-terminated). On error returns NULL and writes
