@@ -1,0 +1,22 @@
+{
+  "_doc": "Title screen layout (docs/design/hud.md Flow, Title). tools/title.py reads it. Coordinates are screen pixels (320x240). Colours are palette entry names. Sky and ground are flat bands; a 2-row 2x2 checker joins two adjacent entries of the same ramp (art-bible dithering rule), other joins are hard edges.",
+  "size": [320, 240],
+  "sky": [
+    [0, "indigo_01"], [22, "indigo_02"], [40, "indigo_03"], [56, "indigo_04"], [71, "indigo_05"],
+    [85, "indigo_06"], [98, "indigo_07"], [110, "indigo_08"], [121, "pink_04"], [131, "pink_05"],
+    [140, "pink_06"], [149, "orange_07"], [157, "orange_08"], [164, "orange_09"], [170, "orange_10"],
+    [175, "orange_11"]
+  ],
+  "stars": {"seed": 1337, "count": 46, "y_max": 96, "colours": ["indigo_09", "indigo_10", "indigo_11", "white"]},
+  "horizon": 180,
+  "ground": [
+    [180, "sand_08"], [183, "sand_07"], [187, "sand_06"], [191, "sand_05"], [195, "sand_04"]
+  ],
+  "dune": {"y": 197, "fill": "brown_02", "edge": "brown_05", "lip": "brown_04"},
+  "pyramid": {"apex": [160, 64], "base_y": 186, "left_x": 30, "right_x": 290, "ridge_x": 174, "cap_rows": 15, "course": 10},
+  "mau": {"pix": "mau.pix", "feet": [118, 199], "fill": "indigo_00", "edge": "fur_03"},
+  "logo": {"y": 12, "spacing": 2, "space": 9, "outline": "indigo_00",
+    "lines": [["VIBE SHOOTER ", "chrome"], ["3D II", "gold"]]},
+  "subtitle": {"y": 42, "text": "PAWS OF FURY", "spacing": 2, "space": 7, "ramp": "red"},
+  "band": [200, 220]
+}

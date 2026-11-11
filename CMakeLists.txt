@@ -237,6 +237,10 @@ add_test(NAME hud_assets
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_hud.py)
 set_tests_properties(hud_assets PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+add_test(NAME title_screen
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_title.py)
+set_tests_properties(title_screen PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 # Status-bar cat faces, tiers 1-2 + dead + god (hud.md Cat face): names, 32x32, palcheck.
 add_test(NAME hud_faces_t12
