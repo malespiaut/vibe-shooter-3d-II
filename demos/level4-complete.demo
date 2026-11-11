@@ -1,0 +1,169 @@
+# Level 4 "Tomb of Tutankhamew" completion (maps/level4.vmap, layout and
+# coordinates in maps/src/level4.txt), skill 2. High-level commands only.
+# Crosses the Hall of Four Doors three times: north before the switch, then
+# east -> west after the Shifting Hall switch. Takes the three secrets.
+vsdemo 1
+level 4
+skill 2
+seed 0
+
+weapon 2
+# Secret 1: the mural (hieroglyph) wall west of the start.
+goto 16 2
+face 180
+use
+wait 70
+goto 12 2
+expect secrets=1
+# Brazier Walk: Mutts in the dark between the islands, backs turned.
+goto 19 5
+clear 10
+goto 18 7              # Charge Vial
+goto 20 9              # Fish Snack
+goto 19 12
+clear 10
+expect kills=3
+# Hall of Four Doors, first crossing (north passage open).
+# goto does not path through a closed door: each one is opened by hand
+# (goto the tile in front, face, use, wait 32).
+goto 19 14
+face 90
+use
+wait 32
+goto 19 16
+clear 12
+goto 14 17             # Charge Vial
+goto 14 21             # Fish Snack
+goto 25 22             # Tuna Tin
+expect kills>=6
+# Antechamber of Yarn: violet key, Scarab Launcher.
+goto 19 26
+goto 19 28
+clear 10
+goto 19 30
+clear 10
+expect kills=11
+goto 15 28             # Fish Snack
+goto 17 33             # Charge Jar
+goto 19 33             # Linen Wrap
+goto 21 33             # Yarn Bundle
+goto 21 28             # Scarab
+goto 19 31             # violet key
+goto 23 31             # Scarab Launcher
+expect items>=12
+# First Shell: the violet door opens on the wide hall, the Dachshund on the
+# far ledge across the pool.
+face 0
+use
+wait 32
+goto 25 31
+weapon 5
+fire nearest
+wait 35
+clear 14
+weapon 2
+goto 26 29             # Scarab
+goto 26 33             # Yarn Bundle
+expect kills=13
+# Secret 2: the single lighter tile in the dark corner, the wall above it.
+goto 25 34
+face 90
+use
+wait 70
+goto 24 37
+expect secrets=2
+goto 24 36             # Scarab Crate
+goto 24 38             # Tuna Tin
+goto 26 38             # Tuna Tin
+# Shifting Hall switch room.
+goto 32 28
+face 270
+use
+wait 32
+goto 32 27
+clear 10
+goto 32 25
+clear 10
+expect kills=15
+goto 32 26             # Charge Vial
+goto 35 22             # Fish Snack
+goto 33 23             # Yarn Bundle
+goto 29 24             # Scarab
+# The switch: the hub's north passage shuts, its east and west walls open,
+# and so does the east wing below this room.
+goto 35 24
+face 0
+use
+wait 35
+goto 32 22
+clear 12
+goto 32 20
+clear 12
+expect kills=18
+goto 30 16             # Scarab Crate
+goto 27 20             # Tuna Tin
+# Second crossing of the hub: in by the east wall, out by the west wall.
+goto 27 18
+goto 24 18
+clear 12
+goto 14 20
+clear 12
+goto 12 20
+clear 12
+expect kills=21
+goto 25 22             # Tuna Tin, left on the first crossing at full health
+goto 14 20
+goto 12 18             # Fish Snack
+goto 12 17             # Charge Vial
+goto 5 21              # Scarab
+goto 4 22              # Yarn Bundle
+goto 4 23              # Fish Snack
+# Burial Chamber: Chompers round the green key, Dachshunds behind the
+# sarcophagi.
+goto 8 23
+face 90
+use
+wait 32
+goto 8 24
+clear 10
+expect kills>=23
+weapon 5
+goto 8 27
+clear 14
+goto 5 30
+clear 14
+goto 5 36
+clear 14
+weapon 2
+expect kills=28
+goto 8 31              # green key
+# Secret 3: the middle of the three-block sarcophagus on the west wall.
+goto 5 32
+face 180
+use
+wait 70
+goto 1 32
+expect secrets=3
+# Back through the west wing to the green door (the chamber door has shut).
+goto 8 25
+face 270
+use
+wait 32
+goto 4 18               # Tuna Tin, left for the way back
+goto 7 17
+face 270
+use
+wait 32
+goto 9 15              # Tuna Tin
+weapon 5
+clear 14
+goto 7 12
+clear 14
+weapon 2
+goto 7 8
+clear 14
+expect kills=33
+goto 7 4
+face 270
+use
+expect exit=1

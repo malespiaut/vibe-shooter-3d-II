@@ -1,0 +1,223 @@
+# Level 4 "Tomb of Tutankhamew" (docs/design/levels.md section 4), 40x40,
+# built by tools/mkmap.py into maps/level4.vmap. Coordinates are (x, y), y
+# counted from the south (the last layout row is y = 0), as demo goto.
+#
+# Critical path: start (19,2) -> Brazier Walk (x 18-20, y 5-14) -> hub door
+# (19,15) -> Hall of Four Doors (hub, x 14-25, y 16-25) -> north passage N
+# (19,26), START_OPEN -> Antechamber of Yarn (x 15-23, y 28-33: violet key,
+# Scarab Launcher) -> violet door V (24,31) -> First Shell hall (x 25-35,
+# y 28-34, Dachshund on the ledge x 37-38; the ledge edge x 36 is a tiled
+# BLOCK_MONSTER strip that keeps it up there; BLOCK_ALL would also block
+# sight and shots, game_tile_blocks) ->
+# door (32,27) -> Shifting Hall switch room (x 29-35, y 22-26), switch T
+# (36,24) fires tag 1 -> east wing (x 27-35, y 16-20) through e (32,21) ->
+# hub east wall w (26,18) -> hub -> hub west wall w (13,20) -> west wing
+# (x 4-12, y 17-23) -> Burial Chamber door (8,24) -> green key (8,31) ->
+# back to the green door G (7,16) -> exit stair (x 5-9, y 4-15) -> EXIT
+# lever E (7,3), used from (7,4).
+#
+# Shifting Hall (tag 1, the map's only tag): N closes (START_OPEN, mode
+# switch, so it never reopens), the three wall-textured switch-only doors
+# e (32,21), w (26,18) and w (13,20) open. The east and west wings hold
+# 4 Mutts and 2 Poms sealed in until then.
+# No soft-lock: before the switch every area (start, walk, hub, antechamber,
+# hall, switch room) is connected and the switch is reachable once the
+# violet key (in the antechamber, behind no door) is taken. The switch can
+# only be used from inside the switch room, and the tag opens e right next
+# to it: from the switch room, east wing -> hub -> west wing -> Burial
+# Chamber (green key) -> green door -> exit stair -> EXIT are all open. The
+# north side (antechamber, hall) stays connected to the switch room, the
+# start and the walk stay connected to the hub through (19,15). The doors
+# that open never close (mode switch), and nothing else uses tag 1.
+#
+# Light: dark 14-20, the Burial Chamber (d) is the darkest at 20 and holds
+# only Dachshunds (visible reticle) and Chompers (melee), no hitscan enemy.
+# Brazier cells b are dark 0 islands; the brazier props of #131 go on them
+# once it is merged. Mutts in the Brazier Walk stand at dark 16-18 between
+# the islands, backs turned (their LEDs are the telegraph).
+#
+# Secrets: M (15,2) eg_mural pushwall (the only mural on the map: the
+# hieroglyph wall), slides west to (13,2) -> closet x 12-14, y 1-3 (SECRET
+# (12,2)): Ninth Life. K (25,35) pushwall in the First Shell hall's dark
+# north-west corner, marked by the single lighter tile l (25,34), slides
+# north to (25,37) -> closet x 24-26, y 36-38 (SECRET (24,37)): 2 Tuna Tins
+# + Scarab Crate. F (4,32) the middle of a three-block sarcophagus on the
+# Burial Chamber's west wall (eg_gold_pillar like every sarcophagus), slides
+# west to (2,32) -> alcove x 1-3, y 31-33 (SECRET (1,32)): Cat's Eye Amulet.
+
+name Tomb of Tutankhamew
+music 4
+par 360
+
+legend # wall=eg_tomb_stone flags=SOLID
+legend g wall=eg_glyph_band flags=SOLID
+legend p wall=eg_papyrus flags=SOLID
+legend s wall=eg_sand_blocks flags=SOLID
+legend i wall=eg_gold_pillar flags=SOLID
+legend S wall=eg_gold_pillar flags=SOLID
+legend E wall=eg_switch_off flags=SOLID|EXIT
+legend T wall=eg_switch_off flags=SOLID|SWITCH tag=1
+legend M wall=eg_mural floor=eg_tomb_floor ceil=eg_tomb_floor dark=14 flags=PUSHWALL
+legend K wall=eg_tomb_stone floor=eg_tomb_floor ceil=eg_tomb_floor dark=18 flags=PUSHWALL
+legend F wall=eg_gold_pillar floor=eg_tomb_floor ceil=eg_tomb_floor dark=20 flags=PUSHWALL
+legend D wall=eg_door floor=eg_tomb_floor ceil=eg_tomb_floor dark=14 flags=DOOR
+legend N wall=eg_door floor=eg_tomb_floor ceil=eg_tomb_floor dark=14 flags=DOOR|START_OPEN mode=switch tag=1
+legend w wall=eg_tomb_stone floor=eg_tomb_floor ceil=eg_tomb_floor dark=14 flags=DOOR mode=switch tag=1
+legend e wall=eg_tomb_stone floor=eg_tomb_floor ceil=eg_tomb_floor dark=14 flags=DOOR mode=switch tag=1
+legend V wall=eg_door_violet floor=eg_tomb_floor ceil=eg_tomb_floor dark=14 flags=DOOR key=violet
+legend G wall=eg_door_green floor=eg_tomb_floor ceil=eg_tomb_floor dark=14 flags=DOOR key=green
+legend , floor=eg_tomb_floor ceil=eg_tomb_floor dark=14
+legend : floor=eg_tomb_floor ceil=eg_tomb_floor dark=16
+legend . floor=eg_tomb_floor ceil=eg_tomb_floor dark=18
+legend - floor=eg_floor_tiles ceil=eg_tomb_floor dark=16
+legend d floor=eg_tomb_floor ceil=eg_tomb_floor dark=20
+legend c floor=eg_tomb_floor ceil=eg_tomb_floor dark=20
+legend b floor=eg_tomb_floor ceil=eg_tomb_floor dark=0
+legend l floor=eg_tomb_floor ceil=eg_tomb_floor dark=8
+legend h floor=eg_tomb_floor ceil=eg_tomb_floor dark=16
+legend ~ floor=eg_floor_tiles ceil=eg_tomb_floor dark=16 flags=BLOCK_MONSTER
+legend _ floor=eg_tomb_floor ceil=eg_tomb_floor dark=12
+legend x floor=eg_tomb_floor ceil=eg_tomb_floor dark=12 flags=SECRET
+
+layout
+########################################
+###ggggggggggg##########___#############
+###gdddddddddg##########x__#############
+###gdddddddddg##########___#############
+###gddddSddddg###########K##############
+###gddSdddSddgpppppppppppl..........####
+#___SdSdddSddgpb,,,,,,,bp...........~hh#
+#x__Fddddddddgp,,,,,,,,,p....,,,....~hh#
+#___Sdddcddddgp,,,,,,,,,V....,,,....~hb#
+###gddSdddSddgp,,i,,,i,,p....,,,....~hh#
+###gddSdddSddgp,,,,,,,,,p...........~hh#
+###gdddddddddgp,,,,b,,,,pb..........####
+###gdddddddddgppppp,ppppp#######D#######
+###gbdddddddbg#####N#########b,,,,,b####
+###ggggg,gggggb,,,,,,,,,,b###,,,,,,,####
+########D#####,,,,,,,,,,,,###,,,,,,,T###
+####b::::::::#,,i,,,,,,i,,###,,,,,,,####
+####:::::::::#,,,,,,,,,,,,###,,,,,,,####
+####:::::::::#,,,,,,,,,,,,######e#######
+####:::::::::w,,,,,,,,,,,,#:::::::::####
+####:::::::::#,,,,,,,,,,,,#:::::::::####
+####:::::::::#,,i,,,,,,i,,w:::::::::####
+####b::::::::#,,,,,,,,,,,,#:::::::::####
+#######G######b,,,,,,,,,,b#::::::::b####
+####s-----s########D####################
+####s-----s#######bbb###################
+####sb---bs#######:::###################
+####s-----s#######:.:###################
+####s-----s#######:::###################
+####s-----s#######bbb###################
+####sb---bs#######:::###################
+####s-----s#######:.:###################
+####s-----s#######:::###################
+####s-----s#######bbb###################
+####sb---bs#######:::###################
+####s-----s#####b,,,,,,b################
+####sssEsss#___#,,,,,,,,################
+############x__M,,,,,,,,################
+############___#,,,b,,,,################
+########################################
+end
+
+entity PLAYER_START 19 2 90
+
+# Enemies at skill 2: 12 Mutts, 8 Chompers, 8 Poms, 5 Dachshunds (33).
+# SKILL2|SKILL3 ones are absent on Kitten (8 of 33: 25 left, -24%); SKILL3
+# ones are Sabretooth extras (7: 40, +21%).
+# Brazier Walk: Mutts in the dark between the islands, backs turned.
+entity MUTT_TROOPER 19 8 90
+entity MUTT_TROOPER 19 12 90
+entity MUTT_TROOPER 18 13 90 flags=SKILL2|SKILL3
+# Hall of Four Doors, first crossing: two Chompers in the corners.
+entity CHIHUAHUA_CHOMPER 15 24 270
+entity CHIHUAHUA_CHOMPER 24 17 90 flags=SKILL2|SKILL3
+entity POMERANIAN_PLASMAGUNNER 19 24 270 flags=SKILL2|SKILL3
+# Antechamber of Yarn.
+entity MUTT_TROOPER 16 32 270
+entity MUTT_TROOPER 22 32 270
+entity CHIHUAHUA_CHOMPER 19 32 270
+entity POMERANIAN_PLASMAGUNNER 15 29 0
+entity POMERANIAN_PLASMAGUNNER 23 29 180
+# First Shell: the Dachshund alone on the lit ledge, a Pom at the far end.
+entity DACHSHUND_HOWITZER 38 31 180
+entity POMERANIAN_PLASMAGUNNER 34 33 180
+# Shifting Hall switch room.
+entity MUTT_TROOPER 34 25 180
+entity POMERANIAN_PLASMAGUNNER 30 23 0 flags=SKILL2|SKILL3
+# Sealed wings, released by the switch: 4 Mutts, 2 Poms.
+entity MUTT_TROOPER 28 17 0
+entity MUTT_TROOPER 34 19 180
+entity POMERANIAN_PLASMAGUNNER 31 18 180
+entity MUTT_TROOPER 5 20 0
+entity MUTT_TROOPER 11 22 0 flags=SKILL2|SKILL3
+entity POMERANIAN_PLASMAGUNNER 9 18 0
+# Burial Chamber: Dachshunds behind the north sarcophagi, Chompers around
+# the green key, one at the door.
+entity DACHSHUND_HOWITZER 6 36 270
+entity DACHSHUND_HOWITZER 10 36 270
+entity DACHSHUND_HOWITZER 8 37 270 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 7 32 270
+entity CHIHUAHUA_CHOMPER 9 32 270
+entity CHIHUAHUA_CHOMPER 8 29 270
+entity CHIHUAHUA_CHOMPER 8 27 270 flags=SKILL2|SKILL3
+# Exit stair.
+entity MUTT_TROOPER 6 6 90
+entity MUTT_TROOPER 8 10 90 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 7 12 90
+entity POMERANIAN_PLASMAGUNNER 8 7 90
+entity DACHSHUND_HOWITZER 7 5 90
+# Sabretooth extras.
+entity MUTT_TROOPER 16 20 0 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 22 30 270 flags=SKILL3
+entity POMERANIAN_PLASMAGUNNER 33 29 180 flags=SKILL3
+entity MUTT_TROOPER 33 17 180 flags=SKILL3
+entity MUTT_TROOPER 6 18 0 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 5 28 270 flags=SKILL3
+entity POMERANIAN_PLASMAGUNNER 6 8 90 flags=SKILL3
+
+# Keys.
+entity VIOLET_ANKH 19 31 0
+entity GREEN_ANKH 8 31 0
+
+# Critical-path items (health weighted towards the west wing, before the
+# Burial Chamber and the exit stair): 6 Fish Snacks, 4 Tuna Tins, 1 Linen Wrap, Scarab
+# Launcher, 4 Scarabs, 1 Scarab Crate, 4 Charge Vials, 1 Charge Jar,
+# 4 Yarn Bundles.
+entity FISH_SNACK 20 9 0
+entity FISH_SNACK 4 23 0
+entity FISH_SNACK 14 21 0
+entity FISH_SNACK 15 28 0
+entity FISH_SNACK 35 22 0
+entity FISH_SNACK 12 18 0
+entity TUNA_TIN 25 22 0
+entity TUNA_TIN 4 18 0
+entity TUNA_TIN 27 20 0
+entity TUNA_TIN 9 15 0
+entity LINEN_WRAP 19 33 0
+entity SCARAB_LAUNCHER 23 31 0
+entity SCARAB 21 28 0
+entity SCARAB 26 29 0
+entity SCARAB 29 24 0
+entity SCARAB 5 21 0
+entity SCARAB_CRATE 30 16 0
+entity CHARGE_VIAL 18 7 0
+entity CHARGE_VIAL 14 17 0
+entity CHARGE_VIAL 32 26 0
+entity CHARGE_VIAL 12 17 0
+entity CHARGE_JAR 17 33 0
+entity YARN_BUNDLE 21 33 0
+entity YARN_BUNDLE 26 33 0
+entity YARN_BUNDLE 33 23 0
+entity YARN_BUNDLE 4 22 0
+
+# Secret 1 (mural): Ninth Life.
+entity NINTH_LIFE 12 2 0
+# Secret 2 (lighter tile corner): 2 Tuna Tins + Scarab Crate.
+entity TUNA_TIN 24 38 0
+entity TUNA_TIN 26 38 0
+entity SCARAB_CRATE 24 36 0
+# Secret 3 (fake sarcophagus): Cat's Eye Amulet.
+entity CATS_EYE_AMULET 1 32 0

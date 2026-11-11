@@ -687,3 +687,11 @@ add_test(NAME music_events
 add_executable(panel_mockup tools/panel_mockup.c)
 target_link_libraries(panel_mockup PRIVATE engine)
 add_dependencies(panel_mockup fonts_tex colormap)
+
+# Level 4 completion demo (roadmap.md M4): reaches the exit without god mode
+# and replays deterministically.
+add_test(NAME complete_level4
+  COMMAND game --headless --demo ${CMAKE_SOURCE_DIR}/demos/level4-complete.demo)
+set_tests_properties(complete_level4 PROPERTIES
+  PASS_REGULAR_EXPRESSION "STATS level=4 .* exit=1 god=0")
+add_demo_determinism(level4-complete)
