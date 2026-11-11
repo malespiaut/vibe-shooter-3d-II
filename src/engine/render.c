@@ -25,6 +25,7 @@ static render_column columns[VIEW_W];
 static float depth[VIEW_W];
 /* Camera of the last render_view(), for render_draw_sprites(). */
 static double cam_x, cam_y, cam_dx, cam_dy;
+static double cam_eye = 0.5; /* eye height above the floor, units */
 static char err_buf[2048];
 /* render_set_doors(): live door open amounts per cell, or NULL. */
 static const fix_t *door_open;
@@ -324,7 +325,7 @@ int render_sky_column(angle_t angle, int sx)
 /* Floors, ceilings and sky (GAME.md 3, Floors and Ceilings; tech.md
  * Lighting): one horizontal scanline per view row, drawing only the pixels
  * the wall pass left open. Per row: the distance of the plane at that row
- * (eye 0.5 units above the floor and below the ceiling), the world point
+ * (eye `eye` units above the floor, 1 - eye below the ceiling), the world point
  * under column 0 and the per-column step, all in 32.32 fixed point; per
  * pixel: two adds, a cell lookup, one texel, one add and clamp for the
  * cell's darkness. The column rays are the wall pass's rays, so floor
@@ -335,7 +336,7 @@ int render_sky_column(angle_t angle, int sx)
  * Sky: texture column render_sky_column(), row = screen row (the 104 px sky
  * fills the 104 rows above the horizon exactly), never shaded. */
 static void draw_planes(const bast_map *map, double px, double py, double dx, double dy,
-                        double rx, double ry, angle_t angle, uint8_t *fb)
+                        double rx, double ry, angle_t angle, double eye, uint8_t *fb)
 {
     const int horizon = VIEW_H / 2;
     int skycol[VIEW_W];
@@ -347,7 +348,7 @@ static void draw_planes(const bast_map *map, double px, double py, double dx, do
         const int floor_row = y >= horizon;
         /* Rows from the horizon to this pixel row's centre. */
         const double rows = floor_row ? y + 0.5 - horizon : horizon - (y + 0.5);
-        const double dist = 0.5 * VIEW_PROJ / rows;
+        const double dist = (floor_row ? eye : 1.0 - eye) * VIEW_PROJ / rows;
         int drow = (int)(32.0 * dist / VIEW_DIST);
         if (drow > COLORMAP_ROWS - 1)
             drow = COLORMAP_ROWS - 1;
@@ -411,8 +412,8 @@ static void draw_one(const render_sprite *s, double z, double lat, uint8_t *fb)
     /* px per texel: VIEW_PROJ px per unit at dist 1, 64 texels per unit. */
     const double scale = VIEW_PROJ / (z * TEX_SIZE);
     const double cx = VIEW_W / 2.0 + lat * VIEW_PROJ / z;
-    /* Eye at 0.5 units: the floor under the anchor is 0.5 units below it. */
-    const double anchor_y = VIEW_H / 2.0 + (0.5 - s->height / 65536.0) * VIEW_PROJ / z;
+    /* The floor under the anchor is cam_eye units below the eye. */
+    const double anchor_y = VIEW_H / 2.0 + (cam_eye - s->height / 65536.0) * VIEW_PROJ / z;
     const double left = cx - t->origin_x * scale;
     const double top = anchor_y - t->origin_y * scale;
     const double w = t->width * scale, h = t->height * scale;
@@ -534,6 +535,16 @@ void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *
 void render_view_things(const bast_map *map, fix_t x, fix_t y, angle_t angle,
                         const render_thing *things, int n_things, uint32_t tic, uint8_t *fb)
 {
+    render_view_things_eye(map, x, y, angle, FIX_ONE / 2, things, n_things, tic, fb);
+}
+
+void render_view_things_eye(const bast_map *map, fix_t x, fix_t y, angle_t angle,
+                            fix_t eye_height, const render_thing *things, int n_things,
+                            uint32_t tic, uint8_t *fb)
+{
+    /* Inside the 1-unit-high room: the planes need a gap on both sides. */
+    const fix_t lo = FIX_ONE / 64, hi = FIX_ONE - FIX_ONE / 64;
+    const double eye = (eye_height < lo ? lo : eye_height > hi ? hi : eye_height) / 65536.0;
     const double px = x / 65536.0, py = y / 65536.0;
     const double dx = fine_cos(angle) / 65536.0, dy = fine_sin(angle) / 65536.0;
     /* Camera plane: view right, length 1 (tan 45 deg) = VIEW_W/2 px at
@@ -544,6 +555,7 @@ void render_view_things(const bast_map *map, fix_t x, fix_t y, angle_t angle,
     cam_y = py;
     cam_dx = dx;
     cam_dy = dy;
+    cam_eye = eye;
 
     for (int sx = 0; sx < VIEW_W; sx++) {
         const double cam = (double)(sx - VIEW_W / 2) / (VIEW_W / 2);
@@ -554,7 +566,7 @@ void render_view_things(const bast_map *map, fix_t x, fix_t y, angle_t angle,
         double h = 0, top = half;
         if (col->hit) {
             h = VIEW_PROJ / (double)col->dist;
-            top = half - h / 2;
+            top = half - h * (1.0 - eye); /* the wall spans 1 unit, eye at `eye` */
             /* Pixel row y is wall when its centre y + 0.5 is in [top, top + h). */
             double fs = ceil(top - 0.5), fe = ceil(top + h - 0.5);
             if (fs < -1e6)
@@ -602,7 +614,7 @@ void render_view_things(const bast_map *map, fix_t x, fix_t y, angle_t angle,
             }
         }
     }
-    draw_planes(map, px, py, dx, dy, rx, ry, angle, fb);
+    draw_planes(map, px, py, dx, dy, rx, ry, angle, eye, fb);
     memset(fb + VIEW_H * SCREEN_W, 0, (size_t)(SCREEN_H - VIEW_H) * SCREEN_W);
 
     draw_world_sprites(map, x, y, things, n_things, tic, fb);

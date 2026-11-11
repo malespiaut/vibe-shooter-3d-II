@@ -432,7 +432,24 @@ typedef struct {
     int (*parse)(demo_t *d, line_ctx *c);
 } cmd_entry;
 
+/* on_death end|restart: what a death does to the run. end (default) stops
+ * it (completion demos fail); restart lets the demo press use after the
+ * death view and play on in the restarted level. */
+static int hdr_on_death(demo_t *d, line_ctx *c)
+{
+    if (!want_args(c, 1))
+        return 0;
+    if (strcmp(c->tok[1], "end") == 0)
+        d->on_death_restart = 0;
+    else if (strcmp(c->tok[1], "restart") == 0)
+        d->on_death_restart = 1;
+    else
+        return fail(c, "on_death: want 'end' or 'restart', got '%s'", c->tok[1]);
+    return 1;
+}
+
 static const cmd_entry header_cmds[] = {
+    { "on_death", hdr_on_death },
     { "level", hdr_level },
     { "skill", hdr_skill },
     { "seed", hdr_seed },

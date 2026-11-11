@@ -166,6 +166,14 @@ foreach(g health armour ammo weapons keys powerups damage ninth_life spawn touch
   add_test(NAME items_${g} COMMAND test_items ${g})
 endforeach()
 
+# Player death and level restart (hud.md Flow, items.md).
+add_executable(test_death tests/test_death.c)
+target_link_libraries(test_death PRIVATE engine)
+target_compile_options(test_death PRIVATE -UNDEBUG)
+foreach(g timer early_use input restart hash eye)
+  add_test(NAME death_${g} COMMAND test_death ${g})
+endforeach()
+
 add_executable(test_ai tests/test_ai.c)
 target_link_libraries(test_ai PRIVATE engine)
 target_compile_options(test_ai PRIVATE -UNDEBUG)
@@ -337,6 +345,10 @@ add_test(NAME headless_smoke
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_headless.py
           $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/headless)
 
+add_test(NAME death_demo
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_death_demo.py
+          $<TARGET_FILE:game> ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/test_tmp/death_demo)
+
 add_test(NAME items_demo
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_items_demo.py
           $<TARGET_FILE:game> ${CMAKE_SOURCE_DIR})
@@ -411,6 +423,7 @@ add_demo_determinism(tags-test)
 add_demo_determinism(ai-test)
 add_demo_determinism(combat-test)
 add_demo_determinism(lance-howler-test)
+add_demo_determinism(death-test)
 
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)

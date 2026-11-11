@@ -2,7 +2,7 @@
 #define GAME_DEMO_H
 
 /* Demos (tech.md Demos): text files, `#` comments, header lines
- * (`vsdemo 1`, `level`, `skill`, `seed`, `map`) then body commands, each
+ * (`vsdemo 1`, `level`, `skill`, `seed`, `map`, `on_death`) then body commands, each
  * consuming tics. This module parses them, plays them back one ticcmd per
  * tic, and records live input back into raw `in` lines.
  *
@@ -53,6 +53,7 @@ typedef struct {
     int skill;    /* default 2 */
     uint32_t seed;
     char map[DEMO_MAP_NAME_MAX]; /* "" or a map name: maps/<map>.vmap */
+    int on_death_restart; /* `on_death restart`: a death does not end the run */
 
     demo_cmd *cmds;
     int count, cap;

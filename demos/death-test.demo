@@ -1,0 +1,27 @@
+# Death and restart (#103): maps/aitest.vmap, skill 2. A pistol shot wakes
+# the east hall; the player stands at the corridor mouth facing the Mutt
+# Troopers and Chompers that come down it, without fighting back, until
+# dead. After the 70-tic death view, use
+# restarts the level with the level-entry inventory (100 health, Claws and
+# pistol, 50 charges), at tic 0, with every enemy back at its post.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map aitest
+on_death restart
+
+expect health=100
+fire 1                  # pistol: the noise wakes the east hall
+goto 6 4
+face 22 4
+wait 400                # stand there until dead (about tic 160), then the 70-tic view
+expect health=0
+use                     # PRESS USE TO TRY AGAIN
+expect health=100
+expect armor=0
+expect kills=0
+expect tic=0
+expect tile=2,4
+wait 35
+expect health=100

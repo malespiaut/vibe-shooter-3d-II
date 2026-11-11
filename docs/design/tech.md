@@ -24,7 +24,7 @@ refer to these names. Changing a contract is a reviewed `docs/design/` PR first,
 |---|---|
 | Tile | 1 world unit square, 64x64 px textures. Wall height 1 unit everywhere. |
 | Map size | Up to 64x64 tiles. |
-| Camera | Eye height 0.5 units (centred on the wall), horizontal FOV 90 degrees, projection plane distance 160 px, view 320x208 above a 32 px status bar. Square pixels. |
+| Camera | Eye height 0.5 units (centred on the wall; the death view drops it linearly to 0.125 over 70 tics), horizontal FOV 90 degrees, projection plane distance 160 px, view 320x208 above a 32 px status bar. Square pixels. |
 | Player | Radius 0.25 units (16384). Walk 4 u/s (7490/tic), run 7 u/s (13107/tic), turn 180 deg/s keyboard (1872 angle units/tic). Movement is accelerated, max speed reached in 4 tics, friction stops in 4 tics. Collision: circle vs solid tiles, axis-separated slide. Use reach 0.75 units. |
 | Sprites | Billboards anchored at bottom-centre on the floor (or at a stated height in units for projectiles). Scale 64 px per unit like walls. Sprites taller than 1 unit appear only under sky cells. |
 | Lighting | `row = clamp(32 * dist / VIEW_DIST + cell_dark, 0, 31)` where `VIEW_DIST = 16` units and `cell_dark` is the map cell's darkness 0..31. Walls: once per column (`cell_dark` of the wall's cell). Floors/ceilings: the distance part once per row; `cell_dark` is added per pixel from the cell being sampled (one add and a clamp, no search). Sprites: once per sprite (`cell_dark` of the sprite's cell). Fullbright palette entries (`art-bible.md`) ignore it. |
@@ -119,6 +119,12 @@ seed 0
 map m1test       # optional: play maps/<name>.vmap instead of maps/level<N>.vmap
 ```
 The optional `map` line is for test maps that are not numbered levels (`m1-walk` uses `m1test`).
+Optional `on_death end|restart` (default `end`): with `end`, a player death ends a headless run
+with the STATS line and exit code 2, so a completion demo with a death in it fails. With `restart`
+the run goes on: after the 70-tic death view the demo presses `use` (e.g. `wait 70` then `use`) and
+the level restarts with the level-entry inventory (`demos/death-test.demo`). Frame dumps are named
+by tics run, which keep counting across a restart; the level's own `tic` (STATS, `expect tic`) goes
+back to 0.
 Map choice in `build/game`: `--map` file, else `--warp N`, else the demo's `map`, else its `level`.
 Body, executed in order, each line consuming tics:
 
