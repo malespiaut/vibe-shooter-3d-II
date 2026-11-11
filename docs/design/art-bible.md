@@ -71,8 +71,9 @@ All ramps except `fb_*` and `transparent` are warm-shifted by this rule. Accepta
 - **One light direction for everything**: key light from the **top-left, 45 degrees**, in front of
   the viewer. Textures: highlights on top and left edges of bevels, shadows bottom-right. Sprites:
   pre-rendered with a sun lamp from upper-left-front (Blender: rotation X=45, Z=-45 relative to the
-  camera, so it rotates with the camera for all 8 directions), plus a weak fill (20%) from the
-  opposite side. Never rim lights.
+  camera, so it rotates with the camera for all 8 directions), plus a weak fill (20%) along the
+  camera axis, from the viewer (Blender: rotation X=90, Z=0 relative to the camera), so it reaches
+  every face the camera sees and can never rim-light. Never rim lights.
 - **Outline rule**: world sprites (enemies, pickups, props) get a 1 px **selective outline**: on
   silhouette edges facing away from the light (right and bottom) use the darkest entry of the
   local ramp; on lit edges no outline. Never pure black outlines, never outlines on wall or floor
