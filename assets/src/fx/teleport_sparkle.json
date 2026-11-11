@@ -1,0 +1,11 @@
+{
+  "name": "teleport_sparkle", "anim": "loop", "size": [32, 32], "origin": "bottom",
+  "frames": 8, "mode": "loop", "seed": 97, "cutoff": 0.22,
+  "ramp": ["fb_white", "fb_cyan", "fb_blue", "fb_cyan_dim"],
+  "layers": [
+    {"type": "core", "radius": [0.25, 0.35], "intensity": [0.6, 0.9], "soft": 1.5, "metric": "diamond"},
+    {"type": "ring", "radius": [0.45, 0.6], "width": 1.0, "intensity": [0.0, 0.55]},
+    {"type": "sparkles", "count": 10, "radius": 0.1, "travel": 0.8, "arm": 1, "intensity": 1.3},
+    {"type": "noise", "scale": 3.0, "amount": 0.3, "octaves": 1, "orbit": 1.5}
+  ]
+}

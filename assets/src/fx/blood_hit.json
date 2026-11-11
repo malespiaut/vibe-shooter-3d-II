@@ -1,0 +1,72 @@
+{
+ "name": "blood_hit",
+ "anim": "hit",
+ "size": [
+  16,
+  16
+ ],
+ "origin": "center",
+ "frames": 4,
+ "mode": "oneshot",
+ "seed": 23,
+ "cutoff": 0.18,
+ "ramp": [
+  "red_12",
+  "red_10",
+  "red_08",
+  "red_06",
+  "red_04"
+ ],
+ "envelope": {
+  "peak": 0.15,
+  "decay": 0.8
+ },
+ "ease": 2,
+ "layers": [
+  {
+   "type": "core",
+   "radius": [
+    0.5,
+    0.75
+   ],
+   "intensity": [
+    1.5,
+    0.9
+   ],
+   "soft": 1.0
+  },
+  {
+   "type": "rays",
+   "count": 6,
+   "length": [
+    0.75,
+    1.0
+   ],
+   "min_length": 0.45,
+   "width": 1.2,
+   "intensity": [
+    1.2,
+    0.8
+   ]
+  },
+  {
+   "type": "sparkles",
+   "count": 5,
+   "radius": 0.3,
+   "travel": 0.7,
+   "arm": 0,
+   "intensity": 1.0,
+   "life": [
+    0.5,
+    0.8
+   ]
+  },
+  {
+   "type": "noise",
+   "scale": 2.5,
+   "amount": 0.5,
+   "octaves": 2,
+   "drift": 0.5
+  }
+ ]
+}

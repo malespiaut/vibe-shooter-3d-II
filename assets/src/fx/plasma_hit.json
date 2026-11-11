@@ -1,0 +1,13 @@
+{
+  "name": "plasma_hit", "anim": "hit", "size": [32, 32], "origin": "center",
+  "frames": 5, "mode": "oneshot", "seed": 53, "cutoff": 0.16,
+  "ramp": ["fb_white", "fb_cyan", "fb_cyan_dim", "cyan_08", "cyan_06", "cyan_04"],
+  "envelope": {"peak": 0.12, "decay": 1.2}, "ease": 2,
+  "layers": [
+    {"type": "core", "radius": [0.35, 0.6], "intensity": [1.5, 0.4], "soft": 1.0},
+    {"type": "ring", "radius": [0.25, 0.9], "width": [2.0, 1.5], "intensity": [0.9, 0.6]},
+    {"type": "rays", "count": 7, "length": [0.5, 0.85], "min_length": 0.5, "width": 1.5, "intensity": [0.9, 0.2]},
+    {"type": "sparkles", "count": 6, "radius": 0.3, "travel": 0.6, "arm": 1, "intensity": 1.1, "life": [0.4, 0.7]},
+    {"type": "noise", "scale": 4.0, "amount": 0.4, "octaves": 2, "drift": 1.0}
+  ]
+}

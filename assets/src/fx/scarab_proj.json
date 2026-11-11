@@ -1,0 +1,10 @@
+{
+  "name": "scarab_proj", "anim": "fly", "size": [12, 12], "origin": "center",
+  "frames": 4, "mode": "loop", "seed": 41, "cutoff": 0.2,
+  "ramp": ["fb_yellow", "fb_amber", "fb_orange", "fb_fire"],
+  "layers": [
+    {"type": "core", "radius": [0.7, 0.85], "intensity": [1.4, 1.2], "soft": 1.0},
+    {"type": "rays", "count": 5, "length": 1.0, "min_length": 0.6, "width": 0.8, "intensity": 0.55, "flicker": 0.35, "spin": -1},
+    {"type": "noise", "scale": 2.5, "amount": 0.3, "octaves": 1, "orbit": 1.2}
+  ]
+}

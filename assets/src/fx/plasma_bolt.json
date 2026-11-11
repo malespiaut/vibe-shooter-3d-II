@@ -1,0 +1,10 @@
+{
+  "name": "plasma_bolt", "anim": "fly", "size": [12, 12], "origin": "center",
+  "frames": 4, "mode": "loop", "seed": 31, "cutoff": 0.2,
+  "ramp": ["fb_white", "fb_cyan", "fb_cyan_dim"],
+  "layers": [
+    {"type": "core", "radius": [0.75, 0.9], "intensity": [1.45, 1.25], "soft": 1.0},
+    {"type": "rays", "count": 4, "length": 1.0, "min_length": 0.7, "width": 0.7, "intensity": 0.5, "flicker": 0.3, "spin": 1},
+    {"type": "noise", "scale": 2.5, "amount": 0.25, "octaves": 1, "orbit": 1.2}
+  ]
+}

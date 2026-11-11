@@ -1,0 +1,10 @@
+{
+  "name": "reticle", "anim": "pulse", "size": [32, 16], "origin": "bottom",
+  "frames": 8, "mode": "loop", "seed": 79, "cutoff": 0.25,
+  "ramp": ["fb_red", "fb_red_dim"],
+  "layers": [
+    {"type": "ellipse", "size": [32, 16], "intensity": 1.0},
+    {"type": "ellipse", "size": [[4, 2], [20, 10]], "min_size": [8, 4], "intensity": [0.0, 1.2]},
+    {"type": "ellipse", "size": [2, 2], "fill": true, "intensity": 1.0}
+  ]
+}

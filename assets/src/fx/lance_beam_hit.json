@@ -1,0 +1,13 @@
+{
+  "name": "lance_beam_hit", "anim": "hit", "size": [32, 32], "origin": "center",
+  "frames": 5, "mode": "oneshot", "seed": 67, "cutoff": 0.16,
+  "ramp": ["fb_white", "fb_violet", "violet_10", "violet_08", "violet_06", "violet_04"],
+  "envelope": {"peak": 0.12, "decay": 1.2}, "ease": 2,
+  "layers": [
+    {"type": "core", "radius": [0.3, 0.5], "intensity": [1.6, 0.4], "soft": 0.9},
+    {"type": "rays", "count": 10, "length": [0.7, 0.98], "min_length": 0.35, "width": 1.2, "intensity": [1.2, 0.3], "spin": 0.08},
+    {"type": "ring", "radius": [0.2, 0.75], "width": 1.5, "intensity": [0.5, 0.4]},
+    {"type": "sparkles", "count": 6, "radius": 0.25, "travel": 0.65, "arm": 1, "intensity": 1.1, "life": [0.4, 0.7]},
+    {"type": "noise", "scale": 4.0, "amount": 0.35, "octaves": 2, "drift": 1.0}
+  ]
+}

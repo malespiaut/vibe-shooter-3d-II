@@ -145,3 +145,13 @@ target_link_libraries(test_colormap PRIVATE engine m)
 target_compile_options(test_colormap PRIVATE -UNDEBUG)
 add_dependencies(test_colormap colormap)
 add_test(NAME colormap COMMAND test_colormap ${ASSETS_GEN} ${PALETTE_GPL})
+
+# Effect generator (tools/fx.py, GAME.md 6.3).
+add_test(NAME fx_loop
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_fx.py loop)
+add_test(NAME fx_determinism
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_fx.py determinism)
+add_test(NAME fx_shapes
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_fx.py shapes)
+set_tests_properties(fx_loop fx_determinism fx_shapes PROPERTIES
+  ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
