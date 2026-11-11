@@ -449,6 +449,11 @@ class Presenter:
             self._launched[1].close()
             self._launched = None
 
+    @property
+    def launching(self):
+        """True while a window launch is being watched."""
+        return self._launched is not None
+
     def poll_launch(self):
         """None while the game runs or after a clean exit; once, after a
         failed exit, the error text with its stderr."""
