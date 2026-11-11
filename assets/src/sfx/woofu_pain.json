@@ -1,6 +1,7 @@
 {
   "desc": "Woofu hit: an indignant pompous \"HARR-umph\" yowl, low and robotic.",
   "seed": 95,
+  "level_db": -19,
   "voices": [
     {
       "wave": "saw",

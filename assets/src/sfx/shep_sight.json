@@ -1,6 +1,7 @@
 {
   "desc": "Shieldbearer alerts: a radio squelch chirp then a sharp crushed double bark, \"RUFF-RUFF\".",
   "seed": 81,
+  "level_db": -19,
   "voices": [
     {
       "wave": "noise",

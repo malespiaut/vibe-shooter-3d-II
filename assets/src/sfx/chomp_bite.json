@@ -1,6 +1,7 @@
 {
   "desc": "Chomper bite: a hard metal jaw clamp with a crunchy grind and a little growl.",
   "seed": 113,
+  "level_db": -18,
   "crush": 5,
   "voices": [
     {

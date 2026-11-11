@@ -1,6 +1,7 @@
 {
   "desc": "Kennel pod in the arena wall opens: grinding motor, a heavy unlock clunk, a pressure hiss and a short alarm double-chirp.",
   "seed": 93,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

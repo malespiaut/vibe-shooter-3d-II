@@ -1,6 +1,7 @@
 {
   "desc": "Shot stopped by the energy shield: a bright inharmonic metal ping over a short electric zap.",
   "seed": 82,
+  "level_db": -18,
   "voices": [
     {
       "wave": "noise",

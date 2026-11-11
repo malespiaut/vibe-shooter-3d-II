@@ -1,6 +1,7 @@
 {
   "desc": "Chomper alert: a shrill tiny 'yip-yip' with a buzzy 8-bit edge.",
   "seed": 111,
+  "level_db": -19,
   "crush": 5,
   "voices": [
     {

@@ -1,6 +1,7 @@
 {
   "desc": "Glassy bell arpeggio, unmistakably 'you got a key'.",
   "seed": 21,
+  "level_db": -21,
   "voices": [
     {
       "wave": "triangle",

@@ -1,6 +1,7 @@
 {
   "desc": "Dachshund dying: a long low groaning whine as its heavy motor grinds down and clunks to a stop.",
   "seed": 136,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

@@ -1,6 +1,7 @@
 {
   "desc": "Mutt Trooper alert: a gruff mid-pitched double bark 'ruff-ruff' over a crushed robotic buzz.",
   "seed": 101,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

@@ -1,6 +1,7 @@
 {
   "desc": "The slab sliding shut: falling grind and a heavier thud at the end.",
   "seed": 12,
+  "level_db": -21,
   "voices": [
     {
       "wave": "saw",

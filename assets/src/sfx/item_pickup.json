@@ -1,6 +1,7 @@
 {
   "desc": "Short bright two-note blip up an octave.",
   "seed": 19,
+  "level_db": -21,
   "voices": [
     {
       "wave": "square",

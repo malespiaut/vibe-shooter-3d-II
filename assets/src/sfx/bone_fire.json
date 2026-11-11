@@ -1,6 +1,7 @@
 {
   "desc": "Bone missile launch: deep pneumatic thump and a rough rocket whoosh trailing away.",
   "seed": 73,
+  "level_db": -18,
   "crush": 6,
   "voices": [
     {

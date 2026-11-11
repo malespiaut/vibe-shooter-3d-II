@@ -1,6 +1,7 @@
 {
   "desc": "Sphinx Howler: a huge growling lion roar with a ringing metal overtone, swelling and falling away.",
   "seed": 61,
+  "level_db": -17,
   "voices": [
     {
       "wave": "saw",

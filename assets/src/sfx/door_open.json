@@ -1,6 +1,7 @@
 {
   "desc": "Heavy sandstone slab sliding open: rising low grind with hiss, ends on a soft clunk.",
   "seed": 11,
+  "level_db": -21,
   "voices": [
     {
       "wave": "saw",

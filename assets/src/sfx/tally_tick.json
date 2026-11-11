@@ -1,6 +1,7 @@
 {
   "desc": "Very short high counter tick, fine when repeated every tic.",
   "seed": 33,
+  "level_db": -27,
   "voices": [
     {
       "wave": "square",

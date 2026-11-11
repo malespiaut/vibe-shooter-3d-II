@@ -1,6 +1,7 @@
 {
   "desc": "Sceptre plasma fan: five quick cyan zaps fanning out over a low regal hum.",
   "seed": 92,
+  "level_db": -18,
   "voices": [
     {
       "wave": "square",

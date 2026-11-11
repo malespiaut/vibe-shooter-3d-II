@@ -1,6 +1,7 @@
 {
   "desc": "Using a plain wall: a short grumpy low 'mrrp' grunt, nothing happens.",
   "seed": 66,
+  "level_db": -19,
   "voices": [
     {
       "wave": "saw",

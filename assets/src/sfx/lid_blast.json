@@ -1,6 +1,7 @@
 {
   "desc": "Phase 2: the sarcophagus lid blows off: huge blast, deep boom, then the chrome lid clanging down three times.",
   "seed": 94,
+  "level_db": -16,
   "crush": 6,
   "voices": [
     {

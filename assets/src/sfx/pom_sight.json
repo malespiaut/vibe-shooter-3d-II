@@ -1,6 +1,7 @@
 {
   "desc": "Pomeranian alert: a fluffy upper-mid 'arf' with an electric arpeggio chirp, the cannon waking.",
   "seed": 121,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

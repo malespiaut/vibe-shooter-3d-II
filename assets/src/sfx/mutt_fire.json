@@ -1,6 +1,7 @@
 {
   "desc": "Mutt rifle shot: a hard snapping crack with a crushed mid-range bang and a short tail.",
   "seed": 103,
+  "level_db": -18,
   "crush": 6,
   "voices": [
     {

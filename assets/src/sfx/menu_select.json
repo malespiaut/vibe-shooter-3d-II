@@ -1,6 +1,7 @@
 {
   "desc": "Two-note confirm blip, up a fifth.",
   "seed": 32,
+  "level_db": -27,
   "voices": [
     {
       "wave": "square",

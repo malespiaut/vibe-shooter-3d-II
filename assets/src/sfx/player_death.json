@@ -1,6 +1,7 @@
 {
   "desc": "Dying cat: a long rising yowl that wavers, bends down and fades into a last breathy hiss.",
   "seed": 64,
+  "level_db": -19,
   "voices": [
     {
       "wave": "saw",

@@ -1,6 +1,7 @@
 {
   "desc": "Dachshund hurt: a low-mid gruff yelp, jumping and dropping through a crushed blip.",
   "seed": 135,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

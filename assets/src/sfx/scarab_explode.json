@@ -1,6 +1,7 @@
 {
   "desc": "Scarab bursting: sharp bright crack, sizzling green-fire crackle and a mid thump, smaller than a barrel.",
   "seed": 58,
+  "level_db": -16,
   "crush": 6,
   "voices": [
     {

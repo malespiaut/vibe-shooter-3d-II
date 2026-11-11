@@ -1,6 +1,7 @@
 {
   "desc": "Pom cannon charging: a cyan hum that swells and rises with a fast shimmer, cut before the shot.",
   "seed": 122,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

@@ -1,6 +1,7 @@
 {
   "desc": "Warbling upward whoosh that swells into a held shimmering tone.",
   "seed": 22,
+  "level_db": -21,
   "voices": [
     {
       "wave": "square",

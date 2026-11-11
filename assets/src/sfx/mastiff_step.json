@@ -1,6 +1,7 @@
 {
   "desc": "Mastiff tread step: a short low metal thud with a tiny clank (0.11 s, repeats while walking).",
   "seed": 75,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

@@ -1,6 +1,7 @@
 {
   "desc": "Woofu appears: a grand three-note announcement chime, then a huge robotic bark-word \"SIT!\" (hiss, booming vowel, hard stop).",
   "seed": 91,
+  "level_db": -19,
   "voices": [
     {
       "wave": "triangle",

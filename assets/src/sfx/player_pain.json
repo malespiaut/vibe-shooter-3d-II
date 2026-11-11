@@ -1,6 +1,7 @@
 {
   "desc": "Hurt cat: a short strangled 'mrow' that breaks into a spitting hiss.",
   "seed": 63,
+  "level_db": -19,
   "voices": [
     {
       "wave": "saw",

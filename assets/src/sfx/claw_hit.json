@@ -1,6 +1,7 @@
 {
   "desc": "Swipe that connects: short whoosh into a meaty slap with a scratchy rake of claws.",
   "seed": 52,
+  "level_db": -17,
   "voices": [
     {
       "wave": "noise",

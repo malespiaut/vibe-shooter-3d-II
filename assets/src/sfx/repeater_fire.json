@@ -1,6 +1,7 @@
 {
   "desc": "Sistrum Repeater: one tight metallic jingle-tick with a little zap; short enough to retrigger every 4 tics.",
   "seed": 56,
+  "level_db": -17,
   "crush": 6,
   "voices": [
     {

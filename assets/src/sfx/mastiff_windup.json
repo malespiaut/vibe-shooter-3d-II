@@ -1,6 +1,7 @@
 {
   "desc": "Shoulder pods open: servo whine rising, heavy clunk, two latch clicks and a hydraulic hiss (0.62 s, under the 24-tic windup).",
   "seed": 72,
+  "level_db": -19,
   "voices": [
     {
       "wave": "noise",

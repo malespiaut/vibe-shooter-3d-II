@@ -1,6 +1,7 @@
 {
   "desc": "Mastiff hit: a short low crushed growl-yelp with motor stutter.",
   "seed": 76,
+  "level_db": -19,
   "voices": [
     {
       "wave": "saw",

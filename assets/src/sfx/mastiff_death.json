@@ -1,6 +1,7 @@
 {
   "desc": "Mastiff dies: a long deep growl sinking into a dying motor, then a heavy chassis crash.",
   "seed": 77,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

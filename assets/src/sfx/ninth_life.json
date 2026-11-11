@@ -1,6 +1,7 @@
 {
   "desc": "Triumphant little fanfare (short-short-long) with a rising chirp: a life regained.",
   "seed": 24,
+  "level_db": -21,
   "voices": [
     {
       "wave": "square",

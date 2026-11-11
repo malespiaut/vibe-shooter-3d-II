@@ -1,6 +1,7 @@
 {
   "desc": "Mutt hurt: a mid yelp that jumps up and drops, glitching through a bit-crushed blip.",
   "seed": 104,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

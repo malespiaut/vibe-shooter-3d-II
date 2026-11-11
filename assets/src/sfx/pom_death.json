@@ -1,6 +1,7 @@
 {
   "desc": "Pomeranian dying: a falling whine and an electric fizzle as the cannon discharges and dies.",
   "seed": 126,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

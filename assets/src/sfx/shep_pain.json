@@ -1,6 +1,7 @@
 {
   "desc": "Shieldbearer hit: a sharp mid yelp, bit-crushed.",
   "seed": 85,
+  "level_db": -19,
   "voices": [
     {
       "wave": "saw",

@@ -1,6 +1,7 @@
 {
   "desc": "Dachshund alert: a low-mid chesty 'wurf' with a rumbling crushed motor under it.",
   "seed": 131,
+  "level_db": -19,
   "crush": 6,
   "voices": [
     {

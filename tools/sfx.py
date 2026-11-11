@@ -12,6 +12,7 @@ Parameter file
     {
       "desc": "one line: how it sounds",
       "seed": 7,                    # noise seed (xorshift32), deterministic
+      "level_db": -19,              # target RMS dBFS (audio.md "Mix levels")
       "lowpass": 6000,              # optional master one-pole lowpass, Hz
       "crush": 6,                   # optional master bit depth (1..8)
       "voices": [ { ...voice... }, ... ]   # layered, summed
@@ -35,11 +36,17 @@ Voice keys (all optional except "wave"):
     crush       bit depth for this voice (1..8); `downsample` holds every
                 N-th sample (sample-rate reduction)
 
-Loudness target (the same for every effect): the mix is peak-normalised so
-the loudest sample is exactly +-PEAK (= 112 of 127, -1.1 dBFS), leaving the
-game mixer headroom and making every effect equally hot; relative loudness
-in game is set by the mixer's per-sound volume, not by the files. A 2 ms
-fade-out at the end avoids a click.
+Loudness ("level_db", required): the mix is baked into the files. Each
+effect is scaled so its RMS over the whole file is `level_db` dBFS (0 dBFS =
+int8 full scale 128), the per-group target from docs/design/audio.md, "Mix
+levels". If reaching the target would push the peak above +-PEAK (= 112 of
+127, -1.2 dBFS), the gain is capped so the peak is exactly +-PEAK instead and
+the effect lands below its target (`--report` flags it as "peak-limited").
+The game mixer has no per-sound volume: distance volume is the only runtime
+gain, so the relative loudness of effects is exactly what these files hold.
+A 2 ms fade-out at the end avoids a click.
+
+    tools/sfx.py --report assets/src/sfx/*.json   # target / RMS / peak table
 
 Floating point is fine here: this is an offline asset tool. Output depends
 only on the parameter file (noise uses its own xorshift32, not numpy's RNG),
@@ -63,7 +70,8 @@ WAVES = ("square", "saw", "triangle", "noise")
 VOICE_KEYS = {"wave", "start", "freq", "freq_end", "duty", "arp", "arp_step", "vibrato",
               "tremolo", "attack", "decay", "sustain", "hold", "release", "gain",
               "lowpass", "lowpass_end", "crush", "downsample"}
-TOP_KEYS = {"desc", "seed", "lowpass", "crush", "voices"}
+TOP_KEYS = {"desc", "seed", "level_db", "lowpass", "crush", "voices"}
+FULL_SCALE = 128.0  # 0 dBFS for int8 (and for the int16 previews: int8 << 8)
 
 
 class SfxError(Exception):
@@ -175,10 +183,13 @@ def render_voice(v, seed, vi):
 
 
 def synth(params):
-    """Parameter dict -> int8 numpy array (peak-normalised to +-PEAK)."""
+    """Parameter dict -> int8 numpy array at RMS `level_db` dBFS, peak <= PEAK."""
     unknown = set(params) - TOP_KEYS
     if unknown:
         raise SfxError("unknown keys %s" % sorted(unknown))
+    level = params.get("level_db")
+    if not isinstance(level, (int, float)) or isinstance(level, bool) or not -60 <= level <= 0:
+        raise SfxError("level_db (target RMS dBFS, -60..0) missing or out of range")
     voices = params.get("voices") or []
     if not voices:
         raise SfxError("no voices")
@@ -201,8 +212,24 @@ def synth(params):
     peak = np.max(np.abs(mix))
     if peak <= 0:
         raise SfxError("effect is silent")
-    out = np.round(mix * (PEAK / peak))
+    rms = math.sqrt(float(np.mean(mix ** 2)))
+    gain = min(FULL_SCALE * 10.0 ** (level / 20.0) / rms, PEAK / peak)
+    out = np.round(mix * gain)
+    if not np.any(out):
+        raise SfxError("effect is silent at level_db %g" % level)
     return np.clip(out, -PEAK, PEAK).astype(np.int8)
+
+
+def db(x):
+    return 20.0 * math.log10(x) if x > 0 else -math.inf
+
+
+def measure(pcm):
+    """(rms dBFS, peak dBFS, peak-limited?) of an int8 effect."""
+    x = pcm.astype(np.float64)
+    peak = float(np.max(np.abs(x)))
+    return (db(math.sqrt(float(np.mean(x ** 2))) / FULL_SCALE), db(peak / FULL_SCALE),
+            peak >= PEAK)
 
 
 def write_wav(path, pcm8):
@@ -217,11 +244,18 @@ def write_wav(path, pcm8):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("params", nargs="+", help="assets/src/sfx/<name>.json")
-    ap.add_argument("-o", "--out", required=True, help="output directory for .snd")
+    ap.add_argument("-o", "--out", help="output directory for .snd")
+    ap.add_argument("--report", action="store_true",
+                    help="print target and effective RMS / peak dBFS of every effect")
     ap.add_argument("--wav", help="also write 16-bit WAV previews here")
     ap.add_argument("-q", "--quiet", action="store_true")
     a = ap.parse_args(argv)
-    os.makedirs(a.out, exist_ok=True)
+    if not a.out and not a.report:
+        ap.error("need -o DIR and/or --report")
+    if a.out:
+        os.makedirs(a.out, exist_ok=True)
+    if a.report:
+        print("%-16s %7s %7s %7s" % ("effect", "target", "rms", "peak"))
     if a.wav:
         os.makedirs(a.wav, exist_ok=True)
     for path in a.params:
@@ -233,10 +267,15 @@ def main(argv=None):
         except (OSError, ValueError, SfxError) as e:
             print("sfx: %s: %s" % (path, e), file=sys.stderr)
             return 1
-        bast.Snd(pcm.tobytes()).save(os.path.join(a.out, name + ".snd"))
+        if a.report:
+            rms, pk, limited = measure(pcm)
+            print("%-16s %7.1f %7.1f %7.1f%s" % (name, params["level_db"], rms, pk,
+                                                 "  peak-limited" if limited else ""))
+        if a.out:
+            bast.Snd(pcm.tobytes()).save(os.path.join(a.out, name + ".snd"))
         if a.wav:
             write_wav(os.path.join(a.wav, name + ".wav"), pcm)
-        if not a.quiet:
+        if not a.quiet and not a.report:
             print("%-16s %5d samples %5.3f s  peak %3d  rms %5.1f" % (
                 name, len(pcm), len(pcm) / RATE, int(np.max(np.abs(pcm.astype(np.int16)))),
                 float(np.sqrt(np.mean(pcm.astype(np.float64) ** 2)))))
