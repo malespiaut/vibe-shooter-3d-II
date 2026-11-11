@@ -27,9 +27,9 @@ in `glyphs/`.
 | `eg_tomb_stone` | wall | dark rough brown blocks: L4 tomb, crypt corridors |
 | `eg_museum_plaque` | wall | plaster between cornice and skirting with a gold plaque (cat emblem, illegible glyph lines): L2 gift shop, museum walls |
 | `eg_door` | door | unkeyed door: cedar leaf, gold bands, cat-eye emblem, sandstone jambs |
-| `eg_door_green` | door | Green Ankh door: 4 px green key band on each jamb (x 0-3, 60-63), green emblem |
-| `eg_door_blue` | door | Blue Ankh door: 4 px blue key bands, blue emblem |
-| `eg_door_violet` | door | Violet Ankh door: 4 px violet key bands, violet emblem |
+| `eg_door_green` | door | Green Ankh door: 4 px green key band on each jamb (x 0-3, 60-63), green ankh in a dark niche on a gold plate |
+| `eg_door_blue` | door | Blue Ankh door: 4 px blue key bands, pale blue ankh (lightest of the three) |
+| `eg_door_violet` | door | Violet Ankh door: 4 px violet key bands, darker violet ankh with an `fb_violet` head (brightmap) |
 | `eg_switch_off` | switch | lever up, dim red lamp (`fb_red_dim`): switch and `EXIT` cells before use |
 | `eg_switch_on` | switch | lever down, green lamp (`fb_green`): the same switch after use |
 | `eg_floor_tiles` | floor/ceiling | 2x2 sandstone flags: default EG floor and ceiling |
@@ -38,7 +38,12 @@ in `glyphs/`.
 | `eg_tomb_floor` | floor/ceiling | dark stone flag in a gold border: L4 tomb chambers, throne rooms |
 | `eg_nile` | floor | Nile water, under `BLOCK_ALL` cells (L3) |
 
-The four doors share every parameter except the `band` and `emblem` materials; the switch pair
+Keyed doors (EG and DT) carry the ankh (`glyphs/ankh.png`, the key's shape, items.md); unkeyed
+doors never do (`eg_door` keeps the cat eye, `dt_door` the hazard chevrons). Blue and violet differ in
+value as well as hue so they separate at half size: the blue ankh is light (`blue_7`..`blue_11`), the
+violet ankh is darker (`violet_4`..`violet_9`) with its head in `fb_violet` (`glyphs/ankh_head.png`,
+the loop rows of `ankh.png`), like the key sprite's fullbright head. The three keyed EG doors share
+every parameter except the `band` and `ankh` materials and the violet brightmap; the switch pair
 shares everything except the lever glyph and the lamp's fullbright entry, so the switch does not
 shift when it flips.
 

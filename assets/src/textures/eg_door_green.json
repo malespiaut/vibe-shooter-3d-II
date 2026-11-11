@@ -1,5 +1,5 @@
 {
-  "desc": "Green Ankh door: eg_door with 4 px green key bands on both jambs and a green emblem",
+  "desc": "Green Ankh door: eg_door with 4 px green key bands on both jambs and a green ankh in a dark niche on a gold plate",
   "tile": "wall",
   "size": 64,
   "seed": 1120,
@@ -98,22 +98,34 @@
     {
       "type": "panel",
       "rect": [
-        24,
         22,
-        16,
-        18
+        18,
+        20,
+        28
       ],
       "bevel": 1,
       "depth": 0.6,
       "region": "gold"
     },
     {
+      "type": "panel",
+      "rect": [
+        24,
+        20,
+        16,
+        24
+      ],
+      "bevel": 1,
+      "depth": -0.4,
+      "region": "niche"
+    },
+    {
       "type": "glyph",
-      "png": "cat_eye.png",
+      "png": "ankh.png",
       "x": 26,
-      "y": 26,
-      "depth": 0.6,
-      "region": "emblem"
+      "y": 22,
+      "depth": -0.5,
+      "region": "ankh"
     },
     {
       "type": "rivets",
@@ -200,18 +212,25 @@
       "level": 0.54,
       "base2": false
     },
-    "emblem": {
-      "ramp": "green",
-      "lo": 1,
-      "hi": 8,
-      "level": 0.5,
-      "base2": false
-    },
     "band": {
       "ramp": "green",
       "lo": 3,
       "hi": 11,
       "level": 0.6,
+      "base2": false
+    },
+    "niche": {
+      "ramp": "brown",
+      "lo": 0,
+      "hi": 4,
+      "level": 0.3,
+      "base2": false
+    },
+    "ankh": {
+      "ramp": "green",
+      "lo": 5,
+      "hi": 11,
+      "level": 0.7,
       "base2": false
     }
   },
