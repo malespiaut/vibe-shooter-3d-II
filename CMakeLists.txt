@@ -253,3 +253,12 @@ function(add_demo_determinism name)
             -P ${CMAKE_SOURCE_DIR}/tests/determinism.cmake)
 endfunction()
 add_demo_determinism(m1-walk)
+
+# High-level demo commands (goto/face/use/fire/expect) through build/game.
+foreach(c goto timeout expect)
+  add_test(NAME demo_${c}
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_demo_cmds.py
+            $<TARGET_FILE:game> ${CMAKE_BINARY_DIR}/test_tmp/demo_cmds ${c})
+  set_tests_properties(demo_${c} PROPERTIES
+    ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
+endforeach()
