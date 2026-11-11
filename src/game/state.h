@@ -83,6 +83,19 @@ typedef struct {
 
 #define MAX_PICKUPS 1024
 
+/* Event hook for the HUD (hud.md: pickup messages, border flash, face).
+ * The simulation appends; the renderer reads what is new since its last
+ * look (event_seq). Never hashed, never read by gameplay. */
+enum { GEV_PICKUP = 1, GEV_DAMAGE = 2 };
+typedef struct {
+    uint8_t kind;    /* GEV_* */
+    uint8_t has_src; /* GEV_DAMAGE: 1 if src_x/src_y is the damage source */
+    uint16_t type;   /* GEV_PICKUP: entity type taken */
+    int32_t amount;  /* GEV_DAMAGE: damage after skill, before armour */
+    fix_t src_x, src_y;
+} game_event;
+#define GAME_EVENT_RING 16
+
 typedef struct game_state {
     uint32_t tic;
     rng_t rng;               /* the gameplay RNG (tech.md Simulation) */
@@ -108,6 +121,11 @@ typedef struct game_state {
     uint8_t lights_alt;  /* a LIGHTS entity fired: cells use dark_alt */
     uint8_t exit;        /* an EXIT cell was used: the level run ends */
     int32_t last_tag;    /* last non-zero tag fired (tests); not hashed */
+
+    /* HUD events (not hashed): events[(seq-1) % GAME_EVENT_RING] is the
+     * newest, event_seq counts every event since game_init. */
+    uint32_t event_seq;
+    game_event events[GAME_EVENT_RING];
 } game_state;
 
 /* Resets the state for `map` (borrowed, must outlive the state): tic 0, RNG
@@ -149,5 +167,8 @@ int game_circle_overlaps_tile(fix_t x, fix_t y, fix_t r, int tx, int ty);
 /* Grants key bits (KEY_*, door.h). Key pickups set the same bits
  * (items.c); tests use this directly. */
 void game_give_keys(game_state *gs, uint32_t keys);
+
+/* Appends a HUD event (overwrites the oldest of the ring). */
+void game_post_event(game_state *gs, const game_event *ev);
 
 #endif

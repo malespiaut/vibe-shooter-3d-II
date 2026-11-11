@@ -49,4 +49,8 @@ void items_tic(game_state *gs);
  * or dead. */
 void player_damage(game_state *gs, int32_t amount);
 
+/* player_damage from a source at (sx, sy), for the HUD's hurt direction.
+ * Both post a GEV_DAMAGE event for every hit that is not ignored. */
+void player_damage_from(game_state *gs, int32_t amount, fix_t sx, fix_t sy);
+
 #endif

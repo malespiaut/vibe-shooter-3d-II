@@ -85,6 +85,8 @@ static int give_key(player_t *p, uint32_t key)
     return 1;
 }
 
+static void post_pickup(game_state *gs, int type);
+
 int item_apply(game_state *gs, int type)
 {
     player_t *p = &gs->player;
@@ -168,6 +170,7 @@ void items_touch(game_state *gs)
         pk->taken = 1;
         if (!pk->dropped)
             gs->items_got++;
+        post_pickup(gs, pk->type);
         if (pk->flags & BAST_ENT_PICKUP_TRIGGER)
             game_fire_tag(gs, pk->tag);
     }
@@ -182,6 +185,7 @@ void items_touch(game_state *gs)
             continue;
         t->state = TH_STATE_TAKEN;
         gs->items_got++;
+        post_pickup(gs, t->type);
         if (t->flags & TH_FLAG_TRIGGER)
             game_fire_tag(gs, t->tag);
     }
@@ -198,7 +202,15 @@ void items_tic(game_state *gs)
         p->invuln_tics--;
 }
 
-void player_damage(game_state *gs, int32_t amount)
+static void post_pickup(game_state *gs, int type)
+{
+    game_event ev = { 0 };
+    ev.kind = GEV_PICKUP;
+    ev.type = (uint16_t)type;
+    game_post_event(gs, &ev);
+}
+
+static void damage(game_state *gs, int32_t amount, int has_src, fix_t sx, fix_t sy)
 {
     player_t *p = &gs->player;
     if (amount <= 0 || p->dead || p->invuln_tics > 0)
@@ -208,6 +220,13 @@ void player_damage(game_state *gs, int32_t amount)
         if (amount < 1)
             amount = 1;
     }
+    game_event ev = { 0 };
+    ev.kind = GEV_DAMAGE;
+    ev.has_src = (uint8_t)has_src;
+    ev.amount = amount;
+    ev.src_x = sx;
+    ev.src_y = sy;
+    game_post_event(gs, &ev);
     const int32_t armour_before = p->armour, class_before = p->armour_class;
     int32_t absorbed = 0;
     if (p->armour_class == ARMOUR_LINEN)
@@ -232,4 +251,14 @@ void player_damage(game_state *gs, int32_t amount)
     }
     p->health = 0;
     p->dead = 1;
+}
+
+void player_damage(game_state *gs, int32_t amount)
+{
+    damage(gs, amount, 0, 0, 0);
+}
+
+void player_damage_from(game_state *gs, int32_t amount, fix_t sx, fix_t sy)
+{
+    damage(gs, amount, 1, sx, sy);
 }
