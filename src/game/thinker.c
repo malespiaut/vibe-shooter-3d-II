@@ -6,8 +6,9 @@
 
 int thinker_alive(const thinker_t *t)
 {
-    return !(t->flags & TH_FLAG_PICKUP) && t->state != TH_STATE_DEAD &&
-           t->state != TH_STATE_TAKEN;
+    return !(t->flags & TH_FLAG_PICKUP) && t->type < TH_TYPE_SCARAB_PROJ &&
+           t->state != TH_STATE_DEAD && t->state != TH_STATE_TAKEN &&
+           t->state != TH_STATE_DYING && t->state != TH_STATE_FREE;
 }
 
 uint16_t thinker_spawn(thinkers_t *th, uint16_t type, fix_t x, fix_t y, angle_t angle)
@@ -45,6 +46,37 @@ uint16_t thinker_spawn_pickup(thinkers_t *th, uint16_t type, fix_t x, fix_t y)
     return (uint16_t)th->count;
 }
 
+uint16_t thinker_spawn_barrel(thinkers_t *th, fix_t x, fix_t y)
+{
+    if (th->count >= MAX_THINKERS)
+        return 0;
+    thinker_t *t = &th->list[th->count++];
+    memset(t, 0, sizeof *t);
+    t->type = BAST_ENT_KIBBLE_BARREL;
+    t->state = TH_STATE_STAND;
+    t->flags = TH_FLAG_SHOOTABLE;
+    t->x = x;
+    t->y = y;
+    t->health = BARREL_HP;
+    t->max_health = BARREL_HP;
+    t->radius = BARREL_RADIUS;
+    return (uint16_t)th->count;
+}
+
+uint16_t thinker_alloc(thinkers_t *th)
+{
+    for (int i = 0; i < th->count; i++) {
+        if (th->list[i].state == TH_STATE_FREE) {
+            memset(&th->list[i], 0, sizeof th->list[i]);
+            return (uint16_t)(i + 1);
+        }
+    }
+    if (th->count >= MAX_THINKERS)
+        return 0;
+    memset(&th->list[th->count], 0, sizeof th->list[0]);
+    return (uint16_t)++th->count;
+}
+
 int entity_on_skill(const bast_map_entity *e, int skill)
 {
     return (e->flags & (uint16_t)(BAST_ENT_SKILL1 << (skill - 1))) != 0;
@@ -61,6 +93,10 @@ void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill)
         if (en) {
             if (e->flags & BAST_ENT_AMBUSH)
                 en->flags |= TH_FLAG_AMBUSH;
+            continue;
+        }
+        if (e->type == BAST_ENT_KIBBLE_BARREL) {
+            thinker_spawn_barrel(th, e->x, e->y);
             continue;
         }
         thinker_t *t = thinker_get(th, thinker_spawn_pickup(th, e->type, e->x, e->y));
@@ -84,6 +120,11 @@ int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage)
     t->health -= damage;
     if (t->health > 0)
         return 0;
+    if (t->type == BAST_ENT_KIBBLE_BARREL) {
+        t->state = TH_STATE_DYING;
+        t->tics = BARREL_FUSE_TICS;
+        return 1;
+    }
     t->state = TH_STATE_DEAD;
     t->tics = 0;
     if (t->health <= -(t->max_health / 2))

@@ -1,0 +1,28 @@
+# Launcher test (#93): maps/launchertest.vmap. The player picks up the
+# Scarab Launcher (4 scarabs), switches to it and fires one scarab into the
+# middle of three Mutt Troopers standing 1 u apart: the direct hit and the
+# 96 / 1.5 u splash kill all three. Then the pistol shoots a kibble barrel;
+# 4 tics after its death it explodes (64 / 1.5 u) and kills the Mutt 1 u
+# north of it. Ends with expect lines on kills and health.
+vsdemo 1
+level 1
+skill 2
+seed 0
+map launchertest
+
+expect kills=0
+goto 4 5                # walk over the launcher pickup
+weapon 5                # 10-tic switch
+wait 10
+face 12 5               # the middle Mutt
+fire 1                  # one scarab
+wait 30                 # 7.5 u at 0.4 u/tic: ~19 tics of flight
+expect kills=3
+expect health=100
+weapon 2                # back to the pistol
+wait 10
+face 15 8               # the barrel
+fire 30                 # pistol, 12-tic interval: shots until it dies
+wait 10                 # 4-tic fuse, then the blast
+expect kills=4
+expect health=100

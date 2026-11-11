@@ -2,6 +2,7 @@
 #include <stddef.h>
 
 #include "game/ai.h"
+#include "game/projectile.h"
 #include "game/state.h"
 
 /* weapons.md Stats. Damage base..base+spread; spread in angle units. */
@@ -192,6 +193,10 @@ static void fire_weapon(game_state *gs)
         w->flash_tics = WEAPON_FLASH_TICS;
 
     const player_t *p = &gs->player;
+    if (wp == WP_LAUNCHER) { /* one scarab from the eye */
+        projectile_spawn(gs, TH_TYPE_SCARAB_PROJ, TH_ID_PLAYER, p->x, p->y, PLAYER_EYE_Z, p->angle);
+        return;
+    }
     const fix_t range = wp == WP_CLAWS ? CLAW_REACH : HITSCAN_RANGE;
     for (int i = 0; i < wi->pellets; i++) {
         angle_t a = (angle_t)(p->angle + spread_offset(gs, wi->spread));

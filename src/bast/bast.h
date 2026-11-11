@@ -208,7 +208,9 @@ enum bast_entity_type {
     BAST_ENT_CATS_EYE_AMULET = 67,
     BAST_ENT_NINTH_LIFE = 68,
 
-    BAST_ENT_TYPE_LIMIT = 96 /* one past the highest type number in use */
+    BAST_ENT_KIBBLE_BARREL = 96, /* items.md Decorations: explodes, chains */
+
+    BAST_ENT_TYPE_LIMIT = 97 /* one past the highest type number in use */
 };
 
 /* "PLAYER_START" etc. (the enum name without BAST_ENT_), NULL if unknown. */
