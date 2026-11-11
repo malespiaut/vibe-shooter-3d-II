@@ -1,6 +1,7 @@
 /* Integer software mixer. See mixer.h for the gain law and threading model.
  * Integer arithmetic only. */
 #include "engine/mixer.h"
+#include "engine/files.h"
 
 #include <stdatomic.h>
 #include <stdio.h>
@@ -41,7 +42,7 @@ static voice g_voices[MIXER_VOICES];
 static uint32_t g_serial;
 static mixer_sound g_sounds[MIXER_MAX_SOUNDS];
 static int g_nsounds;
-static char g_dir[512];
+static char g_err[768] = "no error";
 static mixer_music_fn g_music_fn;
 static void *g_music_user;
 
@@ -63,7 +64,8 @@ static int clampi(int v, int lo, int hi)
 void mixer_init(const char *assets_dir)
 {
     mixer_shutdown();
-    snprintf(g_dir, sizeof g_dir, "%s", assets_dir ? assets_dir : "assets/gen");
+    if (assets_dir)
+        files_init(assets_dir);
     memset(g_voices, 0, sizeof g_voices);
     g_serial = 0;
     atomic_store(&g_ring_head, 0);
@@ -101,8 +103,28 @@ mixer_sound *mixer_load_snd(const char *name)
         if (strcmp(g_sounds[i].name, name) == 0)
             return &g_sounds[i];
     char path[640];
-    snprintf(path, sizeof path, "%s/sfx/%s.snd", g_dir, name);
-    return mixer_add_sound(name, bast_snd_load(path));
+    snprintf(path, sizeof path, "sfx/%s.snd", name);
+    int64_t size = 0;
+    uint8_t *d = files_read(path, &size);
+    if (!d) {
+        snprintf(g_err, sizeof g_err, "%s", files_error());
+        return NULL;
+    }
+    bast_snd *snd = bast_snd_from_memory(d, size);
+    free(d);
+    if (!snd) {
+        snprintf(g_err, sizeof g_err, "%s: %s", path, bast_error());
+        return NULL;
+    }
+    mixer_sound *s = mixer_add_sound(name, snd);
+    if (!s)
+        snprintf(g_err, sizeof g_err, "%s: too many sounds", path);
+    return s;
+}
+
+const char *mixer_error(void)
+{
+    return g_err;
 }
 
 uint32_t mixer_sound_length(const mixer_sound *s)

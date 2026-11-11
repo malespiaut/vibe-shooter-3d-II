@@ -43,15 +43,18 @@
 
 typedef struct mixer_sound mixer_sound;
 
-/* Resets all voices and the command ring and sets the directory holding
- * `sfx/<name>.snd` (normally assets/gen). Frees sounds from a previous init. */
+/* Resets all voices and the command ring and, when `assets_dir` is not NULL,
+ * points files.c at it (normally assets/gen, holding game.pak or loose
+ * `sfx/<name>.snd`). Frees sounds from a previous init. */
 void mixer_init(const char *assets_dir);
 /* Frees every loaded sound. Call after the audio device is closed. */
 void mixer_shutdown(void);
 
-/* Loads <assets_dir>/sfx/<name>.snd through libbast. Cached by name. NULL on
- * error (message in bast_error()). Game thread only. */
+/* Loads sfx/<name>.snd through files.c (game.pak first, loose fallback) and
+ * libbast. Cached by name. NULL on error (message in mixer_error()). Game
+ * thread only. */
 mixer_sound *mixer_load_snd(const char *name);
+const char *mixer_error(void);
 /* Registers an already loaded sound under `name`; the mixer takes ownership
  * of `snd` (also on failure). Used by mixer_load_snd and the tests. */
 mixer_sound *mixer_add_sound(const char *name, bast_snd *snd);

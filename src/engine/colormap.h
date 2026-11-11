@@ -13,8 +13,9 @@ enum {
     COLORMAP_BYTES = COLORMAP_ROWS * 256
 };
 
-/* Load `dir`/palette.bin (768 B, via libbast) and `dir`/colormap.bin
- * (8192 B). Returns 1 on success, 0 on failure (see colormap_error()).
+/* Load palette.bin (768 B) + palette_flags.bin (256 B, via libbast) and
+ * colormap.bin (8192 B) through files.c from `dir` (assets/gen): game.pak
+ * first, loose files otherwise. Returns 1 on success, 0 on failure (see colormap_error()).
  * On failure the previously loaded tables are kept. */
 int colormap_load(const char *dir);
 /* Same from memory (rgb: 768 bytes). size must be COLORMAP_BYTES and row 0
