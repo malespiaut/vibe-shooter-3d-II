@@ -3,7 +3,7 @@
 maps/pomdachtest.vmap kills two Pomeranian Plasmagunners and a Dachshund
 Howitzer with the repeater while strafing (STATS kills=3/3, health > 0, every
 expect passes), gives the same STATS hash and per-tic hashes twice;
-    maps/pomdachtest.vmap matches its mkmap source.
+maps/pomdachtest.vmap matches its mkmap source.
 
     test_pomdach_demo.py <build/game> <tmp dir>
 """
