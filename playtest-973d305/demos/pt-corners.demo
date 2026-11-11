@@ -1,0 +1,18 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+
+goto 1 1
+in 60 127 127 0 R
+in 60 127 -127 0 R
+in 60 -127 127 0 R
+in 40 0 0 400 -
+in 60 127 0 0 R
+goto 11 7
+expect tile=11,7
+goto 1 7
+in 70 127 127 300 R
+goto 6 1
+expect tile=6,1

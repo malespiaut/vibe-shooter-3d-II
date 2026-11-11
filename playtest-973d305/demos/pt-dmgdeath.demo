@@ -1,0 +1,14 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+on_death restart
+goto 10 5
+goto 11 7
+wait 400
+wait 70
+use
+wait 35
+expect health=100
+expect tile=2,2

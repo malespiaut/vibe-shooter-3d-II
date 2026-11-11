@@ -1,0 +1,17 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map doortest
+
+goto 6 3
+face 90
+use
+wait 32
+goto 6 6
+wait 300
+goto 6 5
+face 270
+use
+wait 40
+expect tile=6,5

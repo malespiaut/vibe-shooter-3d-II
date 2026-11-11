@@ -1,0 +1,8 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+map tagstest
+goto 10 5
+goto 11 7
+wait 400
