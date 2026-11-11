@@ -48,15 +48,37 @@ typedef struct {
     uint8_t buttons;
 } ticcmd;
 
+/* Armour absorption class (items.md Armour). */
+enum { ARMOUR_NONE, ARMOUR_LINEN, ARMOUR_PLATE };
+
 typedef struct {
     fix_t x, y;       /* world units, 16.16, y grows north */
     angle_t angle;
     fix_t momx, momy; /* velocity per tic */
     int32_t health;
     int32_t armour;
-    weapons_t weapons;
-    uint32_t keys; /* KEY_GREEN | KEY_BLUE | KEY_VIOLET (door.h) */
+    weapons_t weapons;        /* owned slots, ammo (game/weapon.h) */
+    uint32_t keys;            /* KEY_GREEN | KEY_BLUE | KEY_VIOLET (door.h) */
+    int32_t armour_class;     /* ARMOUR_* */
+    int32_t satchel;          /* Litter Satchel carried: ammo caps x2 */
+    int32_t catnip_tics;      /* Catnip Frenzy left, 0 = off */
+    int32_t catseye_tics;     /* Cat's Eye Amulet left, 0 = off */
+    int32_t ninth_life;       /* 0 or 1 */
+    int32_t invuln_tics;      /* after Ninth Life saved the player */
+    int32_t dead;
 } player_t;
+
+/* A non-weapon pickup spawned from a map entity (game/items.c). Weapon
+ * pickups are thinkers (TH_FLAG_PICKUP). */
+typedef struct {
+    uint16_t type;  /* enum bast_entity_type, 48..95 */
+    uint16_t flags; /* entity flags (PICKUP_TRIGGER) */
+    uint8_t tag;
+    uint8_t taken;
+    fix_t x, y;
+} pickup_t;
+
+#define MAX_PICKUPS 1024
 
 typedef struct game_state {
     uint32_t tic;
@@ -68,13 +90,25 @@ typedef struct game_state {
     int door_count;
     door_t doors[MAX_DOORS]; /* row-major order of the DOOR cells */
     int16_t door_index[64 * 64]; /* cell y*width+x -> door, -1 = none */
+    int32_t skill;     /* 1 Kitten, 2 Tomcat, 3 Sabretooth */
+
+    int32_t pickup_count;    /* non-weapon pickups spawned, entity order */
+    pickup_t pickups[MAX_PICKUPS];
+    int32_t items_got;       /* level counter: pickups taken, weapons too */
+    int32_t items_total;     /* pickups + weapon pickups spawned */
+
+    /* Tag hook stub (game_fire_tag): counts fired tags until the tags
+     * system replaces it. Not hashed. */
+    int32_t tags_fired;
+    int32_t last_tag;
 } game_state;
 
 /* Resets the state for `map` (borrowed, must outlive the state): tic 0, RNG
  * seeded for (level, demo_seed), player at the map's PLAYER_START (centre of
  * the map, angle 0, if none), health 100, armour 0, at rest, Claws and
- * pistol with 50 charges; every enemy entity flagged for `skill` (1..3)
- * spawned as a thinker. */
+ * pistol with 50 charges; every enemy and weapon-pickup entity flagged for
+ * `skill` (1..3, clamped) spawned as a thinker, every other pickup as a
+ * pickup_t (game/items.c). Kitten (1): half damage, 1.5x ammo. */
 void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32_t demo_seed);
 
 /* Advances the simulation by one tic. */
@@ -84,7 +118,9 @@ void game_tic(game_state *gs, const ticcmd *cmd);
  * tic, RNG state, player (x, y, angle, momx, momy, health, armour, weapon
  * state, ammo), every thinker in creation order (type, x, y, angle, state,
  * flags, tics, health, target id), kills and kill total, then player keys,
- * previous buttons, door count and every door (state, pos, timer). New
+ * previous buttons, door count and every door (state, pos, timer), then
+ * armour class, satchel, powerup timers, Ninth Life, invulnerability, dead, skill,
+ * pickups (count, then each taken flag in spawn order), items taken. New
  * fields are appended as the systems that own them land. */
 uint64_t game_hash(const game_state *gs);
 
@@ -99,7 +135,8 @@ int game_circle_blocked(const game_state *gs, fix_t x, fix_t y, fix_t r);
 /* True when the circle overlaps tile (tx, ty) (touching is not overlapping). */
 int game_circle_overlaps_tile(fix_t x, fix_t y, fix_t r, int tx, int ty);
 
-/* Grants key bits (KEY_*). Test and demo use until key pickups land. */
+/* Grants key bits (KEY_*, door.h). Key pickups set the same bits
+ * (items.c); tests use this directly. */
 void game_give_keys(game_state *gs, uint32_t keys);
 
 #endif

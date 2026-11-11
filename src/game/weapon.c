@@ -21,21 +21,39 @@ const int32_t ammo_max[AM_TYPES] = { 200, 50, 50, 300 };
  * that list, gives a Charge Vial's 10). */
 static const int32_t PICKUP_AMMO[WP_SLOTS] = { 0, 0, 10, 8, 40, 4, 60, 50 };
 
-int weapon_give(weapons_t *w, int wp)
+int32_t ammo_cap(int a, int satchel)
+{
+    return ammo_max[a] * (satchel ? 2 : 1);
+}
+
+int weapon_add_ammo(weapons_t *w, int a, int32_t n, int kitten, int satchel)
+{
+    const int32_t cap = ammo_cap(a, satchel);
+    if (w->ammo[a] >= cap)
+        return 0;
+    w->ammo[a] += kitten ? n * 3 / 2 : n;
+    if (w->ammo[a] > cap)
+        w->ammo[a] = cap;
+    return 1;
+}
+
+int weapon_give_ex(weapons_t *w, int wp, int kitten, int satchel)
 {
     const weapon_info_t *wi = &weapon_info[wp];
     const int have = (w->owned >> wp) & 1;
     int took = 0;
-    if (wi->ammo_type != AM_NONE && w->ammo[wi->ammo_type] < ammo_max[wi->ammo_type]) {
-        int32_t a = w->ammo[wi->ammo_type] + PICKUP_AMMO[wp];
-        w->ammo[wi->ammo_type] = a < ammo_max[wi->ammo_type] ? a : ammo_max[wi->ammo_type];
-        took = 1;
-    }
+    if (wi->ammo_type != AM_NONE)
+        took = weapon_add_ammo(w, wi->ammo_type, PICKUP_AMMO[wp], kitten, satchel);
     if (!have) {
         w->owned |= (uint8_t)(1u << wp);
         took = 1;
     }
     return took;
+}
+
+int weapon_give(weapons_t *w, int wp)
+{
+    return weapon_give_ex(w, wp, 0, 0);
 }
 
 void weapons_init(weapons_t *w)
@@ -189,17 +207,6 @@ void weapon_tic(struct game_state *gs, int select_slot, int fire)
 {
     weapons_t *w = &gs->player.weapons;
     player_t *p = &gs->player;
-
-    /* Weapon pickups within reach of the player centre. */
-    for (int i = 0; i < gs->things.count; i++) {
-        thinker_t *t = &gs->things.list[i];
-        if (!(t->flags & TH_FLAG_PICKUP) || t->state != TH_STATE_STAND)
-            continue;
-        if (fix_dist(t->x - p->x, t->y - p->y) > PICKUP_RADIUS)
-            continue;
-        if (weapon_give(w, t->type - BAST_ENT_ANKH_PISTOL + WP_PISTOL))
-            t->state = TH_STATE_TAKEN;
-    }
 
     if (select_slot)
         weapon_select(w, select_slot);

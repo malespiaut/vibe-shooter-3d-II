@@ -1,0 +1,47 @@
+# Items test map (issue #64): a straight east-west corridor with one pickup
+# per tile centre, walked by demos/items-test.demo. Test fixture, not a
+# game level. Textures are the test-pattern names used by m1test.
+#
+# Row ty = 2 is the corridor. The player starts at (1,2) facing east and
+# every pickup sits on that row, so walking east touches each one in order.
+# The SCARAB_PLATE at (11,1) in the side alcove is skill 3 only: it does not
+# spawn at skill 2, so items total stays 20.
+
+name Items Test
+sky testsky
+music 0
+par 30
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+
+layout
+##########################
+##########################
+#........................#
+###########.##############
+##########################
+end
+
+entity PLAYER_START 1 2 0
+entity LINEN_WRAP 2 2 0
+entity BANDAGE_SCRAP 3 2 0
+entity SCARAB_PLATE 4 2 0
+entity GOLDEN_SARDINE 5 2 0
+entity CHARGE_VIAL 6 2 0
+entity CHARGE_JAR 7 2 0
+entity YARN_BUNDLE 8 2 0
+entity YARN_BASKET 9 2 0
+entity SCARAB 10 2 0
+entity SCARAB_CRATE 11 2 0
+entity SCARAB_PLATE 11 1 0 flags=SKILL3
+entity SUN_SHARD 12 2 0
+entity SUN_ORB 13 2 0
+entity LITTER_SATCHEL 14 2 0
+entity HAIRBALL_SCATTERGUN 15 2 0
+entity GREEN_ANKH 16 2 0
+entity BLUE_ANKH 17 2 0
+entity VIOLET_ANKH 18 2 0
+entity CATNIP_FRENZY 19 2 0
+entity CATS_EYE_AMULET 20 2 0
+entity NINTH_LIFE 21 2 0 flags=SKILL1|SKILL2|SKILL3|PICKUP_TRIGGER tag=3

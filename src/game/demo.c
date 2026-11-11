@@ -245,7 +245,8 @@ static int cmd_fire(demo_t *d, line_ctx *c)
 }
 
 /* Stats `expect` can read: the STATS line fields that live in game state.
- * kills/items/secrets compare the first number of the X/Y pair. Counters
+ * kills/items/secrets compare the first number of the X/Y pair. items reads
+ * gs->items_got (issue #64). Counters
  * whose systems do not exist yet read 0, exactly as the STATS line prints
  * them (main.c print_stats); they move here when their systems land.
  * level and god are run options, not game state, and are not offered. */
@@ -262,7 +263,9 @@ static int32_t stat_value(const game_state *gs, const char *name)
         return gs->player.armour;
     if (strcmp(name, "kills") == 0)
         return gs->things.kills;
-    return 0; /* items, secrets, exit: no counters yet */
+    if (strcmp(name, "items") == 0)
+        return gs->items_got;
+    return 0; /* secrets, exit: no counters yet */
 }
 
 /* expect <stat><op><value>, or expect tile=X,Y / tile!=X,Y */
