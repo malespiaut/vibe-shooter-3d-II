@@ -193,3 +193,93 @@ def shade_ellipse(base, k, cx, cy, rx, ry, rampf, stripes=None):
             v -= 3
         return rampf(v)
     return fn
+
+
+# ---- hand-drawn style paws and forearms (art-bible "View models", as vm1/vm4)
+
+def forearm(cv, a, b, w0, w1, bands, seed=0):
+    """Forearm from wrist a=(x, y) to b (usually off-canvas), half-widths w0 at a
+    and w1 at b. Cylinder shading: fur_10/11 on the screen-left (lit) edge down
+    to fur_04/05 on the right edge. bands: axial positions 0..1 of curved tabby
+    bands running across the arm (irregular spacing, curved like vm1)."""
+    ax, ay = a
+    bx, by = b
+    dx, dy = bx - ax, by - ay
+    L = math.hypot(dx, dy)
+    ux, uy = dx / L, dy / L
+    nx, ny = -uy, ux                   # normal; flip so +s points to screen right
+    if nx < 0:
+        nx, ny = -nx, -ny
+    pts = [(ax - nx * w0, ay - ny * w0), (ax + nx * w0, ay + ny * w0),
+           (bx + nx * w1, by + ny * w1), (bx - nx * w1, by - ny * w1)]
+
+    def fn(x, y):
+        px, py = x + 0.5 - ax, y + 0.5 - ay
+        t = (px * ux + py * uy) / L
+        w = w0 + (w1 - w0) * max(0.0, min(1.0, t))
+        s = (px * nx + py * ny) / w            # -1 left .. +1 right
+        v = 10.6 - (s + 1) * 3.0                # 10.6 lit edge .. 4.6 shadow edge
+        if s > 0.82:
+            v -= 1                              # rim shadow on the right edge
+        for i, tb in enumerate(bands):
+            # band curves toward the wrist at the edges (ring seen from above)
+            c = tb - 0.05 * (1 - s * s) * (1 if i % 2 else 0.7)
+            thick = (1.3 + 0.5 * ((i + seed) % 3)) / L
+            if abs(t - c) < thick * (1.0 - 0.35 * abs(s)) and abs(s) < 0.93:
+                return fur(min(v, 6) - 2.5)
+        return fur(v)
+    cv.poly(pts, fn)
+
+
+def paw_fist(cv, cx, cy, w, h, lobes, along=(0.0, -1.0), lobe_r=(3.2, 2.6),
+             claws=True, body_dark=0):
+    """Back of a closed paw (vm1 style): a rounded-square body with shading from
+    the top-left and a row of separate toe lobes on the side given by `along`
+    (unit vector from body centre toward the knuckles). Lobes are separated by
+    1 px fur_03 gaps and each gets a fur_11 knuckle highlight on its top-left."""
+    ax, ay = along
+
+    def body(x, y):
+        dx, dy = (x + 0.5 - cx) / w, (y + 0.5 - cy) / h
+        return dx, dy
+    m = Image.new("L", (cv.w, cv.h), 0)
+    d = m.load()
+    for y in range(cv.h):
+        for x in range(cv.w):
+            dx, dy = body(x, y)
+            if abs(dx) ** 3.2 + abs(dy) ** 3.2 <= 1.0:      # squircle, not a ball
+                d[x, y] = 255
+
+    def bfn(x, y):
+        dx, dy = body(x, y)
+        v = 8.6 - (dx + dy) * 2.4 - body_dark
+        if abs(dx) ** 3.2 + abs(dy) ** 3.2 > 0.72:
+            v -= 1.2 if (dx + dy) > -0.3 else -0.6
+        # soft fur tuft line across the back of the paw
+        if abs(dy * 0.9 - dx * 0.25 - 0.18) < 0.07 and abs(dx) < 0.6:
+            v -= 2.5
+        return fur(v)
+    cv.fill_mask(m, bfn)
+    # toe lobes along the knuckle side
+    px, py = -ay, ax                       # along the knuckle row
+    rx, ry = lobe_r
+    n = len(lobes)
+    for i, off in enumerate(lobes):
+        lx = cx + ax * (h * 0.78) + px * off
+        ly = cy + ay * (h * 0.78) + py * off
+        # gap ring first (1 px darker outline only toward neighbours / body)
+        def gap(x, y, lx=lx, ly=ly):
+            return "fur_03"
+        cv.ellipse(lx, ly, rx + 0.9, ry + 0.9, lambda x, y, lx=lx, ly=ly: (
+            "fur_03" if cv.get(x, y) is not None else None))
+        def lobe(x, y, lx=lx, ly=ly, i=i):
+            dx, dy = (x + 0.5 - lx) / rx, (y + 0.5 - ly) / ry
+            v = 9.0 - (dx + dy) * 2.6 - i * 0.25 - body_dark
+            if dx < -0.15 and dy < -0.15 and dx * dx + dy * dy < 0.55 and dx * dx + dy * dy > 0.12:
+                v = 11
+            return fur(v)
+        cv.ellipse(lx, ly, rx, ry, lobe)
+        if claws:
+            tx, ty = lx + ax * (ry + 0.6), ly + ay * (ry + 0.6)
+            cv.set(round(tx), round(ty), "beige_13")
+            cv.set(round(tx - ax), round(ty - ay), "beige_09")
