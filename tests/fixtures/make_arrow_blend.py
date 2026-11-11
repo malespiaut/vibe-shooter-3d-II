@@ -13,7 +13,9 @@ d0 camera), stands on z = 0, origin at (0, 0, 0). The arrow:
 - one wing (red) on +X only, the arrow's LEFT side (it faces -Y), so the
   front and back views are mirror images of each other and d2 (camera moved
   90 deg counter-clockwise from the front) sees the wing face-on;
-- a post (gray) down to the floor.
+- a post (sand, like the shaft) down to the floor.
+Three materials map to three ramps in sprite.json "ramps" (the colour
+budget, art-bible.md).
 Action "Bob": frame 1 at z = 0, frame 2 raised 4 px (4/64 unit).
 """
 import json
@@ -32,7 +34,6 @@ MATS = {
     "sand": (0.80, 0.62, 0.30),
     "gold": (0.95, 0.75, 0.15),
     "red": (0.80, 0.12, 0.08),
-    "gray": (0.50, 0.50, 0.50),
 }
 
 
@@ -56,7 +57,7 @@ for name, rgb in MATS.items():
     mats[name] = m
 
 verts, faces, face_mat = [], [], []
-ORDER = ["sand", "gold", "red", "gray"]
+ORDER = ["sand", "gold", "red"]
 
 
 def box(x0, x1, y0, y1, z0, z1, mat):
@@ -86,7 +87,7 @@ box(-0.10, 0.10, -0.20, 0.35, 0.28, 0.44, "sand")          # shaft
 pyramid(-0.20, -0.20, 0.20, 0.18, 0.54, (0.0, -0.48, 0.36), "gold")  # head -> -Y
 box(-0.03, 0.03, 0.18, 0.35, 0.44, 0.80, "sand")           # tail fin (+Y, tall)
 box(0.10, 0.34, -0.06, 0.24, 0.31, 0.41, "red")            # wing, +X only
-box(-0.05, 0.05, -0.05, 0.05, 0.00, 0.28, "gray")          # post to the floor
+box(-0.05, 0.05, -0.05, 0.05, 0.00, 0.28, "sand")          # post to the floor
 
 mesh = bpy.data.meshes.new("Arrow")
 mesh.from_pydata(verts, [], faces)
@@ -124,5 +125,7 @@ blend = os.path.join(out_dir, "arrow.blend")
 bpy.ops.wm.save_as_mainfile(filepath=blend)
 with open(os.path.join(out_dir, "sprite.json"), "w") as f:
     json.dump({"object": "Arrow",
+               "canvas": [64, 64],
+               "ramps": {"sand": "sand", "gold": "gold", "red": "red"},
                "actions": {"Bob": {"anim": "bob", "frames": [1, 2]}}}, f, indent=2)
 print("fixture: wrote %s" % blend)

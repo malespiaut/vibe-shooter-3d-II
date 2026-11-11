@@ -9,10 +9,16 @@ Blender, renders it, and checks against docs/design/tech.md and art-bible.md:
   d6 does not; the head points left in d2, right in d6;
 - f1 is the frame-2 pose (raised 4 px);
 - raw renders have alpha 0 or 255 only; palcheck passes on TEX and previews;
-- outline: every right/bottom silhouette pixel is a `<ramp>_00` entry.
+- ramps: every opaque pixel's index lies in its material's ramp (material
+  pass from --raw); outline (right/bottom silhouette) pixels are exactly that
+  ramp's `_00`; no other pixel is `black`, `shadow_*` or a `_00`, in all 8
+  directions and both frames;
+- exposure: each material's brightest f0 pixel reaches entry >= 09 of its
+  ramp.
 The post-pass helpers are unit-tested without Blender first. Exit 77 (ctest
 SKIP) with a message when `blender` is not installed.
 """
+import json
 import os
 import shutil
 import subprocess
@@ -45,12 +51,62 @@ def test_helpers():
 
     entries = gpl.load_gpl()
     names = [n for _, n in entries]
-    dark = br.ramp_darkest_table(entries)
-    assert dark[names.index("sand_09")] == names.index("sand_00")
-    assert dark[names.index("red_00")] == names.index("red_00")
-    assert dark[names.index("white")] == names.index("gray_00")
-    assert dark[names.index("fb_red")] == names.index("fb_red")
-    assert dark[255] == 255
+    sand = br.ramp_entries(entries, "sand")
+    assert [names[i] for i in sand] == ["sand_%02d" % k for k in range(16)]
+    assert br.ramp_entries(entries, "gold")[0] == names.index("gold_00")
+    assert br.ramp_entries(entries, "fb_red") == [names.index("fb_red")]
+    for bad in ("shadow", "reserved", "nope", "black"):
+        try:
+            br.ramp_entries(entries, bad)
+            assert False, "ramp %r accepted" % bad
+        except ValueError:
+            pass
+    # Colour budget: 3 ramps plus fb_* pass, a 4th ramp is refused.
+    ok = br.resolve_ramps(entries, {"a": "sand", "b": "gold", "c": "red", "d": "sand",
+                                    "eye": "fb_red", "gem": "fb_cyan"})
+    assert ok["d"] == sand
+    for bad in ({"a": "sand", "b": "gold", "c": "red", "d": "steel"}, {}, None):
+        try:
+            br.resolve_ramps(entries, bad)
+            assert False, "ramps %r accepted" % (bad,)
+        except ValueError:
+            pass
+
+    pal = bast.load_palette()
+    quant = br.RampQuantizer(pal)
+    red = br.ramp_entries(entries, "red")
+    # A neutral gray on material 1 (sand) stays in sand, never steel/gray.
+    # 3x3 opaque block at (1..3, 1..3) of a 5x5 canvas.
+    w = h = 5
+    img = np.zeros((h, w, 4), dtype=np.uint8)
+    img[1:4, 1:4] = (90, 90, 90, 255)
+    img[1, 1] = (10, 10, 10, 255)            # near black, interior? no: top-left
+    mat = np.zeros((h, w), dtype=int)
+    mat[1:4, 1:4] = 1
+    mat[1, 3] = 2                            # right edge pixel on red
+    t = tex_from_bytes(br.postprocess(img.tobytes(), mat, w, h, {1: sand, 2: red}, quant))
+    assert t.origin == (w // 2, h) and t.flags & bast.TEX_HAS_TRANSPARENCY
+    for y in range(h):
+        for x in range(w):
+            i = t.get(x, y)
+            if mat[y, x] == 0:
+                assert i == 255, (x, y, i)
+            elif (x, y) in ((3, 1), (3, 2), (3, 3), (1, 3), (2, 3)):  # outline
+                want = red[0] if mat[y, x] == 2 else sand[0]
+                assert i == want, (x, y, names[i])
+            else:  # interior: own ramp, never _00 (even the near-black pixel)
+                assert i in sand[1:], (x, y, names[i])
+    # No ramp for a material: error. Partial alpha: error.
+    for m, a in ((3, 255), (1, 128)):
+        bad = img.copy()
+        bad[2, 2, 3] = a
+        mm = mat.copy()
+        mm[2, 2] = m
+        try:
+            br.postprocess(bad.tobytes(), mm, w, h, {1: sand, 2: red}, quant)
+            assert False, "accepted material %d alpha %d" % (m, a)
+        except ValueError:
+            pass
 
     # Edge contrast: transparent neighbours never bleed in.
     rgb = np.full((3, 3, 3), 100.0)
@@ -58,13 +114,14 @@ def test_helpers():
     op[1, 1] = True
     assert (br.edge_contrast(rgb, op)[1, 1] == 100).all()
 
-    # Partial alpha is refused.
-    rgba = bytes([10, 10, 10, 128])
+
+def tex_from_bytes(data):
+    with tempfile.NamedTemporaryFile(suffix=".tex", delete=False) as f:
+        f.write(data)
     try:
-        br.postprocess(rgba, 1, 1, bast.load_palette(), dark)
-        assert False, "partial alpha accepted"
-    except ValueError:
-        pass
+        return bast.Tex.load(f.name)
+    finally:
+        os.unlink(f.name)
 
 
 def centroid_x(t):
@@ -113,7 +170,9 @@ def test_render(blender):
             tex[n[len("arrow_bob_"):-4]] = t
 
         # No AA mush: raw renders are binary in alpha.
-        for n in os.listdir(raw):
+        for n in sorted(os.listdir(raw)):
+            if not n.endswith(".png") or n.endswith("_mat.png"):
+                continue
             a = np.asarray(Image.open(os.path.join(raw, n)).convert("RGBA"))[..., 3]
             bad = np.count_nonzero((a > 0) & (a < 255))
             assert bad == 0, (n, bad)
@@ -145,17 +204,48 @@ def test_render(blender):
             b0, b1 = bottom_row(tex["d%d_f0" % dd]), bottom_row(tex["d%d_f1" % dd])
             assert b0 == H - 1 and b1 == H - 5, (dd, b0, b1)
 
-        # Selective outline: right/bottom silhouette pixels use <ramp>_00.
+        # Ramps: material pass -> each pixel on its own ramp; outline = _00;
+        # nothing else dark-ends (black, shadow_*, _00); exposure >= 09.
+        with open(os.path.join(raw, "materials.json")) as f:
+            mat_name = {int(k): v for k, v in json.load(f).items()}
+        with open(os.path.join(fx, "sprite.json")) as f:
+            ramp_cfg = json.load(f)["ramps"]
+        assert sorted(mat_name.values()) == sorted(ramp_cfg), (mat_name, ramp_cfg)
+        ramp_of = {k: br.ramp_entries(entries, ramp_cfg[m]) for k, m in mat_name.items()}
+        top = {m: 0 for m in ramp_cfg}
+        bad = unlit = 0
+        quant = br.RampQuantizer(bast.load_palette())
         for k, t in tex.items():
+            mat = np.asarray(Image.open(os.path.join(raw, "arrow_bob_%s_mat.png" % k)))
+            rgb = np.asarray(Image.open(os.path.join(raw, "arrow_bob_%s.png" % k)).convert("RGB"))
             for x in range(W):
                 for y in range(H):
                     i = t.get(x, y)
                     if i == 255:
+                        assert mat[y, x] == 0, (k, x, y, int(mat[y, x]))
                         continue
+                    ramp = ramp_of[int(mat[y, x])]
+                    assert i in ramp, (k, x, y, mat_name[int(mat[y, x])], names[i])
                     r = t.get(x + 1, y) if x + 1 < W else 255
                     b = t.get(x, y + 1) if y + 1 < H else 255
                     if r == 255 or b == 255:
-                        assert names[i].endswith("_00") or names[i] == "black", (k, x, y, names[i])
+                        assert i == ramp[0], (k, x, y, names[i])
+                    else:
+                        if i == ramp[0] or names[i] == "black" or names[i].startswith("shadow"):
+                            bad += 1
+                        # The light itself, before _00 is reserved for the
+                        # outline: an unlit face would land on _00 here.
+                        if quant.nearest(tuple(int(v) for v in rgb[y, x]), ramp) == ramp[0]:
+                            unlit += 1
+                    if k.endswith("f0"):
+                        m = mat_name[int(mat[y, x])]
+                        top[m] = max(top[m], ramp.index(i))
+        print("brightest ramp entry f0: " + " ".join(
+            "%s_%02d" % (ramp_cfg[m], top[m]) for m in sorted(top)))
+        assert bad == 0, "%d interior pixel(s) are black/shadow/_00" % bad
+        assert unlit == 0, "%d interior pixel(s) lit only to _00 (black holes)" % unlit
+        for m, v in top.items():
+            assert v >= 9, (m, v)
 
         p = subprocess.run([sys.executable, os.path.join(TOOLS, "palcheck.py"), out, prev],
                            capture_output=True, text=True)
