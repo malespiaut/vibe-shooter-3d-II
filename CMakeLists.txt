@@ -812,3 +812,7 @@ endforeach()
 add_test(NAME flow_demo
   COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/flow.demo)
 add_demo_determinism(flow)
+
+# Level 5 secrets: all three pushwalls open and their SECRET cells count.
+add_test(NAME secrets_level5
+  COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/level5-secrets.demo)

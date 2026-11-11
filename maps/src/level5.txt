@@ -53,6 +53,7 @@ legend , floor=dt_concrete ceil=dt_concrete dark=14
 legend : floor=dt_diamond_plate ceil=dt_ceiling_light dark=0
 legend ' floor=dt_diamond_plate ceil=dt_concrete dark=12
 legend = floor=dt_grate_floor ceil=dt_ceiling_light dark=2
+legend v floor=dt_diamond_plate ceil=dt_concrete dark=8
 legend g floor=dt_grate_floor ceil=dt_concrete dark=10
 legend _ floor=dt_grate_floor ceil=dt_concrete dark=8 flags=BLOCK_ALL
 legend ~ floor=dt_kibble_sludge ceil=dt_concrete dark=4 flags=DAMAGE param=5
@@ -77,16 +78,16 @@ layout
 ##########'''''''''''''''''''''####,,,,,########
 ##########'''''''''''''''''''''####,,,,,########
 #########E:::::::::::::::::::::####rrLrr########
-##########:::ccccc::::ccccc::::####r,,,r########
-##########:::::::::::::::::::::''''V,,,r########
-##########:::::::::::::::::::::##'#r,,,r########
-##########:::::::::::::::::::::#:::r,,,r########
-##############ccccccCcc#########:::r,,,r########
-###################'!'##########:::r,,,r########
-###################'''#############r,,,r########
-###################'''#############r,,,r########
-#####################ppppppppppppppr,,,r########
-#####################pggggggggggggpr,,,r########
+##########:::ccccc::::ccccc::::####rvvvr########
+##########:::::::::::::::::::::''''Vvvvr########
+##########:::::::::::::::::::::##'#r:::r########
+##########:::::::::::::::::::::#:::rvvvr########
+##############ccccccCcc#########:::rvvvr########
+###################'!'##########:::rvvvr########
+###################'''#############r:::r########
+###################'''#############rvvvr########
+#####################pppppppppppppprvvvr########
+#####################pggggggggggggprvvvr########
 #####################pggggggggggggpr:::r########
 #####################p____________pr:::r########
 #####################p.......~~~~~pr:::r########
