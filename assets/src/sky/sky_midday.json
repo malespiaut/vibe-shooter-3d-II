@@ -1,0 +1,30 @@
+{
+  "_doc": "Midday over the sphinx works (levels.md L6). tools/skygen.py paints it; format in its docstring. Clear blue, white cumulus lit from the top-left, sandstone pyramids with gold caps, Dominion cranes and olive scaffolds on an unfinished pyramid.",
+  "bands": [
+    [0, "blue_06"], [15, "blue_07"], [33, "blue_08"], [52, "blue_09"], [70, "blue_10"], [86, "blue_11"]
+  ],
+  "sun": {"x": 54, "y": 15, "rings": [[9, "blue_10"], [7, "blue_11"], [4, "white"]]},
+  "clouds": [
+    {"fill": "gray_15", "light": "white", "shade": "steel_13",
+     "puffs": [[150, 30, 22, 6], [136, 32, 12, 5], [166, 31, 13, 4], [150, 25, 9, 5]]},
+    {"fill": "gray_15", "light": "white", "shade": "steel_13",
+     "puffs": [[262, 46, 18, 4], [250, 47, 10, 3], [272, 44, 8, 4]]},
+    {"fill": "gray_14", "light": "gray_15", "shade": "steel_13",
+     "puffs": [[30, 62, 26, 2], [48, 61, 10, 2]]}
+  ],
+  "layers": [
+    {"fill": "steel_12", "lit": "steel_13", "items": [
+      {"type": "pyramid", "x": 120, "top": 64, "slope": [3, 2]},
+      {"type": "pyramid", "x": 300, "top": 72, "slope": [3, 2]}
+    ]},
+    {"fill": "sand_07", "lit": "sand_11", "ground": 100, "items": [
+      {"type": "crane", "x": 60, "top": 40, "mast_w": 5, "jib": [18, 54], "trolley": 38, "hook_y": 70, "weight": [6, 5], "fill": "steel_04"},
+      {"type": "pyramid", "x": 40, "top": 70, "slope": [3, 2], "cap": 3, "cap_fill": "gold_06", "cap_lit": "gold_09", "courses": 4},
+      {"type": "pyramid", "x": 196, "top": 66, "slope": [3, 2], "flat": 80, "courses": 4},
+      {"type": "scaffold", "x": 180, "w": 32, "top": 76, "bay": 8, "fill": "olive_04"},
+      {"type": "crane", "x": 236, "top": 50, "mast_w": 5, "jib": [16, 44], "trolley": 22, "hook_y": 78, "weight": [5, 5], "fill": "steel_04"},
+      {"type": "obelisk", "x": 140, "top": 70, "w": 5},
+      {"type": "block", "x": 0, "w": 320, "top": 96, "fill": "sand_06", "lit": "sand_09", "merlon": [4, 4]}
+    ]}
+  ]
+}

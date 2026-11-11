@@ -1,0 +1,35 @@
+{
+  "_doc": "Sunset over the throne arena (levels.md L8). tools/skygen.py paints it; format in its docstring. Indigo to red to gold, a big low sun cut by cloud streaks, the skyline in dark brown silhouette: pyramids, obelisks, Dominion cranes and scaffolds.",
+  "bands": [
+    [0, "indigo_03"], [10, "indigo_04"], [19, "pink_03"], [27, "pink_04"], [34, "red_08"], [40, "red_09"],
+    [46, "red_10"], [52, "red_11"], [58, "orange_08"], [64, "orange_09"], [70, "orange_10"],
+    [77, "orange_11"], [85, "gold_10"], [92, "gold_11"]
+  ],
+  "sun": {"x": 112, "y": 82, "rings": [[18, "orange_11"], [14, "gold_10"], [11, "gold_11"], [8, "white"]]},
+  "clouds": [
+    {"fill": "red_07", "light": "red_08", "shade": "red_06",
+     "puffs": [[100, 76, 40, 1], [126, 74, 18, 2], [80, 78, 16, 1]]},
+    {"fill": "orange_08", "light": "orange_09", "shade": "orange_07",
+     "puffs": [[112, 88, 30, 1], [92, 87, 10, 1]]},
+    {"fill": "pink_04", "light": "pink_05", "shade": "pink_03",
+     "puffs": [[230, 30, 40, 2], [256, 28, 18, 2], [206, 32, 16, 1]]},
+    {"fill": "red_09", "light": "red_10", "shade": "red_08",
+     "puffs": [[20, 46, 30, 2], [40, 44, 12, 2]]}
+  ],
+  "layers": [
+    {"fill": "red_05", "lit": "red_06", "items": [
+      {"type": "pyramid", "x": 200, "top": 62, "slope": [3, 2], "cap": 3, "cap_fill": "gold_04", "cap_lit": "gold_07"},
+      {"type": "pyramid", "x": 30, "top": 72, "slope": [3, 2]}
+    ]},
+    {"fill": "brown_01", "lit": "brown_03", "ground": 100, "items": [
+      {"type": "crane", "x": 150, "top": 46, "mast_w": 5, "jib": [18, 50], "trolley": 34, "hook_y": 74, "weight": [6, 5]},
+      {"type": "pyramid", "x": 250, "top": 76, "slope": [3, 2], "flat": 84},
+      {"type": "scaffold", "x": 234, "w": 32, "top": 80, "bay": 8},
+      {"type": "obelisk", "x": 60, "top": 60, "w": 5},
+      {"type": "obelisk", "x": 300, "top": 66, "w": 3},
+      {"type": "crane", "x": 280, "top": 58, "mast_w": 5, "jib": [14, 36], "trolley": 20, "hook_y": 82, "weight": [5, 4]},
+      {"type": "pyramid", "x": 90, "top": 84, "slope": [4, 3]},
+      {"type": "block", "x": 0, "w": 320, "top": 95, "merlon": [4, 4]}
+    ]}
+  ]
+}

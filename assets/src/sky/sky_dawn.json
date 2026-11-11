@@ -1,0 +1,36 @@
+{
+  "_doc": "Dawn over the city gate (levels.md L1). tools/skygen.py paints it; format in its docstring. Indigo night lifting to pink and orange, sun rising behind the gate, gold capstones catching the first light. No dog-tech yet.",
+  "bands": [
+    [0, "indigo_03"], [12, "indigo_04"], [23, "indigo_05"], [33, "indigo_06"], [42, "pink_04"],
+    [50, "pink_05"], [57, "pink_06"], [63, "pink_07"], [69, "orange_08"], [75, "orange_09"],
+    [81, "orange_10"], [88, "orange_11"]
+  ],
+  "stars": {"seed": 4242, "count": 14, "y_max": 20, "colours": ["indigo_07", "indigo_08", "indigo_09"]},
+  "sun": {"x": 232, "y": 93, "rings": [[15, "orange_11"], [11, "gold_10"], [8, "gold_11"], [5, "white"]]},
+  "clouds": [
+    {"fill": "pink_05", "light": "pink_06", "shade": "pink_04",
+     "puffs": [[40, 38, 34, 2], [60, 36, 16, 2], [24, 40, 14, 1]]},
+    {"fill": "pink_06", "light": "pink_07", "shade": "pink_05",
+     "puffs": [[150, 52, 40, 2], [176, 50, 18, 2], [128, 54, 22, 1]]},
+    {"fill": "indigo_05", "light": "indigo_06", "shade": "indigo_04",
+     "puffs": [[270, 26, 30, 2], [292, 24, 14, 2], [250, 28, 16, 1]]},
+    {"fill": "orange_09", "light": "orange_10", "shade": "orange_08",
+     "puffs": [[205, 72, 26, 1], [226, 70, 12, 2]]}
+  ],
+  "layers": [
+    {"fill": "indigo_04", "lit": "indigo_05", "items": [
+      {"type": "pyramid", "x": 70, "top": 60, "slope": [3, 2], "cap": 3, "cap_fill": "gold_05", "cap_lit": "gold_08"},
+      {"type": "pyramid", "x": 112, "top": 74, "slope": [3, 2], "cap": 2, "cap_fill": "gold_05", "cap_lit": "gold_08"},
+      {"type": "pyramid", "x": 290, "top": 68, "slope": [3, 2], "cap": 3, "cap_fill": "gold_05", "cap_lit": "gold_08"}
+    ]},
+    {"fill": "indigo_01", "lit": "indigo_02", "ground": 100, "items": [
+      {"type": "block", "x": 0, "w": 320, "top": 92, "merlon": [4, 4]},
+      {"type": "pyramid", "x": 20, "top": 80, "slope": [4, 3]},
+      {"type": "obelisk", "x": 150, "top": 56, "w": 5},
+      {"type": "obelisk", "x": 178, "top": 56, "w": 5},
+      {"type": "block", "x": 156, "w": 21, "top": 76, "merlon": [3, 3]},
+      {"type": "obelisk", "x": 248, "top": 74, "w": 3},
+      {"type": "pyramid", "x": 214, "top": 84, "slope": [4, 3]}
+    ]}
+  ]
+}
