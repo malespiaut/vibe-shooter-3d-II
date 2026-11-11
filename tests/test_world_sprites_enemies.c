@@ -14,9 +14,16 @@
  * 4. All 7 enemy types on one map: render_init prints no "incomplete"
  *    warning (stderr captured), and each type's idle frame draws at
  *    distance 3: Shepherd ("shep") > 40 px, Woofu (no gib set) > 0 px.
+ *    Woofu (#212, facing the camera at distance 10): `phase` frames 0 and 5
+ *    and the woofu2 (form 1) idle and walk frames draw, woofu2 differs
+ *    from woofu (no lid); form 1 death and other enemies' form 1 / phase
+ *    frames are not drawn.
+ * 1b. thinker_anim() on Woofu: the 35-tic lid_blast flinch maps to `phase`
+ *    frames 0..5, then phase 2 shows woofu2 (form 1) but for death.
  * 5. Incomplete set: on a symlinked copy of the assets (loose files, no
  *    game.pak) without pom_idle_d0_f0.tex, render_init still succeeds, the Pomeranian is
  *    skipped (not drawn, never substituted) and the Chomper still draws.
+ *    Without one `phase` frame, or one woofu2 frame, Woofu is not drawn.
  *
  *   test_world_sprites_enemies <assets/gen dir> */
 #define _XOPEN_SOURCE 700 /* realpath, mkdtemp */
@@ -40,14 +47,76 @@
 static uint8_t base[SCREEN_W * SCREEN_H], fb[SCREEN_W * SCREEN_H], fb2[SCREEN_W * SCREEN_H];
 static render_thing things[RENDER_MAX_SPRITES];
 
+static void expect_form(const thinker_t *t, int phase, uint32_t tic, int anim, int frame,
+                        int form)
+{
+    int a = -1, f = -1, fm = -1;
+    thinker_anim(t, phase, tic, &a, &f, &fm);
+    if (a != anim || f != frame || fm != form)
+        fprintf(stderr, "state %d tics %d tic %u: got %s f%d form %d, want %s f%d form %d\n",
+                t->state, t->tics, tic, sprite_anim_name(a), f, fm, sprite_anim_name(anim), frame,
+                form);
+    assert(a == anim && f == frame && fm == form);
+}
+
 static void expect(const thinker_t *t, uint32_t tic, int anim, int frame)
 {
-    int a = -1, f = -1;
-    thinker_anim(t, tic, &a, &f);
-    if (a != anim || f != frame)
-        fprintf(stderr, "state %d tic %u: got %s f%d, want %s f%d\n", t->state, tic,
-                sprite_anim_name(a), f, sprite_anim_name(anim), frame);
-    assert(a == anim && f == frame);
+    expect_form(t, 1, tic, anim, frame, 0);
+    expect_form(t, 2, tic, anim, frame, 0); /* boss phase: no effect on others */
+}
+
+/* Woofu (#212): the lid-blast flinch (PAIN, BOSS_FLINCH_TICS) plays the
+ * 6 `phase` frames; afterwards, in phase 2, everything but death comes from
+ * the lidless woofu2 set (form 1). */
+static void check_boss_anim(void)
+{
+    static thinkers_t th;
+    memset(&th, 0, sizeof th);
+    thinker_t *b = thinker_get(&th, thinker_spawn(&th, BAST_ENT_WOOFU, 0, 0, 0));
+    assert(b);
+    expect_form(b, 1, 0, SPR_IDLE, 0, 0);
+    expect_form(b, 1, 18, SPR_IDLE, 1, 0);
+    b->state = TH_STATE_CHASE;
+    b->movedir = DI_EAST;
+    expect_form(b, 1, 6, SPR_WALK, 1, 0);
+
+    /* The flinch: tics 35 (the hit) .. 1, frames 0..5 in equal steps. */
+    b->state = TH_STATE_PAIN;
+    static const struct { int tics, frame; } fl[] = {
+        { 35, 0 }, { 30, 0 }, { 29, 1 }, { 24, 1 }, { 23, 2 }, { 18, 2 },
+        { 17, 3 }, { 12, 3 }, { 11, 4 }, { 6, 4 }, { 5, 5 }, { 1, 5 },
+    };
+    for (size_t i = 0; i < sizeof fl / sizeof fl[0]; i++) {
+        b->tics = fl[i].tics;
+        expect_form(b, 2, 500, SPR_PHASE, fl[i].frame, 0);
+    }
+    assert(BOSS_FLINCH_TICS == 35);
+
+    /* After it: woofu2 for idle, walk, windup, attack. */
+    b->state = TH_STATE_CHASE;
+    b->tics = 0;
+    expect_form(b, 2, 6, SPR_WALK, 1, 1);
+    b->movedir = DI_NONE;
+    expect_form(b, 2, 6, SPR_WALK, 0, 1);
+    b->state = TH_STATE_STAND;
+    expect_form(b, 2, 18, SPR_IDLE, 1, 1);
+    b->state = TH_STATE_WINDUP;
+    b->tics = 1;
+    expect_form(b, 2, 0, SPR_WINDUP, 1, 1);
+    b->state = TH_STATE_ATTACK;
+    b->tics = AI_ATTACK_TICS;
+    expect_form(b, 2, 0, SPR_ATTACK, 0, 1);
+    b->state = TH_STATE_ATTACK;
+    expect_form(b, 1, 0, SPR_ATTACK, 0, 0); /* phase 1: the lidded set */
+
+    /* Death: woofu's own (lidless) death frames, form 0. */
+    b->state = TH_STATE_CHASE;
+    b->health = 1;
+    assert(thinker_damage(&th, b, 1));
+    b->died_tic = 0;
+    expect_form(b, 2, 0, SPR_DEATH, 0, 0);
+    expect_form(b, 2, 100, SPR_DEATH, 4, 0);
+    puts("thinker_anim boss: ok");
 }
 
 static void check_anim(void)
@@ -123,7 +192,7 @@ static void check_anim(void)
 
 static void check_table(void)
 {
-    static const int counts[SPR_ANIMS] = { 2, 4, 2, 2, 1, 5, 8 };
+    static const int counts[SPR_ANIMS] = { 2, 4, 2, 2, 1, 5, 8, 6 };
     for (int a = 0; a < SPR_ANIMS; a++)
         assert(sprite_enemy_frames(a) == counts[a] && sprite_enemy_frames(a) <= SPRITE_MAX_FRAMES);
     assert(strcmp(sprite_anim_name(SPR_WINDUP), "windup") == 0);
@@ -136,6 +205,11 @@ static void check_table(void)
     assert(strcmp(sprite_name_for_entity(BAST_ENT_MUTT_TROOPER), "mutt") == 0);
     assert(strcmp(sprite_name_for_entity(BAST_ENT_SHEPHERD_SHIELDBEARER), "shep") == 0);
     assert(sprite_def_for_entity(BAST_ENT_WOOFU)->no_gib);
+    assert(strcmp(sprite_anim_name(SPR_PHASE), "phase") == 0);
+    assert(sprite_def_for_entity(BAST_ENT_WOOFU)->phase);
+    assert(strcmp(sprite_def_for_entity(BAST_ENT_WOOFU)->form2, "woofu2") == 0);
+    for (int type = BAST_ENT_MUTT_TROOPER; type < BAST_ENT_WOOFU; type++)
+        assert(!sprite_def_for_entity(type)->phase && !sprite_def_for_entity(type)->form2);
 }
 
 static int add(bast_map *m, int type, double x, double y)
@@ -275,6 +349,40 @@ static void check_all_types(const char *assets)
         if (type == BAST_ENT_SHEPHERD_SHIELDBEARER)
             assert(px > 40);
     }
+    /* Woofu's `phase` frames and the woofu2 (form 1) set draw, woofu2
+     * differs from woofu (no lid); form 1 has
+     * no death (NULL, not drawn) and other enemies have no form 1. */
+    static uint8_t fb_phase[SCREEN_W * SCREEN_H], fb_idle2[SCREEN_W * SCREEN_H];
+    const render_thing boss[] = {
+        { .type = BAST_ENT_WOOFU, .anim = SPR_PHASE, .frame = 0 },
+        { .type = BAST_ENT_WOOFU, .anim = SPR_PHASE, .frame = 5 },
+        { .type = BAST_ENT_WOOFU, .anim = SPR_IDLE, .form = 1 },
+        { .type = BAST_ENT_WOOFU, .anim = SPR_WALK, .frame = 3, .form = 1 },
+        { .type = BAST_ENT_WOOFU, .anim = SPR_IDLE, .form = 0 },
+        { .type = BAST_ENT_WOOFU, .anim = SPR_DEATH, .form = 1 },
+        { .type = BAST_ENT_CHIHUAHUA_CHOMPER, .anim = SPR_IDLE, .form = 1 },
+        { .type = BAST_ENT_CHIHUAHUA_CHOMPER, .anim = SPR_PHASE },
+    };
+    int px_boss[8];
+    for (int i = 0; i < 8; i++) {
+        render_thing one = boss[i];
+        one.x = (fix_t)(12.5 * 65536); /* distance 10: the lid is in view */
+        one.y = (fix_t)(3.5 * 65536);
+        one.angle = ANG180; /* faces the camera (d0): the lid is on its front */
+        uint8_t *out = i == 0 ? fb_phase : i == 2 ? fb_idle2 : fb;
+        render_view_things(m, gs.player.x, gs.player.y, gs.player.angle, &one, 1, gs.tic, out);
+        px_boss[i] = diff_count(base, out, 100, 220);
+        if (i == 4)
+            memcpy(fb2, out, sizeof fb2);
+    }
+    printf("woofu phase f0: %d px, phase f5: %d px, woofu2 idle f0: %d px, woofu2 walk f3: %d px;"
+           " woofu2 vs woofu idle: %d px differ, woofu phase f0 vs woofu idle: %d px differ;"
+           " woofu2 death %d px, chomp form 1 %d px, chomp phase %d px\n",
+           px_boss[0], px_boss[1], px_boss[2], px_boss[3], diff_count(fb_idle2, fb2, 100, 220),
+           diff_count(fb_phase, fb2, 100, 220), px_boss[5], px_boss[6], px_boss[7]);
+    assert(px_boss[0] > 0 && px_boss[1] > 0 && px_boss[2] > 0 && px_boss[3] > 0);
+    assert(diff_count(fb_idle2, fb2, 100, 220) > 0); /* the lid is gone */
+    assert(px_boss[5] == 0 && px_boss[6] == 0 && px_boss[7] == 0);
     render_shutdown();
     bast_map_free(m);
 }
@@ -314,10 +422,48 @@ static void check_incomplete(const char *assets)
     assert(system(cmd) == 0);
 }
 
+/* Woofu with one frame of its `phase` or woofu2 set missing (symlinked
+ * assets, loose files): render_init succeeds, the whole boss is skipped
+ * (no form is drawn, never substituted). */
+static void check_boss_incomplete(const char *assets, const char *drop)
+{
+    char abs[4096], tmpl[] = "/tmp/wse-XXXXXX", cmd[9000];
+    assert(realpath(assets, abs));
+    assert(mkdtemp(tmpl));
+    snprintf(cmd, sizeof cmd,
+             "cp -rs '%s' '%s/a' && rm -f '%s/a/game.pak' && rm '%s/a/sprites/%s.tex'", abs,
+             tmpl, tmpl, tmpl, drop);
+    assert(system(cmd) == 0);
+    char dir[4200];
+    snprintf(dir, sizeof dir, "%s/a", tmpl);
+
+    bast_map *m = make_map();
+    add(m, BAST_ENT_WOOFU, 1.5, 1.5);
+    assert(render_init(m, dir));
+    static game_state gs;
+    game_init(&gs, m, 1, 2, 0);
+    render_view(m, gs.player.x, gs.player.y, gs.player.angle, base);
+    int px = 0;
+    for (int form = 0; form < SPRITE_FORMS; form++) {
+        const render_thing one = { .type = BAST_ENT_WOOFU, .x = (fix_t)(12.5 * 65536),
+                                   .y = (fix_t)(3.5 * 65536), .angle = ANG180,
+                                   .anim = SPR_IDLE, .form = (uint8_t)form };
+        render_view_things(m, gs.player.x, gs.player.y, gs.player.angle, &one, 1, gs.tic, fb);
+        px += diff_count(base, fb, 100, 220);
+    }
+    printf("woofu without %s: %d px drawn\n", drop, px);
+    assert(px == 0);
+    render_shutdown();
+    bast_map_free(m);
+    snprintf(cmd, sizeof cmd, "rm -rf '%s'", tmpl);
+    assert(system(cmd) == 0);
+}
+
 int main(int argc, char **argv)
 {
     assert(argc == 2);
     check_anim();
+    check_boss_anim();
     check_table();
     if (!colormap_load(argv[1]))
         fprintf(stderr, "%s\n", colormap_error());
@@ -326,6 +472,8 @@ int main(int argc, char **argv)
     check_live(argv[1]);
     check_all_types(argv[1]);
     check_incomplete(argv[1]);
+    check_boss_incomplete(argv[1], "woofu_phase_d0_f3");
+    check_boss_incomplete(argv[1], "woofu2_walk_d0_f2");
     puts("world_sprites_enemies: ok");
     return 0;
 }

@@ -82,6 +82,8 @@ typedef struct {
     uint8_t anim;  /* enemy sprites: SPR_* animation (engine/sprite.h) */
     uint8_t frame; /* enemy sprites: frame within `anim`; effects (type
                     * SPRITE_FX_BASE + FXS_*, sprite.h): frame; items ignore it */
+    uint8_t form;  /* enemy sprites: 0, or 1 = the sprite_def's form2 set
+                    * (the boss in phase 2); NULL frame when not loaded */
 } render_thing;
 
 /* Loads the TEX of every wall texture `map` uses, from
@@ -94,7 +96,8 @@ int render_init(const bast_map *map, const char *assets_dir);
  * .tex from `assets_dir`/sprites, else `assets_dir`/test (or /gibs). d0 of
  * every frame is required; a missing d1..d7 falls back to d0 (things without
  * facing). Enemy sprites load every animation (<name>_<anim>_d<d>_f<f>,
- * sprite_enemy_frames()); an enemy set missing any d0 frame is skipped with
+ * sprite_enemy_frames(); the boss adds `phase` and its form2 set, sprite.h
+ * sprite_def); an enemy set missing any d0 frame is skipped with
  * one warning per name on stderr and not drawn, which is not an error.
  * It also loads every effect sprite (sprite.h FXS_*) from `assets_dir`/fx;
  * a missing effect is not an error (test asset dirs have none), it is just

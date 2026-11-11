@@ -145,9 +145,11 @@ static int clamp_frame(uint32_t since, int tics_per_frame, int frames)
     return f >= (uint32_t)frames ? frames - 1 : (int)f;
 }
 
-void thinker_anim(const thinker_t *t, uint32_t tic, int *anim, int *frame)
+void thinker_anim(const thinker_t *t, int boss_phase, uint32_t tic, int *anim, int *frame,
+                  int *form)
 {
     const enemy_info_t *info = enemy_info(t->type);
+    const int boss = t->type == BAST_ENT_WOOFU;
     int a = SPR_IDLE, f = 0;
     switch (t->state) {
     case TH_STATE_CHASE:
@@ -164,7 +166,14 @@ void thinker_anim(const thinker_t *t, uint32_t tic, int *anim, int *frame)
         f = t->tics > AI_ATTACK_TICS / 2 ? 0 : 1;
         break;
     case TH_STATE_PAIN:
-        a = SPR_PAIN;
+        if (boss) { /* its only pain is the phase-switch flinch: lid blast */
+            const int32_t left = t->tics < 1 ? 1 : t->tics > BOSS_FLINCH_TICS ? BOSS_FLINCH_TICS
+                                                                            : t->tics;
+            a = SPR_PHASE;
+            f = (BOSS_FLINCH_TICS - left) * sprite_enemy_frames(SPR_PHASE) / BOSS_FLINCH_TICS;
+        } else {
+            a = SPR_PAIN;
+        }
         break;
     case TH_STATE_DEAD: {
         const uint32_t since = tic >= t->died_tic ? tic - t->died_tic : 0;
@@ -183,4 +192,7 @@ void thinker_anim(const thinker_t *t, uint32_t tic, int *anim, int *frame)
     }
     *anim = a;
     *frame = f;
+    /* Phase 2: the lidless form for everything but the flinch and the
+     * death (woofu's death frames are lidless already). */
+    *form = boss && boss_phase == 2 && a != SPR_PHASE && a != SPR_DEATH;
 }

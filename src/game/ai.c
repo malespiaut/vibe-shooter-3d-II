@@ -873,10 +873,11 @@ int ai_render_things(const game_state *gs, render_thing *out, int max)
         const thinker_t *t = &gs->things.list[i];
         if (!enemy_info(t->type) || (t->flags & TH_FLAG_PICKUP))
             continue;
-        int anim, frame;
-        thinker_anim(t, gs->tic, &anim, &frame);
+        int anim, frame, form;
+        thinker_anim(t, boss_is(gs, t) ? gs->boss.phase : 1, gs->tic, &anim, &frame, &form);
         out[n++] = (render_thing){ .type = t->type, .x = t->x, .y = t->y, .angle = t->angle,
-                                   .anim = (uint8_t)anim, .frame = (uint8_t)frame };
+                                   .anim = (uint8_t)anim, .frame = (uint8_t)frame,
+                                   .form = (uint8_t)form };
     }
     return n;
 }
