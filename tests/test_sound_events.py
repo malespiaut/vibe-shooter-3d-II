@@ -35,6 +35,8 @@ def run(name):
     events = []
     with open(log) as f:
         for line in f:
+            if line.split()[1] == "music":  # music changes: test_music_events.py
+                continue
             tic, snd, x, y = line.split()
             events.append((int(tic), snd, x, y))
     t = subprocess.run([helper, "trace", maps, demo], capture_output=True, text=True,

@@ -83,6 +83,25 @@ order list. Synthesis is integer, inside the mixer.
 | `intermission` | tally screens | short loop |
 | `ending` | ending, credits | the title theme, slow and happy |
 
+### Music in game
+
+The game picks the track by level number from the table above (`src/game/jukebox.c`,
+`music_track_for_level`) and plays it by name with `jukebox_play(name)`: from tic 0 on level start
+and again on level restart; title, menu, tally and ending screens call the same function with
+`title`, `intermission` and `ending`. Songs load from `assets/src/music/<name>.vmus` on first use. A
+track that is not composed yet prints `music: <name> missing` once on stderr and plays silence.
+`--sound-log` gets `<tic> music <name>` on every change (`music -` on stop). Music never touches
+game state or `game_hash`.
+
+**Music level**: the sequencer's master gain (`music_set_volume`, 0..64) is 32 in game, -6 dB.
+Composed at unity, `title` measures -16 dBFS RMS, as loud as the Explosions group; at -6 dB it sits
+at about -22 dBFS, under World mechanics and Pickups (-21) and above UI (-27), so effects and
+enemy telegraphs stay on top. Level tracks are composed to the same unity loudness as `title`
+(about -16 dBFS RMS at gain 64, `vmus_render`, 30 s), within 1 dB. Measured: `title` -16.0,
+`level_eg` -15.7, `level_docks` -16.3 dBFS RMS, peaks -3.7 to -4.1 dBFS. `intermission` measures
+-19.2 dBFS (peak -6.5): 3 dB under the rest is fine, because the tally screen has no world or enemy
+sounds, only UI ticks (-27), which it still sits above.
+
 ### `.vmus` format (version 1)
 
 Implemented by `src/engine/music.c`; render with `build/vmus_render <song.vmus> <out.wav> [seconds]`
