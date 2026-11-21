@@ -176,6 +176,11 @@ void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32
 void game_init_with(game_state *gs, const bast_map *map, int level, int skill,
                     uint32_t demo_seed, const inventory_t *inv);
 
+/* The inventory a finished level carries into the next one (items.md):
+ * health, armour, armour class, satchel, weapons and ammo; keys and
+ * powerups are dropped (inventory_t has no field for them). */
+void game_carry(const game_state *gs, inventory_t *out);
+
 /* Restarts the level after a death: game_init_with() on the same map,
  * level, skill and seed with the level-entry inventory. Keys, powerups,
  * counters, tic, RNG and the world go back to their level-start state, so

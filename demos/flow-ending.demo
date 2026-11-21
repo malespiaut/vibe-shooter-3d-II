@@ -1,0 +1,37 @@
+vsdemo 1
+# Episode end (issue #102, hud.md Flow): the tags test map played as level 8
+# (no level 8 map exists yet) -> exit -> tally -> ending (2 screens) ->
+# credits, scrolling 1 px every 2 tics -> title. Run headless:
+#   build/game --headless --demo demos/flow-ending.demo --frames-out out --frame-every 10
+start title
+level 8
+map tagstest
+seed 0
+
+key any
+key enter
+key enter
+expect screen=intro
+key any
+key any
+expect screen=play
+goto 1 7                # straight to the exit wall
+face 90
+use
+expect exit=1
+expect screen=tally
+key any                 # skip the counting
+wait 20
+key any
+expect screen=ending    # screen 1
+wait 30
+key any
+expect screen=ending    # screen 2
+wait 30
+key any
+expect screen=credits
+wait 955                # 2 * (17 lines * 14 px + 240) = 956 tics in all
+expect screen=credits
+wait 1
+expect screen=title     # the credits' last tic returned to the title
+wait 10
