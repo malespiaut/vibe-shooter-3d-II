@@ -195,8 +195,10 @@ entity WAYPOINT 24 32 0 pack_squad
 
 # Enemies (issue #177, levels.md section 5): 42 at skill 2, 14 Mutt,
 # 10 Chomper, 10 Pom, 6 Dachshund, 2 Mastiff. SKILL2|SKILL3 ones are the
-# 10 Kitten drops (32 on Kitten, about 25% fewer); SKILL3-only ones are the
-# 8 Sabretooth extras (50, about 20% more). First difficulty spike.
+# 11 Kitten drops (31 on Kitten, about 25% fewer); SKILL3-only ones are the
+# 8 Sabretooth extras (50, about 20% more). First difficulty spike. The
+# demo starts from a pistol (--warp inventory), so the pit far side, the
+# gantry and the Packaging Line squad are AMBUSH: fights come in turns.
 # Loading Bay: empty, so the first shot is the one at the barrels.
 # Sludge Pits: Mutt groups standing among the barrel clusters (chain
 # explosions), Poms and a Dachshund on the far (east) platform. Group B and
@@ -219,15 +221,18 @@ entity MUTT_TROOPER 30 6 180 flags=SKILL2|SKILL3
 entity CHIHUAHUA_CHOMPER 30 10 180
 entity CHIHUAHUA_CHOMPER 30 7 180 flags=SKILL2|SKILL3
 entity CHIHUAHUA_CHOMPER 32 10 180 flags=SKILL3
+entity MUTT_TROOPER 28 5 180 flags=SKILL3
 entity POMERANIAN_PLASMAGUNNER 32 5 180
 entity DACHSHUND_HOWITZER 33 11 180 flags=SKILL2|SKILL3
 # Blue door corridor: two Chompers waiting behind it.
 entity CHIHUAHUA_CHOMPER 28 15 270
 entity CHIHUAHUA_CHOMPER 28 16 270
-# Grinder Hall: Dachshunds shelling from the gantry, a Mutt and Chompers in
-# the shadowed south-west corner.
-entity DACHSHUND_HOWITZER 24 25 270
-entity DACHSHUND_HOWITZER 32 25 270
+# Grinder Hall: a Mutt and Chompers in the shadowed south-west corner; two
+# Dachshunds on the east end of the gantry, facing east over the sludge lane
+# and the timed door: they open up when the sprint comes into view
+# (AMBUSH: the fight at the corridor mouth, west of their view, stays deaf).
+entity DACHSHUND_HOWITZER 31 25 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity DACHSHUND_HOWITZER 33 24 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
 entity MUTT_TROOPER 26 21 270
 entity MUTT_TROOPER 27 18 270 flags=SKILL2|SKILL3
 entity CHIHUAHUA_CHOMPER 22 17 90
