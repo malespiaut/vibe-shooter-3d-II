@@ -55,6 +55,12 @@ All sound effects and the 9 music tracks, title/intermission/ending art, the cat
 passes against the difficulty table, playtest bugs. Exit: no open `bug`; every M5 issue from this
 section filed and closed.
 
+**[designer] M5 scope frozen** (2026-11-11). Every M5 item above is filed: sound effects (#40-#42,
+#118, #170), the 9 music tracks (#39, #129, #130, #132, #173), title/story/intermission art (#90, #156),
+the cat face set (#88, #89), balance passes (#218 levels 1-4, #219 levels 5-8). From now on,
+playtester `polish` issues are closed won't-fix unless they are really a `bug` or block a
+`Final acceptance` criterion.
+
 ## Episode 1
 
 `Final acceptance` issue (no developer; the playtester verifies). Checklist: every level completed
