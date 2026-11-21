@@ -435,6 +435,14 @@ uint64_t game_hash(const game_state *gs)
     hash_i32(&h, b->pod_pair);
     hash_i32(&h, b->pods_opened);
     hash_i32(&h, b->death_tic);
+    for (int i = 0; i < gs->pickup_count; i++) {
+        const pickup_t *pk = &gs->pickups[i];
+        if (!pk->respawner)
+            continue;
+        hash_u32(&h, pk->respawn_on);
+        hash_u32(&h, pk->respawned);
+        hash_i32(&h, pk->respawn_tics);
+    }
     return h.value;
 }
 

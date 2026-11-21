@@ -133,6 +133,7 @@ static void fire_tag(game_state *gs, int tag, int32_t close_tics)
     for (int i = 0; i < m->entity_count; i++)
         if (m->entities[i].type == BAST_ENT_LIGHTS && m->entities[i].tag == tag)
             gs->lights_alt = 1;
+    items_tag_fired(gs, tag);
 }
 
 void game_fire_tag(game_state *gs, int tag)
