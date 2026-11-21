@@ -181,8 +181,10 @@ entity BLUE_ANKH 3 21 0
 entity SISTRUM_REPEATER 12 15 0
 entity GREEN_ANKH 22 7 0 flags=SKILL1|SKILL2|SKILL3|PICKUP_TRIGGER tag=3
 
-# Critical-path items: 6 Fish Snacks, 3 Tuna Tins, 1 Linen Wrap, 6 Charge
-# Vials, 2 Charge Jars, 4 Yarn Bundles, 1 Yarn Basket.
+# Critical-path items: 6 Fish Snacks, 3 Tuna Tins, 1 Linen Wrap, 4 Charge
+# Vials, 2 Yarn Bundles (plus the Repeater's 40 charges). Ammo is sized to
+# the levels.md row: skill 2 critical 80 charges + 8 shells = 1312 avg dmg,
+# plus 80 charges from Mutt drops = 2232 (target 2230, ratio 2.7).
 entity FISH_SNACK 7 6 0
 entity FISH_SNACK 2 13 0
 entity FISH_SNACK 15 17 0
@@ -193,19 +195,12 @@ entity TUNA_TIN 2 22 0
 entity TUNA_TIN 29 20 0
 entity TUNA_TIN 18 4 0
 entity LINEN_WRAP 12 22 0
-entity CHARGE_VIAL 3 10 0
-entity CHARGE_VIAL 12 13 0
 entity CHARGE_VIAL 20 14 0
 entity CHARGE_VIAL 38 12 0
 entity CHARGE_VIAL 24 9 0
 entity CHARGE_VIAL 16 10 0
-entity CHARGE_JAR 7 22 0
-entity CHARGE_JAR 29 2 0
-entity YARN_BUNDLE 16 14 0
 entity YARN_BUNDLE 25 17 0
-entity YARN_BUNDLE 31 16 0
 entity YARN_BUNDLE 24 2 0
-entity YARN_BASKET 18 8 0
 
 # Secret 1 (boathouse): Litter Satchel.
 entity LITTER_SATCHEL 23 27 0
