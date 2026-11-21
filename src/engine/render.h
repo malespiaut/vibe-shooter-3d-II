@@ -93,9 +93,11 @@ int render_init(const bast_map *map, const char *assets_dir);
  * has a sprite (sprite_def_for_entity()): <name>_idle_d<0..7>_f<0..frames-1>
  * .tex from `assets_dir`/sprites, else `assets_dir`/test (or /gibs). d0 of
  * every frame is required; a missing d1..d7 falls back to d0 (things without
- * facing). Enemy sprites load every animation (<name>_<anim>_d<d>_f<f>,
- * sprite_enemy_frames()); an enemy set missing any d0 frame is skipped with
- * one warning per name on stderr and not drawn, which is not an error.
+ * facing). Breakable props (sprite_def gib) also load their gib frames,
+ * <gib>_gib_d0_f<0..7> from `assets_dir`/gibs, required. Enemy sprites
+ * load every animation (<name>_<anim>_d<d>_f<f>, sprite_enemy_frames()); an
+ * enemy set missing any d0 frame is skipped with one warning per name on
+ * stderr and not drawn, which is not an error.
  * It also loads every effect sprite (sprite.h FXS_*) from `assets_dir`/fx;
  * a missing effect is not an error (test asset dirs have none), it is just
  * not drawn. */
@@ -109,7 +111,7 @@ void render_view(const bast_map *map, fix_t x, fix_t y, angle_t angle, uint8_t *
  * game/items.h items_render_things()), sorted with the static map sprites.
  * Map entities whose sprite is `live` are drawn only from this list, so a
  * taken pickup disappears. `tic` picks the idle animation frame
- * (sprite_anim_frame()); it is read, never written. Types without a loaded
+ * (sprite_def_frame()); it is read, never written. Types without a loaded
  * sprite are skipped. render_view() is this with no things and tic 0. */
 void render_view_things(const bast_map *map, fix_t x, fix_t y, angle_t angle,
                         const render_thing *things, int n_things, uint32_t tic, uint8_t *fb);

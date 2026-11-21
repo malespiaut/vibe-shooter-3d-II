@@ -10,7 +10,8 @@ int thinker_alive(const thinker_t *t)
 {
     return !(t->flags & TH_FLAG_PICKUP) && t->type < TH_TYPE_SCARAB_PROJ &&
            t->state != TH_STATE_DEAD && t->state != TH_STATE_TAKEN &&
-           t->state != TH_STATE_DYING && t->state != TH_STATE_FREE;
+           t->state != TH_STATE_DYING && t->state != TH_STATE_FREE &&
+           t->state != TH_STATE_PROP;
 }
 
 uint16_t thinker_spawn(thinkers_t *th, uint16_t type, fix_t x, fix_t y, angle_t angle)
@@ -65,6 +66,35 @@ uint16_t thinker_spawn_barrel(thinkers_t *th, fix_t x, fix_t y)
     return (uint16_t)th->count;
 }
 
+int thinker_is_decor(int type)
+{
+    return type >= BAST_ENT_KIBBLE_BARREL && type <= BAST_ENT_SERVER_RACK;
+}
+
+uint16_t thinker_spawn_decor(thinkers_t *th, uint16_t type, fix_t x, fix_t y)
+{
+    if (type == BAST_ENT_KIBBLE_BARREL)
+        return thinker_spawn_barrel(th, x, y);
+    if (th->count >= MAX_THINKERS || !thinker_is_decor(type))
+        return 0;
+    thinker_t *t = &th->list[th->count++];
+    memset(t, 0, sizeof *t);
+    t->type = type;
+    t->state = TH_STATE_STAND;
+    t->x = x;
+    t->y = y;
+    t->radius = PROP_RADIUS;
+    if (type == BAST_ENT_DOG_BANNER) {
+        t->state = TH_STATE_PROP;
+        t->radius = 0;
+    } else if (type == BAST_ENT_PAPYRUS_POT) {
+        t->flags = TH_FLAG_SHOOTABLE;
+        t->health = POT_HP;
+        t->max_health = POT_HP;
+    }
+    return (uint16_t)th->count;
+}
+
 uint16_t thinker_alloc(thinkers_t *th)
 {
     for (int i = 0; i < th->count; i++) {
@@ -99,8 +129,8 @@ void thinkers_spawn_map(thinkers_t *th, const bast_map *map, int skill)
             en->tag = e->tag; /* for KILL_TRIGGER (game/tags.c) */
             continue;
         }
-        if (e->type == BAST_ENT_KIBBLE_BARREL) {
-            thinker_spawn_barrel(th, e->x, e->y);
+        if (thinker_is_decor(e->type)) {
+            thinker_spawn_decor(th, e->type, e->x, e->y);
             continue;
         }
         thinker_t *t = thinker_get(th, thinker_spawn_pickup(th, e->type, e->x, e->y));
@@ -129,6 +159,12 @@ int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage)
         t->tics = BARREL_FUSE_TICS;
         return 1;
     }
+    if (t->type == BAST_ENT_PAPYRUS_POT) {
+        t->state = TH_STATE_DEAD;
+        t->tics = 0;
+        t->flags |= TH_FLAG_GIB;
+        return 1;
+    }
     t->state = TH_STATE_DEAD;
     t->tics = 0;
     /* enemies.md Animation list: the boss has no `gib`, its death plays. */
@@ -149,6 +185,23 @@ void thinker_anim(const thinker_t *t, uint32_t tic, int *anim, int *frame)
 {
     const enemy_info_t *info = enemy_info(t->type);
     int a = SPR_IDLE, f = 0;
+    if (thinker_is_decor(t->type)) {
+        /* A broken pot (TH_FLAG_GIB at the hit) or an exploded barrel
+         * (BARREL_FUSE_TICS after the killing hit): gib from then, the last
+         * frame (the debris) stays. Anything else: idle (the renderer picks
+         * the idle frame of non-enemy sprites itself). */
+        if (t->state == TH_STATE_DEAD &&
+            (t->type == BAST_ENT_PAPYRUS_POT || t->type == BAST_ENT_KIBBLE_BARREL)) {
+            const uint32_t start =
+                t->died_tic + (t->type == BAST_ENT_KIBBLE_BARREL ? BARREL_FUSE_TICS : 0);
+            a = SPR_GIB;
+            f = clamp_frame(tic >= start ? tic - start : 0, TH_ANIM_GIB_TICS,
+                            sprite_enemy_frames(SPR_GIB));
+        }
+        *anim = a;
+        *frame = f;
+        return;
+    }
     switch (t->state) {
     case TH_STATE_CHASE:
         a = SPR_WALK;

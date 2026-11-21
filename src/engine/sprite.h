@@ -53,13 +53,18 @@ int sprite_dir(angle_t viewer_angle, angle_t thing_angle);
  * have every animation of sprite_enemy_frames(): `<name>_<anim>_d<d>_f<f>`
  * (gib frames under assets/gen/gibs/, d0 only), and the caller picks the
  * animation and frame (game/thinker.h thinker_anim()). `no_gib` enemies
- * (the boss, enemies.md) have every animation but `gib`. */
+ * (the boss, enemies.md) have every animation but `gib`. Breakable props
+ * (not `enemy`) name their gib set in `gib` when its name differs from the
+ * sprite's ("prop_pot" for "props/papyrus_pot": gibs/prop_pot_gib_d0_f<n>);
+ * a render_thing with anim SPR_GIB then shows gib `frame`. */
 typedef struct {
     const char *name; /* may hold a subdirectory: "items/fish" */
     int frames;       /* idle frames, 1..SPRITE_MAX_FRAMES */
     int live;
     int enemy;
     int no_gib;
+    int tics;        /* non-enemy: tics per idle frame, 0 = SPRITE_SHIMMER_TICS */
+    const char *gib; /* non-enemy: gib set name, or NULL */
 } sprite_def;
 
 /* Sprite of map entity `type`, or NULL if that type has no sprite yet.
@@ -106,5 +111,9 @@ int fx_sprite_path(int id, int frame, char *buf, size_t size);
 /* Idle frame shown at render tic `tic` by a sprite with `frames` frames:
  * SPRITE_SHIMMER_TICS tics per frame, looping. */
 int sprite_anim_frame(uint32_t tic, int frames);
+
+/* Idle frame of non-enemy sprite `def` at render tic `tic`: def->tics (or
+ * SPRITE_SHIMMER_TICS) tics per frame, looping. */
+int sprite_def_frame(const sprite_def *def, uint32_t tic);
 
 #endif

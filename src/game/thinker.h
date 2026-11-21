@@ -25,6 +25,7 @@ enum {
     TH_STATE_PAIN = 6,   /* flinch */
     TH_STATE_DYING = 7,  /* killed barrel: explodes when `tics` runs out */
     TH_STATE_FREE = 8,   /* spent projectile or effect: slot reusable */
+    TH_STATE_PROP = 9,   /* non-solid decoration (DOG_BANNER): drawn only */
 };
 
 /* thinker_t.movedir: 8 compass directions, counter-clockwise from east. */
@@ -53,6 +54,17 @@ enum {
 #define BARREL_HP 20
 #define BARREL_RADIUS ((fix_t)16384)
 #define BARREL_FUSE_TICS 4 /* from the killing hit to the explosion */
+
+/* Decorations (items.md Decorations), types BAST_ENT_KIBBLE_BARREL..
+ * BAST_ENT_SERVER_RACK. Solid ones are live (thinker_alive) and block the
+ * player and enemies at PROP_RADIUS; only the pot and the barrel are
+ * shootable. DOG_BANNER hangs overhead: TH_STATE_PROP, never blocks. The
+ * papyrus pot breaks on any hit (POT_HP 5, below every weapon's minimum)
+ * and drops nothing. A broken pot or exploded barrel is TH_STATE_DEAD and
+ * shows its gib animation through thinker_anim() (SPR_GIB, from died_tic),
+ * the same path as a gibbed enemy; the last frame (the debris) stays. */
+#define PROP_RADIUS ((fix_t)16384) /* 0.25 u */
+#define POT_HP 5
 
 /* thinker_t.flags */
 enum {
@@ -97,7 +109,8 @@ typedef struct {
     int32_t kills, kill_total;
 } thinkers_t;
 
-/* 1 for a live enemy or barrel: any state but DEAD, TAKEN, DYING and FREE;
+/* 1 for a live enemy or solid decoration: any state but DEAD, TAKEN,
+ * DYING, FREE and PROP;
  * never a pickup, projectile or effect (type >= TH_TYPE_SCARAB_PROJ). Doors,
  * pushwalls, player collision, hitscan, splash and AI use it. */
 int thinker_alive(const thinker_t *t);
@@ -106,7 +119,7 @@ int thinker_alive(const thinker_t *t);
  * The one skill-placement test, for thinkers and pickups (game/items.c). */
 int entity_on_skill(const bast_map_entity *e, int skill);
 
-/* Empties the list and spawns every enemy, weapon-pickup and kibble-barrel
+/* Empties the list and spawns every enemy, weapon-pickup and decoration
  * entity of `map` flagged for `skill` (1..3), in entity order. Enemies keep
  * AMBUSH (TH_FLAG_AMBUSH). Weapon pickups keep the
  * entity's tag and PICKUP_TRIGGER (TH_FLAG_TRIGGER). Other item types live
@@ -126,6 +139,15 @@ uint16_t thinker_spawn_pickup(thinkers_t *th, uint16_t type, fix_t x, fix_t y);
  * or 0 when full. */
 uint16_t thinker_spawn_barrel(thinkers_t *th, fix_t x, fix_t y);
 
+/* 1 for a decoration type (BAST_ENT_KIBBLE_BARREL..BAST_ENT_SERVER_RACK). */
+int thinker_is_decor(int type);
+
+/* Appends a decoration of `type` (see PROP_RADIUS): the barrel through
+ * thinker_spawn_barrel(), the pot shootable, DOG_BANNER as TH_STATE_PROP,
+ * the rest solid and inert. Returns its id, or 0 when full or `type` is
+ * not a decoration. */
+uint16_t thinker_spawn_decor(thinkers_t *th, uint16_t type, fix_t x, fix_t y);
+
 /* A zeroed thinker for a projectile or effect: the first TH_STATE_FREE
  * slot, else a new one at the end. Returns its id, 0 when full. Only
  * transient thinkers ever become FREE, so ids that other thinkers keep
@@ -138,7 +160,8 @@ thinker_t *thinker_get(thinkers_t *th, uint16_t id);
 /* Applies `damage` to a live thinker: at HP <= 0 it becomes dead (counted
  * as a kill when it counts) and gibs at HP <= -(max HP / 2). A barrel
  * instead becomes TH_STATE_DYING with BARREL_FUSE_TICS on its fuse
- * (projectiles_tic explodes it). Returns 1 when this hit killed it. */
+ * (projectiles_tic explodes it); a pot breaks at once (TH_STATE_DEAD,
+ * TH_FLAG_GIB). Returns 1 when this hit killed it. */
 int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage);
 
 /* Render-side animation timing (enemies.md, Animation list). */
@@ -152,7 +175,9 @@ int thinker_damage(thinkers_t *th, thinker_t *t, int32_t damage);
  * hash. STAND -> idle, CHASE -> walk (frame 0 while not stepping), WINDUP ->
  * windup (glow frame 1 in the last half of the enemy's wind-up), ATTACK ->
  * attack (frame 0 for the first half of the recovery), PAIN -> pain, DEAD
- * -> death from died_tic then frame 4 forever, or gib with TH_FLAG_GIB. */
+ * -> death from died_tic then frame 4 forever, or gib with TH_FLAG_GIB.
+ * Decorations (thinker_is_decor): SPR_IDLE, or SPR_GIB for a broken pot or
+ * exploded barrel (from died_tic, + BARREL_FUSE_TICS for the barrel). */
 void thinker_anim(const thinker_t *t, uint32_t tic, int *anim, int *frame);
 
 #endif
