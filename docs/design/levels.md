@@ -23,20 +23,33 @@ Sum of par: 48:30.
 
 ## Difficulty curve
 
-"Ammo supplied" is the average damage of all ammo on the critical path plus guaranteed drops (secrets
-excluded), using `weapons.md` per-ammo averages. Ratio = supplied / enemy HP pool. Ratios fall because
-the player carries ammo over and gets more accurate.
+Counting rules (the table is a summary of the per-level **Items** lists below; when the two disagree,
+the Items lists win and this table is recomputed; `tools/levelstats.py --check` measures maps the
+same way):
+
+- **Ammo supplied** = critical-path ammo pickups (secrets excluded) + guaranteed drops (Mutt: 5
+  charges each), at the `weapons.md` per-ammo averages (charge 11.5, shell 49, scarab 75, cell 24).
+  A weapon pickup counts its bundled ammo (Scattergun 8 shells, Repeater 40 charges, Launcher 4
+  scarabs, Lance 60 cells, Howler 50 cells); the Litter Satchel counts one small pickup of each type.
+  L8 restock alcoves count once.
+- **Health supplied** and **Armour supplied** = critical-path items only; secret rewards go in
+  brackets.
+- **Ratio** = ammo supplied / enemy HP pool, to 1 decimal.
+
+The recount (#208) shows ratios that do not yet fall steadily from level to level, and L8 relies on
+ammo carried over plus restocks. That is a balance question for the balance passes (#218, #219), not
+a bookkeeping one.
 
 | # | Enemy HP pool | Ammo supplied (avg dmg) | Ratio | Health supplied | Armour supplied | Target health at exit | Note |
 |---|---|---|---|---|---|---|---|
-| 1 | 280 | 1150 | 4.1 | 60 | 0 (+100 secret) | 80+ | tutorial |
-| 2 | 510 | 1580 | 3.1 | 100 | 100 | 75 | |
-| 3 | 830 | 2230 | 2.7 | 125 | 100 | 70 | |
-| 4 | 1070 | 2460 | 2.3 | 150 | 100 | 75 | **breather**: fewer, spaced fights, puzzle focus |
-| 5 | 2100 | 4600 | 2.2 | 175 | 200 | 60 | first spike (Mastiffs) |
-| 6 | 2850 | 5700 | 2.0 | 200 | 200 | 65 | **breather** in the first third (scaffold climb, 6 Mutts) |
-| 7 | 4130 | 7400 | 1.8 | 250 | 300 | 50 | hardest regular level |
-| 8 | 4570 | 8200 (arena restocks) | 1.8 | 300 (+Golden Sardine) | 200 | 40 at the boss kill | climax |
+| 1 | 280 | 1725 | 6.2 | 65 (+20 secret) | 0 (+100 secret) | 80+ | tutorial |
+| 2 | 510 | 4030 | 7.9 | 60 (+50 secret) | 100 (+200 secret) | 75 | |
+| 3 | 830 | 4984 | 6.0 | 135 (+100 secret) | 100 | 70 | |
+| 4 | 1070 | 3484 | 3.3 | 160 (+50 secret) | 100 | 75 | **breather**: fewer, spaced fights, puzzle focus |
+| 5 | 2100 | 7964 | 3.8 | 185 | 200 (+200 secret) | 60 | first spike (Mastiffs) |
+| 6 | 2850 | 5728 | 2.0 | 195 (+100 secret) | 200 | 65 | **breather** in the first third (scaffold climb, 6 Mutts) |
+| 7 | 4130 | 8058 | 2.0 | 230 (+100 secret) | 100 (+200 secret) | 50 | hardest regular level |
+| 8 | 4570 | 3924 (arena restocks counted once) | 0.9 | 260 (+100 secret) | 200 | 40 at the boss kill | climax |
 
 Pools: L1 14 Mutt. L2 18 Mutt, 10 Chomper. L3 16 Mutt, 10 Chomper, 8 Pom. L4 12 Mutt, 8 Chomper, 8
 Pom, 5 Dachshund. L5 14 Mutt, 10 Chomper, 10 Pom, 6 Dachshund, 2 Mastiff. L6 14 Mutt, 12 Chomper, 10
@@ -77,7 +90,8 @@ L5), `START_OPEN` doors that close on a tag (L4 and L7 layout changes), pushwall
 - **Secrets (2)**: scratched-paw pushwall in the courtyard -> Linen Wrap + 2 Fish Snacks; a lit
   alcove visible through a window behind the shrine, reached by a pushwall with a slightly lighter
   sandstone block -> Charge Jar.
-- **Items**: 4 Fish Snacks, 1 Tuna Tin, 3 Charge Vials, 1 Charge Jar (critical path), 14 drops.
+- **Items**: 4 Fish Snacks, 1 Tuna Tin, 3 Charge Vials, 1 Charge Jar (critical path; the secret Jar
+  above is extra), 14 drops.
 
 ## 2. The Mew-seum
 
@@ -101,8 +115,8 @@ L5), `START_OPEN` doors that close on a tag (L4 and L7 layout changes), pushwall
 - **Secrets (3)**: a statue with its head turned the wrong way marks a pushwall -> Scarab Plate; a
   "Staff Only" door texture in the gift shop is a pushwall -> Catnip Frenzy; a cracked display case
   wall in the office -> Tuna Tin x2.
-- **Items**: 6 Fish Snacks, 2 Tuna Tins, 1 Linen Wrap, 4 Charge Vials, 1 Charge Jar, Scattergun,
-  3 Yarn Bundles, 1 Yarn Basket.
+- **Items**: 6 Fish Snacks, 2 Tuna Tins (the secret pair above, not critical path), 1 Linen Wrap,
+  4 Charge Vials, 1 Charge Jar, Scattergun, 3 Yarn Bundles, 1 Yarn Basket, 18 drops.
 
 ## 3. Nile Catwalks
 
@@ -124,8 +138,8 @@ L5), `START_OPEN` doors that close on a tag (L4 and L7 layout changes), pushwall
 - **Secrets (3)**: a crate stack with a gap leads to a dead-end pier that is a pushwall -> Litter
   Satchel; a lit window above the water in the customs house -> Scarab Launcher + 4 scarabs; a fish
   painted on the pump wall -> Golden Sardine.
-- **Items**: 6 Fish Snacks, 3 Tuna Tins, 1 Linen Wrap, 6 Charge Vials, 2 Charge Jars, 4 Yarn
-  Bundles, 1 Yarn Basket.
+- **Items**: 6 Fish Snacks, 3 Tuna Tins, 1 Linen Wrap, Sistrum Repeater, 6 Charge Vials, 2 Charge
+  Jars, 4 Yarn Bundles, 1 Yarn Basket, 16 drops. Secret rewards above are extra.
 
 ## 4. Tomb of Tutankhamew
 
@@ -152,7 +166,7 @@ L5), `START_OPEN` doors that close on a tag (L4 and L7 layout changes), pushwall
   a single lit floor tile (`dark` lower) -> Tuna Tin x2 + Scarab Crate; a fake sarcophagus wall in
   the Burial Chamber -> Cat's Eye Amulet.
 - **Items**: 6 Fish Snacks, 4 Tuna Tins, 1 Linen Wrap, Scarab Launcher, 4 Scarabs, 1 Scarab
-  Crate, 4 Charge Vials, 1 Charge Jar, 4 Yarn Bundles.
+  Crate, 4 Charge Vials, 1 Charge Jar, 4 Yarn Bundles, 12 drops. Secret rewards above are extra.
 
 ## 5. Kibble Refinery
 
@@ -173,7 +187,8 @@ L5), `START_OPEN` doors that close on a tag (L4 and L7 layout changes), pushwall
 - **Secrets (3)**: a conveyor belt texture running into a wall -> Scarab Plate; a flickering screen
   (2-frame texture) -> Sun Orb; a barrel cluster hiding a pushwall -> Catnip Frenzy.
 - **Items**: 6 Fish Snacks, 5 Tuna Tins, 1 Scarab Plate, 6 Charge Vials, 2 Charge Jars, 4 Yarn
-  Bundles, 1 Yarn Basket, 4 Scarabs, 1 Scarab Crate, Lance, 3 Sun Shards.
+  Bundles, 1 Yarn Basket, 4 Scarabs, 1 Scarab Crate, Lance, 3 Sun Shards, 14 drops. Secret rewards
+  above are extra.
 
 ## 6. Sphinx Under Construction
 
@@ -192,7 +207,9 @@ L5), `START_OPEN` doors that close on a tag (L4 and L7 layout changes), pushwall
   3. *Paw Plaza*: an open plaza with a Mastiff and 2 Shieldbearers, flanking routes around the paws.
 - **Secrets (2)**: a sandstone block with a fresh-cut edge on the scaffold -> Golden Sardine; a gap
   in the scaffold boards seen from below -> Cat's Eye Amulet + Sun Orb.
-- **Items**: 7 Fish Snacks, 5 Tuna Tins, 1 Scarab Plate, Litter Satchel, ammo of all types.
+- **Items**: 7 Fish Snacks, 5 Tuna Tins, 1 Scarab Plate, Litter Satchel, Sphinx Howler, 4 Charge
+  Vials, 2 Charge Jars, 2 Yarn Bundles, 1 Scarab Crate, 1 Sun Shard, 14 drops. Secret rewards above
+  are extra.
 
 ## 7. Pyramid Server Farm
 
@@ -214,7 +231,9 @@ L5), `START_OPEN` doors that close on a tag (L4 and L7 layout changes), pushwall
 - **Secrets (4)**: a server rack with a different LED pattern -> Scarab Plate; a gold trim block
   out of place -> Golden Sardine; a maintenance hatch visible only in the blackout -> Ninth Life;
   a dead-end cable trench -> Sun Orb + Scarab Crate.
-- **Items**: 8 Fish Snacks, 6 Tuna Tins, 1 Scarab Plate, 1 Linen Wrap, ammo of all types.
+- **Items**: 8 Fish Snacks, 6 Tuna Tins, 1 Scarab Plate (the secret one above, not critical path),
+  1 Linen Wrap, 4 Charge Vials, 2 Charge Jars, 3 Yarn Bundles, 1 Yarn Basket, 3 Scarabs, 1 Scarab
+  Crate, 2 Sun Shards, 1 Sun Orb, 16 drops. Other secret rewards above are extra.
 
 ## 8. Throne of Woofu
 
@@ -232,4 +251,6 @@ L5), `START_OPEN` doors that close on a tag (L4 and L7 layout changes), pushwall
      walls.
 - **Secrets (2)**: a statue with a raised paw in the Processional Way -> Golden Sardine; a tribute
   pile in the Hall of Tributes -> Catnip Frenzy (for the boss).
-- **Items**: Golden Sardine on the arena's south side, 6 Fish Snacks, 4 Tuna Tins, 1 Scarab Plate.
+- **Items**: Golden Sardine on the arena's south side, 6 Fish Snacks, 4 Tuna Tins, 1 Scarab Plate,
+  the 4 restock alcoves (Sun Shard, Charge Vial, Yarn Bundle, Scarab each), 8 drops. Secret
+  rewards above are extra.
