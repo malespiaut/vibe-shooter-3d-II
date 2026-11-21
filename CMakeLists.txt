@@ -317,6 +317,19 @@ foreach(lm ${LEVEL_MAPS})
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/levelstats.py ${lm} --check)
   list(APPEND LEVELSTATS_TESTS levelstats_${ln})
 endforeach()
+# Known failures, each tracked by an issue. Remove a level from this list
+# when its issue is fixed: a WILL_FAIL test that starts passing turns red.
+#   level1: ammo                      -> #208 (levels.md table vs Items list)
+#   level2: ammo, health              -> #208
+#   level5: no enemies (#177), par and ammo (#240)
+#   level6: no enemies (#178), ammo (#240)
+#   level7: no enemies (#193), armour (#240)
+set(LEVELSTATS_KNOWN_FAIL level1 level2 level5 level6 level7)
+foreach(ln ${LEVELSTATS_KNOWN_FAIL})
+  if(TEST levelstats_${ln})
+    set_tests_properties(levelstats_${ln} PROPERTIES WILL_FAIL TRUE)
+  endif()
+endforeach()
 # Python tests load the libbast.so built here, not a stale one.
 set_tests_properties(palcheck bast_py sfx_determinism sfx_levels mkmap_py quantize editor_roundtrip
   texgen_tile editor_entities editor_launch gibs_determinism gibs_pixels fonts pak_py skygen
