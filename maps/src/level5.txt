@@ -181,6 +181,52 @@ entity SUN_ORB 37 5 0
 entity CATNIP_FRENZY 19 16 0
 entity SCARAB_PLATE 19 27 0
 
+# Decorations (issue #216, items.md Decorations): dog-tech dressing, placed
+# in corners and against walls, off every demo route and secret approach.
+# Solid props (all but DOG_BANNER) have radius 0.25 u. No new kibble barrels:
+# the layout's barrels already sit where an explosion is fair.
+# Loading Bay: floodlights in two corners, a crate stack in the shadowed
+# north-west corner, dog banners hung over the bay.
+entity FLOODLIGHT 8 8 0
+entity FLOODLIGHT 1 1 0
+entity CRATE 1 8 0
+entity CRATE 2 8 0
+entity CRATE 1 7 0
+entity DOG_BANNER 5 6 0
+entity DOG_BANNER 5 2 0
+# Sludge Pits: a banner over the main walkway, floodlights and crates on the
+# east platform, against the north and east walls.
+entity DOG_BANNER 17 4 0
+entity FLOODLIGHT 25 13 0
+entity FLOODLIGHT 25 6 0
+entity CRATE 23 13 0
+entity CRATE 24 13 0
+# Control Tower: server racks along the south wall, crates in the north-east
+# corner.
+entity SERVER_RACK 27 3 0
+entity SERVER_RACK 28 3 0
+entity SERVER_RACK 33 3 0
+entity CRATE 32 12 0
+entity CRATE 33 11 0
+# Grinder Hall: a crate in the north-west corner, a floodlight at the sludge.
+entity CRATE 22 22 0
+entity FLOODLIGHT 25 22 0
+# Packaging Line: server racks on the south wall (x 19-21 stays clear for
+# secret C), crate stacks in the shadowed north corners, floodlights at both
+# ends, banners over the belts.
+entity SERVER_RACK 13 31 0
+entity SERVER_RACK 14 31 0
+entity SERVER_RACK 27 31 0
+entity SERVER_RACK 28 31 0
+entity CRATE 11 38 0
+entity CRATE 12 38 0
+entity CRATE 29 38 0
+entity CRATE 30 38 0
+entity FLOODLIGHT 10 31 0
+entity FLOODLIGHT 30 31 0
+entity DOG_BANNER 15 35 0
+entity DOG_BANNER 24 35 0
+
 # Enemy spots for the population issue (demo navigation waypoints only).
 entity WAYPOINT 16 9 0 sludge_mutts_a
 entity WAYPOINT 20 12 0 sludge_mutts_b
