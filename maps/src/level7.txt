@@ -94,6 +94,8 @@ legend M wall=dt_steel_panel_b floor=dt_grate_floor ceil=dt_steel_panel dark=6 d
 legend H wall=dt_steel_panel_b floor=dt_grate_floor ceil=dt_steel_panel dark=6 dark_alt=26 flags=DOOR mode=switch tag=1
 legend C wall=dt_steel_panel_b floor=dt_grate_floor ceil=dt_steel_panel dark=8 dark_alt=12 flags=DOOR mode=switch tag=20
 legend K wall=dt_steel_panel_b floor=dt_grate_floor ceil=dt_steel_panel dark=8 dark_alt=12 flags=DOOR mode=switch tag=21
+legend W wall=dt_steel_panel_b floor=dt_grate_floor ceil=dt_steel_panel dark=6 dark_alt=10 flags=DOOR mode=switch tag=22
+legend T floor=dt_diamond_plate ceil=dt_steel_panel_b dark=4 dark_alt=8 flags=TRIGGER tag=20
 legend > wall=dt_door floor=dt_grate_floor ceil=dt_steel_panel dark=8 dark_alt=12 flags=DOOR|ONEWAY side=west
 
 layout
@@ -116,7 +118,7 @@ layout
 #####h##################################B######xxxxxxx##
 #####h##########RwwwwwwwwwwwwwwwwwwwRaaaaaaaaRR###X#####
 #####h##qqq#####RwwwwwwwwwwwwwwwwwwwRaaaaaaaaRR#########
-#####h##qqq#####RwwwwRwwwRwwwRwwwRwwMaaaaaaaaRR#########
+#####W##qqq#####RwwwwRwwwRwwwRwwwRwwMaaaaaaaaRR#########
 #####2###C######RwwwwwwwwwwwwwwwwwwwRaaaaaaaaRR#########
 ###kkkkkkkkk####RRwwRRRRRRRRRRRRRRRRRSaaaaaaSRR#########
 ###kkkkkkkkk####RwwwwwwwwwwwwwwwwwwwRRRRaRRRRRR#########
@@ -125,7 +127,7 @@ layout
 #qKkkkPPPkkk#qq#RRRRRRRRRRRRRRRRRRMRRRRRaRRRRRR#########
 #q#kkkPPPkkk####RwwwwwwwwwwwwwwwwwwwRRRRaRRRRRR#########
 ###kkkkkkkkk####RwwwwRwwwRwwwRwwwRwwRRRRORRRRRR#########
-###kkkkkkkkkDww#RwwwwwwwwwwwwwwwwwwwRRRRaRRRRRR#########
+###kkkkkkkkTDww#RwwwwwwwwwwwwwwwwwwwRRRRaRRRRRR#########
 ###kkkkkkkkk##w#RRwwRRRRRRRRRRRRRRRRRRRRaRaaaaR#########
 #######C######w#RwwwwwwwwwwwwwwwwwwwRnnRaaaaaaR#########
 ######qqq#####w#RwwwwwwRwwwRwwwRwwwwHNnRaRaaaaR#########
@@ -221,3 +223,123 @@ entity WAYPOINT 21 44 270 @bridge_dach_n
 entity WAYPOINT 31 36 90 @bridge_dach_s
 entity WAYPOINT 50 40 180 @bridge_poms
 entity WAYPOINT 50 33 90 @exit_room
+
+# Weapons (#193): the player normally arrives with all seven (items.md
+# carry-over), but until the episode flow exists a level starts from the
+# warp inventory (Claws + Ankh Pistol). These are ammo top-ups for a
+# carried-over player and make a pistol start winnable; nothing new.
+entity HAIRBALL_SCATTERGUN 9 6 0
+entity SISTRUM_REPEATER 9 3 0
+entity EYE_OF_RA_LANCE 10 5 0
+entity SCARAB_LAUNCHER 40 9 0
+entity SPHINX_HOWLER 14 14 0
+
+# Enemies (#193). Skill 2: 16 Mutt, 14 Chomper, 12 Pom, 8 Dachshund,
+# 10 Shieldbearer, 4 Mastiff = 64. Default flags are all skills; S23 =
+# SKILL2|SKILL3 (16 cut on Kitten, -25%), S3 = SKILL3 only (13 Sabretooth
+# extras, +20%).
+
+# Cooling Hall: three Mutts on the floor, two Mastiffs at the far end
+# (41, 3/5), 29 units from the door: out of their 20 u range, inside the
+# Lance's 32 u. The Lance duel.
+entity MUTT_TROOPER 22 6 180
+entity MUTT_TROOPER 24 2 180 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 30 5 180
+entity MUTT_TROOPER 27 3 180 flags=SKILL3
+entity MASTIFF_JUGGERNAUT 41 3 180
+entity MASTIFF_JUGGERNAUT 41 5 180
+
+# Lit main aisle and its bays.
+entity MUTT_TROOPER 44 10 180
+entity MUTT_TROOPER 45 9 180 flags=SKILL2|SKILL3
+entity POMERANIAN_PLASMAGUNNER 45 11 180
+entity MUTT_TROOPER 44 18 180
+entity MUTT_TROOPER 45 16 180 flags=SKILL2|SKILL3
+entity POMERANIAN_PLASMAGUNNER 45 17 180
+entity CHIHUAHUA_CHOMPER 40 23 270
+entity CHIHUAHUA_CHOMPER 40 24 270
+entity CHIHUAHUA_CHOMPER 40 22 270 flags=SKILL3
+
+# Switch room.
+entity POMERANIAN_PLASMAGUNNER 43 30 270
+entity MUTT_TROOPER 38 30 270
+entity MUTT_TROOPER 44 29 270 flags=SKILL3
+entity CHIHUAHUA_CHOMPER 37 27 0
+entity CHIHUAHUA_CHOMPER 44 27 180 flags=SKILL2|SKILL3
+entity DACHSHUND_HOWITZER 41 30 270
+
+# Blackout: the dark maze. Mutts and Poms wind up with a glow; AMBUSH ones
+# wait at the bends of the route.
+entity MUTT_TROOPER 20 29 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 33 27 180
+entity POMERANIAN_PLASMAGUNNER 30 30 180
+entity MUTT_TROOPER 23 27 0 flags=SKILL3|AMBUSH
+entity CHIHUAHUA_CHOMPER 26 25 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 30 23 180 flags=SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 22 24 0 flags=SKILL2|SKILL3
+entity MASTIFF_JUGGERNAUT 27 19 0
+entity MUTT_TROOPER 19 21 0
+entity DACHSHUND_HOWITZER 32 20 180
+entity POMERANIAN_PLASMAGUNNER 20 19 0 flags=SKILL3
+entity MUTT_TROOPER 22 17 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 30 15 180
+entity CHIHUAHUA_CHOMPER 34 16 180 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 26 16 180 flags=SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 24 12 0 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 20 13 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity CHIHUAHUA_CHOMPER 18 10 0
+entity MUTT_TROOPER 30 9 180 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 31 11 180 flags=SKILL3
+entity DACHSHUND_HOWITZER 34 12 180 flags=SKILL2|SKILL3
+
+# Corridor x = 14 to the Uplink Core.
+entity MUTT_TROOPER 14 17 270
+entity MUTT_TROOPER 13 19 0 flags=SKILL2|SKILL3
+
+# Uplink Core. The TRIGGER cell inside the door (11,19) fires tag 20: the
+# north and south closets open (wave 1, tag 30). KILL_TRIGGER tag 30 fires
+# tag 21: the west and east closets open (wave 2, tag 31). KILL_TRIGGER
+# tag 31 fires tag 22: the way-out gate W (5,28) behind the blue door opens.
+entity SHEPHERD_SHIELDBEARER 8 29 270 tag=30
+entity SHEPHERD_SHIELDBEARER 10 29 270 tag=30
+entity CHIHUAHUA_CHOMPER 9 28 270 tag=30
+entity CHIHUAHUA_CHOMPER 8 28 270 flags=SKILL2|SKILL3 tag=30
+entity CHIHUAHUA_CHOMPER 10 28 270 flags=SKILL3 tag=30
+entity SHEPHERD_SHIELDBEARER 7 15 90 tag=30
+entity CHIHUAHUA_CHOMPER 6 16 90 tag=30
+entity CHIHUAHUA_CHOMPER 8 16 90 tag=30
+entity KILL_TRIGGER 4 22 0 tag=30 param=21
+entity SHEPHERD_SHIELDBEARER 1 21 0 tag=31
+entity SHEPHERD_SHIELDBEARER 1 23 0 flags=SKILL2|SKILL3 tag=31
+entity SHEPHERD_SHIELDBEARER 1 22 0 flags=SKILL3 tag=31
+entity SHEPHERD_SHIELDBEARER 14 23 180 tag=31
+entity SHEPHERD_SHIELDBEARER 14 24 180 tag=31
+entity CHIHUAHUA_CHOMPER 13 24 180 tag=31
+entity CHIHUAHUA_CHOMPER 13 22 180 tag=31
+entity CHIHUAHUA_CHOMPER 14 22 180 flags=SKILL3 tag=31
+entity KILL_TRIGGER 10 22 0 tag=31 param=22
+
+# Broadcast Bridge: Dachshunds on the side platforms drop reticles on the
+# bridge.
+entity DACHSHUND_HOWITZER 20 44 270
+entity DACHSHUND_HOWITZER 22 44 270
+entity DACHSHUND_HOWITZER 31 36 90
+entity DACHSHUND_HOWITZER 30 36 90 flags=SKILL3
+
+# Landing past the one-way door: Poms on the far end, a Mastiff, a
+# Shieldbearer and a Dachshund.
+entity POMERANIAN_PLASMAGUNNER 50 40 180
+entity POMERANIAN_PLASMAGUNNER 52 42 180
+entity POMERANIAN_PLASMAGUNNER 52 38 180 flags=SKILL2|SKILL3
+entity POMERANIAN_PLASMAGUNNER 51 43 180 flags=SKILL3
+entity MASTIFF_JUGGERNAUT 52 40 180
+entity SHEPHERD_SHIELDBEARER 49 42 180
+entity DACHSHUND_HOWITZER 53 37 180
+
+# Exit room.
+entity SHEPHERD_SHIELDBEARER 49 34 90
+entity SHEPHERD_SHIELDBEARER 51 34 90 flags=SKILL2|SKILL3
+entity POMERANIAN_PLASMAGUNNER 48 32 90
+entity POMERANIAN_PLASMAGUNNER 52 32 90 flags=SKILL2|SKILL3
+entity DACHSHUND_HOWITZER 50 32 90
+entity MUTT_TROOPER 53 33 90 flags=SKILL3
