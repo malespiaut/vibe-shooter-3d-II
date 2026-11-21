@@ -310,9 +310,35 @@ add_test(NAME pak_py
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_pak.py)
 add_test(NAME skygen
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_skygen.py)
+add_test(NAME levelstats
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_levelstats.py)
+# levelstats_levelN: every maps/levelN.vmap present at configure time is checked
+# against the docs/design/levels.md tables (tools/levelstats.py --check).
+file(GLOB LEVEL_MAPS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/maps/level[1-8].vmap)
+set(LEVELSTATS_TESTS levelstats)
+foreach(lm ${LEVEL_MAPS})
+  get_filename_component(ln ${lm} NAME_WE)
+  add_test(NAME levelstats_${ln}
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/levelstats.py ${lm} --check)
+  list(APPEND LEVELSTATS_TESTS levelstats_${ln})
+endforeach()
+# Known failures, each tracked by an issue. Remove a level from this list
+# when its issue is fixed: a WILL_FAIL test that starts passing turns red.
+#   level1: ammo                      -> #208 (levels.md table vs Items list)
+#   level2: ammo, health              -> #208
+#   level5: no enemies (#177), par and ammo (#240)
+#   level6: no enemies (#178), ammo (#240)
+#   level7: no enemies (#193), armour (#240)
+set(LEVELSTATS_KNOWN_FAIL level1 level2 level5 level6 level7)
+foreach(ln ${LEVELSTATS_KNOWN_FAIL})
+  if(TEST levelstats_${ln})
+    set_tests_properties(levelstats_${ln} PROPERTIES WILL_FAIL TRUE)
+  endif()
+endforeach()
 # Python tests load the libbast.so built here, not a stale one.
 set_tests_properties(palcheck bast_py sfx_determinism sfx_levels mkmap_py quantize editor_roundtrip
-  texgen_tile editor_entities editor_launch gibs_determinism gibs_pixels fonts pak_py skygen PROPERTIES
+  texgen_tile editor_entities editor_launch gibs_determinism gibs_pixels fonts pak_py skygen
+  ${LEVELSTATS_TESTS} PROPERTIES
   ENVIRONMENT "BAST_LIB=$<TARGET_FILE:bast>;BAST_PALETTE=${ASSETS_GEN}/palette.bin")
 
 add_executable(test_colormap tests/test_colormap.c)
