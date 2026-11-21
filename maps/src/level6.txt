@@ -205,3 +205,48 @@ entity GOLDEN_SARDINE 13 18 0
 # Secret 2 (gap in the scaffold boards): Cat's Eye Amulet + Sun Orb.
 entity CATS_EYE_AMULET 12 42 0
 entity SUN_ORB 15 42 0
+
+# Decorations (issue #216, items.md Decorations), off every demo route and
+# secret approach. Solid props (all but DOG_BANNER) have radius 0.25 u.
+# Workers' camp: sandstone pillars and an obelisk stub with DT crates and
+# floodlights stacked against them.
+entity FLOODLIGHT 2 2 0
+entity OBELISK_STUB 16 2 0
+entity FLOODLIGHT 17 2 0
+entity CRATE 29 2 0
+entity CRATE 30 2 0
+entity PILLAR_SAND 30 8 0
+entity CRATE 29 8 0
+entity PILLAR_SAND 30 5 0
+entity FLOODLIGHT 29 5 0
+# Scaffold climb: floodlights and crates in the dead corners of each deck
+# (never the gap corners, never (10,17) in front of secret 1).
+entity CRATE 10 11 0
+entity FLOODLIGHT 2 14 0
+entity CRATE 2 16 0
+entity FLOODLIGHT 10 20 0
+entity CRATE 2 22 0
+entity CRATE 2 24 0
+entity FLOODLIGHT 10 26 0
+entity CRATE 10 28 0
+entity FLOODLIGHT 2 30 0
+entity CRATE 2 32 0
+entity CRATE 10 34 0
+entity FLOODLIGHT 10 36 0
+entity CRATE 2 38 0
+entity CRATE 2 40 0
+entity FLOODLIGHT 2 46 0
+entity CRATE 3 46 0
+# Upper walk on the Sphinx's back: a floodlight and a crate at the ends.
+entity FLOODLIGHT 12 46 0
+entity CRATE 21 46 0
+# Paw Plaza: dog banners hung on the paws and the chest wall, plain cat
+# statues and EG ruins along the west wall.
+entity DOG_BANNER 21 25 0
+entity DOG_BANNER 21 34 0
+entity DOG_BANNER 30 27 0
+entity DOG_BANNER 30 33 0
+entity CAT_STATUE 12 27 0
+entity CAT_STATUE 12 32 0
+entity OBELISK_STUB 18 34 0
+entity PILLAR_SAND 16 28 0
