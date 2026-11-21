@@ -783,6 +783,13 @@ foreach(n 1 6 7)
     PASS_REGULAR_EXPRESSION "STATS level=${n} .* exit=1 god=0")
   add_demo_determinism(level${n}-complete)
 endforeach()
+# Level 1 start fairness (issue #231): only the Welcome Mat Mutt (6,7) may
+# see or hear the player start, at every skill.
+add_executable(test_level_start tests/test_level_start.c)
+target_link_libraries(test_level_start PRIVATE engine)
+target_compile_options(test_level_start PRIVATE -UNDEBUG)
+add_test(NAME level1_start_sight
+  COMMAND test_level_start ${CMAKE_SOURCE_DIR}/maps/level1.vmap 6 7)
 
 # Front-end flow (issue #101, hud.md Flow): the title art the menus draw,
 # built as tools/build.d/55-ui.sh does, so a plain build can run `build/game`

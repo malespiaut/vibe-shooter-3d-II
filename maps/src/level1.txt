@@ -109,8 +109,10 @@ entity MUTT_TROOPER 21 3 180
 entity MUTT_TROOPER 20 5 180
 entity MUTT_TROOPER 21 7 180
 entity MUTT_TROOPER 16 9 270 flags=SKILL2|SKILL3
-# Sabretooth extras.
-entity MUTT_TROOPER 2 4 0 flags=SKILL3
+# Sabretooth extras. The gatehouse one (issue #231) stands in the other dark
+# corner, behind the shut door: nothing in the start plaza may see or hear
+# the player start, so the Welcome Mat Mutt stays the first contact.
+entity MUTT_TROOPER 8 10 180 flags=SKILL3
 entity MUTT_TROOPER 8 19 270 flags=SKILL3
 entity MUTT_TROOPER 21 9 180 flags=SKILL3
 
