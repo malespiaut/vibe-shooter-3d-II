@@ -6,7 +6,7 @@ from draw import *
 HDR = [
     "# View model 6, Eye of Ra Lance (weapons.md): 3/4 rear view of a long steel rifle barrel through a",
     "# gold sun disc whose rear face carries a lapis eye (the charge indicator), a forked gold emitter",
-    "# at the muzzle, wooden grip under the right paw, left paw on the barrel. Matches HUD icon weapon_6.",
+    "# at the muzzle, right paw wrapped round the receiver, left paw on the barrel. Matches HUD icon weapon_6.",
     "# Composed in tools/vmcompose/vm6.py, checked at 3x in game.",
 ]
 
@@ -29,12 +29,6 @@ def frame(kind):
     # ---- left forearm, under everything
     lp = at(11.0, -10.5)
     forearm(cv, (lp[0] - 2, lp[1] + 4), (lp[0] - 26, 92.0), 6.5, 9.0, [0.18, 0.4, 0.63, 0.85], seed=2)
-
-    # ---- wooden grip to the bottom-right
-    def grip(t, s):
-        k = int((s + 1) * 4.2)
-        return brown(11 - (s + 1) * 2.4 - (3 if k in (2, 6) else 0))
-    band(cv, at(8.0, 4.0), (80.0, 88.0), 5.5, 7.0, grip)
 
     # ---- barrel: steel, a lit receiver block at the rear then a long thin barrel
     band(cv, at(0.0), at(14.0), 9.5, 8.0, cyl(steel, 12.5, 3.0))
@@ -86,9 +80,10 @@ def frame(kind):
     # ---- left paw on the barrel below the disc, toes up-right over the steel
     paw_fist(cv, lp[0], lp[1], 6.5, 4.8, [-3.4, -1.1, 1.1, 3.4],
              along=(0.62, -0.78), lobe_r=(2.4, 2.4), reach=6.2)
-    # ---- right forearm + paw on the grip
-    hx, hy = 76.0, 70.0 + DROP[kind] * 0.5
-    forearm(cv, (hx + 2, hy + 3), (hx + 26, 92.0), 7.0, 10.0, [0.2, 0.42, 0.6, 0.83], seed=0)
+    # ---- right forearm + paw wrapped round the receiver: the toe lobes overlap
+    # the steel's right edge (art-bible paw rule), mirroring the left paw
+    hx, hy = 66.0, 70.0 + DROP[kind] * 0.5
+    forearm(cv, (hx + 1, hy + 3), (hx + 16, 92.0), 7.0, 10.5, [0.2, 0.42, 0.6, 0.83], seed=0)
     paw_fist(cv, hx, hy, 7.5, 5.0, [-4.8, -1.6, 1.6, 4.8],
              along=(-0.97, -0.24), lobe_r=(2.3, 2.3), reach=6.6)
 

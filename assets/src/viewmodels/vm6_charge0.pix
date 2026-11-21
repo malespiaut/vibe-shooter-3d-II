@@ -1,6 +1,6 @@
 # View model 6, Eye of Ra Lance (weapons.md): 3/4 rear view of a long steel rifle barrel through a
 # gold sun disc whose rear face carries a lapis eye (the charge indicator), a forked gold emitter
-# at the muzzle, wooden grip under the right paw, left paw on the barrel. Matches HUD icon weapon_6.
+# at the muzzle, right paw wrapped round the receiver, left paw on the barrel. Matches HUD icon weapon_6.
 # Composed in tools/vmcompose/vm6.py, checked at 3x in game.
 # charge0.
 name vm6_charge0
@@ -68,22 +68,22 @@ grid
 ..........................................33343665551555442133300
 ...........................................333333335552222333300
 ............................................0333332222233333300
-..............................................0333333333333000........k
-................................................000333000000.........kjih
-..................................................NN000FECC.........XTihg
-..................................................NNKIHFECC..........ihge
-..................................................NNKIHFECC.........chgeckkkkjkjj
-............................................kk.X..NNKIHGEDC........XTcccckkjjjiiiig
-...........................................kkccc..NNKJHGEDC.........ihgfckjjjiiihhg
-...........................................kckkcccNNKJHGEDCC.......chgfecjjiiiihhhg
-...........................................jckckkjXNKJHGFDCC......Xkccccjjiiihhhgggdd
-...........................................ikckkcccccJIGFDCC.......Tihgcggfihhhgggfeed
-.......................................kkkkccckckkjiTJIGFECC.......ihgfciihhheedffffecba
-......................................kkkkkjccjckkigfcIGFECCDDD...Xcccccihhhgggfffdfccced
-.....................................kkkkkjjiiccjigfecHGFEEDCBB...kThgfchhgggfffeedddcfeedd
-.....................................kkkjjjiiihcigfecHHGFEEDCCBp...hgf.gffggffdddgdddffffeead
-.....................................kkjjjiihhhgccccIIHGFFEDDCBqqqcc...c....iihhhdddggfffcccba
-..................................dddkjjigffehggffLJIIHGGFEDDCBBnqqqpccccccciiihdddggggfdccceedd
-................................jjdddkjiiihhggddffMJJIHGGFEEDCCBnnnqqqqpcccjiiiiddhhgggddddffeeb
-.............................ddjjjddddiihhhgggffedMJJIHHGFFEDCCBrrnnnnqqqpjjjjidddhhhgddddffffcc
-...........................jjdddiiiddddghhggfffedMMJJIHHGFFEDDCBrrrronnnqqqjjjjddihhhdddddgffdcc
+..............................................033333333333cckc
+................................................0003330000ckjih
+..................................................NN000FECXTihg
+..................................................NNKIHFECcihge
+..................................................NNKIHFEcchgeckkkkjkjj
+............................................kk.X..NNKIHGEXTcccckkjjjiiiig
+...........................................kkccc..NNKJHGEcihgfckjjjiiihhg
+...........................................kckkcccNNKJHGcchgfecjjiiiihhhg
+...........................................jckckkjXNKJHGXkccccjjiiihhhggg
+...........................................ikckkcccccJIGcTihgcggfihhhgggfd
+.......................................kkkkccckckkjiTJIGcihgfciihhheedfffed
+......................................kkkkkjccjckkigfcIcXcccccihhhgggfffdcca
+.....................................kkkkkjjiiccjigfecHckThgfchhgggfffeedcced
+.....................................kkkjjjiiihcigfecHHGchgfcgffggffdddddcfeedd
+.....................................kkjjjiihhhgccccIIHGcccccCB..ihhddddgfffeead
+..................................dddkjjigffehggffLJIIHGGFEDDCBjiiiddddggffccccad
+................................jjdddkjiiihhggddffMJJIHGGFEEDCjjjiddddhggdddcccedd
+.............................ddjjjddddiihhhgggffedMJJIHHGFFEDCCjjdddhhhhdddddffecad
+...........................jjdddiiiddddghhggfffedMMJJIHHGFFEDDCjjddiihhdddddffccccad
