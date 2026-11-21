@@ -1,7 +1,7 @@
 # Level 5, Kibble Refinery (docs/design/levels.md section 5), layout half
 # (issue #174): geometry, textures, light, doors, keys, switches, sludge,
-# barrels, items and secrets. No enemies yet: the population issue places
-# them on the named WAYPOINT entities below (@sludge_*, @vault_mastiff, ...).
+# barrels, items and secrets. Enemies (issue #177) are listed at the end,
+# grouped by area next to the WAYPOINT entities that name the spots.
 # Built by tools/mkmap.py into maps/level5.vmap. Coordinates are (x, y) with
 # y counted from the south (last layout row is y = 0), as in demo `goto`.
 #
@@ -14,7 +14,8 @@
 #                                      from (22,20), opens the timed door T
 #                                      (34,20) for 10 s (350 tics), 12 tiles
 #                                      east across the sludge x 29-33;
-#                                      gantry y 24-25 behind a BLOCK_ALL rail (_)
+#                                      gantry y 24-25 behind a BLOCK_MONSTER rail (_):
+#                                      BLOCK_ALL would also block sight and shots
 #   Antechamber      x 35-38, y 18-21
 #   Lance Vault      x 36-38, y 22-34  Lance (37,23) fires tag 2: the riveted
 #                                      wall L (37,35), 12 tiles away, slides open
@@ -55,7 +56,7 @@ legend ' floor=dt_diamond_plate ceil=dt_concrete dark=12
 legend = floor=dt_grate_floor ceil=dt_ceiling_light dark=2
 legend v floor=dt_diamond_plate ceil=dt_concrete dark=8
 legend g floor=dt_grate_floor ceil=dt_concrete dark=10
-legend _ floor=dt_grate_floor ceil=dt_concrete dark=8 flags=BLOCK_ALL
+legend _ floor=dt_grate_floor ceil=dt_concrete dark=8 flags=BLOCK_MONSTER
 legend ~ floor=dt_kibble_sludge ceil=dt_concrete dark=4 flags=DAMAGE param=5
 legend ; floor=dt_kibble_sludge ceil=dt_concrete dark=16 flags=DAMAGE param=5
 legend ! floor=dt_diamond_plate ceil=dt_concrete dark=12 flags=SECRET
@@ -130,7 +131,7 @@ entity YARN_BUNDLE 24 1 0
 entity FISH_SNACK 25 12 0
 entity KIBBLE_BARREL 15 8 0
 entity KIBBLE_BARREL 15 10 0
-entity KIBBLE_BARREL 17 8 0
+entity KIBBLE_BARREL 15 9 0
 entity KIBBLE_BARREL 19 13 0
 entity KIBBLE_BARREL 21 13 0
 entity KIBBLE_BARREL 19 12 0
@@ -191,3 +192,77 @@ entity WAYPOINT 32 25 0 grinder_dach_e
 entity WAYPOINT 37 37 270 vault_mastiff
 entity WAYPOINT 14 36 0 pack_mastiff
 entity WAYPOINT 24 32 0 pack_squad
+
+# Enemies (issue #177, levels.md section 5): 42 at skill 2, 14 Mutt,
+# 10 Chomper, 10 Pom, 6 Dachshund, 2 Mastiff. SKILL2|SKILL3 ones are the
+# 11 Kitten drops (31 on Kitten, about 25% fewer); SKILL3-only ones are the
+# 8 Sabretooth extras (50, about 20% more). First difficulty spike. The
+# demo starts from a pistol (--warp inventory), so the pit far side, the
+# gantry and the Packaging Line squad are AMBUSH: fights come in turns.
+# Loading Bay: empty, so the first shot is the one at the barrels.
+# Sludge Pits: Mutt groups standing among the barrel clusters (chain
+# explosions), Poms and a Dachshund on the far (east) platform. Group B and
+# the far side are AMBUSH (deaf), facing away: the barrel blast does not wake
+# the whole pit at once, the player picks each fight.
+entity MUTT_TROOPER 16 8 0
+entity MUTT_TROOPER 16 10 0
+entity MUTT_TROOPER 16 9 0 flags=SKILL2|SKILL3
+entity MUTT_TROOPER 20 12 90 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 20 13 90 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 20 11 90 flags=SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 17 10 0 flags=SKILL3
+entity POMERANIAN_PLASMAGUNNER 24 8 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 23 6 0 flags=SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 25 10 0 flags=SKILL3|AMBUSH
+entity DACHSHUND_HOWITZER 25 13 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+# Control Tower: the squad behind the door.
+entity MUTT_TROOPER 29 8 180
+entity MUTT_TROOPER 30 6 180 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 30 10 180
+entity CHIHUAHUA_CHOMPER 30 7 180 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 32 10 180 flags=SKILL3
+entity MUTT_TROOPER 28 5 180 flags=SKILL3
+entity POMERANIAN_PLASMAGUNNER 32 5 180
+entity DACHSHUND_HOWITZER 33 11 180 flags=SKILL2|SKILL3
+# Blue door corridor: two Chompers waiting behind it.
+entity CHIHUAHUA_CHOMPER 28 15 270
+entity CHIHUAHUA_CHOMPER 28 16 270
+# Grinder Hall: a Mutt and Chompers in the shadowed south-west corner; two
+# Dachshunds on the east end of the gantry, facing east over the sludge lane
+# and the timed door: they open up when the sprint comes into view
+# (AMBUSH: the fight at the corridor mouth, west of their view, stays deaf).
+entity DACHSHUND_HOWITZER 31 25 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity DACHSHUND_HOWITZER 33 24 0 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 26 21 270
+entity MUTT_TROOPER 27 18 270 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 22 17 90
+entity CHIHUAHUA_CHOMPER 23 18 90 flags=SKILL2|SKILL3
+entity CHIHUAHUA_CHOMPER 24 17 90 flags=SKILL3
+# Mastiff lair: the first Mastiff walks in when the riveted wall slides,
+# a Pom and a Mutt behind it, lined up for the Lance's pierce.
+entity MASTIFF_JUGGERNAUT 37 37 270
+entity POMERANIAN_PLASMAGUNNER 36 38 270
+entity MUTT_TROOPER 38 38 270
+# Ammo cache.
+entity MUTT_TROOPER 33 30 90
+# Packaging Line: the second Mastiff plus a mixed squad, AMBUSH (deaf) and
+# facing west, away from the violet door: the player can open the fight on
+# their own terms with the Lance.
+entity MASTIFF_JUGGERNAUT 14 36 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 24 32 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 27 37 180 flags=SKILL2|SKILL3|AMBUSH
+entity MUTT_TROOPER 22 36 180 flags=SKILL3|AMBUSH
+entity CHIHUAHUA_CHOMPER 20 33 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity CHIHUAHUA_CHOMPER 18 37 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity CHIHUAHUA_CHOMPER 16 32 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity CHIHUAHUA_CHOMPER 12 33 180 flags=SKILL2|SKILL3|AMBUSH
+entity CHIHUAHUA_CHOMPER 21 38 180 flags=SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 25 36 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 15 38 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 11 31 180 flags=SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 19 35 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 13 37 180 flags=SKILL3|AMBUSH
+entity DACHSHUND_HOWITZER 12 38 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity DACHSHUND_HOWITZER 28 33 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 29 37 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
+entity POMERANIAN_PLASMAGUNNER 17 31 180 flags=SKILL1|SKILL2|SKILL3|AMBUSH
