@@ -157,12 +157,148 @@ add_custom_command(
 add_custom_target(items_tex ALL DEPENDS ${ASSETS_GEN}/sprites/items/.stamp)
 add_dependencies(items_tex palette)
 
+# Every other generated asset the game and the tests read (#224), built the
+# same way as tools/build.d/*.sh so a plain `cmake --build build` is enough for
+# ctest. Commands that write many files touch a stamp standing for their
+# outputs; tools/build_assets.sh wipes those directories (stamps included), so
+# the next build regenerates them.
+set(ASSET_ENV ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+    BAST_PALETTE=${ASSETS_GEN}/palette.bin)
+set(BAST_PY ${CMAKE_SOURCE_DIR}/tools/bast.py ${CMAKE_SOURCE_DIR}/tools/palette.py
+    ${ASSETS_GEN}/palette.bin ${PALETTE_GPL})
+
+# Procedural wall/floor textures (20-texgen.sh) and skies (25-sky.sh), both
+# into assets/gen/textures.
+file(GLOB TEXGEN_PARAMS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/textures/*.json)
+file(GLOB TEXGEN_GLYPHS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/textures/glyphs/*)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/textures/.texgen.stamp
+  COMMAND ${ASSET_ENV} ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/texgen.py -q
+          ${TEXGEN_PARAMS} -o ${ASSETS_GEN}/textures
+  COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/textures/.texgen.stamp
+  DEPENDS bast ${TEXGEN_PARAMS} ${TEXGEN_GLYPHS} ${CMAKE_SOURCE_DIR}/tools/texgen.py ${BAST_PY}
+  COMMENT "Building procedural textures")
+file(GLOB SKY_PARAMS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/sky/*.json)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/textures/.sky.stamp
+  COMMAND ${ASSET_ENV} ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/skygen.py
+          ${SKY_PARAMS} -o ${ASSETS_GEN}/textures
+  COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/textures/.sky.stamp
+  DEPENDS bast ${SKY_PARAMS} ${CMAKE_SOURCE_DIR}/tools/skygen.py
+          ${CMAKE_SOURCE_DIR}/tools/quantize.py ${CMAKE_SOURCE_DIR}/tools/hud.py
+          ${CMAKE_SOURCE_DIR}/tools/title.py ${BAST_PY}
+  COMMENT "Building skies")
+add_custom_target(textures_tex ALL
+  DEPENDS ${ASSETS_GEN}/textures/.texgen.stamp ${ASSETS_GEN}/textures/.sky.stamp)
+add_dependencies(textures_tex palette)
+
+# Pre-rendered particle effects (40-fx.sh).
+file(GLOB FX_PARAMS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/fx/*.json)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/fx/.stamp
+  COMMAND ${CMAKE_COMMAND} -E rm -rf ${ASSETS_GEN}/fx
+  COMMAND ${ASSET_ENV} ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/fx.py
+          ${FX_PARAMS} -o ${ASSETS_GEN}/fx
+  COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/fx/.stamp
+  DEPENDS bast ${FX_PARAMS} ${CMAKE_SOURCE_DIR}/tools/fx.py ${BAST_PY}
+  COMMENT "Building particle effects")
+add_custom_target(fx_tex ALL DEPENDS ${ASSETS_GEN}/fx/.stamp)
+add_dependencies(fx_tex palette)
+
+# World sprites: hand-drawn PNGs (45-sprites.sh) and Blender pre-renders
+# (60-sprites.sh, one command per set so they render in parallel).
+set(SPRITE_OUTPUTS)
+file(GLOB SPRITE_PNGS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/sprites/*.png)
+foreach(png ${SPRITE_PNGS})
+  get_filename_component(stem ${png} NAME_WE)
+  add_custom_command(
+    OUTPUT ${ASSETS_GEN}/sprites/${stem}.tex
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${ASSETS_GEN}/sprites
+    COMMAND ${ASSET_ENV} ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/png2tex.py
+            ${png} ${ASSETS_GEN}/sprites/${stem}.tex --origin-bottom-centre
+    DEPENDS bast ${png} ${CMAKE_SOURCE_DIR}/tools/png2tex.py ${BAST_PY}
+    COMMENT "Building sprite ${stem}.tex")
+  list(APPEND SPRITE_OUTPUTS ${ASSETS_GEN}/sprites/${stem}.tex)
+endforeach()
+find_program(BLENDER blender)
+set(RENDER_SPRITE_DEPS bast ${CMAKE_SOURCE_DIR}/tools/render_sprite.sh
+    ${CMAKE_SOURCE_DIR}/tools/blender_render.py ${CMAKE_SOURCE_DIR}/tools/quantize.py
+    ${BAST_PY})
+file(GLOB SPRITE_JSONS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/sprites/*/sprite.json)
+if(SPRITE_JSONS AND NOT BLENDER)
+  message(WARNING "blender not found: pre-rendered sprites are not built, "
+                  "sprite-dependent tests will fail")
+  set(SPRITE_JSONS)
+endif()
+foreach(json ${SPRITE_JSONS})
+  get_filename_component(dir ${json} DIRECTORY)
+  get_filename_component(name ${dir} NAME)
+  file(GLOB model_files CONFIGURE_DEPENDS ${dir}/*)
+  add_custom_command(
+    OUTPUT ${ASSETS_GEN}/sprites/.${name}.stamp
+    COMMAND ${ASSET_ENV} sh ${CMAKE_SOURCE_DIR}/tools/render_sprite.sh
+            ${dir} ${ASSETS_GEN}/sprites ${ASSETS_GEN}/blend/${name}
+    COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/sprites/.${name}.stamp
+    DEPENDS ${model_files} ${RENDER_SPRITE_DEPS}
+    COMMENT "Rendering sprite set ${name} (blender)")
+  list(APPEND SPRITE_OUTPUTS ${ASSETS_GEN}/sprites/.${name}.stamp)
+endforeach()
+
+# Decorations (48-props.sh): hand-drawn props, then the Blender ones. One
+# command, because items.py --clean empties assets/gen/sprites/props first.
+file(GLOB_RECURSE PROP_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/sprites/props/*)
+set(PROP_RENDERS)
+if(BLENDER)
+  file(GLOB PROP_JSONS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/sprites/props/*/sprite.json)
+  foreach(json ${PROP_JSONS})
+    get_filename_component(dir ${json} DIRECTORY)
+    get_filename_component(name ${dir} NAME)
+    list(APPEND PROP_RENDERS COMMAND ${ASSET_ENV} sh ${CMAKE_SOURCE_DIR}/tools/render_sprite.sh
+         ${dir} ${ASSETS_GEN}/sprites/props ${ASSETS_GEN}/blend/props/${name})
+  endforeach()
+endif()
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/sprites/props/.stamp
+  COMMAND ${ASSET_ENV} ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/items.py
+          --src ${CMAKE_SOURCE_DIR}/assets/src/sprites/props
+          -o ${ASSETS_GEN}/sprites/props --clean
+  ${PROP_RENDERS}
+  COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/sprites/props/.stamp
+  DEPENDS ${PROP_SOURCES} ${CMAKE_SOURCE_DIR}/tools/items.py ${CMAKE_SOURCE_DIR}/tools/hud.py
+          ${RENDER_SPRITE_DEPS}
+  COMMENT "Building decorations")
+list(APPEND SPRITE_OUTPUTS ${ASSETS_GEN}/sprites/props/.stamp)
+add_custom_target(sprites_tex ALL DEPENDS ${SPRITE_OUTPUTS})
+add_dependencies(sprites_tex palette)
+
+# Gib animations (65-gibs.sh): one per parameter file whose source sprite is
+# built here. The source path is read from the JSON at configure time.
+set(GIB_OUTPUTS)
+file(GLOB GIB_PARAMS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/gibs/*.json)
+foreach(p ${GIB_PARAMS})
+  get_filename_component(stem ${p} NAME_WE)
+  file(READ ${p} gib_json)
+  string(JSON gib_src GET "${gib_json}" source)
+  add_custom_command(
+    OUTPUT ${ASSETS_GEN}/gibs/.${stem}.stamp
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${ASSETS_GEN}/gibs
+    COMMAND ${ASSET_ENV} ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/gibs.py -q
+            ${p} -i ${ASSETS_GEN}/${gib_src} -o ${ASSETS_GEN}/gibs
+    COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/gibs/.${stem}.stamp
+    DEPENDS bast ${p} ${SPRITE_OUTPUTS} ${CMAKE_SOURCE_DIR}/tools/gibs.py ${BAST_PY}
+    COMMENT "Building gibs ${stem}")
+  list(APPEND GIB_OUTPUTS ${ASSETS_GEN}/gibs/.${stem}.stamp)
+endforeach()
+add_custom_target(gibs_tex ALL DEPENDS ${GIB_OUTPUTS})
+add_dependencies(gibs_tex palette)
+
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
 target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}"
   VS3D_MAPS_DIR="${CMAKE_SOURCE_DIR}/maps"
   VS3D_MUSIC_DIR="${CMAKE_SOURCE_DIR}/assets/src/music")
-add_dependencies(game colormap sfx testpattern hud_tex fonts_tex)
+add_dependencies(game colormap sfx testpattern hud_tex fonts_tex items_tex textures_tex
+  fx_tex sprites_tex gibs_tex)
 
 enable_testing()
 add_executable(test_smoke tests/test_smoke.c)
@@ -654,8 +790,9 @@ set_tests_properties(launcher_demo PROPERTIES
 add_demo_determinism(launcher-test)
 add_demo_determinism(fx-test)
 # Every FXS_* frame exists in the built assets under the renderer's path.
-# Needs the fx frames from tools/build_assets.sh (tools/build.d/40-fx.sh).
+# Needs the fx frames (fx_tex target, same as tools/build.d/40-fx.sh).
 add_executable(test_fx_sprites tests/test_fx_sprites.c)
+add_dependencies(test_fx_sprites fx_tex)
 target_link_libraries(test_fx_sprites PRIVATE engine)
 target_compile_options(test_fx_sprites PRIVATE -UNDEBUG)
 add_test(NAME fx_sprites COMMAND test_fx_sprites ${ASSETS_GEN})
@@ -720,7 +857,7 @@ add_test(NAME world_sprites_items COMMAND test_world_sprites_items ${ASSETS_GEN}
 add_executable(test_world_sprites_enemies tests/test_world_sprites_enemies.c)
 target_link_libraries(test_world_sprites_enemies PRIVATE engine m)
 target_compile_options(test_world_sprites_enemies PRIVATE -UNDEBUG)
-add_dependencies(test_world_sprites_enemies colormap testpattern)
+add_dependencies(test_world_sprites_enemies colormap testpattern sprites_tex)
 add_test(NAME world_sprites_enemies COMMAND test_world_sprites_enemies ${ASSETS_GEN})
 
 # Map logic: tags, switches, exit, pushwalls, triggers, secrets, lights,

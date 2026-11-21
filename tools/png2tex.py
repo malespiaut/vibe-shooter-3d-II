@@ -4,7 +4,7 @@
 Indexed PNGs already in the game palette keep their indices; anything else is
 matched by libbast nearest colour (no dithering, alpha < 128 -> index 255).
 
-Usage: python3 tools/png2tex.py in.png out.tex [--origin X Y] [--fullbright]
+Usage: python3 tools/png2tex.py in.png out.tex [--origin X Y | --origin-bottom-centre] [--fullbright]
 """
 import argparse
 import os
@@ -22,11 +22,15 @@ def main(argv=None):
     ap.add_argument("tex")
     ap.add_argument("--origin", nargs=2, type=int, default=(0, 0), metavar=("X", "Y"),
                     help="sprite anchor in px from left / top (default 0 0)")
+    ap.add_argument("--origin-bottom-centre", action="store_true",
+                    help="anchor at (width / 2, height), as world sprites use")
     ap.add_argument("--fullbright", action="store_true", help="set the TEX fullbright flag")
     args = ap.parse_args(argv)
     try:
         img = Image.open(args.png)
         img.load()
+        if args.origin_bottom_centre:
+            args.origin = (img.size[0] // 2, img.size[1])
         t = bast.Tex.from_image(img, origin=args.origin, fullbright=args.fullbright)
         t.save(args.tex)
     except (OSError, bast.BastError) as e:
