@@ -1,0 +1,14 @@
+STATS level=1 tic=2455 hash=9fce34d762dfc98e health=72 armor=85 kills=14/14 items=9/14 secrets=2/2 exit=1 god=0
+STATS level=1 tic=2455 hash=9fce34d762dfc98e health=72 armor=85 kills=14/14 items=9/14 secrets=2/2 exit=1 god=0
+STATS level=2 tic=3941 hash=dc3856ac0af93424 health=62 armor=185 kills=28/28 items=22/23 secrets=2/3 exit=1 god=0
+STATS level=2 tic=3941 hash=dc3856ac0af93424 health=62 armor=185 kills=28/28 items=22/23 secrets=2/3 exit=1 god=0
+STATS level=6 tic=4399 hash=19f5c52dfad764ea health=200 armor=200 kills=0/0 items=18/30 secrets=2/2 exit=1 god=0
+STATS level=6 tic=4399 hash=19f5c52dfad764ea health=200 armor=200 kills=0/0 items=18/30 secrets=2/2 exit=1 god=0
+STATS level=7 tic=3223 hash=2cd1503751223543 health=100 armor=100 kills=0/0 items=13/40 secrets=0/4 exit=1 god=0
+STATS level=7 tic=3223 hash=2cd1503751223543 health=100 armor=100 kills=0/0 items=13/40 secrets=0/4 exit=1 god=0
+# exploratory (main 2d8996d)
+flow-kitten.demo (title->menu->controls->Kitten->L1, pause->controls->restart, L1 route): STATS level=1 tic=2373 hash=9bd5ef94efc6d285 health=98 armor=97 kills=11/11 items=8/14 secrets=2/2 exit=1 god=0
+l2-s1.demo (L2 route at Kitten, door re-used): STATS level=2 tic=3974 hash=c10981d3ec7283b2 health=100 armor=193 kills=21/21 items=21/23 secrets=2/3 exit=1 god=0
+l2-s3.demo (L2 route at Sabretooth): the player died at tic 1380; STATS level=2 tic=1380 hash=99e194fd7539d592 health=0 armor=0 kills=17/34 items=8/23 secrets=0/3 exit=0 god=0
+boss-test.demo skill 2: STATS level=8 tic=1244 hash=f55c8c46c6bfe8b2 health=156 armor=89 kills=5/5 items=7/7 exit=1 god=0
+boss-s3.demo skill 3: STATS level=8 tic=1238 hash=7b4bbee547bad6c9 health=128 armor=41 kills=5/5 items=7/7 exit=1 god=0
