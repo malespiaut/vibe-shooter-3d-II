@@ -75,7 +75,7 @@ const char *sprite_name_for_entity(int type);
  * direction). A render_thing whose type is SPRITE_FX_BASE + FXS_* draws
  * one, with the frame the game picked (render_thing.frame). `fullbright`
  * ones are drawn with colormap row 0 whatever the light (pure energy: the
- * scarab projectile, whose TEX carries BAST_TEX_FULLBRIGHT); the others,
+ * scarab projectile and the plasma bolt, whose TEX carry BAST_TEX_FULLBRIGHT); the others,
  * explosions included, are shaded like any sprite: their fb_* core stays
  * bright through the colormap while smoke and debris darken with the room. */
 enum { SPRITE_FX_BASE = 0x4000 };
@@ -85,6 +85,8 @@ enum {
     FXS_EXPLOSION_BIG,
     FXS_PUFF,
     FXS_BLOOD,
+    FXS_PLASMA_BOLT, /* Pomeranian bolt and Woofu fan bolt */
+    FXS_PLASMA_HIT,
     FXS_COUNT
 };
 #define FX_SPRITE_MAX_FRAMES 16

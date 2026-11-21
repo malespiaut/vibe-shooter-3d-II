@@ -184,6 +184,43 @@ static void test_render_projectile(void)
     bast_map_free(m);
 }
 
+/* Woofu's fan bolt (issue #228) and the Pomeranian's plasma bolt draw the
+ * plasma_bolt sprite at their own height, looping; their impact draws
+ * plasma_hit, one frame per FX_TICS_PER_FRAME. */
+static void test_render_plasma(void)
+{
+    static const uint16_t types[] = { TH_TYPE_BOSS_BOLT, TH_TYPE_PLASMA_BOLT };
+    for (size_t k = 0; k < 2; k++) {
+        bast_map *m = open_map();
+        game_state gs;
+        setup(&gs, m);
+        const fix_t z = FX(1) / 2;
+        /* Flying east from x 4.5 (ahead of the player) into the wall at x 15. */
+        assert(projectile_spawn(&gs, types[k], TH_ID_PLAYER, FX(4) + HALF, FX(3) + HALF, z, 0));
+        render_thing out[4];
+        int frames_seen = 0, hit = 0;
+        for (int t = 0; t < 200; t++) {
+            game_tic(&gs, &IDLE);
+            const int n = fx_render_things(&gs, out, 0, 4);
+            if (!n)
+                break;
+            assert(n == 1);
+            if (out[0].type == SPRITE_FX_BASE + FXS_PLASMA_BOLT) {
+                assert(!hit && out[0].frame < FX_PLASMA_BOLT_FRAMES && out[0].z == z);
+                frames_seen |= 1 << out[0].frame;
+            } else {
+                assert(out[0].type == SPRITE_FX_BASE + FXS_PLASMA_HIT);
+                assert(out[0].frame == hit / FX_TICS_PER_FRAME);
+                hit++;
+            }
+        }
+        printf("type %u: frames mask %x, plasma_hit %d tics\n", types[k], frames_seen, hit);
+        assert(frames_seen == 0xf);
+        assert(hit == fx_tics(TH_TYPE_PLASMA_HIT));
+        bast_map_free(m);
+    }
+}
+
 /* The effect list is part of the state hash. */
 static void test_hash(void)
 {
@@ -206,6 +243,7 @@ int main(int argc, char **argv)
         { "lifetime", test_lifetime },     { "overflow", test_overflow },
         { "pistol_wall", test_pistol_wall }, { "pistol_enemy", test_pistol_enemy },
         { "render_projectile", test_render_projectile }, { "hash", test_hash },
+        { "render_plasma", test_render_plasma },
     };
     for (size_t i = 0; i < sizeof groups / sizeof groups[0]; i++) {
         if (argc < 2 || strcmp(argv[1], groups[i].name) == 0) {

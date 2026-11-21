@@ -101,6 +101,8 @@ static const fx_sprite_def fx_defs[FXS_COUNT] = {
     [FXS_EXPLOSION_BIG] = { "explosion_big", "boom", 10, 0 },
     [FXS_PUFF] = { "puff", "hit", 4, 0 },
     [FXS_BLOOD] = { "blood_hit", "hit", 4, 0 },
+    [FXS_PLASMA_BOLT] = { "plasma_bolt", "fly", 4, 1 },
+    [FXS_PLASMA_HIT] = { "plasma_hit", "hit", 5, 0 },
 };
 
 const fx_sprite_def *fx_sprite_def_for(int id)

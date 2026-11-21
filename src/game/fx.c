@@ -65,6 +65,15 @@ int fx_render_things(const game_state *gs, render_thing *out, int n, int max)
             spr = FXS_SCARAB_PROJ;
             frame = (int)(gs->tic / FX_TICS_PER_FRAME) % FX_SCARAB_FRAMES;
             break;
+        case TH_TYPE_PLASMA_BOLT: /* enemies.md: Woofu's fan bolts are the */
+        case TH_TYPE_BOSS_BOLT:   /* same cyan bolt as the Pomeranian's */
+            spr = FXS_PLASMA_BOLT;
+            frame = (int)(gs->tic / FX_TICS_PER_FRAME) % FX_PLASMA_BOLT_FRAMES;
+            break;
+        case TH_TYPE_PLASMA_HIT: /* impact of both, at the bolt's height */
+            spr = FXS_PLASMA_HIT;
+            frame = oneshot_frame(fx_tics(t->type), t->tics);
+            break;
         case TH_TYPE_EXPLOSION_SMALL:
         case TH_TYPE_EXPLOSION_BIG:
             spr = t->type == TH_TYPE_EXPLOSION_SMALL ? FXS_EXPLOSION_SMALL : FXS_EXPLOSION_BIG;
