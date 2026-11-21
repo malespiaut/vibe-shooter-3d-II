@@ -1,0 +1,703 @@
+== git clone --quiet --no-local /work /tmp/fc3/clone
+check_fresh_clone: 4cd897e in /tmp/fc3/clone
+== cmake -S . -B build -G Ninja
+-- The C compiler identification is GNU 16.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/sbin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Found PkgConfig: /usr/sbin/pkg-config (found version "3.0.10")
+-- Found Python3: /usr/sbin/python3.14 (found version "3.14.10") found components: Interpreter
+-- Configuring done (0.4s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/fc3/clone/build
+== cmake --build build
+[0/2] Re-checking globbed directories...
+[1/166] Building C object CMakeFiles/bast_obj.dir/src/bast/error.c.o
+[2/166] Building C object CMakeFiles/gen_trig.dir/tools/gen_trig.c.o
+[3/166] Building palette.bin from catlantis.gpl
+[4/166] Building C object CMakeFiles/bast_obj.dir/src/bast/palette.c.o
+[5/166] Building C object CMakeFiles/test_platform_audio.dir/tests/test_platform_audio.c.o
+[6/166] Building C object CMakeFiles/bast_obj.dir/src/bast/oklab.c.o
+[7/166] Linking C executable gen_trig
+[8/166] Building C object CMakeFiles/bast_obj.dir/src/bast/snd.c.o
+[9/166] Building C object CMakeFiles/bast_obj.dir/src/bast/tex.c.o
+[10/166] Building C object CMakeFiles/bast_obj.dir/src/bast/pak.c.o
+[11/166] Building C object CMakeFiles/test_tex_roundtrip.dir/tests/test_tex_roundtrip.c.o
+[12/166] Building C object CMakeFiles/test_oklab_nearest.dir/tests/test_oklab_nearest.c.o
+[13/166] Building C object CMakeFiles/platform.dir/src/platform/platform_sdl.c.o
+[14/166] Building C object CMakeFiles/test_snd_roundtrip.dir/tests/test_snd_roundtrip.c.o
+[15/166] Building C object CMakeFiles/test_pak_roundtrip.dir/tests/test_pak_roundtrip.c.o
+[16/166] Linking C static library libplatform.a
+[17/166] Linking C executable test_platform_audio
+[18/166] Building C object CMakeFiles/bast_obj.dir/src/bast/map.c.o
+[19/166] Building C object CMakeFiles/test_map_roundtrip.dir/tests/test_map_roundtrip.c.o
+[20/166] Linking C static library libbast_static.a
+[21/166] Linking C shared library libbast.so
+[22/166] Generating trig_tables.h
+[23/166] Linking C executable test_tex_roundtrip
+[24/166] Linking C executable test_oklab_nearest
+[25/166] Linking C executable test_pak_roundtrip
+[26/166] Linking C executable test_snd_roundtrip
+[27/166] Linking C executable test_map_roundtrip
+[28/166] Building C object CMakeFiles/engine.dir/src/engine/angle.c.o
+[29/166] Building C object CMakeFiles/engine.dir/src/engine/files.c.o
+[30/166] Building C object CMakeFiles/engine.dir/src/engine/fixed.c.o
+[31/166] Building C object CMakeFiles/engine.dir/src/engine/hash.c.o
+[32/166] Building renderer test-pattern textures
+[33/166] Building C object CMakeFiles/engine.dir/src/engine/colormap.c.o
+[34/166] Building colormap.bin
+colormap: wrote /tmp/fc3/clone/assets/gen/colormap.bin (8192 bytes, 18 cells clamped for monotonic L)
+[35/166] Building C object CMakeFiles/engine.dir/src/engine/rng.c.o
+[36/166] Building C object CMakeFiles/engine.dir/src/engine/sprite.c.o
+[37/166] Building HUD art
+hud: 71 images in /tmp/fc3/clone/assets/gen/hud
+[38/166] Building C object CMakeFiles/engine.dir/src/engine/video.c.o
+[39/166] Building C object CMakeFiles/engine.dir/src/engine/png.c.o
+[40/166] Building C object CMakeFiles/engine.dir/src/game/demo_combat.c.o
+[41/166] Building C object CMakeFiles/engine.dir/src/engine/draw2d.c.o
+[42/166] Building C object CMakeFiles/engine.dir/src/game/enemy_info.c.o
+[43/166] Building C object CMakeFiles/engine.dir/src/engine/mixer.c.o
+[44/166] Building C object CMakeFiles/engine.dir/src/game/demo_nav.c.o
+[45/166] Building C object CMakeFiles/engine.dir/src/game/fx.c.o
+[46/166] Building C object CMakeFiles/engine.dir/src/game/door.c.o
+[47/166] Building C object CMakeFiles/engine.dir/src/game/hud_face.c.o
+[48/166] Building C object CMakeFiles/engine.dir/src/game/flow.c.o
+[49/166] Building C object CMakeFiles/engine.dir/src/game/jukebox.c.o
+[50/166] Building C object CMakeFiles/engine.dir/src/game/sound.c.o
+[51/166] Building C object CMakeFiles/engine.dir/src/game/hud.c.o
+[52/166] Building C object CMakeFiles/engine.dir/src/game/items.c.o
+[53/166] Building C object CMakeFiles/engine.dir/src/game/thinker.c.o
+[54/166] Building C object CMakeFiles/engine.dir/src/engine/music.c.o
+[55/166] Building C object CMakeFiles/engine.dir/src/game/demo.c.o
+[56/166] Building C object CMakeFiles/engine.dir/src/game/tags.c.o
+[57/166] Building C object CMakeFiles/engine.dir/src/game/projectile.c.o
+[58/166] Building C object CMakeFiles/engine.dir/src/game/topdown.c.o
+[59/166] Building C object CMakeFiles/engine.dir/src/engine/render.c.o
+[60/166] Building C object CMakeFiles/engine.dir/src/game/state.c.o
+[61/166] Building C object CMakeFiles/test_smoke.dir/tests/test_smoke.c.o
+[62/166] Building C object CMakeFiles/engine.dir/src/game/ai.c.o
+[63/166] Building pickup sprites
+items: 33 sprite frames in /tmp/fc3/clone/assets/gen/sprites/items
+[64/166] Building C object CMakeFiles/test_fixed.dir/tests/test_fixed.c.o
+[65/166] Building font bigdigits.tex
+png2tex: /tmp/fc3/clone/assets/src/fonts/bigdigits.png -> /tmp/fc3/clone/assets/gen/fonts/bigdigits.tex (192x16, origin 0,0, flags 1)
+[66/166] Building C object CMakeFiles/test_hash.dir/tests/test_hash.c.o
+[67/166] Building font small.tex
+png2tex: /tmp/fc3/clone/assets/src/fonts/small.png -> /tmp/fc3/clone/assets/gen/fonts/small.tex (96x48, origin 0,0, flags 1)
+[68/166] Building font menu.tex
+png2tex: /tmp/fc3/clone/assets/src/fonts/menu.png -> /tmp/fc3/clone/assets/gen/fonts/menu.tex (160x56, origin 0,0, flags 1)
+[69/166] Building C object CMakeFiles/test_angle.dir/tests/test_angle.c.o
+[70/166] Building C object CMakeFiles/test_rng.dir/tests/test_rng.c.o
+[71/166] Building title screen
+title: /tmp/fc3/clone/assets/gen/ui/title.tex (320x240, 71 colours)
+[72/166] Building C object CMakeFiles/test_sprite_dir.dir/tests/test_sprite_dir.c.o
+[73/166] Building C object CMakeFiles/engine.dir/src/game/weapon.c.o
+[74/166] Building C object CMakeFiles/test_player_move.dir/tests/test_player_move.c.o
+[75/166] Building sound effects
+[76/166] Linking C static library libengine.a
+[77/166] Building C object CMakeFiles/test_files.dir/tests/test_files.c.o
+[78/166] Building C object CMakeFiles/test_weapon.dir/tests/test_weapon.c.o
+[79/166] Building C object CMakeFiles/test_death.dir/tests/test_death.c.o
+[80/166] Building C object CMakeFiles/test_items.dir/tests/test_items.c.o
+[81/166] Building C object CMakeFiles/test_png_writer.dir/tests/test_png_writer.c.o
+[82/166] Building C object CMakeFiles/test_projectile.dir/tests/test_projectile.c.o
+[83/166] Building C object CMakeFiles/vmus_render.dir/tools/vmus_render.c.o
+[84/166] Building C object CMakeFiles/test_mixer.dir/tests/test_mixer.c.o
+[85/166] Building C object CMakeFiles/test_music_parse.dir/tests/test_music_parse.c.o
+[86/166] Building C object CMakeFiles/test_ai_mastshep.dir/tests/test_ai_mastshep.c.o
+[87/166] Building C object CMakeFiles/test_music_tracks.dir/tests/test_music_tracks.c.o
+[88/166] Building C object CMakeFiles/test_boss.dir/tests/test_boss.c.o
+[89/166] Building C object CMakeFiles/test_music_render.dir/tests/test_music_render.c.o
+[90/166] Building C object CMakeFiles/test_demo_parse.dir/tests/test_demo_parse.c.o
+[91/166] Building C object CMakeFiles/test_demo_nav.dir/tests/test_demo_nav.c.o
+[92/166] Building C object CMakeFiles/test_weapon67.dir/tests/test_weapon67.c.o
+[93/166] Building C object CMakeFiles/test_demo_combat.dir/tests/test_demo_combat.c.o
+[94/166] Building C object CMakeFiles/test_hud_face.dir/tests/test_hud_face.c.o
+[95/166] Building C object CMakeFiles/test_fx_sprites.dir/tests/test_fx_sprites.c.o
+[96/166] Building C object CMakeFiles/test_fx.dir/tests/test_fx.c.o
+[97/166] Building C object CMakeFiles/test_jukebox.dir/tests/test_jukebox.c.o
+[98/166] Building C object CMakeFiles/test_render_walls.dir/tests/test_render_walls.c.o
+[99/166] Building C object CMakeFiles/test_render_doors.dir/tests/test_render_doors.c.o
+[100/166] Building C object CMakeFiles/test_mixer_wav.dir/tests/test_mixer_wav.c.o
+[101/166] Building C object CMakeFiles/test_flow.dir/tests/test_flow.c.o
+[102/166] Building C object CMakeFiles/test_render_seam.dir/tests/test_render_seam.c.o
+[103/166] Building C object CMakeFiles/test_colormap.dir/tests/test_colormap.c.o
+[104/166] Building C object CMakeFiles/test_render_pushwalls.dir/tests/test_render_pushwalls.c.o
+[105/166] Building C object CMakeFiles/test_ai.dir/tests/test_ai.c.o
+[106/166] Building C object CMakeFiles/test_door.dir/tests/test_door.c.o
+[107/166] Building C object CMakeFiles/test_sound.dir/tests/test_sound.c.o
+[108/166] Building C object CMakeFiles/draw2d_specimen.dir/tools/draw2d_specimen.c.o
+[109/166] Building C object CMakeFiles/test_tags.dir/tests/test_tags.c.o
+[110/166] Linking C executable test_smoke
+[111/166] Building C object CMakeFiles/panel_mockup.dir/tools/panel_mockup.c.o
+[112/166] Linking C executable test_angle
+[113/166] Building C object CMakeFiles/test_render_floor.dir/tests/test_render_floor.c.o
+[114/166] Linking C executable test_fixed
+[115/166] Linking C executable test_rng
+[116/166] Building C object CMakeFiles/test_world_sprites_items.dir/tests/test_world_sprites_items.c.o
+[117/166] Linking C executable test_hash
+[118/166] Linking C executable test_weapon
+[119/166] Linking C executable test_player_move
+[120/166] Linking C executable test_sprite_dir
+[121/166] Linking C executable test_items
+[122/166] Building C object CMakeFiles/test_hud_layout.dir/tests/test_hud_layout.c.o
+[123/166] Linking C executable test_death
+[124/166] Building C object CMakeFiles/test_render_sprites.dir/tests/test_render_sprites.c.o
+[125/166] Linking C executable test_ai
+[126/166] Linking C executable test_ai_mastshep
+[127/166] Linking C executable test_boss
+[128/166] Building C object CMakeFiles/test_world_sprites_enemies.dir/tests/test_world_sprites_enemies.c.o
+[129/166] Linking C executable test_projectile
+[130/166] Linking C executable test_files
+[131/166] Linking C executable test_colormap
+[132/166] Linking C executable test_weapon67
+[133/166] Linking C executable test_mixer
+[134/166] Linking C executable test_mixer_wav
+[135/166] Building C object CMakeFiles/test_draw2d.dir/tests/test_draw2d.c.o
+[136/166] Linking C executable test_png_writer
+[137/166] Linking C executable vmus_render
+[138/166] Linking C executable test_music_render
+[139/166] Linking C executable test_music_parse
+[140/166] Linking C executable test_music_tracks
+[141/166] Linking C executable test_demo_parse
+[142/166] Linking C executable test_demo_nav
+[143/166] Linking C executable test_render_walls
+[144/166] Linking C executable test_render_seam
+[145/166] Linking C executable test_demo_combat
+[146/166] Linking C executable test_hud_face
+[147/166] Linking C executable test_render_doors
+[148/166] Linking C executable test_render_pushwalls
+[149/166] Linking C executable test_draw2d
+[150/166] Linking C executable test_hud_layout
+[151/166] Linking C executable draw2d_specimen
+[152/166] Linking C executable test_fx_sprites
+[153/166] Linking C executable test_fx
+[154/166] Linking C executable test_render_floor
+[155/166] Linking C executable test_door
+[156/166] Linking C executable test_render_sprites
+[157/166] Linking C executable test_world_sprites_items
+[158/166] Linking C executable test_jukebox
+[159/166] Linking C executable test_world_sprites_enemies
+[160/166] Linking C executable test_sound
+[161/166] Linking C executable test_tags
+[162/166] Building C object CMakeFiles/game.dir/src/main.c.o
+[163/166] Linking C executable panel_mockup
+[164/166] Linking C executable test_flow
+[165/166] Linking C executable game
+== tools/build_assets.sh
+== python3 tools/palette.py
+== python3 tools/colormap.py
+colormap: wrote /tmp/fc3/clone/assets/gen/colormap.bin (8192 bytes, 18 cells clamped for monotonic L)
+== sh tools/build.d/15-testpattern.sh
+testpattern: 8 textures, testsky and 8 sprite frames in assets/gen/test
+== sh tools/build.d/20-texgen.sh
+texgen: 47 textures in assets/gen/textures
+== sh tools/build.d/25-sky.sh
+skygen: 4 sky texture(s) in assets/gen/textures
+== sh tools/build.d/30-sfx.sh
+sfx: 76 effects in assets/gen/sfx
+== sh tools/build.d/35-music.sh
+music: 9 songs in assets/gen/music
+== sh tools/build.d/40-fx.sh
+fx: blood_hit -> 4 x 16x16 oneshot, 5 indices
+fx: explosion_big -> 10 x 96x96 oneshot, 12 indices
+fx: explosion_small -> 8 x 64x64 oneshot, 10 indices
+fx: lance_beam_hit -> 5 x 32x32 oneshot, 6 indices
+fx: plasma_bolt -> 4 x 12x12 loop, 3 indices
+fx: plasma_hit -> 5 x 32x32 oneshot, 6 indices
+fx: puff -> 4 x 16x16 oneshot, 6 indices
+fx: reticle -> 8 x 32x16 loop, 2 indices
+fx: scarab_proj -> 4 x 12x12 loop, 4 indices
+fx: teleport_sparkle -> 8 x 32x32 loop, 4 indices
+== sh tools/build.d/45-sprites.sh
+sprites: 1 sprite(s) in assets/gen/sprites
+== sh tools/build.d/47-items.sh
+items: 33 sprite frames in /tmp/fc3/clone/assets/gen/sprites/items
+== sh tools/build.d/48-props.sh
+items: 10 sprite frames in assets/gen/sprites/props
+blender_render: 1 sprite(s) -> assets/gen/sprites/props (32x64, origin 16,64)
+blender_render: 2 sprite(s) -> assets/gen/sprites/props (48x64, origin 24,64)
+props: 2 pre-rendered prop(s), 13 frames in assets/gen/sprites/props
+== sh tools/build.d/50-fonts.sh
+png2tex: /tmp/fc3/clone/assets/src/fonts/small.png -> /tmp/fc3/clone/assets/gen/fonts/small.tex (96x48, origin 0,0, flags 1)
+png2tex: /tmp/fc3/clone/assets/src/fonts/menu.png -> /tmp/fc3/clone/assets/gen/fonts/menu.tex (160x56, origin 0,0, flags 1)
+png2tex: /tmp/fc3/clone/assets/src/fonts/bigdigits.png -> /tmp/fc3/clone/assets/gen/fonts/bigdigits.tex (192x16, origin 0,0, flags 1)
+== sh tools/build.d/50-hud.sh
+hud: 71 images in /tmp/fc3/clone/assets/gen/hud
+== sh tools/build.d/55-ui.sh
+title: /tmp/fc3/clone/assets/gen/ui/title.tex (320x240, 71 colours)
+panels: 2 images in /tmp/fc3/clone/assets/gen/ui
+== sh tools/build.d/55-viewmodels.sh
+viewmodels: 15 frames in /tmp/fc3/clone/assets/gen/viewmodels
+== sh tools/build.d/60-sprites.sh
+blender_render: 128 sprite(s) -> assets/gen/sprites (40x32, origin 20,32)
+blender_render: 128 sprite(s) -> assets/gen/sprites (72x48, origin 36,48)
+blender_render: 128 sprite(s) -> assets/gen/sprites (80x72, origin 40,72)
+blender_render: 128 sprite(s) -> assets/gen/sprites (48x64, origin 24,64)
+blender_render: 128 sprite(s) -> assets/gen/sprites (56x56, origin 28,56)
+blender_render: 128 sprite(s) -> assets/gen/sprites (56x64, origin 28,64)
+blender_render: 176 sprite(s) -> assets/gen/sprites (128x112, origin 64,112)
+blender_render: 88 sprite(s) -> assets/gen/sprites (128x112, origin 64,112)
+sprites: 8 sprite(s), 1032 frames in assets/gen/sprites
+== sh tools/build.d/65-gibs.sh
+gibs: 8 animation(s), 64 frames in assets/gen/gibs
+== sh tools/build.d/99-pak.sh
+pak: 1623 file(s), 10848989 bytes of data -> assets/gen/game.pak (10952869 bytes)
+== python3 tools/palcheck.py assets/gen
+palcheck: OK, 1495 file(s) checked
+build_assets: ok
+== python3 tools/palcheck.py assets/gen
+palcheck: OK, 1495 file(s) checked
+== ctest --test-dir build --output-on-failure
+Test project /tmp/fc3/clone/build
+        Start   1: smoke
+  1/220 Test   #1: smoke ............................   Passed    0.00 sec
+        Start   2: fixed
+  2/220 Test   #2: fixed ............................   Passed    0.00 sec
+        Start   3: angle
+  3/220 Test   #3: angle ............................   Passed    0.00 sec
+        Start   4: rng
+  4/220 Test   #4: rng ..............................   Passed    0.00 sec
+        Start   5: hash
+  5/220 Test   #5: hash .............................   Passed    0.00 sec
+        Start   6: player_move
+  6/220 Test   #6: player_move ......................   Passed    0.00 sec
+        Start   7: weapon
+  7/220 Test   #7: weapon ...........................   Passed    0.00 sec
+        Start   8: sprite_dir
+  8/220 Test   #8: sprite_dir .......................   Passed    0.00 sec
+        Start   9: items_health
+  9/220 Test   #9: items_health .....................   Passed    0.00 sec
+        Start  10: items_armour
+ 10/220 Test  #10: items_armour .....................   Passed    0.00 sec
+        Start  11: items_ammo
+ 11/220 Test  #11: items_ammo .......................   Passed    0.00 sec
+        Start  12: items_weapons
+ 12/220 Test  #12: items_weapons ....................   Passed    0.00 sec
+        Start  13: items_keys
+ 13/220 Test  #13: items_keys .......................   Passed    0.00 sec
+        Start  14: items_powerups
+ 14/220 Test  #14: items_powerups ...................   Passed    0.00 sec
+        Start  15: items_damage
+ 15/220 Test  #15: items_damage .....................   Passed    0.00 sec
+        Start  16: items_ninth_life
+ 16/220 Test  #16: items_ninth_life .................   Passed    0.00 sec
+        Start  17: items_spawn
+ 17/220 Test  #17: items_spawn ......................   Passed    0.00 sec
+        Start  18: items_touch
+ 18/220 Test  #18: items_touch ......................   Passed    0.00 sec
+        Start  19: death_timer
+ 19/220 Test  #19: death_timer ......................   Passed    0.00 sec
+        Start  20: death_early_use
+ 20/220 Test  #20: death_early_use ..................   Passed    0.00 sec
+        Start  21: death_input
+ 21/220 Test  #21: death_input ......................   Passed    0.00 sec
+        Start  22: death_restart
+ 22/220 Test  #22: death_restart ....................   Passed    0.00 sec
+        Start  23: death_hash
+ 23/220 Test  #23: death_hash .......................   Passed    0.00 sec
+        Start  24: death_eye
+ 24/220 Test  #24: death_eye ........................   Passed    0.00 sec
+        Start  25: ai_sight
+ 25/220 Test  #25: ai_sight .........................   Passed    0.00 sec
+        Start  26: ai_ambush
+ 26/220 Test  #26: ai_ambush ........................   Passed    0.00 sec
+        Start  27: ai_windup
+ 27/220 Test  #27: ai_windup ........................   Passed    0.00 sec
+        Start  28: ai_chomper
+ 28/220 Test  #28: ai_chomper .......................   Passed    0.00 sec
+        Start  29: ai_pillar
+ 29/220 Test  #29: ai_pillar ........................   Passed    0.00 sec
+        Start  30: ai_drop
+ 30/220 Test  #30: ai_drop ..........................   Passed    0.00 sec
+        Start  31: ai_block
+ 31/220 Test  #31: ai_block .........................   Passed    0.00 sec
+        Start  32: ai_pushwall
+ 32/220 Test  #32: ai_pushwall ......................   Passed    0.00 sec
+        Start  33: ai_pom_speed
+ 33/220 Test  #33: ai_pom_speed .....................   Passed    0.00 sec
+        Start  34: ai_pom_pair
+ 34/220 Test  #34: ai_pom_pair ......................   Passed    0.00 sec
+        Start  35: ai_pom_dodge
+ 35/220 Test  #35: ai_pom_dodge .....................   Passed    0.00 sec
+        Start  36: ai_pom_still
+ 36/220 Test  #36: ai_pom_still .....................   Passed    0.00 sec
+        Start  37: ai_pom_windup
+ 37/220 Test  #37: ai_pom_windup ....................   Passed    0.00 sec
+        Start  38: ai_dach_mortar
+ 38/220 Test  #38: ai_dach_mortar ...................   Passed    0.00 sec
+        Start  39: ai_dach_retreat
+ 39/220 Test  #39: ai_dach_retreat ..................   Passed    0.00 sec
+        Start  40: ai_dach_windup
+ 40/220 Test  #40: ai_dach_windup ...................   Passed    0.00 sec
+        Start  41: ai_dach_headbutt
+ 41/220 Test  #41: ai_dach_headbutt .................   Passed    0.00 sec
+        Start  42: ai_pom_sound
+ 42/220 Test  #42: ai_pom_sound .....................   Passed    0.00 sec
+        Start  43: ai_dach_sound
+ 43/220 Test  #43: ai_dach_sound ....................   Passed    0.00 sec
+        Start  44: ai_mastiff_shoulders
+ 44/220 Test  #44: ai_mastiff_shoulders .............   Passed    0.00 sec
+        Start  45: ai_mastiff_speed
+ 45/220 Test  #45: ai_mastiff_speed .................   Passed    0.00 sec
+        Start  46: ai_mastiff_lance
+ 46/220 Test  #46: ai_mastiff_lance .................   Passed    0.00 sec
+        Start  47: ai_mastiff_hit
+ 47/220 Test  #47: ai_mastiff_hit ...................   Passed    0.00 sec
+        Start  48: ai_shep_front
+ 48/220 Test  #48: ai_shep_front ....................   Passed    0.00 sec
+        Start  49: ai_shep_splash
+ 49/220 Test  #49: ai_shep_splash ...................   Passed    0.00 sec
+        Start  50: ai_shep_howler
+ 50/220 Test  #50: ai_shep_howler ...................   Passed    0.00 sec
+        Start  51: ai_shep_windup
+ 51/220 Test  #51: ai_shep_windup ...................   Passed    0.00 sec
+        Start  52: boss_fan
+ 52/220 Test  #52: boss_fan .........................   Passed    0.00 sec
+        Start  53: boss_phase
+ 53/220 Test  #53: boss_phase .......................   Passed    0.00 sec
+        Start  54: boss_pods
+ 54/220 Test  #54: boss_pods ........................   Passed    0.01 sec
+        Start  55: boss_cap
+ 55/220 Test  #55: boss_cap .........................   Passed    0.00 sec
+        Start  56: boss_tag
+ 56/220 Test  #56: boss_tag .........................   Passed    0.00 sec
+        Start  57: boss_barrage
+ 57/220 Test  #57: boss_barrage .....................   Passed    0.00 sec
+        Start  58: proj_travel
+ 58/220 Test  #58: proj_travel ......................   Passed    0.00 sec
+        Start  59: proj_wall
+ 59/220 Test  #59: proj_wall ........................   Passed    0.00 sec
+        Start  60: proj_splash
+ 60/220 Test  #60: proj_splash ......................   Passed    0.00 sec
+        Start  61: proj_splash_wall
+ 61/220 Test  #61: proj_splash_wall .................   Passed    0.00 sec
+        Start  62: proj_self
+ 62/220 Test  #62: proj_self ........................   Passed    0.00 sec
+        Start  63: proj_direct
+ 63/220 Test  #63: proj_direct ......................   Passed    0.00 sec
+        Start  64: proj_barrel_chain
+ 64/220 Test  #64: proj_barrel_chain ................   Passed    0.00 sec
+        Start  65: proj_barrel_solid
+ 65/220 Test  #65: proj_barrel_solid ................   Passed    0.00 sec
+        Start  66: proj_awake
+ 66/220 Test  #66: proj_awake .......................   Passed    0.00 sec
+        Start  67: proj_alive
+ 67/220 Test  #67: proj_alive .......................   Passed    0.00 sec
+        Start  68: proj_no_floats
+ 68/220 Test  #68: proj_no_floats ...................   Passed    0.00 sec
+        Start  69: weapon67_pierce
+ 69/220 Test  #69: weapon67_pierce ..................   Passed    0.00 sec
+        Start  70: weapon67_wall
+ 70/220 Test  #70: weapon67_wall ....................   Passed    0.00 sec
+        Start  71: weapon67_cone
+ 71/220 Test  #71: weapon67_cone ....................   Passed    0.00 sec
+        Start  72: weapon67_knockback
+ 72/220 Test  #72: weapon67_knockback ...............   Passed    0.00 sec
+        Start  73: weapon67_pain
+ 73/220 Test  #73: weapon67_pain ....................   Passed    0.00 sec
+        Start  74: weapon67_self
+ 74/220 Test  #74: weapon67_self ....................   Passed    0.00 sec
+        Start  75: weapon67_barrel_lance
+ 75/220 Test  #75: weapon67_barrel_lance ............   Passed    0.00 sec
+        Start  76: weapon67_barrel_howler
+ 76/220 Test  #76: weapon67_barrel_howler ...........   Passed    0.00 sec
+        Start  77: weapon67_sound
+ 77/220 Test  #77: weapon67_sound ...................   Passed    0.00 sec
+        Start  78: platform_audio
+ 78/220 Test  #78: platform_audio ...................   Passed    0.07 sec
+        Start  79: tex_roundtrip
+ 79/220 Test  #79: tex_roundtrip ....................   Passed    0.00 sec
+        Start  80: oklab_nearest
+ 80/220 Test  #80: oklab_nearest ....................   Passed    0.00 sec
+        Start  81: snd_roundtrip
+ 81/220 Test  #81: snd_roundtrip ....................   Passed    0.00 sec
+        Start  82: map_roundtrip
+ 82/220 Test  #82: map_roundtrip ....................   Passed    0.00 sec
+        Start  83: pak_roundtrip
+ 83/220 Test  #83: pak_roundtrip ....................   Passed    0.00 sec
+        Start  84: files
+ 84/220 Test  #84: files ............................   Passed    0.00 sec
+        Start  85: palcheck
+ 85/220 Test  #85: palcheck .........................   Passed    0.57 sec
+        Start  86: bast_py
+ 86/220 Test  #86: bast_py ..........................   Passed    0.46 sec
+        Start  87: sfx_determinism
+ 87/220 Test  #87: sfx_determinism ..................   Passed    1.39 sec
+        Start  88: sfx_levels
+ 88/220 Test  #88: sfx_levels .......................   Passed    0.43 sec
+        Start  89: mkmap_py
+ 89/220 Test  #89: mkmap_py .........................   Passed    0.05 sec
+        Start  90: quantize
+ 90/220 Test  #90: quantize .........................   Passed    0.24 sec
+        Start  91: editor_roundtrip
+ 91/220 Test  #91: editor_roundtrip .................   Passed    0.04 sec
+        Start  92: texgen_tile
+ 92/220 Test  #92: texgen_tile ......................   Passed    0.74 sec
+        Start  93: editor_entities
+ 93/220 Test  #93: editor_entities ..................   Passed    0.02 sec
+        Start  94: editor_launch
+ 94/220 Test  #94: editor_launch ....................   Passed    0.08 sec
+        Start  95: gibs_determinism
+ 95/220 Test  #95: gibs_determinism .................   Passed    0.16 sec
+        Start  96: gibs_pixels
+ 96/220 Test  #96: gibs_pixels ......................   Passed    0.07 sec
+        Start  97: fonts
+ 97/220 Test  #97: fonts ............................   Passed    0.23 sec
+        Start  98: pak_py
+ 98/220 Test  #98: pak_py ...........................   Passed    0.18 sec
+        Start  99: skygen
+ 99/220 Test  #99: skygen ...........................   Passed    0.20 sec
+        Start 100: colormap
+100/220 Test #100: colormap .........................   Passed    0.01 sec
+        Start 101: fx_loop
+101/220 Test #101: fx_loop ..........................   Passed    0.09 sec
+        Start 102: fx_determinism
+102/220 Test #102: fx_determinism ...................   Passed    0.54 sec
+        Start 103: fx_shapes
+103/220 Test #103: fx_shapes ........................   Passed    0.13 sec
+        Start 104: hud_assets
+104/220 Test #104: hud_assets .......................   Passed    0.23 sec
+        Start 105: title_screen
+105/220 Test #105: title_screen .....................   Passed    0.27 sec
+        Start 106: hud_faces_t12
+106/220 Test #106: hud_faces_t12 ....................   Passed    0.22 sec
+        Start 107: sprites_items
+107/220 Test #107: sprites_items ....................   Passed    0.18 sec
+        Start 108: sprites_props_dt
+108/220 Test #108: sprites_props_dt .................   Passed    2.53 sec
+        Start 109: sprites_props_eg
+109/220 Test #109: sprites_props_eg .................   Passed    2.58 sec
+        Start 110: hud_faces_t345
+110/220 Test #110: hud_faces_t345 ...................   Passed    0.27 sec
+        Start 111: viewmodels_1_4
+111/220 Test #111: viewmodels_1_4 ...................   Passed    0.24 sec
+        Start 112: mixer
+112/220 Test #112: mixer ............................   Passed    0.00 sec
+        Start 113: mixer_wav
+113/220 Test #113: mixer_wav ........................   Passed    0.01 sec
+        Start 114: png_writer
+114/220 Test #114: png_writer .......................   Passed    0.06 sec
+        Start 115: demo_parse
+115/220 Test #115: demo_parse .......................   Passed    0.00 sec
+        Start 116: headless_smoke
+116/220 Test #116: headless_smoke ...................   Passed    0.15 sec
+        Start 117: death_demo
+117/220 Test #117: death_demo .......................   Passed    0.04 sec
+        Start 118: items_demo
+118/220 Test #118: items_demo .......................   Passed    0.04 sec
+        Start 119: blender_render
+119/220 Test #119: blender_render ...................   Passed    1.57 sec
+        Start 120: sprite_mutt
+120/220 Test #120: sprite_mutt ......................   Passed    4.42 sec
+        Start 121: sprite_woofu
+121/220 Test #121: sprite_woofu .....................   Passed   13.66 sec
+        Start 122: sprite_shep
+122/220 Test #122: sprite_shep ......................   Passed    5.37 sec
+        Start 123: sprite_chomp
+123/220 Test #123: sprite_chomp .....................   Passed    3.70 sec
+        Start 124: sprite_dach
+124/220 Test #124: sprite_dach ......................   Passed    3.70 sec
+        Start 125: sprite_mastiff
+125/220 Test #125: sprite_mastiff ...................   Passed    5.34 sec
+        Start 126: sprite_pom
+126/220 Test #126: sprite_pom .......................   Passed    4.49 sec
+        Start 127: music_parse
+127/220 Test #127: music_parse ......................   Passed    0.00 sec
+        Start 128: music_render
+128/220 Test #128: music_render .....................   Passed    0.04 sec
+        Start 129: music_tracks
+129/220 Test #129: music_tracks .....................   Passed    0.22 sec
+        Start 130: determinism_m1-walk
+130/220 Test #130: determinism_m1-walk ..............   Passed    0.20 sec
+        Start 131: determinism_door-test
+131/220 Test #131: determinism_door-test ............   Passed    0.03 sec
+        Start 132: determinism_m1-sprites
+132/220 Test #132: determinism_m1-sprites ...........   Passed    0.08 sec
+        Start 133: determinism_tags-test
+133/220 Test #133: determinism_tags-test ............   Passed    0.06 sec
+        Start 134: determinism_maplogic-test
+134/220 Test #134: determinism_maplogic-test ........   Passed    0.06 sec
+        Start 135: determinism_ai-test
+135/220 Test #135: determinism_ai-test ..............   Passed    0.13 sec
+        Start 136: determinism_combat-test
+136/220 Test #136: determinism_combat-test ..........   Passed    0.03 sec
+        Start 137: determinism_lance-howler-test
+137/220 Test #137: determinism_lance-howler-test ....   Passed    0.09 sec
+        Start 138: determinism_death-test
+138/220 Test #138: determinism_death-test ...........   Passed    0.08 sec
+        Start 139: determinism_sky-turn
+139/220 Test #139: determinism_sky-turn .............   Passed    0.03 sec
+        Start 140: complete_level2
+140/220 Test #140: complete_level2 ..................   Passed    0.12 sec
+        Start 141: determinism_level2-complete
+141/220 Test #141: determinism_level2-complete ......   Passed    4.01 sec
+        Start 142: demo_goto
+142/220 Test #142: demo_goto ........................   Passed    0.09 sec
+        Start 143: demo_timeout
+143/220 Test #143: demo_timeout .....................   Passed    0.11 sec
+        Start 144: demo_expect
+144/220 Test #144: demo_expect ......................   Passed    0.14 sec
+        Start 145: demo_nav_around
+145/220 Test #145: demo_nav_around ..................   Passed    0.00 sec
+        Start 146: demo_nav_fallback
+146/220 Test #146: demo_nav_fallback ................   Passed    0.00 sec
+        Start 147: demo_nav_stall
+147/220 Test #147: demo_nav_stall ...................   Passed    0.00 sec
+        Start 148: goto_around
+148/220 Test #148: goto_around ......................   Passed    0.06 sec
+        Start 149: determinism_goto-around
+149/220 Test #149: determinism_goto-around ..........   Passed    0.04 sec
+        Start 150: demo_combat_face
+150/220 Test #150: demo_combat_face .................   Passed    0.00 sec
+        Start 151: demo_combat_tie
+151/220 Test #151: demo_combat_tie ..................   Passed    0.00 sec
+        Start 152: demo_combat_aim
+152/220 Test #152: demo_combat_aim ..................   Passed    0.00 sec
+        Start 153: demo_combat_parse
+153/220 Test #153: demo_combat_parse ................   Passed    0.00 sec
+        Start 154: demo_combat_fire
+154/220 Test #154: demo_combat_fire .................   Passed    0.09 sec
+        Start 155: demo_combat_clear
+155/220 Test #155: demo_combat_clear ................   Passed    0.08 sec
+        Start 156: demo_combat_notarget
+156/220 Test #156: demo_combat_notarget .............   Passed    0.09 sec
+        Start 157: render_walls
+157/220 Test #157: render_walls .....................   Passed    0.01 sec
+        Start 158: render_seam
+158/220 Test #158: render_seam ......................   Passed    0.02 sec
+        Start 159: render_doors
+159/220 Test #159: render_doors .....................   Passed    0.01 sec
+        Start 160: render_pushwalls
+160/220 Test #160: render_pushwalls .................   Passed    0.01 sec
+        Start 161: hud_face
+161/220 Test #161: hud_face .........................   Passed    0.00 sec
+        Start 162: hud_layout
+162/220 Test #162: hud_layout .......................   Passed    0.01 sec
+        Start 163: draw2d
+163/220 Test #163: draw2d ...........................   Passed    0.00 sec
+        Start 164: weapon_demo
+164/220 Test #164: weapon_demo ......................   Passed    0.08 sec
+        Start 165: fx_lifetime
+165/220 Test #165: fx_lifetime ......................   Passed    0.00 sec
+        Start 166: fx_overflow
+166/220 Test #166: fx_overflow ......................   Passed    0.00 sec
+        Start 167: fx_pistol_wall
+167/220 Test #167: fx_pistol_wall ...................   Passed    0.00 sec
+        Start 168: fx_pistol_enemy
+168/220 Test #168: fx_pistol_enemy ..................   Passed    0.00 sec
+        Start 169: fx_render_projectile
+169/220 Test #169: fx_render_projectile .............   Passed    0.00 sec
+        Start 170: fx_hash
+170/220 Test #170: fx_hash ..........................   Passed    0.00 sec
+        Start 171: launcher_demo
+171/220 Test #171: launcher_demo ....................   Passed    0.08 sec
+        Start 172: determinism_launcher-test
+172/220 Test #172: determinism_launcher-test ........   Passed    0.03 sec
+        Start 173: determinism_fx-test
+173/220 Test #173: determinism_fx-test ..............   Passed    0.03 sec
+        Start 174: fx_sprites
+174/220 Test #174: fx_sprites .......................   Passed    0.01 sec
+        Start 175: lance_demo
+175/220 Test #175: lance_demo .......................   Passed    0.08 sec
+        Start 176: pomdach_demo
+176/220 Test #176: pomdach_demo .....................   Passed    0.08 sec
+        Start 177: determinism_pomdach-test
+177/220 Test #177: determinism_pomdach-test .........   Passed    0.05 sec
+        Start 178: boss_demo
+178/220 Test #178: boss_demo ........................   Passed    0.11 sec
+        Start 179: determinism_boss-test
+179/220 Test #179: determinism_boss-test ............   Passed    0.44 sec
+        Start 180: mastshep_demo
+180/220 Test #180: mastshep_demo ....................   Passed    0.08 sec
+        Start 181: determinism_mastshep-test
+181/220 Test #181: determinism_mastshep-test ........   Passed    0.05 sec
+        Start 182: render_floor
+182/220 Test #182: render_floor .....................   Passed    0.01 sec
+        Start 183: door
+183/220 Test #183: door .............................   Passed    0.00 sec
+        Start 184: render_sprites
+184/220 Test #184: render_sprites ...................   Passed    0.01 sec
+        Start 185: world_sprites_items
+185/220 Test #185: world_sprites_items ..............   Passed    0.01 sec
+        Start 186: world_sprites_enemies
+186/220 Test #186: world_sprites_enemies ............   Passed    0.10 sec
+        Start 187: tags_switch
+187/220 Test #187: tags_switch ......................   Passed    0.00 sec
+        Start 188: tags_start_open
+188/220 Test #188: tags_start_open ..................   Passed    0.00 sec
+        Start 189: tags_timed
+189/220 Test #189: tags_timed .......................   Passed    0.00 sec
+        Start 190: tags_pushwall
+190/220 Test #190: tags_pushwall ....................   Passed    0.00 sec
+        Start 191: tags_trigger
+191/220 Test #191: tags_trigger .....................   Passed    0.00 sec
+        Start 192: tags_secret
+192/220 Test #192: tags_secret ......................   Passed    0.00 sec
+        Start 193: tags_lights
+193/220 Test #193: tags_lights ......................   Passed    0.00 sec
+        Start 194: tags_damage
+194/220 Test #194: tags_damage ......................   Passed    0.00 sec
+        Start 195: tags_exit
+195/220 Test #195: tags_exit ........................   Passed    0.00 sec
+        Start 196: tags_kill_trigger
+196/220 Test #196: tags_kill_trigger ................   Passed    0.00 sec
+        Start 197: sfx_names
+197/220 Test #197: sfx_names ........................   Passed    0.02 sec
+        Start 198: sound_unit
+198/220 Test #198: sound_unit .......................   Passed    0.00 sec
+        Start 199: sound_events
+199/220 Test #199: sound_events .....................   Passed    0.11 sec
+        Start 200: enemy_sounds
+200/220 Test #200: enemy_sounds .....................   Passed    0.10 sec
+        Start 201: determinism_door-locked
+201/220 Test #201: determinism_door-locked ..........   Passed    0.03 sec
+        Start 202: jukebox
+202/220 Test #202: jukebox ..........................   Passed    0.00 sec
+        Start 203: music_events
+203/220 Test #203: music_events .....................   Passed    2.19 sec
+        Start 204: complete_level1
+204/220 Test #204: complete_level1 ..................   Passed    0.02 sec
+        Start 205: determinism_level1-complete
+205/220 Test #205: determinism_level1-complete ......   Passed    1.71 sec
+        Start 206: complete_level5
+206/220 Test #206: complete_level5 ..................   Passed    0.01 sec
+        Start 207: determinism_level5-complete
+207/220 Test #207: determinism_level5-complete ......   Passed    0.55 sec
+        Start 208: complete_level6
+208/220 Test #208: complete_level6 ..................   Passed    0.04 sec
+        Start 209: determinism_level6-complete
+209/220 Test #209: determinism_level6-complete ......   Passed    5.71 sec
+        Start 210: complete_level7
+210/220 Test #210: complete_level7 ..................   Passed    0.02 sec
+        Start 211: determinism_level7-complete
+211/220 Test #211: determinism_level7-complete ......   Passed    2.47 sec
+        Start 212: flow_blink
+212/220 Test #212: flow_blink .......................   Passed    0.00 sec
+        Start 213: flow_wrap
+213/220 Test #213: flow_wrap ........................   Passed    0.00 sec
+        Start 214: flow_pause_freeze
+214/220 Test #214: flow_pause_freeze ................   Passed    0.00 sec
+        Start 215: flow_restart
+215/220 Test #215: flow_restart .....................   Passed    0.00 sec
+        Start 216: flow_quit_title
+216/220 Test #216: flow_quit_title ..................   Passed    0.00 sec
+        Start 217: flow_skill
+217/220 Test #217: flow_skill .......................   Passed    0.00 sec
+        Start 218: flow_demo
+218/220 Test #218: flow_demo ........................   Passed    0.01 sec
+        Start 219: determinism_flow
+219/220 Test #219: determinism_flow .................   Passed    0.04 sec
+        Start 220: secrets_level5
+220/220 Test #220: secrets_level5 ...................   Passed    0.02 sec
+
+100% tests passed out of 220
+
+Total Test time (real) =  75.15 sec
+FRESH CLONE OK
+
+real	2m0.994s
+user	2m46.167s
+sys	0m21.815s
