@@ -350,3 +350,72 @@ def flash(cv, cx, cy, rx, ry, core, mid, rim, rays=(), ray_c=None):
 
 def count_fb(cv):
     return sum(1 for row in cv.px for c in row if c and c.startswith("fb_"))
+
+
+# ---- ramps added for weapons 5-7 (issue #87)
+
+def blue(v):
+    opts = [2, 4, 6, 8, 10]
+    v = min(opts, key=lambda o: abs(o - v))
+    return "blue_%02d" % v
+
+
+def sand(v):
+    opts = [3, 6, 9, 12]
+    v = min(opts, key=lambda o: abs(o - v))
+    return "sand_%02d" % v
+
+
+def cyl(rampf, hi, lo):
+    """Generic cylinder seen side-on, lit from the left (as cyl_steel)."""
+    def fn(t, s):
+        if s < -0.82:
+            v = hi - 3
+        elif s < -0.4:
+            v = hi + 1
+        else:
+            v = hi - 1 - (s + 0.4) / 1.4 * (hi - 1 - lo)
+        return rampf(v - t * 1.5)
+    return fn
+
+
+def scarab(cv, cx, cy, rx, ry):
+    """Lapis scarab seen from behind / above: domed wing cases split by a dark
+    seam, a top-left highlight, gold head plate toward -y, little dark legs."""
+    for k in (-1, 1):
+        for i in range(2):
+            cv.set(round(cx + k * (rx + 0.3)), round(cy - ry * 0.3 + i * ry * 0.6), "blue_02")
+    def fn(x, y):
+        u, v = (x + 0.5 - cx) / rx, (y + 0.5 - cy) / ry
+        if abs(u) < 0.13 and v > -0.55:
+            return "blue_02"
+        if v < -0.62:
+            return gold(8 - (u + v) * 2)
+        lit = 7.5 - (u + v) * 3
+        if u < -0.2 and v < 0.1 and -0.55 < v and u > -0.75:
+            lit = 10
+        if u * u + v * v > 0.7:
+            lit -= 2
+        return blue(lit)
+    cv.ellipse(cx, cy, rx, ry, fn)
+
+
+def fill_holes(cv, c):
+    """Fill transparent pixels the art encloses (gaps between an arm and the
+    gun) with colour c, so no background shows through the weapon. Pixels the
+    .pix loader turns into the 1 px drop shadow count as art."""
+    shadow = {(x, y) for y in range(1, cv.h) for x in range(1, cv.w)
+              if cv.px[y][x] is None and cv.px[y - 1][x - 1] is not None}
+    seen = set()
+    stack = [(x, y) for x in range(cv.w) for y in (0, cv.h - 1)] + \
+            [(x, y) for y in range(cv.h) for x in (0, cv.w - 1)]
+    while stack:
+        x, y = stack.pop()
+        if (x, y) in seen or not (0 <= x < cv.w and 0 <= y < cv.h) or cv.px[y][x] is not None or (x, y) in shadow:
+            continue
+        seen.add((x, y))
+        stack += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    for y in range(cv.h):
+        for x in range(cv.w):
+            if cv.px[y][x] is None and (x, y) not in seen and (x, y) not in shadow:
+                cv.px[y][x] = c

@@ -1,0 +1,90 @@
+# View model 7, Sphinx Howler (weapons.md): rear view of a riveted steel housing carrying a sphinx
+# head in a striped gold-and-lapis nemes (sandstone cat ears, braided queue), with the flared
+# gold-and-lapis bell of its muzzle spreading out behind the head toward the view centre.
+# Roar frames: the bell plates open and fullbright sound rings leave the rim.
+# Matches HUD icon weapon_7. Composed in tools/vmcompose/vm7.py, checked at 3x in game.
+# idle.
+name vm7_idle
+size 128 80
+shadow steel_00
+grid
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+..................................................`...........................{
+..................................................``....6666666666666666.....{{
+..................................................``6666666666666666666666666{{
+...............................................666```===99999999========8886{{{22
+............................................66666=```===99999999========8888{{{22222
+..........................................666699=````}===9999999=======8888}{{{{''2222
+........................................666699999````}}===999999======8888}}{{{{''''2222
+......................................66669999999````}}===999998====='8888}}{{{{''''''2222
+.....................................6666==999999````}}}===99888===''8888}}}{{{{'''''762222
+....................................6666======999````}}}{===8888='''8887`}}}{{{{''7766662222
+...................................6666=========9````}}}{===8888''''8777`}}}{{{{7766666662222
+..................................6666===========````}}}{{===888'''7777``}}}{{{{66666666662222
+..................................66699999=======````}}}{{=============``}}}{{{{666666$$$$$222
+.................................666699999999999`````}}}{{{===========```}}}{{{{{'$$$$$$$$$2222
+.................................666999999999999`````}}}{{{{988888887````}}}{{{{{$$$$$$$$$$$222
+.................................666999999999988`````}}}{{{{988888887````}}}{{{{{$$$$$$$$$$$222
+.................................666============`````}}}{{{{{=======`````}}}{{{{{65555555555222
+.................................666============'=====================''''''''''555555555555222
+.................................6666=========''89999999999888888877777776666665555555555542222
+..................................666=====888888999999999998888888777777666666655$$$$$55444222
+..................................66668888888888=====================''''''''''''$$$$$$$$$2222
+...................................666688888887====================='''''''''''''$$$$$$$$2222
+....................................66228888779999999999998888887777777666666655553$$$$$2222
+.....................................222287'''999999999998888888777777666666655555344$"2222
+......................................2222'''======================'''''''''''''$$""442222
+........................................2222'====================='''''''''''''$$$""2222
+..........................................2}88999999999988888877777776666666555555222{
+..........................................}}88999999999888888877777776666665555555222{{
+.........................................}}}====================='''''''''''''$$$$"""{{{
+.......................................}}}}}====================''''''''''''''$$$$"""{{{{{
+......................................}}}}}.88999999998888887555111166666655555544222.{{{{{
+.......................................}}}}8889999999888888878884444666665555555442222{{{{
+........................................}}}==================8884444''''''''$$$$$$""""{{{
+.........................................}}==================8884444''''''''$$$$$$""""{{
+..........................................}8879999998888888775551111666655555554442221{
+...........................................8879999988888887778884444666555555544442221
+...........................................==================8884444''''''$$$$$$$$""""
+...........................................================='5551111''''''$$$$$$$$""""
+...........................................7779999888888877777551116665555555444442111
+...................................k.X.....7779998888888777777884446655555554444442111.....Xj
+..................................kkjc....================='''88444'''''$$$$$$$$$$""""!...kTih
+.................................kkjckk.X.==='============='''55111'''''$$$$$$$$$$"""!!.Xcjkhgf
+.................................kjckkjcccc777998888888777777688444655555554444443111ccckcihgfe
+..................................hckjckkjcX7799888888777777768844465555554444444311cXcjiccgfe
+....................................jickkicccc==========='''''88444'''$$$$$$$$$$$$ccckTihgcc
+..............................kkkkkkchcjickjiXLLLLLLLLLLLKKKDD55111DDKKKJJJJJJJJJJcXcjicgfecjiiigg
+.............................kkkkkkjjccickkihTcLLLLLLLLLLKKKDDDDDDDDDKKKJJJJJJJJJckTcihfcccjiiihhhf
+.............................kkkkjjjjicccjihgfcLLLLLLLLLLKKKKKKKKKKKKKKKJJJJJJJJJcjiccfeccjiiihhhggd
+............................jkkkjjjiiihhcchgfecLLLLLLLLLLKKKKKKKKKKKKKKKJJJJJJJJJcihgfccjiiihhhhgggdd
+..........................jjjkkjjjiiihhhgccfccLLLLLLLLLLLKKKKKKKKKKKKKKKJJJJJJJJJJccfccjiiihhhgggffeddd
+.........................djjjjjjggfihhhgggfNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNjjifffhhgggffffeddd
+........................ddddijjiiihheeedgffHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEiiihhhhedddffeffecad
+.......................jjddddjiiihhhgggfffeHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEiihhhgggfffeeeffcccdd
+.....................jjjjidddhiihhhgggfffedHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEghhhgggfffeeecdddcfeddd
+....................jjjjiiidddgghgggffffddHHHHHHHHNGGGGGGGGGGGGFFFFFFFFFFFFFFFNEEEEEEEgfgggfffeeccdddffffeddd
+...................ddjjiiiihdddIIIIIIBHHHHHHHHHHHHHBGGGGGGGGGGGFFFFFFFFFFFFFFFEBEEEEEEEEEEEEDBDDDDddggffffeedd
+..................dddddiiihhhddIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDddgggffffccad
+................jjdddddddhhhggdIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDdhggggfdccccddd
+...............jjjjiddddddhggggIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDhhhgggddddcfeddd
+..............jjjjiiiddddddgggfIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDihhhdddddffffeead
+............jdjjjiiiihddddddgffIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDiihhddddggffffccadd
+...........jdddjiiiihhhdddddfffIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDiiiddddggggfdccccbdd
+..........jjjddddiihhhhgdddddffIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDiidddddhgggdddccceddd
+.........jjjjiidddhhhhgggdddcfIIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDDiddddhhhgdddddcffeddd
+.......jjjjjiiiidddhhggggfdcccIIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDDjdddihhhddddddffffeeddd
+......dddjjiiiihhdddggggffcccbIIIIIIIHHHHHHHHHHHHHHGGGGGGGGGGGGFFFFFFFFFFFFFFFEEEEEEEEEEEEEEDDDDDDDdddiiihddddddgfffffecbad

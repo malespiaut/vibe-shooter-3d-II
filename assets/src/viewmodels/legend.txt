@@ -93,3 +93,14 @@ z red_07
 - fb_cyan_dim
 _ fb_sun
 , fb_amber
+# blue (lapis: scarab, Ra's eye, nemes stripes)
+! blue_02
+" blue_04
+$ blue_06
+' blue_08
+= blue_10
+# sand (sphinx face)
+@ sand_03
+{ sand_06
+} sand_09
+` sand_12

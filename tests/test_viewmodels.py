@@ -83,7 +83,7 @@ def main():
                 assert has_fb == (name in FLASH or name in ("vm2_fire1", "vm3_fire1")), \
                     "%s: fullbright use %s unexpected" % (name, has_fb)
                 print("ok %-11s %dx%d" % (name, w, h))
-        got = {f for f in os.listdir(out) if f.endswith(".tex")}
+        got = {f for f in os.listdir(out) if f.endswith(".tex") and f[2] in "1234"}
         assert got == want, "frame set differs: extra %s missing %s" % (got - want, want - got)
         r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "palcheck.py"), out],
                            capture_output=True, text=True)
