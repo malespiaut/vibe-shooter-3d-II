@@ -59,6 +59,8 @@ goto 17 17             # heading out, the closet Mutts see us down the doorways
 clear 12
 wait 35
 clear 12
+wait 35                # the statues by the key make the walk out longer:
+clear 12               # the last closet Mutt arrives a beat later
 expect kills=10
 # Secret 2: the paler block in the north wall, the alcove seen through
 # the window.
