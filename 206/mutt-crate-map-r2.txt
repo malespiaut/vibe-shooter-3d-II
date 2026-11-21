@@ -1,0 +1,19 @@
+name Mutt Crate
+sky testsky
+music 0
+par 60
+
+legend # wall=test01 flags=SOLID
+legend . floor=test04 ceil=test05 dark=0
+
+layout
+############
+#..........#
+######.#####
+#..........#
+############
+end
+
+entity PLAYER_START 6 3 270
+entity CRATE 6 2 0
+entity MUTT_TROOPER 9 1 180
