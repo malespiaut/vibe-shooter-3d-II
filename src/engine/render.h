@@ -96,7 +96,8 @@ int render_init(const bast_map *map, const char *assets_dir);
  * facing). Breakable props (sprite_def gib) also load their gib frames,
  * <gib>_gib_d0_f<0..7> from `assets_dir`/gibs, required. Enemy sprites
  * load every animation (<name>_<anim>_d<d>_f<f>, sprite_enemy_frames()); an
- * enemy set missing any d0 frame is skipped with one warning per name on stderr and not drawn, which is not an error.
+ * enemy set missing any d0 frame is skipped with one warning per name on
+ * stderr and not drawn, which is not an error.
  * It also loads every effect sprite (sprite.h FXS_*) from `assets_dir`/fx;
  * a missing effect is not an error (test asset dirs have none), it is just
  * not drawn. */

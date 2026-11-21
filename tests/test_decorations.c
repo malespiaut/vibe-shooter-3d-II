@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "bast.h"
+#include "engine/sprite.h"
 #include "game/ai.h"
 #include "game/items.h"
 #include "game/projectile.h"
@@ -109,7 +110,7 @@ static void t_pot(void)
     assert(gs.player.weapons.ready == WP_PISTOL);
     const int pickups = gs.pickup_count;
     render_thing rt[8];
-    assert(items_render_things(&gs, rt, 8) == 1 && rt[0].gib == 0);
+    assert(items_render_things(&gs, rt, 8) == 1 && rt[0].anim == SPR_IDLE);
 
     int k = 0;
     for (; k < 40 && pot->state != TH_STATE_DEAD; k++)
@@ -119,12 +120,19 @@ static void t_pot(void)
     assert(pot->state == TH_STATE_DEAD && (pot->flags & TH_FLAG_GIB));
     assert(gs.things.kills == 0 && gs.things.kill_total == 0);
     assert(gs.pickup_count == pickups); /* drops nothing */
-    assert(thinker_gib_frame(pot) == 0);
-    assert(items_render_things(&gs, rt, 8) == 1 && rt[0].gib == 1);
-    for (int t = 0; t < PROP_GIB_TICS; t++)
+    /* Main's gib path (thinker_anim, SPR_GIB from died_tic), one frame
+     * per TH_ANIM_GIB_TICS, never going back, the debris frame staying. */
+    const int gib_frames = sprite_enemy_frames(SPR_GIB);
+    assert(items_render_things(&gs, rt, 8) == 1 && rt[0].anim == SPR_GIB && rt[0].frame == 0);
+    int last = 0;
+    for (int t = 0; t < gib_frames * TH_ANIM_GIB_TICS + 8; t++) {
         game_tic(&gs, &IDLE);
-    assert(pot->tics == 0 && thinker_gib_frame(pot) == PROP_GIB_FRAMES - 1);
-    assert(items_render_things(&gs, rt, 8) == 1 && rt[0].gib == PROP_GIB_FRAMES);
+        assert(items_render_things(&gs, rt, 8) == 1 && rt[0].anim == SPR_GIB);
+        assert(rt[0].frame >= last && rt[0].frame <= last + 1);
+        last = rt[0].frame;
+    }
+    assert(last == gib_frames - 1);
+    printf("decor_pot: gib frames 0..%d through thinker_anim\n", last);
 
     for (int t = 0; t < 70; t++)
         game_tic(&gs, &WALK);
@@ -180,6 +188,44 @@ static void t_enemy(void)
     bast_map_free(m);
 }
 
+/* A splashed barrel fuses, explodes, then shows its gibs through the same
+ * SPR_GIB path; the sprite table names the gib sets and the brazier's
+ * 6-tic flicker (sprite_def_frame). */
+static void t_gibs(void)
+{
+    bast_map *m = open_map();
+    add_entity(m, BAST_ENT_KIBBLE_BARREL, FX(10) + HALF, FX(3) + HALF);
+    game_state gs;
+    setup(&gs, m);
+    const thinker_t *b = thinker_get(&gs.things, 1);
+    render_thing rt[16];
+    splash_damage(&gs, FX(10) + HALF, FX(4), 64, SPLASH_RADIUS_1_5, 0);
+    assert(b->state == TH_STATE_DYING);
+    assert(items_render_things(&gs, rt, 16) >= 1 && rt[0].anim == SPR_IDLE);
+    int k = 0;
+    for (; k < 20 && b->state != TH_STATE_DEAD; k++)
+        game_tic(&gs, &IDLE);
+    assert(b->state == TH_STATE_DEAD);
+    for (int t = 0; t < sprite_enemy_frames(SPR_GIB) * TH_ANIM_GIB_TICS + 4; t++)
+        game_tic(&gs, &IDLE);
+    assert(items_render_things(&gs, rt, 16) >= 1 && rt[0].type == BAST_ENT_KIBBLE_BARREL);
+    assert(rt[0].anim == SPR_GIB && rt[0].frame == sprite_enemy_frames(SPR_GIB) - 1);
+    printf("decor_gibs: barrel exploded after %d tic(s), gib frame %d\n", k, rt[0].frame);
+
+    const sprite_def *pot = sprite_def_for_entity(BAST_ENT_PAPYRUS_POT);
+    const sprite_def *bar = sprite_def_for_entity(BAST_ENT_KIBBLE_BARREL);
+    const sprite_def *bz = sprite_def_for_entity(BAST_ENT_BRAZIER);
+    assert(pot && !pot->enemy && pot->gib && !strcmp(pot->gib, "prop_pot"));
+    assert(bar && !bar->enemy && bar->gib && !strcmp(bar->gib, "kibble_barrel"));
+    assert(bz && bz->frames == 4 && bz->tics == 6 && !bz->gib);
+    assert(sprite_def_frame(bz, 5) == 0 && sprite_def_frame(bz, 6) == 1 &&
+           sprite_def_frame(bz, 18) == 3 && sprite_def_frame(bz, 24) == 0);
+    const sprite_def *rack = sprite_def_for_entity(BAST_ENT_SERVER_RACK);
+    assert(sprite_def_frame(rack, 17) == 0 && sprite_def_frame(rack, 18) == 1);
+    printf("decor_gibs: brazier 6 tics/frame, rack %d tics/frame\n", SPRITE_SHIMMER_TICS);
+    bast_map_free(m);
+}
+
 int main(int argc, char **argv)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
@@ -190,5 +236,6 @@ int main(int argc, char **argv)
     if (all || !strcmp(g, "pot")) t_pot();
     if (all || !strcmp(g, "splash")) t_splash();
     if (all || !strcmp(g, "enemy")) t_enemy();
+    if (all || !strcmp(g, "gibs")) t_gibs();
     return 0;
 }
