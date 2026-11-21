@@ -1,0 +1,228 @@
+# Level 8 "Throne of Woofu" (docs/design/levels.md section 8): 48x48, built
+# by tools/mkmap.py into maps/level8.vmap. Layout pass only (#194): no
+# enemies and no boss; WAYPOINT entities named @... mark the spots for the
+# population issue. Coordinates are (x, y), y counted from the south (the
+# last layout row is y = 0), the same as demo `goto`.
+#
+# Tags: 1 = T_BOSS (the follow-up gives Woofu tag 1; his death fires it:
+#           the exit door X opens and the 16 RESPAWN_ITEMs stop restocking)
+#       2 = T_ARENA (TRIGGER cell T: the START_OPEN door O closes behind)
+#
+# Critical path (demos/level8-walk.demo):
+#   Apex landing (2-7, 2-8), start (4,5) facing east -> door D (8,5)
+#   -> Processional Way (9-44, 2-8), 36 tiles long: gold statue columns g
+#      every 4 tiles on y = 3 and y = 7, Woofu banner wall w along the north
+#      side, gold glyph band b along the south; one spot per enemy type in
+#      introduction order (@proc_mutt .. @proc_shield) -> door D (41,9)
+#   -> Hall of Tributes (38-45, 10-17), gold walls, violet key (41,16)
+#   -> violet door V (37,14) -> corridor y = 14 west, x = 24 north
+#   -> START_OPEN door O (24,18) (mode=switch tag 2) -> passage (24,19)
+#   -> TRIGGER T (24,20), tag 2: O closes for good (switch mode: `use`
+#      cannot reopen it; the trigger fires once). T is two tiles past O so
+#      the player never overlaps O when the tag fires (an overlapped closing
+#      door re-opens and would then stay open).
+#   -> Throne Arena (12-35, 20-43): 24x24 open sky at sunset, dark 2,
+#      4 sandstone pillar clusters S (2x2 core + 2 single pillars):
+#      SW core (17-18,25-26), SE (29-30,25-26), NW (17-18,37-38),
+#      NE (29-30,37-38).
+#   -> exit: door X (24,44), mode=switch tag 1 (only Woofu's death opens it)
+#      -> closet (24,45) -> EXIT E (24,46), used from (24,45) facing north.
+#
+# Restock alcoves l (dark 6, roofed), 2x2 behind a 1-tile mouth in the side
+# walls, each with 4 RESPAWN_ITEMs tag 1: Sun Shard (60), Charge Vial (54),
+# Yarn Bundle (56), Scarab (58):
+#   NW (9-10, 39-40)  NE (37-38, 39-40)  SW (9-10, 23-24)  SE (37-38, 23-24)
+# Kennel pods: BOSS_POD in 3-wide niches n of the north wall (17,44),
+# (30,44) facing south and of the south wall (17,19), (30,19) facing north
+# (the pod's Chompers spawn to its sides, inside the niche).
+#
+# Secrets (2):
+#   P (30,9) eg_paw_wall pushwall, the one raised-paw statue among the Woofu
+#     banners of the Processional Way's north wall, pushed north -> (30,10)
+#     SECRET: Golden Sardine (31,11)
+#   M (43,18) eg_mural pushwall, the fish tribute pile in the Hall of
+#     Tributes' north wall, pushed north -> (43,19) SECRET: Catnip Frenzy
+#     (44,20)
+#
+# Statues: there is no dog-headed Woofu statue texture or sprite on main;
+# Woofu is shown by dt_banner (paw banner on chrome) wall panels and gold
+# statue columns (eg_gold_pillar), plus hanging DOG_BANNER props.
+
+name Throne of Woofu
+sky sky_sunset
+music 8
+par 420
+
+legend # wall=dt_steel_panel flags=SOLID
+legend b wall=eg_glyph_band flags=SOLID
+legend w wall=dt_banner flags=SOLID
+legend g wall=eg_gold_pillar flags=SOLID
+legend r wall=eg_ashlar flags=SOLID
+legend S wall=eg_sand_blocks flags=SOLID
+legend E wall=dt_switch_off flags=SOLID|EXIT
+legend P wall=eg_paw_wall floor=eg_floor_tiles ceil=dt_steel_panel_b dark=8 flags=PUSHWALL
+legend M wall=eg_mural floor=eg_floor_tiles ceil=eg_tomb_stone dark=8 flags=PUSHWALL
+legend . floor=dt_diamond_plate ceil=dt_ceiling_light dark=4
+legend p floor=eg_floor_tiles ceil=dt_ceiling_light dark=4
+legend z floor=eg_floor_tiles ceil=dt_steel_panel_b dark=8
+legend Z floor=eg_floor_tiles ceil=dt_steel_panel_b dark=8 flags=SECRET
+legend h floor=eg_floor_tiles ceil=eg_tomb_stone dark=6
+legend y floor=eg_floor_tiles ceil=eg_tomb_stone dark=10
+legend Y floor=eg_floor_tiles ceil=eg_tomb_stone dark=10 flags=SECRET
+legend c floor=dt_diamond_plate ceil=dt_steel_panel dark=8
+legend a floor=eg_sand dark=2
+legend T floor=eg_sand dark=2 flags=TRIGGER tag=2
+legend l floor=eg_floor_tiles ceil=eg_tomb_stone dark=6
+legend n floor=eg_floor_tiles ceil=eg_tomb_stone dark=6
+legend e floor=eg_floor_tiles ceil=eg_tomb_stone dark=8
+legend D wall=dt_door floor=dt_diamond_plate ceil=dt_steel_panel dark=4 flags=DOOR
+legend V wall=eg_door_violet floor=eg_floor_tiles ceil=eg_tomb_stone dark=6 flags=DOOR key=violet
+legend O wall=dt_door floor=dt_diamond_plate ceil=dt_steel_panel dark=6 flags=DOOR|START_OPEN mode=switch tag=2
+legend X wall=dt_door floor=eg_floor_tiles ceil=eg_tomb_stone dark=6 flags=DOOR mode=switch tag=1
+
+layout
+################################################
+########################E#######################
+########################e#######################
+###########rrwrrnnnrrwrrXwrrrnnnrwrrr###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########waaaaaaaaaaaaaaaaaaaaaaaaw###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+#########lllaaaaaaSaaaaaaaaaaSaaaaaalll#########
+#########lllaaaaaaaaaaaaaaaaaaaaaaaalll#########
+###########waaaaaSSaaaaaaaaaaSSaaaaaw###########
+###########raaaSaSSaaaaaaaaaaSSaSaaar###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########waaaaaaaaaaaaaaaaaaaaaaaaw###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########waaaaaaaaaaaaaaaaaaaaaaaaw###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########waaaSaSSaaaaaaaaaaSSaSaaaw###########
+###########raaaaaSSaaaaaaaaaaSSaaaaar###########
+#########lllaaaaaaaaaaaaaaaaaaaaaaaalll#########
+#########lllaaaaaaSaaaaaaaaaaSaaaaaalll#########
+###########waaaaaaaaaaaaaaaaaaaaaaaaw###########
+###########raaaaaaaaaaaaaaaaaaaaaaaar###########
+###########raaaaaaaaaaaaTaaaaaaaaaaar#####yyy###
+###########rrwrrnnnrrwrrawrrrnnnrwrrr#####yYy###
+########################O############ggggggMggg#
+########################c############ghhhhhhhhg#
+########################c############ghhhhhhhhg#
+########################c############ghhhhhhhhg#
+########################cccccccccccccVhhhhhhhhg#
+#####################################ghhhhhhhhg#
+#####################################ghhhhhhhhg#
+#############################zzz#####ghhhhhhhhg#
+#############################zZz#####ghhhhhhhhg#
+#########wwwwwwwwwwwwwwwwwwwwwPwwwwwwggggDggggg#
+##......#pppppppppppppppppppppppppppppppppppp###
+##......#pppgpppgpppgpppgpppgpppgpppgpppgpppp###
+##......#pppppppppppppppppppppppppppppppppppp###
+##......Dpppppppppppppppppppppppppppppppppppp###
+##......#pppppppppppppppppppppppppppppppppppp###
+##......#pppgpppgpppgpppgpppgpppgpppgpppgpppp###
+##......#pppppppppppppppppppppppppppppppppppp###
+#########bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb###
+################################################
+end
+
+entity PLAYER_START 4 5 0
+
+# Key
+entity VIOLET_ANKH 41 16 0
+
+# Health: 6 Fish Snacks, 4 Tuna Tins, Golden Sardine on the arena's south side
+entity FISH_SNACK 3 7 0
+entity FISH_SNACK 10 7 0
+entity FISH_SNACK 44 7 0
+entity FISH_SNACK 38 17 0
+entity FISH_SNACK 30 14 0
+entity FISH_SNACK 35 43 0
+entity TUNA_TIN 26 3 0
+entity TUNA_TIN 45 11 0
+entity TUNA_TIN 12 43 0
+entity TUNA_TIN 35 20 0
+entity GOLDEN_SARDINE 14 21 0
+
+# Armour: Scarab Plate before the arena
+entity SCARAB_PLATE 24 16 0
+
+# Weapons (a pistol start can still fight the boss) and ammo on the path
+entity HAIRBALL_SCATTERGUN 5 3 0
+entity CHARGE_JAR 6 7 0
+entity SISTRUM_REPEATER 21 5 0
+entity SCARAB 17 3 0
+entity CHARGE_VIAL 33 3 0
+entity YARN_BUNDLE 34 7 0
+entity EYE_OF_RA_LANCE 44 13 0
+entity CHARGE_VIAL 39 14 0
+entity YARN_BUNDLE 43 15 0
+entity SCARAB_CRATE 34 14 0
+entity SCARAB_LAUNCHER 26 14 0
+entity SUN_SHARD 24 17 0
+
+# Restock alcoves: tag 1 (T_BOSS); param = pickup type
+# 60 Sun Shard, 54 Charge Vial, 56 Yarn Bundle, 58 Scarab
+entity RESPAWN_ITEM 9 40 0 tag=1 param=60
+entity RESPAWN_ITEM 10 40 0 tag=1 param=54
+entity RESPAWN_ITEM 9 39 0 tag=1 param=56
+entity RESPAWN_ITEM 10 39 0 tag=1 param=58
+entity RESPAWN_ITEM 38 40 0 tag=1 param=60
+entity RESPAWN_ITEM 37 40 0 tag=1 param=54
+entity RESPAWN_ITEM 38 39 0 tag=1 param=56
+entity RESPAWN_ITEM 37 39 0 tag=1 param=58
+entity RESPAWN_ITEM 9 24 0 tag=1 param=60
+entity RESPAWN_ITEM 10 24 0 tag=1 param=54
+entity RESPAWN_ITEM 9 23 0 tag=1 param=56
+entity RESPAWN_ITEM 10 23 0 tag=1 param=58
+entity RESPAWN_ITEM 38 24 0 tag=1 param=60
+entity RESPAWN_ITEM 37 24 0 tag=1 param=54
+entity RESPAWN_ITEM 38 23 0 tag=1 param=56
+entity RESPAWN_ITEM 37 23 0 tag=1 param=58
+
+# Kennel pods (#97): 2 in the north wall, 2 in the south wall
+entity BOSS_POD 17 44 270
+entity BOSS_POD 30 44 270
+entity BOSS_POD 17 19 90
+entity BOSS_POD 30 19 90
+
+# Secrets
+entity GOLDEN_SARDINE 31 11 0
+entity CATNIP_FRENZY 44 20 0
+
+# Decorations
+entity DOG_BANNER 14 8 0
+entity DOG_BANNER 22 8 0
+entity DOG_BANNER 34 8 0
+entity DOG_BANNER 38 8 0
+entity BRAZIER 3 2 0
+entity BRAZIER 7 2 0
+entity BRAZIER 38 10 0
+entity BRAZIER 45 10 0
+entity PAPYRUS_POT 40 17 0
+entity PAPYRUS_POT 42 17 0
+entity PAPYRUS_POT 45 17 0
+entity PAPYRUS_POT 45 16 0
+entity BRAZIER 12 20 0
+entity BRAZIER 34 20 0
+entity BRAZIER 13 42 0
+entity BRAZIER 34 42 0
+
+# Waypoints for the population issue
+entity WAYPOINT 13 5 180 proc_mutt
+entity WAYPOINT 18 5 180 proc_chomper
+entity WAYPOINT 23 5 180 proc_pom
+entity WAYPOINT 28 6 180 proc_dachshund
+entity WAYPOINT 34 5 180 proc_mastiff
+entity WAYPOINT 40 5 180 proc_shield
+entity WAYPOINT 41 13 270 tribute_mastiffs
+entity WAYPOINT 24 37 270 arena_woofu
+entity WAYPOINT 36 40 180 arena_alcove_ne
+entity WAYPOINT 11 40 0 arena_alcove_nw
+entity WAYPOINT 36 24 180 arena_alcove_se
+entity WAYPOINT 11 24 0 arena_alcove_sw

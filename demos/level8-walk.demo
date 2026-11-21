@@ -1,0 +1,88 @@
+# Level 8 "Throne of Woofu" walkthrough (maps/level8.vmap, layout and
+# coordinates in maps/src/level8.txt), skill 2. Layout pass (#194): no
+# enemies and no boss yet, so the exit (behind the T_BOSS door) is not
+# reachable; the population issue turns this route into level8-complete.
+# High-level commands only. Route: apex landing -> Processional Way
+# (raised-paw secret) -> Hall of Tributes (tribute-pile secret, violet key)
+# -> violet door -> START_OPEN door -> arena trigger closes it behind ->
+# NE restock alcove.
+vsdemo 1
+level 8
+skill 2
+seed 0
+
+# Apex landing: Scattergun, Fish Snack, Charge Jar.
+goto 5 3
+goto 3 7
+goto 6 7
+goto 7 5
+face 0
+use
+wait 32
+# Processional Way.
+goto 10 7              # Fish Snack
+goto 17 3              # Scarab
+goto 21 5              # Sistrum Repeater
+goto 26 3              # Tuna Tin
+# Secret 1: the raised-paw statue in the north wall.
+goto 30 8
+face 90
+use
+wait 64
+goto 30 10
+expect secrets=1
+goto 31 11             # Golden Sardine
+goto 30 8
+goto 33 3              # Charge Vial
+goto 34 7              # Yarn Bundle
+goto 44 7              # Fish Snack
+goto 41 8
+face 90
+use
+wait 32
+# Hall of Tributes.
+goto 41 11
+goto 45 11             # Tuna Tin
+goto 44 13             # Eye of Ra Lance
+goto 43 15             # Yarn Bundle
+goto 41 16             # violet key
+# Secret 2: the tribute pile in the north wall.
+goto 43 17
+face 90
+use
+wait 64
+goto 43 19
+expect secrets=2
+goto 44 20             # Catnip Frenzy
+goto 43 17
+goto 38 17             # Fish Snack
+goto 39 14             # Charge Vial
+goto 38 14
+face 180
+use                    # violet door
+wait 32
+goto 34 14             # Scarab Crate
+goto 30 14             # Fish Snack
+goto 26 14             # Scarab Launcher
+goto 24 16             # Scarab Plate
+goto 24 17             # Sun Shard
+goto 24 19             # through the START_OPEN door
+goto 24 21             # over the TRIGGER (24,20): tag 2 closes the door
+wait 40
+# The door behind is closed and stays closed: use does nothing (switch
+# mode), and walking south from the passage stops at the door.
+goto 24 19
+face 270
+use
+wait 35
+in 35 127 0 0 -
+expect tile=24,19
+# NE restock alcove: Sun Shard, Charge Vial, Yarn Bundle, Scarab.
+goto 36 40
+goto 37 40
+goto 38 40
+goto 38 39
+goto 37 39
+goto 30 33
+expect tile=30,33
+expect secrets=2
