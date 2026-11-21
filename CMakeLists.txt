@@ -337,7 +337,8 @@ endforeach()
 #   level5: no enemies (#177), par and ammo (#240)
 #   level6: no enemies (#178), ammo (#240)
 #   level7: no enemies (#193), armour (#240)
-set(LEVELSTATS_KNOWN_FAIL level1 level2 level5 level6 level7)
+#   level8: no enemies or boss (population follow-up of #194), health 260/300
+set(LEVELSTATS_KNOWN_FAIL level1 level2 level5 level6 level7 level8)
 foreach(ln ${LEVELSTATS_KNOWN_FAIL})
   if(TEST levelstats_${ln})
     set_tests_properties(levelstats_${ln} PROPERTIES WILL_FAIL TRUE)
@@ -866,3 +867,9 @@ add_demo_determinism(flow)
 add_test(NAME secrets_level5
   COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/level5-secrets.demo)
 add_demo_determinism(respawn-test)
+
+# Level 8 layout walkthrough (issue #194): no enemies yet, so the demo ends in
+# the arena; it checks both secrets and that the arena door closed behind.
+add_test(NAME walk_level8
+  COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/level8-walk.demo)
+add_demo_determinism(level8-walk)
