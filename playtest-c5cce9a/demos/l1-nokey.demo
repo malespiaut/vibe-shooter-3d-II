@@ -1,0 +1,17 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+# Sequence-break probe: can the exit be reached without the green key?
+weapon 2
+fire nearest
+goto 6 7
+face 90
+use
+wait 32
+goto 6 10
+face 90
+use
+wait 32
+goto 22 5 600
+expect exit=1

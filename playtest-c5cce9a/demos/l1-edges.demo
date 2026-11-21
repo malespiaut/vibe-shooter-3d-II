@@ -1,0 +1,36 @@
+vsdemo 1
+level 1
+skill 2
+seed 0
+# Edges probe: walk into the start-plaza corners, then rub along the gatehouse door edge.
+weapon 2
+in 10 0 0 0 F            # point blank? the Mutt is 6 tiles away: one shot to wake it
+fire nearest
+# run diagonally into the SW corner of the plaza for 3 s
+face 225
+in 105 127 0 0 R
+# strafe along the wall into the corner
+in 70 0 127 0 R
+in 70 0 -127 0 R
+goto 6 7
+face 90
+use
+wait 10
+# strafe across the half-open door
+in 20 0 127 0 -
+in 40 0 -127 0 -
+in 20 127 0 0 -
+wait 40
+# door closes on us? stand in it
+in 70 0 0 0 -
+expect health>0
+goto 6 7
+face 90
+use
+wait 32
+goto 6 9
+clear
+key esc
+wait 20
+key esc
+wait 10
