@@ -45,7 +45,8 @@ void game_fire_tag(game_state *gs, int tag);
 
 /* BT_USE rising edge: the first non-empty tile within DOOR_USE_RANGE along
  * the view. A door: door_use(). A SWITCH cell: fires its tag once (switch
- * state on; timed doors on that tag close `param` seconds later). An EXIT
+ * state on; timed doors on that tag close `param` seconds later; a switch
+ * with param > 0 can be pressed again). An EXIT
  * cell: sets gs->exit. An idle PUSHWALL: slides away from the player. */
 void game_use(game_state *gs);
 
