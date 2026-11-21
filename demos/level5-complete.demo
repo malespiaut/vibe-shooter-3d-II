@@ -1,43 +1,175 @@
-# Level 5, Kibble Refinery: walkthrough of the critical path on
-# maps/level5.vmap (layout in maps/src/level5.txt), no enemies yet (#174).
-# Loading Bay -> Sludge Pits walkways -> Control Tower (blue key) -> blue
-# door -> Grinder Hall timed door across the sludge -> Lance Vault (the Lance
-# opens the riveted wall) -> violet key in the lair -> violet door ->
-# Packaging Line -> EXIT. Ends with STATS exit=1; the sludge costs health.
+# Level 5, Kibble Refinery completion (#177) on maps/level5.vmap (layout and
+# enemies in maps/src/level5.txt), skill 2, no god, from the --warp default
+# inventory (100 health, Claws + Ankh Pistol, 50 charges): the pistol until
+# the Lance. High-level commands only (goto, face, use, clear, fire).
+# Barrel chains in the Sludge Pits -> Control Tower squad -> blue door ->
+# Grinder Hall gantry Dachshunds + timed-door sprint -> Lance Vault Mastiff
+# -> violet door -> Packaging Line Mastiff and squad -> EXIT.
+# goto ignores DAMAGE cells and never opens doors or fights: the walkways are
+# walked with explicit corners, doors opened by hand, clear before corridors.
 vsdemo 1
 level 5
 skill 2
 seed 0
-
-goto 12 4              # off the Loading Bay onto the Sludge Pits landing
-goto 21 4              # along the main walkway, over the sludge
-goto 25 9              # up the east platform
-face 0                 # east, toward the Control Tower door (26,9)
-use                    # goto never opens doors: use them, wait 32 tics
+weapon 2
+# Sludge Pits: the first shot is at the barrel line next to Mutt group A.
+goto 9 4
+goto 12 4
+face 15 8               # barrel chain (15,8)-(15,9)-(15,10)
+fire 13
+wait 10
+expect kills=3
+goto 16 4
+face 19 12              # barrel pair (19,12)-(19,13), Mutt group B
+fire 13
+wait 10
+expect kills=5
+# Back off to the walkway mouth and let the far side come.
+goto 12 4
+clear 16
+wait 30
+clear 16
+goto 12 2
+goto 12 4
+goto 16 4
+goto 16 9
+goto 17 10
+goto 16 9
+goto 16 4
+goto 22 4
+clear 14
+goto 24 1
+goto 22 4
+goto 22 12
+goto 25 12              # Fish Snack
+clear 14
+expect kills=9
+# Control Tower: open the door, step back, fight the squad through it.
+goto 25 9
+face 0
+use
+wait 6
+goto 22 9
+face 26 9
+clear 12
+wait 40
+clear 12
+wait 40
+clear 12
+goto 25 9
+face 0
+use
 wait 32
-goto 32 4              # into the Control Tower: blue key
-goto 28 12             # below the blue door (28,13)
+goto 27 9
+clear 12
+goto 30 9
+clear 12
+goto 33 12
+goto 33 9
+goto 32 4
+goto 31 4
+goto 27 4
+goto 27 11              # Tuna Tin
+clear 12
+expect kills=14
+# Blue door: Chompers in the corridor behind it.
+goto 28 12
 face 90
-use                    # opens: the blue key is held
+use
+wait 6
+goto 28 10
+face 28 13
+clear 10
+wait 30
+clear 10
+goto 28 12
+face 90
+use
 wait 32
-goto 28 16             # corridor north
-goto 22 20             # Grinder Hall, west end, at the switch
-face 180               # west, toward the switch (21,20)
-use                    # timed door (34,20) opens, closes 350 tics later
-wait 32                # 32 of them go on the door sliding open
-expect health=100
-goto 35 20             # sprint east across the sludge x 29-31 and through
-expect health<100      # the sludge cost health
-goto 37 23             # Lance: fires tag 2, the riveted wall (37,35) slides
-wait 32
-goto 37 38             # into the Mastiff lair: violet key
-goto 36 33             # back down the vault, beside the violet door (35,33)
+clear 10
+goto 28 12
+goto 28 13
+clear 10
+wait 20
+clear 10
+goto 28 14
+clear 10
+goto 28 16
+clear 10
+goto 28 16
+# Grinder Hall: the gantry Dachshunds shell the floor.
+clear 14
+goto 28 17
+clear 14
+goto 26 19
+clear 16
+wait 30
+clear 16
+goto 23 22
+goto 23 17
+goto 28 19
+clear 16
+expect kills=22
+# Timed door sprint across the sludge (Fish Snack on the way).
+goto 22 20
 face 180
-use                    # opens: the violet key is held
+use
 wait 32
-goto 33 32             # through it; the ammo cache opens south of the corridor
-goto 10 35             # west along the Packaging Line to the exit wall
+goto 28 21
+goto 33 22
+goto 33 20
+goto 35 20
+goto 38 18
+goto 36 18
+goto 37 23              # Lance: the riveted wall (37,35) slides, 12 tiles north
+weapon 6
+wait 40                 # the Mastiff walks into the vault
+face 90
+clear 16
+wait 30
+clear 16
+expect kills=25
+goto 37 30
+goto 37 38
+goto 35 38
+# Violet door: the Packaging Line squad faces away; open with the Lance.
+goto 36 33
 face 180
-use                    # exit: the run ends here
+use
+wait 32
+goto 34 33
+clear 20
+wait 30
+clear 12
+wait 30
+clear 12
+goto 33 32
+clear 12
+# Ammo cache.
+goto 33 30
+goto 32 29
+goto 34 29
+goto 33 31
+goto 32 31
+goto 33 32
+goto 32 33
+clear 20
+goto 30 33
+clear 20
+goto 28 36
+clear 20
+goto 20 36
+clear 20
+goto 14 33
+clear 20
+expect kills>=40
+goto 12 32
+goto 15 32
+goto 26 37
+goto 28 37
+goto 20 36
+goto 10 35
+face 180
+use
 expect exit=1
-expect health>0       # survived the sludge
+expect health>0
