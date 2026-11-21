@@ -19,12 +19,16 @@
 # A (dark 0, SECRET cell X (19,21)): Charge Jar, seen from the shrine through
 # the window W (19,20), a BLOCK_ALL floor cell.
 #
-# Outdoor cells have a ceiling until sky_dawn (#155) exists; #150 switches
-# them to sky. Pillars and the obelisk are wall blocks until props (#131).
+# Outdoor cells (start plaza, gate corridor, courtyard) are open to
+# sky_dawn. Dressing (#150): the plaza pillars and the courtyard obelisk are
+# decoration props; the four courtyard pillars i stay wall blocks because
+# they are the cover the set piece teaches (a 0.25 u prop does not block
+# Mutt sight or hitscan, a wall does).
 # DT scaffolds use dt_riveted_plate: dt_scaffold_sandstone (21 chars) does
 # not fit the 16-char map texture name table.
 
 name Sandbox Gate
+sky sky_dawn
 music 1
 par 150
 
@@ -32,15 +36,14 @@ legend # wall=eg_ashlar flags=SOLID
 legend a wall=eg_sand_blocks flags=SOLID
 legend s wall=dt_riveted_plate flags=SOLID
 legend i wall=eg_gold_pillar flags=SOLID
-legend o wall=eg_glyph_band flags=SOLID
 legend b wall=eg_sand_blocks flags=SOLID
 legend n wall=eg_glyph_band flags=SOLID
 legend k wall=eg_tomb_stone flags=SOLID
 legend m wall=dt_steel_panel flags=SOLID
 legend r wall=dt_pump flags=SOLID
 legend E wall=eg_switch_off flags=SOLID|EXIT
-legend . floor=eg_sand ceil=eg_floor_tiles dark=2
-legend , floor=eg_sand ceil=eg_floor_tiles dark=0
+legend . floor=eg_sand ceil=sky dark=2
+legend , floor=eg_sand ceil=sky dark=0
 legend h floor=eg_floor_tiles ceil=eg_planks dark=8
 legend D wall=eg_door floor=eg_floor_tiles ceil=eg_planks dark=8 flags=DOOR
 legend G wall=eg_door_green floor=eg_floor_tiles ceil=eg_planks dark=4 flags=DOOR key=green
@@ -66,7 +69,7 @@ layout
 #qqs,,,,,,,,,a#_______n#
 #qxa,i,,,,,i,_________n#
 #qqa,,,,,,,,,a#_______n#
-#qqP,,,,o,,,,a#_______b#
+#qqP,,,,,,,,,a#_______b#
 ###a,i,,,,,i,abbtbbbbbb#
 ###s,,,,,,,,,a##cc######
 ###a,,,,,,,,,G-#cc######
@@ -78,7 +81,7 @@ layout
 #####...#####mwwwwwwwwwm
 ##s##...##s##mwwwwwwwwwE
 ##.........##mwwwrwwwwwm
-#s.i.....i.s#mwwwwwwwwwm
+#s.........s#mwwwwwwwwwm
 ##.........##mwwwwwwwwwm
 #s.........s#mmmmmmmmmmm
 ########################
@@ -132,3 +135,32 @@ entity FISH_SNACK 1 16 0
 entity FISH_SNACK 1 18 0
 # Secret 2 (lit alcove behind the shrine): Charge Jar.
 entity CHARGE_JAR 19 21 0
+
+# Decorations (#150, items.md Decorations). All solid props sit off the
+# critical path; level1-complete walks past every one of them.
+# Start plaza: sandstone pillars where the wall-block pillars stood (the
+# Fish Snack at (10,4) is still behind the east one), floodlights bolted
+# under the DT scaffolds, two more flanking the gatehouse approach.
+entity PILLAR_SAND 3 3 0
+entity PILLAR_SAND 9 3 0
+entity FLOODLIGHT 2 2 0
+entity FLOODLIGHT 10 2 0
+entity FLOODLIGHT 5 7 0
+entity FLOODLIGHT 7 7 0
+# Litter Courtyard: the obelisk in the middle, floodlights under the
+# scaffolds at the inner gate and the shrine corridor.
+entity OBELISK_STUB 8 15 0
+entity FLOODLIGHT 4 13 0
+entity FLOODLIGHT 12 19 0
+# Shrine of the Green Ankh: two cat statues guard the key, braziers light
+# the north and south walls.
+entity CAT_STATUE 20 16 0
+entity CAT_STATUE 20 18 0
+entity BRAZIER 18 19 0
+entity BRAZIER 18 15 0
+# Gate Winch Room: dog-tech supply crates in the corners, a floodlight on
+# the lever.
+entity CRATE 22 2 0
+entity CRATE 22 9 0
+entity CRATE 20 9 0
+entity FLOODLIGHT 22 7 0
