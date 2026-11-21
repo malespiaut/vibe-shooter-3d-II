@@ -172,7 +172,7 @@ add_test(NAME smoke COMMAND test_smoke)
 target_compile_options(test_smoke PRIVATE -UNDEBUG)
 
 # Core maths tests (fixed, angle, rng, hash).
-foreach(t fixed angle rng hash player_move weapon sprite_dir)
+foreach(t fixed angle rng hash player_move weapon sprite_dir input)
   add_executable(test_${t} tests/test_${t}.c)
   target_link_libraries(test_${t} PRIVATE engine)
   target_compile_options(test_${t} PRIVATE -UNDEBUG)
@@ -570,6 +570,7 @@ add_test(NAME complete_level2
 set_tests_properties(complete_level2 PROPERTIES
   PASS_REGULAR_EXPRESSION "STATS level=2 .* exit=1 god=0")
 add_demo_determinism(level2-complete)
+add_demo_determinism(window-fire)
 
 # High-level demo commands (goto/face/use/fire/expect) through build/game.
 foreach(c goto timeout expect)
