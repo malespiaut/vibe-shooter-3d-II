@@ -39,13 +39,18 @@ Run `tools/build_assets.sh` before `ctest`: some tests load the generated assets
 Play:
 
 ```
-build/game                                   # window mode, test map maps/m1test.vmap
-build/game --map maps/m1test.vmap --skill 3  # any map file; skill 1-3 (default 2)
-build/game --warp 1 --skill 2                # level N from maps/levelN.vmap
+build/game                                   # window mode: title screen, then the menus
+build/game --map maps/m1test.vmap --skill 3  # straight into any map file; skill 1-3 (default 2)
+build/game --warp 1 --skill 2                # straight into level N, maps/levelN.vmap (1-8)
 ```
 
-The level maps `maps/level1.vmap` to `level8.vmap` are milestone M4 work. Until they land, `--warp N`
-exits with `game: .../maps/levelN.vmap: No such file or directory` (exit code 1).
+With no `--map`, `--warp` or `--record`, the game opens on the title screen. Any key leads to the
+main menu (New Game, Controls, Quit). New Game asks for the skill, then starts play on the M1 test
+map `maps/m1test.vmap` as level 1 (the default map when no flag picks one).
+
+`--warp N` loads `maps/levelN.vmap`. Levels 1, 2, 5, 6 and 7 exist today. The others are
+milestone M4 work and exit with `game: .../maps/levelN.vmap: No such file or directory` (exit code
+1) until they land.
 
 Headless demo playback, with one 320x240 indexed PNG per 35 tics:
 
@@ -65,20 +70,20 @@ Map editor: `python3 -m editor [maps/<name>.vmap]` (needs `build/libbast.so`).
 
 ## Controls
 
-Window mode today (`src/main.c`):
+Window mode (`src/main.c`, `docs/design/hud.md`):
 
 | Action | Keys |
 |---|---|
 | Move | W/S or up/down arrows; strafe A/D |
 | Turn | mouse, or left/right arrows |
+| Fire | left mouse button, or Ctrl |
+| Weapon | 1-7 |
 | Use (doors, switches; restart after death) | E or Space |
 | Run | Shift |
-| Quit | Esc, or close the window |
+| Pause menu (Resume, Restart Level, Controls, Quit to Title) | Esc |
+| Quit | close the window, or Quit from the main menu |
 
-The full bindings planned for Episode 1 are in `docs/design/hud.md` (Controls): left click or Ctrl
-fires, 1-7 select weapons, and Esc opens the pause menu. Fire and weapon selection already work in
-demos (`fire`, `weapon` commands), but window mode does not bind them yet (#205). The pause menu
-arrives with the menu flow (#101).
+In the menus, up/down (or W/S) move the cursor, Enter or Space selects and Esc goes back.
 
 ## Layout
 
