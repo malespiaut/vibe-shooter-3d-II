@@ -213,6 +213,7 @@ typedef struct {
     options opt;
     demo_t *demo;
     bast_map *map;
+    bast_map *prev_map; /* the level before a level change, freed at the next */
     char map_name[DEMO_MAP_NAME_MAX]; /* for the --record header */
     int level, skill;
     uint32_t seed;
@@ -223,6 +224,7 @@ typedef struct {
     flow_gfx *gfx;   /* menus; loaded when anything is drawn */
     uint32_t run_tic; /* tics run, menus included (frames, --max-tics) */
     int exit_flow;    /* main menu Quit chosen */
+    int level_done;   /* the last step used a level exit (the tally began) */
     const char *music; /* track last asked of the jukebox (NULL: stopped) */
     int music_set;     /* music is valid */
     FILE *hash_log;
@@ -233,6 +235,35 @@ typedef struct {
     hud_state hud; /* render side: timers, face (game/hud.h) */
     int status;
 } run_t;
+
+/* flow_world.load_level: maps/level<N>.vmap for the next level, with its
+ * wall textures and sprites when anything draws. The finished level's map
+ * stays loaded until the next change (the flow still reads it while it
+ * starts the new level). NULL: no such level (the flow goes to the title). */
+static const bast_map *load_level(void *ctx, int level)
+{
+    run_t *r = ctx;
+    char path[512];
+    snprintf(path, sizeof path, "%s/level%d.vmap", VS3D_MAPS_DIR, level);
+    bast_map *map = bast_map_load(path);
+    if (!map) {
+        fprintf(stderr, "game: %s: %s\n", path, bast_error());
+        return NULL;
+    }
+    const options *o = &r->opt;
+    if (!o->topdown && (!o->headless || o->frames_dir) && !render_init(map, VS3D_ASSETS_DIR)) {
+        fprintf(stderr, "game: %s\n", render_error());
+        bast_map_free(map);
+        render_init(r->map, VS3D_ASSETS_DIR); /* back to the current level's set */
+        return NULL;
+    }
+    bast_map_free(r->prev_map);
+    r->prev_map = r->map;
+    r->map = map;
+    r->level = level;
+    snprintf(r->map_name, sizeof r->map_name, "level%d", level);
+    return map;
+}
 
 /* Map choice: --map, else --warp N (maps/levelN.vmap), else the demo's
  * `map` line (maps/<name>.vmap), else its `level` (maps/levelN.vmap), else
@@ -340,7 +371,7 @@ static int setup(run_t *r)
         screen = r->demo->start;
     else if (o->headless)
         screen = FLOW_PLAY; /* --headless --max-tics N: the M1 smoke run */
-    r->world = (flow_world){ &r->gs, &r->entry, r->map, r->level, r->seed };
+    r->world = (flow_world){ &r->gs, &r->entry, r->map, r->level, r->seed, load_level, r };
     flow_init(&r->flow, screen, &r->world);
     return 1;
 }
@@ -463,7 +494,10 @@ static void update_music(run_t *r, int restart)
     const int screen = r->flow.screen;
     const int in_level = screen == FLOW_PLAY || screen == FLOW_PAUSE ||
                          (screen == FLOW_CONTROLS && r->flow.back == FLOW_PAUSE);
-    const char *want = in_level ? music_track_for_level(r->level) : "title";
+    const char *want = in_level ? music_track_for_level(r->level)
+                       : screen == FLOW_TALLY || screen == FLOW_STORY     ? "intermission"
+                       : screen == FLOW_ENDING || screen == FLOW_CREDITS ? "ending"
+                                                                         : "title";
     if (!restart && r->music_set && want == r->music)
         return;
     r->music = want;
@@ -481,6 +515,7 @@ static void update_music(run_t *r, int restart)
 static int step(run_t *r, int key, const ticcmd *cmd)
 {
     const uint32_t restarts = r->gs.restarts;
+    r->level_done = 0;
     int res = flow_tic(&r->flow, key, &r->world, cmd);
     r->run_tic++;
     /* New Game / Restart Level / a death restart (game_init rewinds the
@@ -496,6 +531,8 @@ static int step(run_t *r, int key, const ticcmd *cmd)
         drain_sounds(r);
     if (res & FLOW_EXIT)
         r->exit_flow = 1;
+    if (res & FLOW_LEVELDONE)
+        r->level_done = 1;
     if (r->hash_log)
         fprintf(r->hash_log, "%016" PRIx64 "\n", game_hash(&r->gs));
     if ((res & FLOW_TICKED) && r->opt.record_path && !demo_rec_add(&r->rec, cmd)) {
@@ -548,7 +585,9 @@ static void run_headless(run_t *r)
             r->status = EXIT_ERROR;
             return;
         }
-        if (r->gs.exit) /* an EXIT cell ends the level run */
+        /* An EXIT cell ends a level run (completion demos, --max-tics);
+         * a demo that started on the title plays on through the tally. */
+        if (r->level_done && !(r->demo && r->demo->start == FLOW_TITLE))
             return;
         if (r->gs.player.dead && !(r->demo && r->demo->on_death_restart)) {
             /* Death ends the run (STATS shows health=0) and fails it, so
@@ -705,16 +744,20 @@ static void run_window(run_t *r)
                 break;
             }
             {
-                mixer_sound *ms = r->flow.sound == FSND_MOVE     ? r->sfx[SFX_menu_move]
-                                  : r->flow.sound == FSND_SELECT ? r->sfx[SFX_menu_select]
-                                                                 : NULL;
+                mixer_sound *ms = r->flow.sound == FSND_MOVE          ? r->sfx[SFX_menu_move]
+                                  : r->flow.sound == FSND_SELECT      ? r->sfx[SFX_menu_select]
+                                  : r->flow.sound == FSND_TALLY_TICK ? r->sfx[SFX_tally_tick]
+                                  : r->flow.sound == FSND_TALLY_DONE ? r->sfx[SFX_tally_done]
+                                                                      : NULL;
                 if (ms)
                     mixer_start(ms, MIXER_SOURCE_NONE, MIXER_VOL_MAX, MIXER_PAN_CENTER);
             }
             if (r->exit_flow)
                 running = 0;
             tics_done++;
-            if (r->gs.exit) { /* an EXIT cell ends the level run */
+            /* A recording or a demo is one level: its exit ends the run.
+             * Played by hand, the tally and the next level follow. */
+            if (r->level_done && (r->opt.record_path || (r->demo && r->demo->start != FLOW_TITLE))) {
                 running = 0;
                 break;
             }
@@ -787,5 +830,6 @@ int main(int argc, char **argv)
     font_free(menu_font);
     flow_gfx_free(r.gfx);
     bast_map_free(r.map);
+    bast_map_free(r.prev_map);
     return r.status;
 }

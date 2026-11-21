@@ -1,0 +1,54 @@
+vsdemo 1
+# Between-level flow (issue #102, hud.md Flow): title -> New Game -> Tomcat ->
+# intro (2 screens) -> the tags test level (maps/tagstest.vmap, route as in
+# tags-test.demo) -> exit -> tally (counts, any key skips, second continues)
+# -> story after level 1 -> level 2 with the carried inventory. Run headless:
+#   build/game --headless --demo demos/flow-tally.demo --frames-out out --frame-every 10
+start title
+map tagstest
+seed 0
+
+key any
+expect screen=menu
+key enter
+expect screen=skill
+key enter
+expect screen=intro
+wait 30
+key any
+expect screen=intro     # screen 2
+wait 30
+key any
+expect screen=play
+expect tic=0
+
+goto 1 2                # the tags-test route: switch, door, pushwall, secret
+face 180
+use
+wait 32
+goto 6 5
+goto 3 7
+face 90
+use
+wait 64
+goto 3 9
+expect secrets=1
+goto 1 7
+face 90
+use                     # the exit
+expect exit=1
+expect screen=tally     # kills 0/0 = 100%, items 0/0 = 100%, secrets 1/1
+wait 120                # counting, 1 per tic: KILLS done, ITEMS counting
+expect screen=tally
+key any                 # skips the counting
+wait 30
+expect screen=tally
+key any                 # continues
+expect screen=story     # intermission 1
+wait 30
+key any
+expect screen=play      # level 2 (maps/level2.vmap), inventory carried
+expect tic=0
+expect health=100
+expect exit=0
+in 35 127 0 0 -

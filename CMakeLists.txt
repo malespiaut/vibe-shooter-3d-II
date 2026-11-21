@@ -782,6 +782,15 @@ endforeach()
 # (title screen) and the flow demo. HUD icons (menu_ankh) come from hud_tex.
 file(GLOB UI_SRC CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/ui/*)
 add_custom_command(
+  OUTPUT ${ASSETS_GEN}/ui/papyrus_panel.tex ${ASSETS_GEN}/ui/tally_panel.tex
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          BAST_PALETTE=${ASSETS_GEN}/palette.bin
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/panels.py
+          --src ${CMAKE_SOURCE_DIR}/assets/src/ui -o ${ASSETS_GEN}/ui
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${UI_SRC} ${CMAKE_SOURCE_DIR}/tools/panels.py
+          ${CMAKE_SOURCE_DIR}/tools/bast.py
+  COMMENT "Building text panels")
+add_custom_command(
   OUTPUT ${ASSETS_GEN}/ui/title.tex
   COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
           BAST_PALETTE=${ASSETS_GEN}/palette.bin
@@ -790,7 +799,8 @@ add_custom_command(
   DEPENDS bast ${ASSETS_GEN}/palette.bin ${UI_SRC} ${CMAKE_SOURCE_DIR}/tools/title.py
           ${CMAKE_SOURCE_DIR}/tools/bast.py
   COMMENT "Building title screen")
-add_custom_target(ui_art ALL DEPENDS ${ASSETS_GEN}/ui/title.tex)
+add_custom_target(ui_art ALL DEPENDS ${ASSETS_GEN}/ui/title.tex
+  ${ASSETS_GEN}/ui/papyrus_panel.tex ${ASSETS_GEN}/ui/tally_panel.tex)
 add_dependencies(ui_art palette)
 add_dependencies(game ui_art hud_tex fonts_tex)
 
@@ -801,7 +811,25 @@ foreach(c blink wrap pause_freeze restart quit_title skill)
   add_test(NAME flow_${c} COMMAND test_flow ${CMAKE_SOURCE_DIR}/maps/m1test.vmap ${c})
 endforeach()
 
+# Between-level screens (issue #102): tally, story pages, carry, credits.
+add_executable(test_inter tests/test_inter.c)
+target_link_libraries(test_inter PRIVATE engine)
+target_compile_options(test_inter PRIVATE -UNDEBUG)
+foreach(c percent time tally_count carry progress ending credits wrap)
+  add_test(NAME inter_${c} COMMAND test_inter ${CMAKE_SOURCE_DIR}/maps ${c})
+endforeach()
+
 # demos/flow.demo (start title): title -> level 1 -> pause -> Quit to Title.
 add_test(NAME flow_demo
   COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/flow.demo)
 add_demo_determinism(flow)
+
+# Between-level demos (issue #102), start title: tagstest exit -> tally ->
+# story -> level 2; tagstest as level 8 -> tally -> ending -> credits -> title.
+add_test(NAME flow_tally_demo
+  COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/flow-tally.demo)
+set_tests_properties(flow_tally_demo PROPERTIES PASS_REGULAR_EXPRESSION "STATS level=2 ")
+add_demo_determinism(flow-tally)
+add_test(NAME flow_ending_demo
+  COMMAND $<TARGET_FILE:game> --headless --demo ${CMAKE_SOURCE_DIR}/demos/flow-ending.demo)
+add_demo_determinism(flow-ending)

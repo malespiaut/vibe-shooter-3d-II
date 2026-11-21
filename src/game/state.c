@@ -33,6 +33,11 @@ static void inventory_give(player_t *p, const inventory_t *inv)
         p->weapons.ammo[i] = inv->ammo[i];
 }
 
+void game_carry(const game_state *gs, inventory_t *out)
+{
+    inventory_take(out, &gs->player);
+}
+
 void game_init(game_state *gs, const bast_map *map, int level, int skill, uint32_t demo_seed)
 {
     game_init_with(gs, map, level, skill, demo_seed, NULL);

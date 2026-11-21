@@ -375,7 +375,7 @@ static int cmd_expect(demo_t *d, line_ctx *c)
         int sc = flow_screen_from_name(p);
         if (sc < 0)
             return fail(c, "expect screen: unknown screen '%s' (title menu skill controls play "
-                           "pause)", p);
+                           "pause intro tally story ending credits)", p);
         tmp.value = sc;
     } else if (strcmp(stat, "tile") == 0) {
         if (op != DEMO_OP_EQ && op != DEMO_OP_NE)

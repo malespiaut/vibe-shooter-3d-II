@@ -16,7 +16,7 @@ static const ticcmd WALK = { 127, 0, 0, 0 };
 
 static flow_world world(const bast_map *map)
 {
-    flow_world w = { &gs, &entry, map, 1, 0 };
+    flow_world w = { &gs, &entry, map, 1, 0, NULL, NULL };
     return w;
 }
 
@@ -29,8 +29,13 @@ static void start_game(flow_t *f, flow_world *w)
     flow_tic(f, FKEY_ENTER, w, &IDLE);
     assert(f->screen == FLOW_SKILL && f->cursor == FLOW_DEFAULT_SKILL - 1);
     int r = flow_tic(f, FKEY_ENTER, w, &IDLE);
-    assert(f->screen == FLOW_PLAY);
-    assert(!(r & FLOW_TICKED)); /* the selecting tic is not a game tic */
+    assert(f->screen == FLOW_INTRO); /* two intro screens (issue #102) */
+    assert(!(r & FLOW_TICKED));
+    r = flow_tic(f, FKEY_ANY, w, &IDLE);
+    assert(f->screen == FLOW_INTRO && f->page == 1);
+    r = flow_tic(f, FKEY_ANY, w, &IDLE);
+    assert(f->screen == FLOW_PLAY && (r & FLOW_NEWLEVEL));
+    assert(!(r & FLOW_TICKED)); /* the key tic is not a game tic */
     assert(gs.tic == 0 && gs.skill == FLOW_DEFAULT_SKILL);
 }
 
@@ -144,6 +149,8 @@ static void test_skill(const bast_map *map)
     flow_tic(&f, FKEY_ENTER, &w, &IDLE);
     flow_tic(&f, FKEY_DOWN, &w, &IDLE);
     flow_tic(&f, FKEY_ENTER, &w, &IDLE);
+    flow_tic(&f, FKEY_ENTER, &w, &IDLE); /* intro page 1 */
+    flow_tic(&f, FKEY_ENTER, &w, &IDLE); /* intro page 2 */
     assert(f.screen == FLOW_PLAY && gs.skill == 3);
     /* Controls from pause returns to pause. */
     flow_tic(&f, FKEY_ESC, &w, &IDLE);
