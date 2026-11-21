@@ -133,7 +133,7 @@ def test_check_mismatch(path):
 
 def test_check_pass(tmp):
     """A map that matches levels.md row 1: 14 Mutts (skill 2), 10 on Kitten,
-    17 on Sabretooth; 60 health, 0 armour; 3 vials + 14 drops = 1150."""
+    17 on Sabretooth; 65 health, 0 armour; 3 vials + 1 jar + 14 drops = 1725."""
     ef = bast.entity_flags()
     S1, S2, S3 = ef["SKILL1"], ef["SKILL2"], ef["SKILL3"]
     m = bast.Map(24, 24)
@@ -144,13 +144,15 @@ def test_check_pass(tmp):
         m.add_entity("MUTT_TROOPER", flags=fl, **at(2 + i, 10))
     for i in range(3):
         m.add_entity("CHARGE_VIAL", **at(2 + i, 5))
-    for i in range(6):
+    m.add_entity("CHARGE_JAR", **at(5, 5))
+    for i in range(4):
         m.add_entity("FISH_SNACK", **at(2 + i, 6))
+    m.add_entity("TUNA_TIN", **at(6, 6))
     path = os.path.join(tmp, "level1.vmap")
     m.save(path)
     rc, out, err = run(path, "--check")
     assert rc == 0, (rc, out, err)
-    assert "OK ammo 1150.0 1150" in out and "OK kitten_enemies 10" in out, out
+    assert "OK ammo 1725.0 1725" in out and "OK kitten_enemies 10" in out, out
     assert "FAIL" not in out, out
 
 

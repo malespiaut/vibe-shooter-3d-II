@@ -75,30 +75,30 @@ RESPAWN_ITEM = 6
 PLAYER_START = 1
 
 # docs/design/levels.md, section "Difficulty curve" (HP pool, ammo supplied,
-# health, armour) plus the "Pools:" paragraph under it (per-type skill-2
-# counts) and the "Overview" table (Par). Copy changes here when levels.md
-# changes. L8 HP pool 4570 includes up to 12 summoned Chompers, which this
+# health, armour; health and armour without the bracketed secret extras) plus
+# the "Pools:" paragraph under it (per-type skill-2 counts) and the
+# "Overview" table (Par). Copy changes here when levels.md changes. L8 HP pool 4570 includes up to 12 summoned Chompers, which this
 # tool does not count (4390 counted), still within 10%.
 LEVELS = {
-    1: {"enemies": {"mutt": 14}, "hp": 280, "ammo": 1150, "health": 60, "armour": 0,
+    1: {"enemies": {"mutt": 14}, "hp": 280, "ammo": 1725, "health": 65, "armour": 0,
         "par": 150},
-    2: {"enemies": {"mutt": 18, "chomper": 10}, "hp": 510, "ammo": 1580, "health": 100,
+    2: {"enemies": {"mutt": 18, "chomper": 10}, "hp": 510, "ammo": 4030, "health": 60,
         "armour": 100, "par": 240},
-    3: {"enemies": {"mutt": 16, "chomper": 10, "pom": 8}, "hp": 830, "ammo": 2230,
-        "health": 125, "armour": 100, "par": 300},
+    3: {"enemies": {"mutt": 16, "chomper": 10, "pom": 8}, "hp": 830, "ammo": 4984,
+        "health": 135, "armour": 100, "par": 300},
     4: {"enemies": {"mutt": 12, "chomper": 8, "pom": 8, "dachshund": 5}, "hp": 1070,
-        "ammo": 2460, "health": 150, "armour": 100, "par": 360},
+        "ammo": 3484, "health": 160, "armour": 100, "par": 360},
     5: {"enemies": {"mutt": 14, "chomper": 10, "pom": 10, "dachshund": 6, "mastiff": 2},
-        "hp": 2100, "ammo": 4600, "health": 175, "armour": 200, "par": 420},
+        "hp": 2100, "ammo": 7964, "health": 185, "armour": 200, "par": 420},
     6: {"enemies": {"mutt": 14, "chomper": 12, "pom": 10, "dachshund": 6, "shield": 8,
                     "mastiff": 2},
-        "hp": 2850, "ammo": 5700, "health": 200, "armour": 200, "par": 480},
+        "hp": 2850, "ammo": 5728, "health": 195, "armour": 200, "par": 480},
     7: {"enemies": {"mutt": 16, "chomper": 14, "pom": 12, "dachshund": 8, "shield": 10,
                     "mastiff": 4},
-        "hp": 4130, "ammo": 7400, "health": 250, "armour": 300, "par": 540},
+        "hp": 4130, "ammo": 8058, "health": 230, "armour": 100, "par": 540},
     8: {"enemies": {"mutt": 8, "chomper": 8, "pom": 6, "dachshund": 4, "shield": 4,
                     "mastiff": 2, "woofu": 1},
-        "hp": 4570, "ammo": 8200, "health": 300, "armour": 200, "par": 420},
+        "hp": 4570, "ammo": 3924, "health": 260, "armour": 200, "par": 420},
 }
 TOLERANCE = 0.10
 KITTEN_FEWER = (0.15, 0.35)      # Kitten: 15-35% fewer enemies than skill 2

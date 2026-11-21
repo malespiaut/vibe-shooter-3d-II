@@ -332,12 +332,10 @@ foreach(lm ${LEVEL_MAPS})
 endforeach()
 # Known failures, each tracked by an issue. Remove a level from this list
 # when its issue is fixed: a WILL_FAIL test that starts passing turns red.
-#   level1: ammo                      -> #208 (levels.md table vs Items list)
-#   level2: ammo, health              -> #208
-#   level5: no enemies (#177), par and ammo (#240)
-#   level6: no enemies (#178), ammo (#240)
-#   level7: no enemies (#193), armour (#240)
-set(LEVELSTATS_KNOWN_FAIL level1 level2 level5 level6 level7)
+#   level5: no enemies (#177; ammo needs their Mutt drops), par (#240)
+#   level6: no enemies (#178; ammo needs their Mutt drops)
+#   level7: no enemies (#193; ammo needs their Mutt drops)
+set(LEVELSTATS_KNOWN_FAIL level5 level6 level7)
 foreach(ln ${LEVELSTATS_KNOWN_FAIL})
   if(TEST levelstats_${ln})
     set_tests_properties(levelstats_${ln} PROPERTIES WILL_FAIL TRUE)
