@@ -157,12 +157,116 @@ add_custom_command(
 add_custom_target(items_tex ALL DEPENDS ${ASSETS_GEN}/sprites/items/.stamp)
 add_dependencies(items_tex palette)
 
+# World textures (GAME.md 6.1): assets/src/textures/*.json ->
+# assets/gen/textures/*.tex (same as tools/build.d/20-texgen.sh), so the game
+# and the completion demos (complete_level2) find them after a plain build
+# (#233). Rebuilt from scratch so a removed parameter file leaves no stale
+# .tex; a stamp stands for the outputs (20-texgen.sh wipes it too).
+file(GLOB TEXGEN_PARAMS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/textures/*.json)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/textures/.stamp
+  COMMAND ${CMAKE_COMMAND} -E rm -rf ${ASSETS_GEN}/textures
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          BAST_PALETTE=${ASSETS_GEN}/palette.bin
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/texgen.py -q
+          ${TEXGEN_PARAMS} -o ${ASSETS_GEN}/textures
+  COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/textures/.stamp
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${TEXGEN_PARAMS} ${CMAKE_SOURCE_DIR}/tools/texgen.py
+          ${CMAKE_SOURCE_DIR}/tools/quantize.py ${CMAKE_SOURCE_DIR}/tools/bast.py
+          ${CMAKE_SOURCE_DIR}/tools/palette.py
+  COMMENT "Building world textures")
+add_custom_target(textures_tex ALL DEPENDS ${ASSETS_GEN}/textures/.stamp)
+add_dependencies(textures_tex palette)
+
+# Particle effects (GAME.md 6.3): assets/src/fx/*.json -> assets/gen/fx/*.tex
+# (same as tools/build.d/40-fx.sh), for the game and test_fx_sprites (#233).
+file(GLOB FX_PARAMS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/fx/*.json)
+add_custom_command(
+  OUTPUT ${ASSETS_GEN}/fx/.stamp
+  COMMAND ${CMAKE_COMMAND} -E rm -rf ${ASSETS_GEN}/fx
+  COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+          BAST_PALETTE=${ASSETS_GEN}/palette.bin
+          ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/fx.py
+          ${FX_PARAMS} -o ${ASSETS_GEN}/fx
+  COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/fx/.stamp
+  DEPENDS bast ${ASSETS_GEN}/palette.bin ${FX_PARAMS} ${CMAKE_SOURCE_DIR}/tools/fx.py
+          ${CMAKE_SOURCE_DIR}/tools/bast.py ${CMAKE_SOURCE_DIR}/tools/palette.py
+  COMMENT "Building particle effects")
+add_custom_target(fx_tex ALL DEPENDS ${ASSETS_GEN}/fx/.stamp)
+add_dependencies(fx_tex palette)
+
+# Pre-rendered enemy sprites (enemies.md): every assets/src/sprites/<name>/
+# sprite.json -> assets/gen/sprites/<name>_*.tex through tools/render_sprite.sh
+# (the step tools/build.d/60-sprites.sh loops over), one command and stamp per
+# sprite so editing one model re-renders only that one (#233). Needs blender;
+# without it the target is empty and the sprite tests fail as before.
+# 45-sprites.sh wipes assets/gen/sprites (stamps included): the next build
+# renders again.
+find_program(BLENDER_EXECUTABLE blender)
+file(GLOB SPRITE_JSONS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/sprites/*/sprite.json)
+set(ENEMY_SPRITE_STAMPS)
+set(ENEMY_GIB_STAMPS)
+if(BLENDER_EXECUTABLE)
+  foreach(j ${SPRITE_JSONS})
+    get_filename_component(d ${j} DIRECTORY)
+    get_filename_component(n ${d} NAME)
+    file(GLOB sdeps CONFIGURE_DEPENDS ${d}/*)
+    if(n STREQUAL "woofu2") # model.py runs ../woofu/model.py --lidless
+      list(APPEND sdeps ${CMAKE_SOURCE_DIR}/assets/src/sprites/woofu/model.py)
+    endif()
+    add_custom_command(
+      OUTPUT ${ASSETS_GEN}/sprites/.${n}.stamp
+      COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+              BAST_PALETTE=${ASSETS_GEN}/palette.bin
+              sh ${CMAKE_SOURCE_DIR}/tools/render_sprite.sh ${n} ${ASSETS_GEN}
+      COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/sprites/.${n}.stamp
+      DEPENDS bast ${ASSETS_GEN}/palette.bin ${sdeps}
+              ${CMAKE_SOURCE_DIR}/tools/render_sprite.sh ${CMAKE_SOURCE_DIR}/tools/blender_render.py
+              ${CMAKE_SOURCE_DIR}/tools/quantize.py ${CMAKE_SOURCE_DIR}/tools/bast.py
+              ${CMAKE_SOURCE_DIR}/tools/palette.py
+      COMMENT "Rendering sprite ${n} (blender)")
+    list(APPEND ENEMY_SPRITE_STAMPS ${ASSETS_GEN}/sprites/.${n}.stamp)
+  endforeach()
+  # Their gib animations (GAME.md 6.2, same as tools/build.d/65-gibs.sh): each
+  # assets/src/gibs/*.json whose "source" is one of the sprites above ->
+  # assets/gen/gibs/<sprite>_gib_d0_f<n>.tex. Gibs of props (not built here)
+  # stay with tools/build_assets.sh.
+  file(GLOB GIB_PARAMS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assets/src/gibs/*.json)
+  foreach(g ${GIB_PARAMS})
+    file(READ ${g} gjson)
+    string(JSON gsrc GET "${gjson}" source)
+    get_filename_component(gstem ${g} NAME_WE)
+    foreach(stamp ${ENEMY_SPRITE_STAMPS})
+      string(REGEX REPLACE "^.*/\\.(.*)\\.stamp$" "\\1" n ${stamp})
+      if(gsrc MATCHES "^sprites/${n}_[^/]*\\.tex$")
+        add_custom_command(
+          OUTPUT ${ASSETS_GEN}/gibs/.${gstem}.stamp
+          COMMAND ${CMAKE_COMMAND} -E make_directory ${ASSETS_GEN}/gibs
+          COMMAND ${CMAKE_COMMAND} -E env BAST_LIB=$<TARGET_FILE:bast>
+                  BAST_PALETTE=${ASSETS_GEN}/palette.bin
+                  ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/gibs.py -q ${g}
+                  -i ${ASSETS_GEN}/${gsrc} -o ${ASSETS_GEN}/gibs
+          COMMAND ${CMAKE_COMMAND} -E touch ${ASSETS_GEN}/gibs/.${gstem}.stamp
+          DEPENDS bast ${stamp} ${g} ${CMAKE_SOURCE_DIR}/tools/gibs.py
+                  ${CMAKE_SOURCE_DIR}/tools/bast.py ${CMAKE_SOURCE_DIR}/tools/palette.py
+          COMMENT "Building gibs ${gstem}")
+        list(APPEND ENEMY_GIB_STAMPS ${ASSETS_GEN}/gibs/.${gstem}.stamp)
+      endif()
+    endforeach()
+  endforeach()
+  list(APPEND ENEMY_SPRITE_STAMPS ${ENEMY_GIB_STAMPS})
+else()
+  message(WARNING "blender not found: enemy sprites are not built; run tools/build_assets.sh on a machine with blender")
+endif()
+add_custom_target(enemy_sprites ALL DEPENDS ${ENEMY_SPRITE_STAMPS})
+add_dependencies(enemy_sprites palette)
+
 add_executable(game src/main.c)
 target_link_libraries(game PRIVATE engine platform)
 target_compile_definitions(game PRIVATE VS3D_ASSETS_DIR="${ASSETS_GEN}"
   VS3D_MAPS_DIR="${CMAKE_SOURCE_DIR}/maps"
   VS3D_MUSIC_DIR="${CMAKE_SOURCE_DIR}/assets/src/music")
-add_dependencies(game colormap sfx testpattern hud_tex fonts_tex)
+add_dependencies(game colormap sfx testpattern hud_tex fonts_tex textures_tex fx_tex enemy_sprites items_tex)
 
 enable_testing()
 add_executable(test_smoke tests/test_smoke.c)
@@ -654,10 +758,11 @@ set_tests_properties(launcher_demo PROPERTIES
 add_demo_determinism(launcher-test)
 add_demo_determinism(fx-test)
 # Every FXS_* frame exists in the built assets under the renderer's path.
-# Needs the fx frames from tools/build_assets.sh (tools/build.d/40-fx.sh).
+# Needs the fx frames (fx_tex, same step as tools/build.d/40-fx.sh).
 add_executable(test_fx_sprites tests/test_fx_sprites.c)
 target_link_libraries(test_fx_sprites PRIVATE engine)
 target_compile_options(test_fx_sprites PRIVATE -UNDEBUG)
+add_dependencies(test_fx_sprites colormap fx_tex)
 add_test(NAME fx_sprites COMMAND test_fx_sprites ${ASSETS_GEN})
 
 # Weapons 6-7: the Lance / Howler test demo, run twice.
@@ -716,11 +821,11 @@ target_compile_options(test_world_sprites_items PRIVATE -UNDEBUG)
 add_dependencies(test_world_sprites_items colormap testpattern items_tex)
 add_test(NAME world_sprites_items COMMAND test_world_sprites_items ${ASSETS_GEN})
 # Enemies as animated world sprites from live AI state (issue #146). The
-# Chomper part needs its sprite set from tools/build_assets.sh (60-sprites.sh).
+# sprite sets come from enemy_sprites (same step as tools/build.d/60-sprites.sh).
 add_executable(test_world_sprites_enemies tests/test_world_sprites_enemies.c)
 target_link_libraries(test_world_sprites_enemies PRIVATE engine m)
 target_compile_options(test_world_sprites_enemies PRIVATE -UNDEBUG)
-add_dependencies(test_world_sprites_enemies colormap testpattern)
+add_dependencies(test_world_sprites_enemies colormap testpattern enemy_sprites)
 add_test(NAME world_sprites_enemies COMMAND test_world_sprites_enemies ${ASSETS_GEN})
 
 # Map logic: tags, switches, exit, pushwalls, triggers, secrets, lights,

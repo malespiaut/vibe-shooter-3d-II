@@ -1,5 +1,5 @@
 #!/bin/sh
-# Pre-rendered sprites: every assets/src/sprites/<name>/sprite.json (with
+# Pre-rendered sprites (one tools/render_sprite.sh call each): every assets/src/sprites/<name>/sprite.json (with
 # <name>.blend next to it) -> assets/gen/sprites/<name>_<anim>_d<dir>_f<frame>.tex
 # through tools/blender_render.py. A sprite whose model is a generator script
 # (<name>/model.py instead of a committed .blend) first gets its .blend built
@@ -18,22 +18,7 @@ for json in assets/src/sprites/*/sprite.json; do
     [ -e "$json" ] || continue
     dir=$(dirname "$json")
     name=$(basename "$dir")
-    canvas=$(python3 -c 'import json,sys; c=json.load(open(sys.argv[1]))["canvas"]; print("%dx%d" % tuple(c))' "$json")
-    command -v blender >/dev/null || { echo "sprites: blender not found, needed for $name" >&2; exit 1; }
-    blend="$dir/$name.blend"
-    if [ -f "$dir/model.py" ]; then
-        gen="assets/gen/blend/$name"
-        rm -rf "$gen"
-        mkdir -p "$gen"
-        blender -b --factory-startup --python "$dir/model.py" -- "$gen" > "$gen/model.log" 2>&1 \
-            && [ -f "$gen/$name.blend" ] \
-            || { tail -20 "$gen/model.log" >&2; echo "sprites: $name model.py failed" >&2; exit 1; }
-        blend="$gen/$name.blend"
-    fi
-    blender -b "$blend" --python tools/blender_render.py -- \
-        --sprite "$name" --canvas "$canvas" --out assets/gen/sprites > "assets/gen/sprites/.$name.log" 2>&1 \
-        || { tail -20 "assets/gen/sprites/.$name.log" >&2; echo "sprites: $name failed" >&2; exit 1; }
-    grep '^blender_render:' "assets/gen/sprites/.$name.log"
+    sh tools/render_sprite.sh "$name"
     n=$((n + 1))
     frames=$((frames + $(ls assets/gen/sprites | grep -cE "^${name}_.+_d[0-7]_f[0-9]+\.tex\$" || true)))
 done
